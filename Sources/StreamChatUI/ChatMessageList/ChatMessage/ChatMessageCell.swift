@@ -16,6 +16,9 @@ public typealias ChatMessageCell = _ChatMessageCell<NoExtraData>
 public final class _ChatMessageCell<ExtraData: ExtraDataTypes>: _TableViewCell {
     public static var reuseId: String { "\(self)" }
     
+    /// The message header view the cell is showing
+    public private(set) var messageHeaderView: _ChatMessageHeaderView<ExtraData>?
+    
     /// The message content view the cell is showing.
     public private(set) var messageContentView: _ChatMessageContentView<ExtraData>?
     
@@ -41,14 +44,17 @@ public final class _ChatMessageCell<ExtraData: ExtraDataTypes>: _TableViewCell {
         super.prepareForReuse()
 
         messageContentView?.prepareForReuse()
+        messageHeaderView?.prepareForReuse()
     }
 
     /// Creates a message content view
     /// - Parameters:
     ///   - contentViewClass: The type of message content view.
+    ///   - headerViewClass: The type of message header view.
     ///   - attachmentViewInjectorType: The type of attachment injector.
     ///   - options: The layout options describing the message content view layout.
     public func setMessageContentIfNeeded(
+        headerViewClass: _ChatMessageHeaderView<ExtraData>.Type,
         contentViewClass: _ChatMessageContentView<ExtraData>.Type,
         attachmentViewInjectorType: _AttachmentViewInjector<ExtraData>.Type?,
         options: ChatMessageLayoutOptions
@@ -59,13 +65,30 @@ public final class _ChatMessageCell<ExtraData: ExtraDataTypes>: _TableViewCell {
             """)
             return
         }
+        
+        guard messageHeaderView == nil else {
+            log.assert(type(of: messageHeaderView!) == headerViewClass, """
+            Attempt to setup different header class: ("\(headerViewClass)")
+            """)
+            return
+        }
 
         messageContentView = contentViewClass.init().withoutAutoresizingMaskConstraints
         // We add the content view to the view hierarchy before invoking `setUpLayoutIfNeeded`
         // (where the subviews are instantiated and configured) to use `components` and `appearance`
         // taken from the responder chain.
         contentView.addSubview(messageContentView!)
-        messageContentView!.pin(anchors: [.leading, .top, .trailing, .bottom], to: contentView)
+        
+        if options.contains(.header) {
+            messageHeaderView = headerViewClass.init().withoutAutoresizingMaskConstraints
+            contentView.addSubview(messageHeaderView!)
+            messageHeaderView!.pin(anchors: [.leading, .top, .trailing], to: contentView)
+            messageContentView!.pin(anchors: [.leading, .trailing, .bottom], to: contentView)
+            messageContentView!.topAnchor.constraint(equalTo: messageHeaderView!.bottomAnchor).isActive = true
+        } else {
+            messageContentView!.pin(anchors: [.leading, .top, .trailing, .bottom], to: contentView)
+        }
+        
         messageContentView!.setUpLayoutIfNeeded(options: options, attachmentViewInjectorType: attachmentViewInjectorType)
         updateBottomSpacing()
     }

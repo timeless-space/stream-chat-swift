@@ -121,6 +121,9 @@ public struct _Components<ExtraData: ExtraDataTypes> {
     
     /// The view used to display content of the message, i.e. in the channel detail message list.
     public var messageContentView: _ChatMessageContentView<ExtraData>.Type = _ChatMessageContentView<ExtraData>.self
+    
+    /// The view used to display content of the message, i.e. in the channel detail message list.
+    public var messageHeaderView: _ChatMessageHeaderView<ExtraData>.Type = _ChatMessageHeaderView<ExtraData>.self
 
     /// The view used to display a bubble around a message.
     public var messageBubbleView: _ChatMessageBubbleView<ExtraData>.Type = _ChatMessageBubbleView<ExtraData>.self

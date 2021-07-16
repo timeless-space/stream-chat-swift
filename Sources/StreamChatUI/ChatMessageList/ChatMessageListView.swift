@@ -60,11 +60,13 @@ open class _ChatMessageListView<ExtraData: ExtraDataTypes>: UITableView, Customi
     
     /// Calculates the cell reuse identifier for the given options.
     /// - Parameters:
+    ///   - headerViewClass: The type of message header view.
     ///   - contentViewClass: The type of message content view.
     ///   - attachmentViewInjectorType: The type of attachment injector.
     ///   - layoutOptions: The message content view layout options.
     /// - Returns: The cell reuse identifier.
     open func reuseIdentifier(
+        headerViewClass: _ChatMessageHeaderView<ExtraData>.Type,
         contentViewClass: _ChatMessageContentView<ExtraData>.Type,
         attachmentViewInjectorType: _AttachmentViewInjector<ExtraData>.Type?,
         layoutOptions: ChatMessageLayoutOptions
@@ -72,6 +74,7 @@ open class _ChatMessageListView<ExtraData: ExtraDataTypes>: UITableView, Customi
         let components = [
             _ChatMessageCell<ExtraData>.reuseId,
             String(layoutOptions.rawValue),
+            String(describing: headerViewClass),
             String(describing: contentViewClass),
             String(describing: attachmentViewInjectorType)
         ]
@@ -84,11 +87,13 @@ open class _ChatMessageListView<ExtraData: ExtraDataTypes>: UITableView, Customi
     open func reuseIdentifier(for cell: _ChatMessageCell<ExtraData>?) -> String? {
         guard
             let cell = cell,
+            let messageHeaderView = cell.messageHeaderView,
             let messageContentView = cell.messageContentView,
             let layoutOptions = messageContentView.layoutOptions
         else { return nil }
         
         return reuseIdentifier(
+            headerViewClass: type(of: messageHeaderView),
             contentViewClass: type(of: messageContentView),
             attachmentViewInjectorType: messageContentView.attachmentViewInjector.map { type(of: $0) },
             layoutOptions: layoutOptions
@@ -104,12 +109,14 @@ open class _ChatMessageListView<ExtraData: ExtraDataTypes>: UITableView, Customi
     /// - Returns: The instance of `_ChatMessageCollectionViewCell<ExtraData>` set up with the
     /// provided `contentViewClass` and `layoutOptions`
     open func dequeueReusableCell(
+        headerViewClass: _ChatMessageHeaderView<ExtraData>.Type,
         contentViewClass: _ChatMessageContentView<ExtraData>.Type,
         attachmentViewInjectorType: _AttachmentViewInjector<ExtraData>.Type?,
         layoutOptions: ChatMessageLayoutOptions,
         for indexPath: IndexPath
     ) -> _ChatMessageCell<ExtraData> {
         let reuseIdentifier = self.reuseIdentifier(
+            headerViewClass: headerViewClass,
             contentViewClass: contentViewClass,
             attachmentViewInjectorType: attachmentViewInjectorType,
             layoutOptions: layoutOptions
@@ -129,15 +136,20 @@ open class _ChatMessageListView<ExtraData: ExtraDataTypes>: UITableView, Customi
         ) as! _ChatMessageCell<ExtraData>
 
         cell.setMessageContentIfNeeded(
+            headerViewClass: headerViewClass,
             contentViewClass: contentViewClass,
             attachmentViewInjectorType: attachmentViewInjectorType,
             options: layoutOptions
         )
         
-        cell.messageContentView?.indexPath = { [weak cell, weak self] in
+        let indexPathEvaluation: () -> IndexPath? = { [weak cell, weak self] in
             guard let cell = cell else { return nil }
             return self?.indexPath(for: cell)
         }
+        
+        cell.messageContentView?.indexPath = indexPathEvaluation
+        
+        cell.messageHeaderView?.indexPath = indexPathEvaluation
         
         cell.contentView.transform = .mirrorY
 

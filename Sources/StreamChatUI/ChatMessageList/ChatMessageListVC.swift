@@ -233,6 +233,11 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     open func cellContentClassForMessage(at indexPath: IndexPath) -> _ChatMessageContentView<ExtraData>.Type {
         components.messageContentView
     }
+    
+    /// Returns the content view class for the message at given `indexPath`
+    open func cellHeaderClassForMessage(at indexPath: IndexPath) -> _ChatMessageHeaderView<ExtraData>.Type {
+        components.messageHeaderView
+    }
 
     open func attachmentViewInjectorClassForMessage(at indexPath: IndexPath) -> _AttachmentViewInjector<ExtraData>.Type? {
         components.attachmentViewCatalog.attachmentViewInjectorClassFor(
@@ -601,6 +606,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         let message = channelController.messages[indexPath.row]
 
         let cell: _ChatMessageCell<ExtraData> = listView.dequeueReusableCell(
+            headerViewClass: cellHeaderClassForMessage(at: indexPath),
             contentViewClass: cellContentClassForMessage(at: indexPath),
             attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
             layoutOptions: cellLayoutOptionsForMessage(at: indexPath),
@@ -610,7 +616,15 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         cell.messageContentView?.delegate = self
         cell.messageContentView?.content = message
         
+        cell.messageHeaderView?.content = headerForMessage(at: indexPath)
         return cell
+    }
+    
+    open func headerForMessage(at indexPath: IndexPath) -> String? {
+        // TODO: Date format
+        DateFormatter
+            .messageListDateOverlay
+            .string(from: channelController.messages[indexPath.item].createdAt)
     }
     
     open var isScrollToBottomButtonVisible: Bool {

@@ -235,6 +235,7 @@ var streamChatUIFilesExcluded: [String] { [
     "ChatMessageList/TypingIndicatorView_Tests.swift",
     "ChatMessageList/ChatMessageListVC_Tests.swift",
     "ChatMessageList/ChatMessage/ChatMessageErrorIndicator_Tests.swift",
+    "ChatMessageList/ChatMessage/ChatMessageHeaderView_Tests.swift",
     "ChatMessageList/ChatMessage/ChatMessageBubbleView_Tests.swift",
     "ChatMessageList/ChatMessage/ChatMessageLayoutOptionsResolver_Tests.swift",
     "ChatMessageList/ChatMessage/ChatMessageContentView_Tests.swift",

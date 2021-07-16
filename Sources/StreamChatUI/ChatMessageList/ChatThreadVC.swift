@@ -175,6 +175,11 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
     open func cellContentClassForMessage(at indexPath: IndexPath) -> _ChatMessageContentView<ExtraData>.Type {
         components.messageContentView
     }
+    
+    /// Returns the content view class for the message at given `indexPath`
+    open func cellHeaderClassForMessage(at indexPath: IndexPath) -> _ChatMessageHeaderView<ExtraData>.Type {
+        components.messageHeaderView
+    }
 
     /// Returns the attachment view injector class for the message at given `indexPath`
     open func attachmentViewInjectorClassForMessage(
@@ -248,6 +253,7 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
         let message = messages[indexPath.row]
 
         let cell: _ChatMessageCell<ExtraData> = listView.dequeueReusableCell(
+            headerViewClass: cellHeaderClassForMessage(at: indexPath),
             contentViewClass: cellContentClassForMessage(at: indexPath),
             attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
             layoutOptions: cellLayoutOptionsForMessage(at: indexPath),

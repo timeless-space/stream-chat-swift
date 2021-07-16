@@ -48,6 +48,8 @@ open class _ChatMessageLayoutOptionsResolver<ExtraData: ExtraDataTypes> {
             messages: messages
         )
         
+        let isFirstMessage = isMessageFirstForTheDay(messageIndexPath: indexPath, messages: messages)
+        
         var options: ChatMessageLayoutOptions = []
 
         // The text should be centered without a bubble for system messages
@@ -58,6 +60,10 @@ open class _ChatMessageLayoutOptionsResolver<ExtraData: ExtraDataTypes> {
         // Do not show bubble if the message is to be rendered as large emoji
         if !message.shouldRenderAsJumbomoji {
             options.insert(.bubble)
+        }
+        
+        if isFirstMessage {
+            options.insert(.header)
         }
 
         if message.isSentByCurrentUser {
@@ -166,5 +172,22 @@ open class _ChatMessageLayoutOptionsResolver<ExtraData: ExtraDataTypes> {
         // If the message next to the current one is sent with delay > minTimeIntervalBetweenMessagesInGroup,
         // the current message ends the sequence.
         return delay > minTimeIntervalBetweenMessagesInGroup
+    }
+    
+    open func isMessageFirstForTheDay(
+        messageIndexPath: IndexPath,
+        messages: AnyRandomAccessCollection<_ChatMessage<ExtraData>>
+    ) -> Bool {
+        let messageIndex = messages.index(messages.startIndex, offsetBy: messageIndexPath.item)
+        let message = messages[messageIndex]
+        
+        let previousMessageIndex = messages.index(after: messageIndex)
+        
+        guard messages.indices.contains(previousMessageIndex) else {
+            return true
+        }
+        
+        let previousMessage = messages[previousMessageIndex]
+        return !previousMessage.createdAt.hasSame(.day, as: message.createdAt)
     }
 }

@@ -59,6 +59,9 @@ public extension ChatMessageLayoutOptions {
     /// `flipped` and `centered` are mutually exclusive. Only one of these two should be used at a time.
     /// If both are specified in the options, `centered` is prioritized
     static let centered = Self(rawValue: 1 << 13)
+
+    /// If set the message header will be shown
+    static let header = Self(rawValue: 1 << 14)
 }
 
 extension ChatMessageLayoutOptions: CustomStringConvertible {
@@ -83,7 +86,8 @@ extension ChatMessageLayoutOptions: CustomStringConvertible {
         .errorIndicator,
         .reactions,
         .onlyVisibleForYouIndicator,
-        .centered
+        .centered,
+        .header
     ]
 
     var optionName: String? {
@@ -116,6 +120,8 @@ extension ChatMessageLayoutOptions: CustomStringConvertible {
             return "onlyVisibleForYouIndicator"
         case .centered:
             return "centered"
+        case .header:
+            return "header"
         default:
             return nil
         }
