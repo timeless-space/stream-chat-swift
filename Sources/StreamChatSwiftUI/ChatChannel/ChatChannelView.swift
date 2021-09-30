@@ -14,26 +14,53 @@ public struct ChatChannelView: View {
     }
     
     public var body: some View {
-        VStack {
-            GeometryReader { reader in
+        VStack(spacing: 0) {
+            ZStack {
                 ScrollViewReader { scrollView in
                     ScrollView {
+                        GeometryReader { proxy in
+                            let offset = proxy.frame(in: .named("scrollArea")).minY
+                            Color.clear.preference(key: ScrollViewOffsetPreferenceKey.self, value: offset)
+                            
+                        }
+                        
                         LazyVStack {
-                            ForEach(viewModel.channel.messages) { message in
+                            ForEach(viewModel.messages) { message in
                                 MessageView(message: message)
                                     .padding()
                                     .flippedUpsideDown()
                             }
                         }
                     }
-                    .frame(minHeight: reader.size.height)
+                    .coordinateSpace(name: "scrollArea")
+                    .onPreferenceChange(ScrollViewOffsetPreferenceKey.self) { value in
+                        viewModel.showScrollToLatestButton = value ?? 0 < -20
+                    }
                     .flippedUpsideDown()
                     .onChange(of: viewModel.scrolledId) { scrolledId in
                         if let scrolledId = scrolledId {
                             viewModel.scrolledId = nil
-                            withAnimation {                                
+                            withAnimation {
                                 scrollView.scrollTo(scrolledId, anchor: .bottom)
                             }
+                        }
+                    }
+                }
+                
+                if viewModel.showScrollToLatestButton {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button {
+                                viewModel.scrollToLastMessage()
+                            } label: {
+                                Image(systemName: "arrow.down.circle")
+                                    .resizable()
+                                    .frame(width: 25, height: 25)
+                                    .foregroundColor(.blue)
+                            }
+                            .padding()
                         }
                     }
                 }
@@ -102,10 +129,10 @@ extension View {
 }
 
 struct ScrollViewOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
+    static var defaultValue: CGFloat? = nil
     
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
+    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
+        value = value ?? nextValue()
     }
     
 }

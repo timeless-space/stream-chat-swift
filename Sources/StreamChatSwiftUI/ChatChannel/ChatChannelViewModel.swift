@@ -23,12 +23,15 @@ public class ChatChannelViewModel: ObservableObject {
     @Published var scrolledId: String?
     
     @Published var text = ""
+    
+    @Published var showScrollToLatestButton = false
         
     public init(channel: ChatChannelController.ObservableObject) {
-        self.channel = channel        
+        self.channel = channel
     }
     
     func subscribeToChannelChanges() {
+        self.messages = channel.messages
         self.channel.objectWillChange.sink { [weak self] in
             guard let self = self else { return }
             self.messages = self.channel.messages
