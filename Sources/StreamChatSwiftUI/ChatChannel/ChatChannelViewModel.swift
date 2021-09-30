@@ -12,14 +12,6 @@ public class ChatChannelViewModel: ObservableObject {
     
     @ObservedObject var channel: ChatChannelController.ObservableObject
     
-    @Published var messages = LazyCachedMapCollection<ChatMessage>() {
-        didSet {
-            if oldValue.count != messages.count {
-                scrollToLastMessage()
-            }
-        }
-    }
-    
     @Published var scrolledId: String?
     
     @Published var text = ""
@@ -31,10 +23,11 @@ public class ChatChannelViewModel: ObservableObject {
     }
     
     func subscribeToChannelChanges() {
-        self.messages = channel.messages
         self.channel.objectWillChange.sink { [weak self] in
             guard let self = self else { return }
-            self.messages = self.channel.messages
+            if !self.showScrollToLatestButton {
+                self.scrollToLastMessage()
+            }
         }
         .store(in: &cancellables)
     }
@@ -53,8 +46,8 @@ public class ChatChannelViewModel: ObservableObject {
     }
     
     func scrollToLastMessage() {
-        if scrolledId != messages.first?.id {
-            scrolledId = messages.first?.id
+        if scrolledId != channel.messages.first?.id {
+            scrolledId = channel.messages.first?.id
         }
     }
     

@@ -25,7 +25,7 @@ public struct ChatChannelView: View {
                         }
                         
                         LazyVStack {
-                            ForEach(viewModel.messages) { message in
+                            ForEach(viewModel.channel.messages) { message in
                                 MessageView(message: message)
                                     .padding()
                                     .flippedUpsideDown()
