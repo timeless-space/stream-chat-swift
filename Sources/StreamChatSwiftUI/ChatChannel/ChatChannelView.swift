@@ -4,6 +4,7 @@
 
 import SwiftUI
 import StreamChat
+import NukeUI
 
 public struct ChatChannelView: View {
     
@@ -32,7 +33,7 @@ public struct ChatChannelView: View {
                                     .onAppear {
                                         viewModel.checkForNewMessages(index: index)
                                     }
-                                    .id(viewModel.channel.messages[index].id)                                    
+                                    .id(viewModel.channel.messages[index].id)
                             }
                         }
                     }
@@ -98,6 +99,16 @@ struct MessageView: View {
         HStack {
             if message.isSentByCurrentUser {
                 Spacer()
+            } else {
+                if let url = message.author.imageURL?.absoluteString {
+                    LazyImage(source: url)
+                        .clipShape(Circle())
+                        .frame(width: 40, height: 40)
+                } else {
+                    Image(systemName: "person.circle")
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                }
             }
             
             Text(message.text)
