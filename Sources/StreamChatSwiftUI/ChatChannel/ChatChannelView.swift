@@ -6,11 +6,12 @@ import SwiftUI
 import StreamChat
 import NukeUI
 
-public struct ChatChannelView: View {
+public struct ChatChannelView: View, KeyboardReadable {
     
     @StateObject var viewModel: ChatChannelViewModel
     
     @State var width: CGFloat?
+    @State var keyboardShown = false
         
     public init(viewModel: ChatChannelViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -97,6 +98,10 @@ public struct ChatChannelView: View {
             }
             .padding()
         }
+        .onReceive(keyboardPublisher) { visible in
+            keyboardShown = visible
+        }
+        .modifier(HideKeyboardOnTapGesture(shouldAdd: keyboardShown))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             viewModel.subscribeToChannelChanges()

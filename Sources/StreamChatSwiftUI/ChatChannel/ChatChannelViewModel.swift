@@ -35,10 +35,11 @@ public class ChatChannelViewModel: ObservableObject {
     }
     
     func sendMessage() {
-        channel.controller.createNewMessage(text: text) {
+        channel.controller.createNewMessage(text: text) { [weak self] in
             switch $0 {
             case .success(let response):
                 print(response)
+                self?.scrollToLastMessage()
             case .failure(let error):
                 print(error)
             }
