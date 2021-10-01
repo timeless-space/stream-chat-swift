@@ -10,6 +10,8 @@ public class ChatChannelViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
+    @Atomic private var loadingPreviousMessages: Bool = false
+    
     @ObservedObject var channel: ChatChannelController.ObservableObject
     
     @Published var scrolledId: String?
@@ -48,6 +50,19 @@ public class ChatChannelViewModel: ObservableObject {
     func scrollToLastMessage() {
         if scrolledId != channel.messages.first?.id {
             scrolledId = channel.messages.first?.id
+        }
+    }
+    
+    func checkForNewMessages(index: Int) {
+        if index < channel.messages.count - 10 {
+            return
+        }
+
+        if _loadingPreviousMessages.compareAndSwap(old: false, new: true) {
+            channel.controller.loadPreviousMessages(completion: { [weak self] _ in
+                guard let self = self else { return }
+                self.loadingPreviousMessages = false
+            })
         }
     }
     

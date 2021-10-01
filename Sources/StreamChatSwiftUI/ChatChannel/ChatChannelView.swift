@@ -25,10 +25,14 @@ public struct ChatChannelView: View {
                         }
                         
                         LazyVStack {
-                            ForEach(viewModel.channel.messages) { message in
-                                MessageView(message: message)
+                            ForEach(viewModel.channel.messages.indices, id: \.self) { index in
+                                MessageView(message: viewModel.channel.messages[index])
                                     .padding()
                                     .flippedUpsideDown()
+                                    .onAppear {
+                                        viewModel.checkForNewMessages(index: index)
+                                    }
+                                    .id(viewModel.channel.messages[index].id)                                    
                             }
                         }
                     }
