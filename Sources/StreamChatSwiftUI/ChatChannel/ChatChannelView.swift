@@ -10,6 +10,8 @@ public struct ChatChannelView: View {
     
     @StateObject var viewModel: ChatChannelViewModel
     
+    @State var width: CGFloat?
+        
     public init(viewModel: ChatChannelViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -20,14 +22,17 @@ public struct ChatChannelView: View {
                 ScrollViewReader { scrollView in
                     ScrollView {
                         GeometryReader { proxy in
-                            let offset = proxy.frame(in: .named("scrollArea")).minY
+                            let frame = proxy.frame(in: .named("scrollArea"))
+                            let offset = frame.minY
+                            let width = frame.width
                             Color.clear.preference(key: ScrollViewOffsetPreferenceKey.self, value: offset)
-                            
+                            Color.clear.preference(key: WidthPreferenceKey.self, value: width)
                         }
                         
                         LazyVStack {
                             ForEach(viewModel.channel.messages.indices, id: \.self) { index in
-                                MessageView(message: viewModel.channel.messages[index])
+                                MessageView(message: viewModel.channel.messages[index],
+                                            spacerWidth: self.width)
                                     .padding()
                                     .flippedUpsideDown()
                                     .onAppear {
@@ -38,6 +43,11 @@ public struct ChatChannelView: View {
                         }
                     }
                     .coordinateSpace(name: "scrollArea")
+                    .onPreferenceChange(WidthPreferenceKey.self) { value in
+                        if let value = value {
+                            self.width = value / 4
+                        }
+                    }
                     .onPreferenceChange(ScrollViewOffsetPreferenceKey.self) { value in
                         viewModel.showScrollToLatestButton = value ?? 0 < -20
                     }
@@ -60,9 +70,12 @@ public struct ChatChannelView: View {
                             Button {
                                 viewModel.scrollToLastMessage()
                             } label: {
-                                Image(systemName: "arrow.down.circle")
+                                Image(systemName: "arrow.down")
                                     .resizable()
-                                    .frame(width: 25, height: 25)
+                                    .aspectRatio(contentMode: .fit)
+                                    .padding(.all, 8)
+                                    .background(Color.white.clipShape(Circle()))
+                                    .frame(width: 40, height: 40)
                                     .foregroundColor(.blue)
                             }
                             .padding()
@@ -94,11 +107,12 @@ public struct ChatChannelView: View {
 struct MessageView: View {
     
     let message: ChatMessage
+    var spacerWidth: CGFloat?
     
     var body: some View {
         HStack {
             if message.isSentByCurrentUser {
-                Spacer()
+                MessageSpacer(spacerWidth: spacerWidth)
             } else {
                 if let url = message.author.imageURL?.absoluteString {
                     LazyImage(source: url)
@@ -111,18 +125,52 @@ struct MessageView: View {
                 }
             }
             
-            Text(message.text)
-                .padding()
-                .background(message.isSentByCurrentUser ?
-                            Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3))
-                .cornerRadius(24)
+            if message.imageAttachments.count > 0 {
+                if message.text.isEmpty {
+                    LazyImage(source: message.imageAttachments[0].imagePreviewURL)
+                        .aspectRatio(contentMode: .fit)
+                        .cornerRadius(24)
+                } else {
+                    VStack {
+                        if message.imageAttachments.count > 0 {
+                            LazyImage(source: message.imageAttachments[0].imagePreviewURL)
+                                .aspectRatio(contentMode: .fit)
+                                .cornerRadius(24)
+                        }
+                        
+                        Text(message.text)
+                    }
+                    .padding()
+                    .background(message.isSentByCurrentUser ?
+                                Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3))
+                    .cornerRadius(24)
+                }
+            } else {
+                Text(message.text)
+                    .padding()
+                    .background(message.isSentByCurrentUser ?
+                                Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3))
+                    .cornerRadius(24)
+            }
             
             if !message.isSentByCurrentUser {
-                Spacer()
+                MessageSpacer(spacerWidth: spacerWidth)
             }
         }
     }
     
+}
+
+struct MessageSpacer: View {
+    
+    var spacerWidth: CGFloat?
+    
+    var body: some View {
+        Spacer()
+            .frame(minWidth: spacerWidth)
+            .layoutPriority(-1)
+    }
+
 }
 
 struct FlippedUpsideDown: ViewModifier {
@@ -144,6 +192,15 @@ extension View {
 }
 
 struct ScrollViewOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat? = nil
+    
+    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
+        value = value ?? nextValue()
+    }
+    
+}
+
+struct WidthPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat? = nil
     
     static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
