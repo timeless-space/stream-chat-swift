@@ -10,6 +10,26 @@ public class ChatChannelViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
+    private var timer: Timer?
+    
+    private var currentDate: Date? {
+        didSet {
+            guard showScrollToLatestButton == true, let currentDate = currentDate else {
+                self.currentDateString = nil
+                return
+            }
+
+            self.currentDateString = messageListDateOverlay.string(from: currentDate)
+        }
+    }
+    
+    private let messageListDateOverlay: DateFormatter = {
+        let df = DateFormatter()
+        df.setLocalizedDateFormatFromTemplate("MMMdd")
+        df.locale = .autoupdatingCurrent
+        return df
+    }()
+    
     @Atomic private var loadingPreviousMessages: Bool = false
     
     @ObservedObject var channel: ChatChannelController.ObservableObject
@@ -19,9 +39,12 @@ public class ChatChannelViewModel: ObservableObject {
     @Published var text = ""
     
     @Published var showScrollToLatestButton = false
+    
+    @Published var currentDateString: String?
         
     public init(channel: ChatChannelController.ObservableObject) {
         self.channel = channel
+        
     }
     
     func subscribeToChannelChanges() {
@@ -65,6 +88,17 @@ public class ChatChannelViewModel: ObservableObject {
                 self.loadingPreviousMessages = false
             })
         }
+    }
+    
+    func save(lastDate: Date) {
+        self.currentDate = lastDate
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(
+            withTimeInterval: 0.5,
+            repeats: false,
+            block: { [weak self] timer in
+            self?.currentDate = nil
+        })
     }
     
 }
