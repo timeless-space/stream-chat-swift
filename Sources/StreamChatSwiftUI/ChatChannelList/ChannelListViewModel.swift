@@ -13,6 +13,8 @@ public class ChannelListViewModel: ObservableObject {
     
     @Published var channels = LazyCachedMapCollection<ChatChannel>()
     
+    @Published var selectedChannel: ChatChannel?
+    
     public init(chatClient: ChatClient) {
         self.chatClient = chatClient
         controller = chatClient.channelListController(
@@ -34,15 +36,19 @@ public class ChannelListViewModel: ObservableObject {
         }
     }
     
-    func makeViewModel(for channel: ChatChannel) -> ChatChannelViewModel {
+    public func makeViewModel(for channel: ChatChannel) -> ChatChannelViewModel {
         let controller = chatClient.channelController(for: channel.cid,
                                                       messageOrdering: .topToBottom).observableObject
         let viewModel = ChatChannelViewModel(channel: controller)
         return viewModel
     }
     
-    func name(forChannel channel: ChatChannel) -> String {
+    public func name(forChannel channel: ChatChannel) -> String {
         channelNamer(channel, chatClient.currentUserId) ?? "not named"
+    }
+    
+    public func open(channel: ChatChannel) {
+        self.selectedChannel = channel
     }
     
 }

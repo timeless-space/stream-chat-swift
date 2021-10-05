@@ -6,23 +6,22 @@ import SwiftUI
 import StreamChat
 import NukeUI
 
-public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
+public struct ChatChannelAnyView: View, KeyboardReadable {
     
-    @StateObject var viewModel: ChatChannelViewModel
+    @StateObject var viewModel: ChatChannelAnyViewModel
     
-    var noContentView: NoContent
+    @Environment(\.components) var components
     
-    public init(viewModel: ChatChannelViewModel, noContentView: NoContent) {
+    public init(viewModel: ChatChannelAnyViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.noContentView = noContentView
     }
     
     public var body: some View {
         VStack(spacing: 0) {
             if viewModel.channel.messages.count > 0 {
-                MessageListView(viewModel: viewModel)
+                MessageListAnyView(viewModel: viewModel)
             } else {
-                noContentView
+                components.messageComponents.noContentView
             }
             
             Divider()
@@ -42,7 +41,7 @@ public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
     }
 }
 
-struct MessageView: View {
+struct MessageAnyView: View {
     
     let message: ChatMessage
     var spacerWidth: CGFloat?
@@ -50,7 +49,7 @@ struct MessageView: View {
     var body: some View {
         HStack {
             if message.isSentByCurrentUser {
-                MessageSpacer(spacerWidth: spacerWidth)
+                MessageAnySpacer(spacerWidth: spacerWidth)
             } else {
                 if let url = message.author.imageURL?.absoluteString {
                     LazyImage(source: url)
@@ -99,7 +98,7 @@ struct MessageView: View {
     
 }
 
-struct MessageSpacer: View {
+struct MessageAnySpacer: View {
     
     var spacerWidth: CGFloat?
     
@@ -110,12 +109,3 @@ struct MessageSpacer: View {
     }
 
 }
-
-extension ChatChannelView where NoContent == NoContentView {
-    
-    public init(viewModel: ChatChannelViewModel) {
-        self.init(viewModel: viewModel, noContentView: NoContentView())
-    }
-    
-}
-

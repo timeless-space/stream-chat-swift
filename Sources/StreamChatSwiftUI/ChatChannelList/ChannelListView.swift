@@ -6,12 +6,29 @@ import SwiftUI
 import Combine
 import StreamChat
 
-public struct ChannelListView: View {
+public struct ChannelListView<ChannelDestination: View>: View {
     
     @StateObject var viewModel: ChannelListViewModel
     
-    public init(viewModel: ChannelListViewModel) {
+    var onItemTap: (ChatChannel) -> ()
+    
+    var channelDestination: (ChatChannel) -> ChannelDestination
+    
+    public init(
+        viewModel: ChannelListViewModel,
+        onItemTap: ((ChatChannel) -> ())? = nil,
+        channelDestination: @escaping ((ChatChannel) -> ChannelDestination)
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        if let onItemTap = onItemTap {
+            self.onItemTap = onItemTap
+        } else {
+            self.onItemTap = { channel in
+                viewModel.selectedChannel = channel
+            }
+        }
+        
+        self.channelDestination = channelDestination
     }
     
     public var body: some View {
@@ -19,8 +36,8 @@ public struct ChannelListView: View {
             ScrollView {
                 LazyVStack {
                     ForEach(viewModel.channels) { channel in
-                        NavigationLink {
-                            ChatChannelView(viewModel: viewModel.makeViewModel(for: channel))
+                        Button {
+                            onItemTap(channel)
                         } label: {
                             HStack {
                                 Text(viewModel.name(forChannel: channel))
@@ -29,6 +46,13 @@ public struct ChannelListView: View {
                             .padding()
                         }
                         .foregroundColor(.black)
+                                                
+                        NavigationLink(tag: channel, selection: $viewModel.selectedChannel) {
+                            channelDestination(channel)
+                        } label: {
+                            EmptyView()
+                        }
+                        
                     }
                 }
             }
@@ -37,3 +61,14 @@ public struct ChannelListView: View {
     }
     
 }
+
+extension ChannelListView where ChannelDestination == ChatChannelView<NoContentView> {
+    
+    public init(viewModel: ChannelListViewModel, onItemTap: ((ChatChannel) -> ())? = nil) {
+        self.init(viewModel: viewModel, onItemTap: onItemTap, channelDestination: { channel in
+            ChatChannelView(viewModel: viewModel.makeViewModel(for: channel))
+        })
+    }
+    
+}
+
