@@ -33,6 +33,8 @@ struct DemoAppSwiftUIApp: App {
     }
      */
 
+    // Bound components
+    /*
     @StateObject var channelListViewModel = ChannelListViewModel(chatClient: ChatClient.shared)
     
     var body: some Scene {
@@ -43,6 +45,13 @@ struct DemoAppSwiftUIApp: App {
                     noContentView: CustomNoContentView()
                 )
             }
+        }
+    }
+     */
+    
+    var body: some Scene {
+        WindowGroup {
+            ChannelsScreen(chatClient: ChatClient.shared)
         }
     }
     
