@@ -10,102 +10,18 @@ public struct ChatChannelView: View, KeyboardReadable {
     
     @StateObject var viewModel: ChatChannelViewModel
     
-    @State var width: CGFloat?
-    @State var height: CGFloat?
-    @State var keyboardShown = false
-        
+    @Environment(\.components) var components
+    
     public init(viewModel: ChatChannelViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     public var body: some View {
         VStack(spacing: 0) {
-            ZStack {
-                ScrollViewReader { scrollView in
-                    ScrollView {
-                        GeometryReader { proxy in
-                            let frame = proxy.frame(in: .named("scrollArea"))
-                            let offset = frame.minY
-                            let width = frame.width
-                            let height = frame.height
-                            Color.clear.preference(key: ScrollViewOffsetPreferenceKey.self, value: offset)
-                            Color.clear.preference(key: WidthPreferenceKey.self, value: width)
-                            Color.clear.preference(key: HeightPreferenceKey.self, value: height)
-                        }
-                        
-                        LazyVStack {
-                            ForEach(viewModel.channel.messages.indices, id: \.self) { index in
-                                MessageView(message: viewModel.channel.messages[index],
-                                            spacerWidth: (self.width ?? 0) / 4)
-                                    .padding()
-                                    .flippedUpsideDown()
-                                    .onAppear {
-                                        viewModel.checkForNewMessages(index: index)
-                                        viewModel.save(lastDate: viewModel.channel.messages[index].createdAt)
-                                    }
-                                    .id(viewModel.channel.messages[index].id)
-                            }
-                        }
-                    }
-                    .coordinateSpace(name: "scrollArea")
-                    .onPreferenceChange(WidthPreferenceKey.self) { value in
-                        if let value = value, value != width {
-                            self.width = value
-                        }
-                    }
-                    .onPreferenceChange(ScrollViewOffsetPreferenceKey.self) { value in
-                        viewModel.showScrollToLatestButton = value ?? 0 < -20
-                    }
-                    .onPreferenceChange(HeightPreferenceKey.self) { value in
-                        if let value = value, value != height {
-                            self.height = value
-                        }
-                    }
-                    .flippedUpsideDown()
-                    .frame(minWidth: self.width, minHeight: height)
-                    .onChange(of: viewModel.scrolledId) { scrolledId in
-                        if let scrolledId = scrolledId {
-                            viewModel.scrolledId = nil
-                            withAnimation {
-                                scrollView.scrollTo(scrolledId, anchor: .bottom)
-                            }
-                        }
-                    }
-                }
-                
-                if viewModel.showScrollToLatestButton {
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            Button {
-                                viewModel.scrollToLastMessage()
-                            } label: {
-                                Image(systemName: "arrow.down")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .padding(.all, 8)
-                                    .background(Color.white.clipShape(Circle()))
-                                    .frame(width: 40, height: 40)
-                                    .foregroundColor(.blue)
-                            }
-                            .padding()
-                        }
-                    }
-                }
-                
-                if let date = viewModel.currentDateString {
-                    VStack {
-                        Text(date)
-                            .padding(.all, 4)
-                            .foregroundColor(.white)
-                            .background(Color.gray)
-                            .cornerRadius(8)
-                            .padding(.all, 4)
-                        Spacer()
-                    }
-                }
-                
+            if viewModel.channel.messages.count > 0 {
+                MessageListView(viewModel: viewModel)
+            } else {
+                components.messageComponents.noContentView
             }
             
             Divider()
@@ -121,14 +37,7 @@ public struct ChatChannelView: View, KeyboardReadable {
             }
             .padding()
         }
-        .onReceive(keyboardPublisher) { visible in
-            keyboardShown = visible
-        }
-        .modifier(HideKeyboardOnTapGesture(shouldAdd: keyboardShown))
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            viewModel.subscribeToChannelChanges()
-        }
+        .navigationBarTitleDisplayMode(.inline)        
     }
 }
 
@@ -199,49 +108,4 @@ struct MessageSpacer: View {
             .layoutPriority(-1)
     }
 
-}
-
-struct FlippedUpsideDown: ViewModifier {
-    
-    func body(content: Content) -> some View {
-        content
-            .rotationEffect(.radians(Double.pi))
-            .scaleEffect(x: -1, y: 1, anchor: .center)
-    }
-    
-}
-
-extension View {
-    
-    func flippedUpsideDown() -> some View{
-        self.modifier(FlippedUpsideDown())
-    }
-    
-}
-
-struct ScrollViewOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat? = nil
-    
-    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
-        value = value ?? nextValue()
-    }
-    
-}
-
-struct WidthPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat? = nil
-    
-    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
-        value = value ?? nextValue()
-    }
-    
-}
-
-struct HeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat? = nil
-    
-    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
-        value = value ?? nextValue()
-    }
-    
 }
