@@ -12,6 +12,8 @@ public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
     
     var noContentView: NoContent
     
+    @Environment(\.chatTheme) var chatTheme
+    
     public init(viewModel: ChatChannelViewModel, noContentView: NoContent) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.noContentView = noContentView
@@ -38,7 +40,8 @@ public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
             }
             .padding()
         }
-        .navigationBarTitleDisplayMode(.inline)        
+        .navigationBarTitleDisplayMode(.inline)
+        .background(chatTheme.colors.appBackground.edgesIgnoringSafeArea(.bottom))
     }
 }
 

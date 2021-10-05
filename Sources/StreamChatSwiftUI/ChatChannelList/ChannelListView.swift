@@ -14,6 +14,8 @@ public struct ChannelListView<ChannelDestination: View>: View {
     
     var channelDestination: (ChatChannel) -> ChannelDestination
     
+    @Environment(\.chatTheme) var chatTheme
+    
     public init(
         viewModel: ChannelListViewModel,
         onItemTap: ((ChatChannel) -> ())? = nil,
@@ -55,6 +57,7 @@ public struct ChannelListView<ChannelDestination: View>: View {
                         
                     }
                 }
+                .background(chatTheme.colors.appBackground)
             }
             .navigationTitle("Stream Chat")
         }
