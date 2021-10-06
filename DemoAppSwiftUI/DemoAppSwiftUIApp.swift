@@ -49,18 +49,9 @@ struct DemoAppSwiftUIApp: App {
     }
     */
     
-    // Change theme
-    var chatTheme: ChatTheme = {
-        let colors = StreamColors(appBackground: .gray.opacity(0.2))
-        let chatTheme = ChatTheme(colors: colors)
-        return chatTheme
-    }()
-    
     var body: some Scene {
         WindowGroup {
             ChannelsScreen()
-                // uncomment for custom theme.
-                //.environment(\.chatTheme, chatTheme)
         }
     }
     

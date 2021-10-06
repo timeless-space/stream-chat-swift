@@ -2,17 +2,16 @@
 // Copyright © 2021 Stream.io Inc. All rights reserved.
 //
 
-import SwiftUI
-import StreamChat
 import NukeUI
+import StreamChat
+import SwiftUI
 
 public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
-    
     @StateObject var viewModel: ChatChannelViewModel
     
     var noContentView: NoContent
     
-    @Environment(\.chatTheme) var chatTheme
+    @Injected(\.streamColors) var colors
     
     public init(viewModel: ChatChannelViewModel, noContentView: NoContent) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -21,7 +20,7 @@ public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
     
     public var body: some View {
         VStack(spacing: 0) {
-            if viewModel.channel.messages.count > 0 {
+            if !viewModel.channel.messages.isEmpty {
                 MessageListView(viewModel: viewModel)
             } else {
                 noContentView
@@ -41,12 +40,11 @@ public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
             .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
-        .background(chatTheme.colors.appBackground.edgesIgnoringSafeArea(.bottom))
+        .background(colors.appBackground.edgesIgnoringSafeArea(.bottom))
     }
 }
 
 struct MessageView: View {
-    
     let message: ChatMessage
     var spacerWidth: CGFloat?
     
@@ -66,14 +64,14 @@ struct MessageView: View {
                 }
             }
             
-            if message.imageAttachments.count > 0 {
+            if !message.imageAttachments.isEmpty {
                 if message.text.isEmpty {
                     LazyImage(source: message.imageAttachments[0].imagePreviewURL)
                         .aspectRatio(contentMode: .fit)
                         .cornerRadius(24)
                 } else {
                     VStack {
-                        if message.imageAttachments.count > 0 {
+                        if !message.imageAttachments.isEmpty {
                             LazyImage(source: message.imageAttachments[0].imagePreviewURL)
                                 .aspectRatio(contentMode: .fit)
                                 .cornerRadius(24)
@@ -82,15 +80,19 @@ struct MessageView: View {
                         Text(message.text)
                     }
                     .padding()
-                    .background(message.isSentByCurrentUser ?
-                                Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3))
+                    .background(
+                        message.isSentByCurrentUser ?
+                            Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3)
+                    )
                     .cornerRadius(24)
                 }
             } else {
                 Text(message.text)
                     .padding()
-                    .background(message.isSentByCurrentUser ?
-                                Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3))
+                    .background(
+                        message.isSentByCurrentUser ?
+                            Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3)
+                    )
                     .cornerRadius(24)
             }
             
@@ -99,11 +101,9 @@ struct MessageView: View {
             }
         }
     }
-    
 }
 
 struct MessageSpacer: View {
-    
     var spacerWidth: CGFloat?
     
     var body: some View {
@@ -111,14 +111,10 @@ struct MessageSpacer: View {
             .frame(minWidth: spacerWidth)
             .layoutPriority(-1)
     }
-
 }
 
 extension ChatChannelView where NoContent == NoContentView {
-    
     public init(viewModel: ChatChannelViewModel) {
         self.init(viewModel: viewModel, noContentView: NoContentView())
     }
-    
 }
-

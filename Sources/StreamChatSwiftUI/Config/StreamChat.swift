@@ -6,9 +6,14 @@ import StreamChat
 
 public class StreamChat {
     var chatClient: ChatClient
+    var theme: ChatTheme
     
-    public init(chatClient: ChatClient) {
+    public init(
+        chatClient: ChatClient,
+        theme: ChatTheme = ChatTheme()
+    ) {
         self.chatClient = chatClient
+        self.theme = theme
         StreamChatProviderKey.currentValue = self
     }
 }
@@ -36,6 +41,15 @@ extension InjectedValues {
         }
         set {
             streamChat.chatClient = newValue
+        }
+    }
+    
+    var streamColors: StreamColors {
+        get {
+            streamChat.theme.colors
+        }
+        set {
+            streamChat.theme.colors = newValue
         }
     }
 }

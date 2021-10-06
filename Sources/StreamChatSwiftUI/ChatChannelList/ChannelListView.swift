@@ -13,7 +13,7 @@ public struct ChannelListView<ChannelDestination: View>: View {
     
     private var channelDestination: (ChatChannel) -> ChannelDestination
     
-    @Environment(\.chatTheme) var chatTheme
+    @Injected(\.streamColors) var colors
     
     public init(
         viewModel: ChannelListViewModel,
@@ -55,7 +55,7 @@ public struct ChannelListView<ChannelDestination: View>: View {
                         }
                     }
                 }
-                .background(chatTheme.colors.appBackground)
+                .background(colors.appBackground)
             }
             .onAppear {
                 viewModel.loadChannels()

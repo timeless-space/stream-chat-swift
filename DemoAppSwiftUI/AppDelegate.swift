@@ -44,6 +44,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         }
     }
     
+    // Change theme
+    var chatTheme: ChatTheme = {
+        let colors = StreamColors(appBackground: .gray.opacity(0.1))
+        let chatTheme = ChatTheme(colors: colors)
+        return chatTheme
+    }()
+    
 }
 
 class SceneDelegate: NSObject, UIWindowSceneDelegate {}
