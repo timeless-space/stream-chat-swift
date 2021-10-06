@@ -6,17 +6,18 @@ import Combine
 import StreamChat
 
 public class ChannelListViewModel: ObservableObject {
+    @Injected(\.chatClient) var chatClient: ChatClient
     
-    private let chatClient: ChatClient
-    private let controller: ChatChannelListController
+    private var controller: ChatChannelListController!
     private let channelNamer = DefaultChatChannelNamer()
     
     @Published var channels = LazyCachedMapCollection<ChatChannel>()
     
     @Published var selectedChannel: ChatChannel?
     
-    public init(chatClient: ChatClient) {
-        self.chatClient = chatClient
+    public init() {}
+    
+    func loadChannels() {
         controller = chatClient.channelListController(
             query: .init(
                 filter: .and([.equal(.type, to: .messaging), .containMembers(userIds: ["luke_skywalker"])]),
@@ -37,8 +38,10 @@ public class ChannelListViewModel: ObservableObject {
     }
     
     public func makeViewModel(for channel: ChatChannel) -> ChatChannelViewModel {
-        let controller = chatClient.channelController(for: channel.cid,
-                                                      messageOrdering: .topToBottom).observableObject
+        let controller = chatClient.channelController(
+            for: channel.cid,
+            messageOrdering: .topToBottom
+        ).observableObject
         let viewModel = ChatChannelViewModel(channel: controller)
         return viewModel
     }
@@ -48,15 +51,12 @@ public class ChannelListViewModel: ObservableObject {
     }
     
     public func open(channel: ChatChannel) {
-        self.selectedChannel = channel
+        selectedChannel = channel
     }
-    
 }
 
 extension ChatChannel: Identifiable {
-    
     public var id: String {
-        self.cid.id
+        cid.id
     }
-    
 }

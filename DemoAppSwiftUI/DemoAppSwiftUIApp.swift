@@ -27,15 +27,15 @@ struct DemoAppSwiftUIApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ChannelListView(viewModel: ChannelListViewModel(chatClient: ChatClient.shared))
+            ChannelListView(viewModel: ChannelListViewModel())
                 .environment(\.components, components)
         }
     }
-     */
+    */
 
     // Bound components
     /*
-    @StateObject var channelListViewModel = ChannelListViewModel(chatClient: ChatClient.shared)
+    @StateObject var channelListViewModel = ChannelListViewModel()
     
     var body: some Scene {
         WindowGroup {
@@ -47,7 +47,7 @@ struct DemoAppSwiftUIApp: App {
             }
         }
     }
-     */
+    */
     
     // Change theme
     var chatTheme: ChatTheme = {
@@ -58,7 +58,7 @@ struct DemoAppSwiftUIApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ChannelsScreen(chatClient: ChatClient.shared)
+            ChannelsScreen()
                 // uncomment for custom theme.
                 //.environment(\.chatTheme, chatTheme)
         }

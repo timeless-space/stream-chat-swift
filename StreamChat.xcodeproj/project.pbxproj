@@ -524,6 +524,8 @@
 		842E96C7270710BD009A4296 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 842E96C6270710BD009A4296 /* Nuke */; };
 		842E96CA270710DF009A4296 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 842E96C9270710DF009A4296 /* NukeUI */; };
 		842E96CC270710E9009A4296 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 842E96CB270710E9009A4296 /* NukeUI */; };
+		8433B3F0270DA6DC00A37C44 /* DependencyInjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8433B3EF270DA6DC00A37C44 /* DependencyInjection.swift */; };
+		8433B3F2270DAA4700A37C44 /* StreamChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8433B3F1270DAA4700A37C44 /* StreamChat.swift */; };
 		8437186D270C329E00BE76DC /* CustomNoContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8437186C270C329E00BE76DC /* CustomNoContentView.swift */; };
 		84371870270C33E600BE76DC /* ChatChannelHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */; };
 		84371874270C5FC700BE76DC /* ChatChannelAnyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84371872270C5FC700BE76DC /* ChatChannelAnyViewModel.swift */; };
@@ -2004,6 +2006,8 @@
 		80C6027A25157E4D00A6B714 /* View+AlertTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+AlertTextField.swift"; sourceTree = "<group>"; };
 		80D880422546553500908B7B /* ChatScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatScrollView.swift; sourceTree = "<group>"; };
 		840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomEventRequestBody.swift; sourceTree = "<group>"; };
+		8433B3EF270DA6DC00A37C44 /* DependencyInjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyInjection.swift; sourceTree = "<group>"; };
+		8433B3F1270DAA4700A37C44 /* StreamChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChat.swift; sourceTree = "<group>"; };
 		8437186C270C329E00BE76DC /* CustomNoContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNoContentView.swift; sourceTree = "<group>"; };
 		8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatChannelHelpers.swift; sourceTree = "<group>"; };
 		84371872270C5FC700BE76DC /* ChatChannelAnyViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatChannelAnyViewModel.swift; sourceTree = "<group>"; };
@@ -4381,8 +4385,10 @@
 		84E417A2270B12C1003ABCE4 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				8433B3F1270DAA4700A37C44 /* StreamChat.swift */,
 				8437187A270C961B00BE76DC /* ChatTheme.swift */,
 				8437187C270C968E00BE76DC /* StreamColors.swift */,
+				8433B3EF270DA6DC00A37C44 /* DependencyInjection.swift */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -7276,12 +7282,14 @@
 			files = (
 				84A1D25D2704794400A8DB48 /* StreamChatSwiftUI.docc in Sources */,
 				84A1D28E270482C700A8DB48 /* ChannelListView.swift in Sources */,
+				8433B3F0270DA6DC00A37C44 /* DependencyInjection.swift in Sources */,
 				84E4179B270A3C04003ABCE4 /* MessageComponents.swift in Sources */,
 				84371879270C921E00BE76DC /* ChannelsScreen.swift in Sources */,
 				84A1D294270485BF00A8DB48 /* ChatChannelViewModel.swift in Sources */,
 				84371875270C5FC700BE76DC /* ChatChannelAnyView.swift in Sources */,
 				84A1D28227047BFB00A8DB48 /* ChatChannelNamer.swift in Sources */,
 				84E417A4270B12E7003ABCE4 /* ComponentsEnvironment.swift in Sources */,
+				8433B3F2270DAA4700A37C44 /* StreamChat.swift in Sources */,
 				84371877270C602900BE76DC /* MessageListAnyView.swift in Sources */,
 				8437187B270C961B00BE76DC /* ChatTheme.swift in Sources */,
 				8437187D270C968E00BE76DC /* StreamColors.swift in Sources */,

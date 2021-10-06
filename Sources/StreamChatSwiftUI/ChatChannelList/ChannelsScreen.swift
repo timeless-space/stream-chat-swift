@@ -1,19 +1,14 @@
 //
-//  Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2021 Stream.io Inc. All rights reserved.
 //
 
-import SwiftUI
 import StreamChat
+import SwiftUI
 
 public struct ChannelsScreen: View {
+    @StateObject private var channelListViewModel: ChannelListViewModel = ChannelListViewModel()
     
-    @StateObject var channelListViewModel: ChannelListViewModel
-    
-    public init(chatClient: ChatClient) {
-        _channelListViewModel = StateObject(
-            wrappedValue: ChannelListViewModel(chatClient: chatClient)
-        )
-    }
+    public init() {}
         
     public var body: some View {
         ChannelListView(viewModel: channelListViewModel)

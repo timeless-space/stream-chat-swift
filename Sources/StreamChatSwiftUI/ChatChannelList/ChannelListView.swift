@@ -2,23 +2,22 @@
 // Copyright © 2021 Stream.io Inc. All rights reserved.
 //
 
-import SwiftUI
 import Combine
 import StreamChat
+import SwiftUI
 
 public struct ChannelListView<ChannelDestination: View>: View {
+    @StateObject private var viewModel: ChannelListViewModel
     
-    @StateObject var viewModel: ChannelListViewModel
+    private var onItemTap: (ChatChannel) -> Void
     
-    var onItemTap: (ChatChannel) -> ()
-    
-    var channelDestination: (ChatChannel) -> ChannelDestination
+    private var channelDestination: (ChatChannel) -> ChannelDestination
     
     @Environment(\.chatTheme) var chatTheme
     
     public init(
         viewModel: ChannelListViewModel,
-        onItemTap: ((ChatChannel) -> ())? = nil,
+        onItemTap: ((ChatChannel) -> Void)? = nil,
         channelDestination: @escaping ((ChatChannel) -> ChannelDestination)
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -54,24 +53,22 @@ public struct ChannelListView<ChannelDestination: View>: View {
                         } label: {
                             EmptyView()
                         }
-                        
                     }
                 }
                 .background(chatTheme.colors.appBackground)
             }
+            .onAppear {
+                viewModel.loadChannels()
+            }
             .navigationTitle("Stream Chat")
         }
     }
-    
 }
 
 extension ChannelListView where ChannelDestination == ChatChannelView<NoContentView> {
-    
-    public init(viewModel: ChannelListViewModel, onItemTap: ((ChatChannel) -> ())? = nil) {
+    public init(viewModel: ChannelListViewModel, onItemTap: ((ChatChannel) -> Void)? = nil) {
         self.init(viewModel: viewModel, onItemTap: onItemTap, channelDestination: { channel in
             ChatChannelView(viewModel: viewModel.makeViewModel(for: channel))
         })
     }
-    
 }
-

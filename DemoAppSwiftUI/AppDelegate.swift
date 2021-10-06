@@ -3,9 +3,12 @@
 //
 
 import StreamChat
+import StreamChatSwiftUI
 import UIKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {
+    
+    var streamChat: StreamChat?
     
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -27,8 +30,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         var config = ChatClientConfig(apiKey: .init(apiKeyString))
         config.isLocalStorageEnabled = true
 
-        ChatClient.shared = ChatClient(config: config)
-        ChatClient.shared.connectUser(
+        let client = ChatClient(config: config)
+        streamChat = StreamChat(chatClient: client)
+        
+        client.connectUser(
             userInfo: .init(id: credentials.id, name: credentials.name, imageURL: credentials.avatarURL),
             token: token
         ) { error in
@@ -37,13 +42,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                 return
             }
         }
-
     }
     
-}
-
-extension ChatClient {
-    static var shared: ChatClient!
 }
 
 class SceneDelegate: NSObject, UIWindowSceneDelegate {}
