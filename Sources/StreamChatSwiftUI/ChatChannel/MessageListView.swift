@@ -26,18 +26,18 @@ struct MessageListView: View, KeyboardReadable {
                     }
                     
                     LazyVStack {
-                        ForEach(viewModel.channel.messages.indices, id: \.self) { index in
+                        ForEach(viewModel.channelController.messages.indices, id: \.self) { index in
                             MessageView(
-                                message: viewModel.channel.messages[index],
+                                message: viewModel.channelController.messages[index],
                                 spacerWidth: (self.width ?? 0) / 4
                             )
                             .padding()
                             .flippedUpsideDown()
                             .onAppear {
                                 viewModel.checkForNewMessages(index: index)
-                                viewModel.save(lastDate: viewModel.channel.messages[index].createdAt)
+                                viewModel.save(lastDate: viewModel.channelController.messages[index].createdAt)
                             }
-                            .id(viewModel.channel.messages[index].id)
+                            .id(viewModel.channelController.messages[index].id)
                         }
                     }
                 }

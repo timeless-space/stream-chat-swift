@@ -20,7 +20,7 @@ public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
     
     public var body: some View {
         VStack(spacing: 0) {
-            if !viewModel.channel.messages.isEmpty {
+            if !viewModel.channelController.messages.isEmpty {
                 MessageListView(viewModel: viewModel)
             } else {
                 noContentView

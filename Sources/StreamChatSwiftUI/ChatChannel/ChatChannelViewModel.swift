@@ -31,14 +31,14 @@ public class ChatChannelViewModel: ObservableObject {
     
     @Atomic private var loadingPreviousMessages: Bool = false
     
-    @ObservedObject var channel: ChatChannelController.ObservableObject
+    @ObservedObject var channelController: ChatChannelController.ObservableObject
     
     @Published var scrolledId: String?
     
     @Published var text = "" {
         didSet {
             if text != "" {
-                channel.controller.sendKeystrokeEvent()
+                channelController.controller.sendKeystrokeEvent()
             }
         }
     }
@@ -49,13 +49,13 @@ public class ChatChannelViewModel: ObservableObject {
     
     @Published var typingUsers = [String]()
             
-    public init(channel: ChatChannelController) {
-        self.channel = channel.observableObject
-        self.channel.controller.synchronize()
+    public init(channelController: ChatChannelController) {
+        self.channelController = channelController.observableObject
+        self.channelController.controller.synchronize()
     }
     
     func subscribeToChannelChanges() {
-        channel.objectWillChange.sink { [weak self] in
+        channelController.objectWillChange.sink { [weak self] in
             guard let self = self else { return }
             if !self.showScrollToLatestButton {
                 self.scrollToLastMessage()
@@ -63,14 +63,14 @@ public class ChatChannelViewModel: ObservableObject {
         }
         .store(in: &cancellables)
         
-        if let typingEvents = channel.channel?.config.typingEventsEnabled,
+        if let typingEvents = channelController.channel?.config.typingEventsEnabled,
            typingEvents == true {
             subscribeToTypingChanges()
         }
     }
        
     func sendMessage() {
-        channel.controller.createNewMessage(text: text) { [weak self] in
+        channelController.controller.createNewMessage(text: text) { [weak self] in
             switch $0 {
             case let .success(response):
                 print(response)
@@ -84,18 +84,18 @@ public class ChatChannelViewModel: ObservableObject {
     }
     
     func scrollToLastMessage() {
-        if scrolledId != channel.messages.first?.id {
-            scrolledId = channel.messages.first?.id
+        if scrolledId != channelController.messages.first?.id {
+            scrolledId = channelController.messages.first?.id
         }
     }
     
     func checkForNewMessages(index: Int) {
-        if index < channel.messages.count - 10 {
+        if index < channelController.messages.count - 10 {
             return
         }
 
         if _loadingPreviousMessages.compareAndSwap(old: false, new: true) {
-            channel.controller.loadPreviousMessages(completion: { [weak self] _ in
+            channelController.controller.loadPreviousMessages(completion: { [weak self] _ in
                 guard let self = self else { return }
                 self.loadingPreviousMessages = false
             })
@@ -117,9 +117,10 @@ public class ChatChannelViewModel: ObservableObject {
     // MARK: - private
     
     private func subscribeToTypingChanges() {
-        channel.controller.typingUsersPublisher.sink { users in
+        channelController.controller.typingUsersPublisher.sink { [weak self] users in
+            guard let self = self else { return }
             self.typingUsers = users.filter { user in
-                user.id != self.channel.controller.client.currentUserId
+                user.id != self.channelController.controller.client.currentUserId
             }.map { user in
                 user.name ?? ""
             }

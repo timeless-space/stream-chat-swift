@@ -42,7 +42,7 @@ public class ChannelListViewModel: ObservableObject {
             for: channel.cid,
             messageOrdering: .topToBottom
         )
-        let viewModel = ChatChannelViewModel(channel: controller)
+        let viewModel = ChatChannelViewModel(channelController: controller)
         return viewModel
     }
     
