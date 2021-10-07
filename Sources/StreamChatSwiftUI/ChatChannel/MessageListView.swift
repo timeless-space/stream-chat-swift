@@ -5,7 +5,6 @@
 import SwiftUI
 
 struct MessageListView: View, KeyboardReadable {
-    
     @StateObject var viewModel: ChatChannelViewModel
     
     @State var width: CGFloat?
@@ -28,15 +27,17 @@ struct MessageListView: View, KeyboardReadable {
                     
                     LazyVStack {
                         ForEach(viewModel.channel.messages.indices, id: \.self) { index in
-                            MessageView(message: viewModel.channel.messages[index],
-                                        spacerWidth: (self.width ?? 0) / 4)
-                                .padding()
-                                .flippedUpsideDown()
-                                .onAppear {
-                                    viewModel.checkForNewMessages(index: index)
-                                    viewModel.save(lastDate: viewModel.channel.messages[index].createdAt)
-                                }
-                                .id(viewModel.channel.messages[index].id)
+                            MessageView(
+                                message: viewModel.channel.messages[index],
+                                spacerWidth: (self.width ?? 0) / 4
+                            )
+                            .padding()
+                            .flippedUpsideDown()
+                            .onAppear {
+                                viewModel.checkForNewMessages(index: index)
+                                viewModel.save(lastDate: viewModel.channel.messages[index].createdAt)
+                            }
+                            .id(viewModel.channel.messages[index].id)
                         }
                     }
                 }
@@ -63,6 +64,19 @@ struct MessageListView: View, KeyboardReadable {
                             scrollView.scrollTo(scrolledId, anchor: .bottom)
                         }
                     }
+                }
+            }
+            
+            if !viewModel.typingUsers.isEmpty {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Text("\(viewModel.typingUsers[0]) is typing...")
+                            .padding(.horizontal)
+                            .padding(.vertical, 2)
+                        Spacer()
+                    }
+                    .background(Color.white.opacity(0.9))
                 }
             }
             
@@ -98,7 +112,6 @@ struct MessageListView: View, KeyboardReadable {
                     Spacer()
                 }
             }
-            
         }
         .onAppear {
             viewModel.subscribeToChannelChanges()

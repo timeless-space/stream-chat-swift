@@ -20,7 +20,7 @@ public class ChannelListViewModel: ObservableObject {
     func loadChannels() {
         controller = chatClient.channelListController(
             query: .init(
-                filter: .and([.equal(.type, to: .messaging), .containMembers(userIds: ["luke_skywalker"])]),
+                filter: .and([.equal(.type, to: .messaging), .containMembers(userIds: [chatClient.currentUserId!])]),
                 sort: [.init(key: .lastMessageAt, isAscending: false)],
                 pageSize: 10
             )
@@ -41,7 +41,7 @@ public class ChannelListViewModel: ObservableObject {
         let controller = chatClient.channelController(
             for: channel.cid,
             messageOrdering: .topToBottom
-        ).observableObject
+        )
         let viewModel = ChatChannelViewModel(channel: controller)
         return viewModel
     }

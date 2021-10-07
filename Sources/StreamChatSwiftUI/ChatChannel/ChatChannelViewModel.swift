@@ -7,7 +7,6 @@ import StreamChat
 import SwiftUI
 
 public class ChatChannelViewModel: ObservableObject {
-    
     private var cancellables = Set<AnyCancellable>()
     
     private var timer: Timer?
@@ -15,11 +14,11 @@ public class ChatChannelViewModel: ObservableObject {
     private var currentDate: Date? {
         didSet {
             guard showScrollToLatestButton == true, let currentDate = currentDate else {
-                self.currentDateString = nil
+                currentDateString = nil
                 return
             }
 
-            self.currentDateString = messageListDateOverlay.string(from: currentDate)
+            currentDateString = messageListDateOverlay.string(from: currentDate)
         }
     }
     
@@ -36,39 +35,52 @@ public class ChatChannelViewModel: ObservableObject {
     
     @Published var scrolledId: String?
     
-    @Published var text = ""
+    @Published var text = "" {
+        didSet {
+            if text != "" {
+                channel.controller.sendKeystrokeEvent()
+            }
+        }
+    }
     
     @Published var showScrollToLatestButton = false
     
     @Published var currentDateString: String?
-        
-    public init(channel: ChatChannelController.ObservableObject) {
-        self.channel = channel
-        
+    
+    @Published var typingUsers = [String]()
+            
+    public init(channel: ChatChannelController) {
+        self.channel = channel.observableObject
+        self.channel.controller.synchronize()
     }
     
     func subscribeToChannelChanges() {
-        self.channel.objectWillChange.sink { [weak self] in
+        channel.objectWillChange.sink { [weak self] in
             guard let self = self else { return }
             if !self.showScrollToLatestButton {
                 self.scrollToLastMessage()
             }
         }
         .store(in: &cancellables)
+        
+        if let typingEvents = channel.channel?.config.typingEventsEnabled,
+           typingEvents == true {
+            subscribeToTypingChanges()
+        }
     }
-    
+       
     func sendMessage() {
         channel.controller.createNewMessage(text: text) { [weak self] in
             switch $0 {
-            case .success(let response):
+            case let .success(response):
                 print(response)
                 self?.scrollToLastMessage()
-            case .failure(let error):
+            case let .failure(error):
                 print(error)
             }
         }
         
-        self.text = ""
+        text = ""
     }
     
     func scrollToLastMessage() {
@@ -91,16 +103,29 @@ public class ChatChannelViewModel: ObservableObject {
     }
     
     func save(lastDate: Date) {
-        self.currentDate = lastDate
+        currentDate = lastDate
         timer?.invalidate()
         timer = Timer.scheduledTimer(
             withTimeInterval: 0.5,
             repeats: false,
-            block: { [weak self] timer in
-            self?.currentDate = nil
-        })
+            block: { [weak self] _ in
+                self?.currentDate = nil
+            }
+        )
     }
     
+    // MARK: - private
+    
+    private func subscribeToTypingChanges() {
+        channel.controller.typingUsersPublisher.sink { users in
+            self.typingUsers = users.filter { user in
+                user.id != self.channel.controller.client.currentUserId
+            }.map { user in
+                user.name ?? ""
+            }
+        }
+        .store(in: &cancellables)
+    }
 }
 
 extension ChatMessage: Identifiable {}
