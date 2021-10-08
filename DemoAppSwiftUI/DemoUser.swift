@@ -5,6 +5,8 @@
 import Foundation
 
 public let apiKeyString = "8br4watad788"
+public let applicationGroupIdentifier = "group.io.getstream.iOS.ChatDemoApp"
+public let currentUserIdRegisteredForPush = "currentUserIdRegisteredForPush"
 
 public struct UserCredentials {
     let id: String

@@ -526,6 +526,8 @@
 		842E96CC270710E9009A4296 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 842E96CB270710E9009A4296 /* NukeUI */; };
 		8433B3F0270DA6DC00A37C44 /* DependencyInjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8433B3EF270DA6DC00A37C44 /* DependencyInjection.swift */; };
 		8433B3F2270DAA4700A37C44 /* StreamChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8433B3F1270DAA4700A37C44 /* StreamChat.swift */; };
+		8433B3F62710443700A37C44 /* NotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8433B3F52710443600A37C44 /* NotificationHandler.swift */; };
+		8433B3F8271052B300A37C44 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8433B3F7271052B300A37C44 /* SceneDelegate.swift */; };
 		8437186D270C329E00BE76DC /* CustomNoContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8437186C270C329E00BE76DC /* CustomNoContentView.swift */; };
 		84371870270C33E600BE76DC /* ChatChannelHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */; };
 		84371874270C5FC700BE76DC /* ChatChannelAnyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84371872270C5FC700BE76DC /* ChatChannelAnyViewModel.swift */; };
@@ -2008,6 +2010,9 @@
 		840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomEventRequestBody.swift; sourceTree = "<group>"; };
 		8433B3EF270DA6DC00A37C44 /* DependencyInjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyInjection.swift; sourceTree = "<group>"; };
 		8433B3F1270DAA4700A37C44 /* StreamChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChat.swift; sourceTree = "<group>"; };
+		8433B3F52710443600A37C44 /* NotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHandler.swift; sourceTree = "<group>"; };
+		8433B3F7271052B300A37C44 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		8433B3F927105C3500A37C44 /* DemoAppSwiftUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DemoAppSwiftUI.entitlements; sourceTree = "<group>"; };
 		8437186C270C329E00BE76DC /* CustomNoContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNoContentView.swift; sourceTree = "<group>"; };
 		8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatChannelHelpers.swift; sourceTree = "<group>"; };
 		84371872270C5FC700BE76DC /* ChatChannelAnyViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatChannelAnyViewModel.swift; sourceTree = "<group>"; };
@@ -4344,13 +4349,16 @@
 		84A5FA582704609C002EAF9D /* DemoAppSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				8433B3F927105C3500A37C44 /* DemoAppSwiftUI.entitlements */,
 				84A5FA6F27046225002EAF9D /* Info-SwiftUI.plist */,
 				84A5FA592704609C002EAF9D /* DemoAppSwiftUIApp.swift */,
 				84A1D24C2704680A00A8DB48 /* DemoUser.swift */,
 				84A1D24E27046B1000A8DB48 /* AppDelegate.swift */,
+				8433B3F7271052B300A37C44 /* SceneDelegate.swift */,
 				84A5FA5D2704609D002EAF9D /* Assets.xcassets */,
 				84A5FA5F2704609D002EAF9D /* Preview Content */,
 				8437186C270C329E00BE76DC /* CustomNoContentView.swift */,
+				8433B3F52710443600A37C44 /* NotificationHandler.swift */,
 			);
 			path = DemoAppSwiftUI;
 			sourceTree = "<group>";
@@ -7318,8 +7326,10 @@
 			files = (
 				84A1D24F27046B1000A8DB48 /* AppDelegate.swift in Sources */,
 				84A1D24D2704680A00A8DB48 /* DemoUser.swift in Sources */,
+				8433B3F62710443700A37C44 /* NotificationHandler.swift in Sources */,
 				8437186D270C329E00BE76DC /* CustomNoContentView.swift in Sources */,
 				84A5FA5A2704609C002EAF9D /* DemoAppSwiftUIApp.swift in Sources */,
+				8433B3F8271052B300A37C44 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8611,6 +8621,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = DemoAppSwiftUI/DemoAppSwiftUI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DemoAppSwiftUI/Preview Content\"";
@@ -8645,6 +8656,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = DemoAppSwiftUI/DemoAppSwiftUI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DemoAppSwiftUI/Preview Content\"";
@@ -8677,6 +8689,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = DemoAppSwiftUI/DemoAppSwiftUI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DemoAppSwiftUI/Preview Content\"";

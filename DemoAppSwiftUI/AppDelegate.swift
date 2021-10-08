@@ -10,6 +10,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     
     var streamChat: StreamChat?
     
+    var chatClient: ChatClient = {
+        var config = ChatClientConfig(apiKey: .init(apiKeyString))
+        config.isLocalStorageEnabled = true
+
+        let client = ChatClient(config: config)
+        return client
+    }()
+    
+    // Change theme
+    var chatTheme: ChatTheme = {
+        let colors = StreamColors(appBackground: .gray.opacity(0.1))
+        let chatTheme = ChatTheme(colors: colors)
+        return chatTheme
+    }()
+    
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         connectUser(withCredentials: UserCredentials.mock)
@@ -24,18 +39,36 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         return sceneConfig
     }
     
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        guard let currentUserId = chatClient.currentUserId else {
+            log.warning("cannot add the device without connecting as user first, did you call connectUser")
+            return
+        }
+
+        chatClient.currentUserController().addDevice(token: deviceToken) { error in
+            if let error = error {
+                log.error("adding a device failed with an error \(error)")
+                return
+            }
+            UserDefaults(suiteName: applicationGroupIdentifier)?.set(
+                currentUserId,
+                forKey: currentUserIdRegisteredForPush
+            )
+        }
+    }
+    
     private func connectUser(withCredentials credentials: UserCredentials) {
         let token = try! Token(rawValue: credentials.token)
         LogConfig.level = .warning
-        var config = ChatClientConfig(apiKey: .init(apiKeyString))
-        config.isLocalStorageEnabled = true
-
-        let client = ChatClient(config: config)
-        streamChat = StreamChat(chatClient: client)
         
-        client.connectUser(
-            userInfo: .init(id: credentials.id, name: credentials.name, imageURL: credentials.avatarURL),
-            token: token
+        streamChat = StreamChat(chatClient: chatClient)
+        
+        chatClient.connectUser(
+                userInfo: .init(id: credentials.id, name: credentials.name, imageURL: credentials.avatarURL),
+                token: token
         ) { error in
             if let error = error {
                 log.error("connecting the user failed \(error)")
@@ -44,13 +77,4 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         }
     }
     
-    // Change theme
-    var chatTheme: ChatTheme = {
-        let colors = StreamColors(appBackground: .gray.opacity(0.1))
-        let chatTheme = ChatTheme(colors: colors)
-        return chatTheme
-    }()
-    
 }
-
-class SceneDelegate: NSObject, UIWindowSceneDelegate {}

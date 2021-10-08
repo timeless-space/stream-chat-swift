@@ -15,7 +15,13 @@ public class ChannelListViewModel: ObservableObject {
     
     @Published var selectedChannel: ChatChannel?
     
-    public init() {}
+    @Published var deeplinkChannel: ChatChannel?
+    
+    private var selectedChannelId: String?
+    
+    public init(selectedChannelId: String? = nil) {
+        self.selectedChannelId = selectedChannelId
+    }
     
     func loadChannels() {
         controller = chatClient.channelListController(
@@ -33,6 +39,7 @@ public class ChannelListViewModel: ObservableObject {
             } else {
                 // access channels
                 self.channels = controller.channels
+                self.checkForDeeplinks()
             }
         }
     }
@@ -52,6 +59,17 @@ public class ChannelListViewModel: ObservableObject {
     
     public func open(channel: ChatChannel) {
         selectedChannel = channel
+    }
+    
+    // MARK: - private
+    
+    private func checkForDeeplinks() {
+        if let selectedChannelId = selectedChannelId,
+           let channelId = try? ChannelId(cid: selectedChannelId) {
+            let chatController = chatClient.channelController(for: channelId, messageOrdering: .topToBottom)
+            deeplinkChannel = chatController.channel
+            self.selectedChannelId = nil
+        }
     }
 }
 

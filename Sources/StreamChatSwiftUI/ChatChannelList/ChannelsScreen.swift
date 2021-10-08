@@ -6,9 +6,12 @@ import StreamChat
 import SwiftUI
 
 public struct ChannelsScreen: View {
-    @StateObject private var channelListViewModel: ChannelListViewModel = ChannelListViewModel()
+    @StateObject private var channelListViewModel: ChannelListViewModel
     
-    public init() {}
+    public init(selectedChannelId: String? = nil) {
+        let viewModel = ChannelListViewModel(selectedChannelId: selectedChannelId)
+        _channelListViewModel = StateObject(wrappedValue: viewModel)
+    }
         
     public var body: some View {
         ChannelListView(viewModel: channelListViewModel)
