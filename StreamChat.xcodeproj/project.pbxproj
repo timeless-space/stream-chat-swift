@@ -581,6 +581,7 @@
 		84A5FA6827046130002EAF9D /* StreamChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 799C941B247D2F80001F1104 /* StreamChat.framework */; };
 		84A5FA6927046130002EAF9D /* StreamChat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 799C941B247D2F80001F1104 /* StreamChat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		84A5FA7027046225002EAF9D /* Info-SwiftUI.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84A5FA6F27046225002EAF9D /* Info-SwiftUI.plist */; };
+		84A7792F271186D50066C3F4 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A7792E271186D50066C3F4 /* MessageView.swift */; };
 		84ABB015269F0A84003A4585 /* EventsController+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABB014269F0A84003A4585 /* EventsController+Combine.swift */; };
 		84CC56EC267B3F6B00DF2784 /* AnyAttachmentPayload_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CC56EA267B3D5900DF2784 /* AnyAttachmentPayload_Tests.swift */; };
 		84DA54DF2680C66A003A26CD /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DA54DE2680C66A003A26CD /* PlayerView.swift */; };
@@ -2065,6 +2066,7 @@
 		84A5FA5D2704609D002EAF9D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		84A5FA602704609D002EAF9D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		84A5FA6F27046225002EAF9D /* Info-SwiftUI.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-SwiftUI.plist"; sourceTree = "<group>"; };
+		84A7792E271186D50066C3F4 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
 		84ABB014269F0A84003A4585 /* EventsController+Combine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EventsController+Combine.swift"; sourceTree = "<group>"; };
 		84CC56EA267B3D5900DF2784 /* AnyAttachmentPayload_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyAttachmentPayload_Tests.swift; sourceTree = "<group>"; };
 		84DA54DE2680C66A003A26CD /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
@@ -4255,6 +4257,7 @@
 				84371873270C5FC700BE76DC /* ChatChannelAnyView.swift */,
 				84371872270C5FC700BE76DC /* ChatChannelAnyViewModel.swift */,
 				84371876270C602900BE76DC /* MessageListAnyView.swift */,
+				84E4179A270A3C04003ABCE4 /* MessageComponents.swift */,
 			);
 			path = typeErased;
 			sourceTree = "<group>";
@@ -4332,7 +4335,7 @@
 				84A1D2912704858400A8DB48 /* ChatChannelView.swift */,
 				84A1D293270485BF00A8DB48 /* ChatChannelViewModel.swift */,
 				84E417A0270A3EEC003ABCE4 /* MessageListView.swift */,
-				84E4179A270A3C04003ABCE4 /* MessageComponents.swift */,
+				84A7792E271186D50066C3F4 /* MessageView.swift */,
 				8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */,
 			);
 			path = ChatChannel;
@@ -7294,6 +7297,7 @@
 				84E4179B270A3C04003ABCE4 /* MessageComponents.swift in Sources */,
 				84371879270C921E00BE76DC /* ChannelsScreen.swift in Sources */,
 				84A1D294270485BF00A8DB48 /* ChatChannelViewModel.swift in Sources */,
+				84A7792F271186D50066C3F4 /* MessageView.swift in Sources */,
 				84371875270C5FC700BE76DC /* ChatChannelAnyView.swift in Sources */,
 				84A1D28227047BFB00A8DB48 /* ChatChannelNamer.swift in Sources */,
 				84E417A4270B12E7003ABCE4 /* ComponentsEnvironment.swift in Sources */,
@@ -8001,7 +8005,7 @@
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.ChatDemoApp;
 				PRODUCT_NAME = ChatSample;
-				PROVISIONING_PROFILE_SPECIFIER = "match Development io.getstream.iOS.ChatDemoApp";
+				PROVISIONING_PROFILE_SPECIFIER = "match Development io.getstream.iOS.ChatDemoApp 1632841516";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -8056,7 +8060,7 @@
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.ChatDemoApp;
 				PRODUCT_NAME = ChatSample;
-				PROVISIONING_PROFILE_SPECIFIER = "match Development io.getstream.iOS.ChatDemoApp";
+				PROVISIONING_PROFILE_SPECIFIER = "match Development io.getstream.iOS.ChatDemoApp 1632841516";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -8625,7 +8629,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DemoAppSwiftUI/Preview Content\"";
-				DEVELOPMENT_TEAM = UAM22JDBB2;
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "DemoAppSwiftUI/Info-SwiftUI.plist";

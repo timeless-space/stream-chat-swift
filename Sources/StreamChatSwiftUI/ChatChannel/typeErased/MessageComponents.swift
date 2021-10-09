@@ -6,7 +6,6 @@ import Foundation
 import SwiftUI
 
 public struct InjectableView<Default>: View where Default: View {
-    
     var injectedView: AnyView?
     var defaultView: Default
     
@@ -18,22 +17,20 @@ public struct InjectableView<Default>: View where Default: View {
             defaultView
         }
     }
-    
 }
 
 public struct InjectableNoContentView: View {
-    
     var injectedView: AnyView?
     
     public var body: some View {
-        InjectableView(injectedView: injectedView,
-                       defaultView: NoContentView())
+        InjectableView(
+            injectedView: injectedView,
+            defaultView: NoContentView()
+        )
     }
-    
 }
 
 public class MessageComponents {
-    
     public init() {}
         
     public var noContentView = InjectableNoContentView()
@@ -41,5 +38,4 @@ public class MessageComponents {
     public func inject(noContentView injected: AnyView) {
         noContentView = InjectableNoContentView(injectedView: injected)
     }
-    
 }

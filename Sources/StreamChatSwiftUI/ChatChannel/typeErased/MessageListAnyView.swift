@@ -5,7 +5,6 @@
 import SwiftUI
 
 struct MessageListAnyView: View, KeyboardReadable {
-    
     @StateObject var viewModel: ChatChannelAnyViewModel
     
     @State var width: CGFloat?
@@ -28,15 +27,17 @@ struct MessageListAnyView: View, KeyboardReadable {
                     
                     LazyVStack {
                         ForEach(viewModel.channel.messages.indices, id: \.self) { index in
-                            MessageView(message: viewModel.channel.messages[index],
-                                        spacerWidth: (self.width ?? 0) / 4)
-                                .padding()
-                                .flippedUpsideDown()
-                                .onAppear {
-                                    viewModel.checkForNewMessages(index: index)
-                                    viewModel.save(lastDate: viewModel.channel.messages[index].createdAt)
-                                }
-                                .id(viewModel.channel.messages[index].id)
+                            MessageView(
+                                message: viewModel.channel.messages[index],
+                                width: self.width
+                            )
+                            .padding()
+                            .flippedUpsideDown()
+                            .onAppear {
+                                viewModel.checkForNewMessages(index: index)
+                                viewModel.save(lastDate: viewModel.channel.messages[index].createdAt)
+                            }
+                            .id(viewModel.channel.messages[index].id)
                         }
                     }
                 }
@@ -98,7 +99,6 @@ struct MessageListAnyView: View, KeyboardReadable {
                     Spacer()
                 }
             }
-            
         }
         .onAppear {
             viewModel.subscribeToChannelChanges()
