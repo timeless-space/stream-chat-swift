@@ -521,6 +521,7 @@
 		80C6027B25157E4D00A6B714 /* View+AlertTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C6027A25157E4D00A6B714 /* View+AlertTextField.swift */; };
 		80D880432546553500908B7B /* ChatScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D880422546553500908B7B /* ChatScrollView.swift */; };
 		840B4FCF26A9E53100D5EFAB /* CustomEventRequestBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */; };
+		842565E727145A5B00299172 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842565E627145A5B00299172 /* LazyView.swift */; };
 		842E96C7270710BD009A4296 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 842E96C6270710BD009A4296 /* Nuke */; };
 		842E96CA270710DF009A4296 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 842E96C9270710DF009A4296 /* NukeUI */; };
 		842E96CC270710E9009A4296 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 842E96CB270710E9009A4296 /* NukeUI */; };
@@ -2009,6 +2010,7 @@
 		80C6027A25157E4D00A6B714 /* View+AlertTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+AlertTextField.swift"; sourceTree = "<group>"; };
 		80D880422546553500908B7B /* ChatScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatScrollView.swift; sourceTree = "<group>"; };
 		840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomEventRequestBody.swift; sourceTree = "<group>"; };
+		842565E627145A5B00299172 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		8433B3EF270DA6DC00A37C44 /* DependencyInjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyInjection.swift; sourceTree = "<group>"; };
 		8433B3F1270DAA4700A37C44 /* StreamChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChat.swift; sourceTree = "<group>"; };
 		8433B3F52710443600A37C44 /* NotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHandler.swift; sourceTree = "<group>"; };
@@ -4389,6 +4391,7 @@
 			children = (
 				84E4179827072A5E003ABCE4 /* KeyboardHandling.swift */,
 				84E4179E270A3CC0003ABCE4 /* NoContentView.swift */,
+				842565E627145A5B00299172 /* LazyView.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -7293,6 +7296,7 @@
 			files = (
 				84A1D25D2704794400A8DB48 /* StreamChatSwiftUI.docc in Sources */,
 				84A1D28E270482C700A8DB48 /* ChannelListView.swift in Sources */,
+				842565E727145A5B00299172 /* LazyView.swift in Sources */,
 				8433B3F0270DA6DC00A37C44 /* DependencyInjection.swift in Sources */,
 				84E4179B270A3C04003ABCE4 /* MessageComponents.swift in Sources */,
 				84371879270C921E00BE76DC /* ChannelsScreen.swift in Sources */,

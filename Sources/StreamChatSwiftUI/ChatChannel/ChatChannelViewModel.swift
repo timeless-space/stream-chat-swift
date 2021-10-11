@@ -51,10 +51,11 @@ public class ChatChannelViewModel: ObservableObject {
             
     public init(channelController: ChatChannelController) {
         self.channelController = channelController.observableObject
-        self.channelController.controller.synchronize()
     }
     
     func subscribeToChannelChanges() {
+        channelController.controller.synchronize()
+        
         channelController.objectWillChange.sink { [weak self] in
             guard let self = self else { return }
             if !self.showScrollToLatestButton {

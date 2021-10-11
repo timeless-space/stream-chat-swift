@@ -93,7 +93,7 @@ public struct ChannelList<ChannelDestination: View>: View {
                     .foregroundColor(.black)
                                             
                     NavigationLink(tag: channel, selection: $selectedChannel) {
-                        channelDestination(channel)
+                        LazyView(channelDestination(channel))
                     } label: {
                         EmptyView()
                     }
