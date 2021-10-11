@@ -32,6 +32,8 @@ public class ChannelListViewModel: ObservableObject {
             )
         )
         
+        channels = controller.channels
+        
         controller.synchronize { [unowned self] error in
             if let error = error {
                 // handle error

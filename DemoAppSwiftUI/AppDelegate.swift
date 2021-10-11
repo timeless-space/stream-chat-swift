@@ -13,6 +13,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     var chatClient: ChatClient = {
         var config = ChatClientConfig(apiKey: .init(apiKeyString))
         config.isLocalStorageEnabled = true
+        config.applicationGroupIdentifier = applicationGroupIdentifier
 
         let client = ChatClient(config: config)
         return client
