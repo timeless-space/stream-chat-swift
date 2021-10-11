@@ -26,6 +26,7 @@ public struct VideoAttachmentView: View {
     let width: CGFloat
     
     @State var previewImage: UIImage?
+    @State var error: Error?
                 
     public var body: some View {
         ZStack {
@@ -33,16 +34,21 @@ public struct VideoAttachmentView: View {
                 Image(uiImage: previewImage)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
+                
+                Button {
+                    // TODO: implement video tap
+                } label: {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 30))
+                        .foregroundColor(.white)
+                }
+            } else if error != nil {
+                Color(.secondarySystemBackground)
             } else {
-                Color.gray
-            }
-            
-            Button {
-                // TODO: implement video tap
-            } label: {
-                Image(systemName: "play.fill")
-                    .font(.system(size: 30))
-                    .foregroundColor(.white)
+                ZStack {
+                    Color(.secondarySystemBackground)
+                    ProgressView()
+                }
             }
         }
         .frame(width: width)
@@ -53,8 +59,8 @@ public struct VideoAttachmentView: View {
                 switch result {
                 case let .success(image):
                     self.previewImage = image
-                case .failure:
-                    self.previewImage = nil
+                case let .failure(error):
+                    self.error = error
                 }
             }
         }

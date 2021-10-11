@@ -125,9 +125,7 @@ struct SingleImageView: View {
     let width: CGFloat
     
     var body: some View {
-        LazyImage(source: source)
-            .processors([ImageProcessors.Resize(width: width)])
-            .priority(.high)
+        LazyLoadingImage(source: source, width: width)
             .aspectRatio(contentMode: .fit)
     }
 }
@@ -137,9 +135,29 @@ struct MultiImageView: View {
     let width: CGFloat
     
     var body: some View {
-        LazyImage(source: source)
-            .processors([ImageProcessors.Resize(width: width)])
-            .priority(.high)
+        LazyLoadingImage(source: source, width: width)
             .frame(width: width)
+    }
+}
+
+struct LazyLoadingImage: View {
+    let source: URL
+    let width: CGFloat
+    
+    var body: some View {
+        LazyImage(source: source) { state in
+            if let imageContainer = state.imageContainer {
+                Image(imageContainer)
+            } else if state.error != nil {
+                Color(.secondarySystemBackground)
+            } else {
+                ZStack {
+                    Color(.secondarySystemBackground)
+                    ProgressView()
+                }
+            }
+        }
+        .processors([ImageProcessors.Resize(width: width)])
+        .priority(.high)
     }
 }
