@@ -8,6 +8,8 @@ public class StreamChat {
     var chatClient: ChatClient
     var theme: ChatTheme
     
+    var videoPreviewLoader: VideoPreviewLoader = DefaultVideoPreviewLoader()
+    
     public init(
         chatClient: ChatClient,
         theme: ChatTheme = ChatTheme()
@@ -32,24 +34,6 @@ extension InjectedValues {
         }
         set {
             Self[StreamChatProviderKey.self] = newValue
-        }
-    }
-    
-    var chatClient: ChatClient {
-        get {
-            streamChat.chatClient
-        }
-        set {
-            streamChat.chatClient = newValue
-        }
-    }
-    
-    var streamColors: StreamColors {
-        get {
-            streamChat.theme.colors
-        }
-        set {
-            streamChat.theme.colors = newValue
         }
     }
 }
