@@ -32,4 +32,13 @@ extension InjectedValues {
             streamChat.videoPreviewLoader = newValue
         }
     }
+    
+    var images: ChatTheme.Images {
+        get {
+            streamChat.theme.images
+        }
+        set {
+            streamChat.theme.images = newValue
+        }
+    }
 }

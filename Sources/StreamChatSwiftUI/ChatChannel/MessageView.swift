@@ -17,37 +17,17 @@ struct MessageView: View {
             if message.isSentByCurrentUser {
                 MessageSpacer(spacerWidth: spacerWidth)
             } else {
-                if let url = message.author.imageURL?.absoluteString {
-                    LazyImage(source: url)
-                        .clipShape(Circle())
-                        .frame(width: 40, height: 40)
-                } else {
-                    Image(systemName: "person.circle")
-                        .resizable()
-                        .frame(width: 40, height: 40)
-                }
+                UserAvatar(message: message)
             }
             
-            // TODO: temporary logic
-            if !message.imageAttachments.isEmpty {
-                ImageAttachmentContainer(message: message, sources: message.imageAttachments.map { attachment in
-                    attachment.imagePreviewURL
-                }, width: contentWidth)
-            } else if !message.giphyAttachments.isEmpty {
-                ImageAttachmentContainer(message: message, sources: message.giphyAttachments.map { attachment in
-                    attachment.previewURL
-                }, width: contentWidth)
-            } else if !message.videoAttachments.isEmpty {
-                VideoAttachmentsContainer(message: message, width: contentWidth)
-            } else {
-                Text(message.text)
-                    .padding()
-                    .background(
-                        message.isSentByCurrentUser ?
-                            Color.secondary.opacity(0.7) : Color.secondary.opacity(0.3)
-                    )
-                    .cornerRadius(24)
-            }
+            MessageAttachmentView(
+                message: message,
+                contentWidth: contentWidth
+            )
+            .overlay(
+                !message.reactionScores.isEmpty ?
+                    ReactionsContainer(message: message) : nil
+            )
             
             if !message.isSentByCurrentUser {
                 MessageSpacer(spacerWidth: spacerWidth)

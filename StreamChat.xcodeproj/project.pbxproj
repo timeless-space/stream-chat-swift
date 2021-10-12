@@ -521,6 +521,13 @@
 		80C6027B25157E4D00A6B714 /* View+AlertTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C6027A25157E4D00A6B714 /* View+AlertTextField.swift */; };
 		80D880432546553500908B7B /* ChatScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D880422546553500908B7B /* ChatScrollView.swift */; };
 		840B4FCF26A9E53100D5EFAB /* CustomEventRequestBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */; };
+		842422402715A936003730E1 /* UserAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424223F2715A936003730E1 /* UserAvatar.swift */; };
+		842422422715A9CA003730E1 /* MessageAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842422412715A9CA003730E1 /* MessageAttachmentView.swift */; };
+		842422442715AF2B003730E1 /* MessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842422432715AF2B003730E1 /* MessageViewModel.swift */; };
+		842422462715B7DA003730E1 /* ReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842422452715B7DA003730E1 /* ReactionsView.swift */; };
+		8424224827161E0F003730E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8424224727161E0F003730E1 /* Assets.xcassets */; };
+		8424224A27161FE5003730E1 /* Images.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424224927161FE5003730E1 /* Images.swift */; };
+		8424224C271620B9003730E1 /* ChatMessageReactionAppeareance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424224B271620B9003730E1 /* ChatMessageReactionAppeareance.swift */; };
 		842565E727145A5B00299172 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842565E627145A5B00299172 /* LazyView.swift */; };
 		842565E9271466AC00299172 /* ImageAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842565E8271466AC00299172 /* ImageAttachmentView.swift */; };
 		842565EB2714672400299172 /* VideoAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842565EA2714672400299172 /* VideoAttachmentView.swift */; };
@@ -2015,6 +2022,13 @@
 		80C6027A25157E4D00A6B714 /* View+AlertTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+AlertTextField.swift"; sourceTree = "<group>"; };
 		80D880422546553500908B7B /* ChatScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatScrollView.swift; sourceTree = "<group>"; };
 		840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomEventRequestBody.swift; sourceTree = "<group>"; };
+		8424223F2715A936003730E1 /* UserAvatar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAvatar.swift; sourceTree = "<group>"; };
+		842422412715A9CA003730E1 /* MessageAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttachmentView.swift; sourceTree = "<group>"; };
+		842422432715AF2B003730E1 /* MessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewModel.swift; sourceTree = "<group>"; };
+		842422452715B7DA003730E1 /* ReactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionsView.swift; sourceTree = "<group>"; };
+		8424224727161E0F003730E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8424224927161FE5003730E1 /* Images.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Images.swift; sourceTree = "<group>"; };
+		8424224B271620B9003730E1 /* ChatMessageReactionAppeareance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageReactionAppeareance.swift; sourceTree = "<group>"; };
 		842565E627145A5B00299172 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		842565E8271466AC00299172 /* ImageAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAttachmentView.swift; sourceTree = "<group>"; };
 		842565EA2714672400299172 /* VideoAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAttachmentView.swift; sourceTree = "<group>"; };
@@ -4268,6 +4282,7 @@
 				84A1D28127047BFB00A8DB48 /* ChatChannelNamer.swift */,
 				842565ED271479C800299172 /* VideoPreviewLoader.swift */,
 				842565EF27147A1100299172 /* Cache.swift */,
+				8424224B271620B9003730E1 /* ChatMessageReactionAppeareance.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -4357,9 +4372,13 @@
 				84A1D293270485BF00A8DB48 /* ChatChannelViewModel.swift */,
 				84E417A0270A3EEC003ABCE4 /* MessageListView.swift */,
 				84A7792E271186D50066C3F4 /* MessageView.swift */,
-				8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */,
+				842422432715AF2B003730E1 /* MessageViewModel.swift */,
+				842422412715A9CA003730E1 /* MessageAttachmentView.swift */,
+				842422452715B7DA003730E1 /* ReactionsView.swift */,
 				842565E8271466AC00299172 /* ImageAttachmentView.swift */,
 				842565EA2714672400299172 /* VideoAttachmentView.swift */,
+				8424223F2715A936003730E1 /* UserAvatar.swift */,
+				8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */,
 			);
 			path = ChatChannel;
 			sourceTree = "<group>";
@@ -4367,6 +4386,7 @@
 		84A1D2952704876B00A8DB48 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8424224727161E0F003730E1 /* Assets.xcassets */,
 				84A1D2962704878500A8DB48 /* Localizable.strings */,
 			);
 			path = Resources;
@@ -4426,6 +4446,7 @@
 				8437187C270C968E00BE76DC /* StreamColors.swift */,
 				8433B3EF270DA6DC00A37C44 /* DependencyInjection.swift */,
 				842565F127147AE100299172 /* InjectedValuesExtensions.swift */,
+				8424224927161FE5003730E1 /* Images.swift */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -6244,6 +6265,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8424224827161E0F003730E1 /* Assets.xcassets in Resources */,
 				84A1D2972704878500A8DB48 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7326,20 +7348,26 @@
 				84371879270C921E00BE76DC /* ChannelsScreen.swift in Sources */,
 				84A1D294270485BF00A8DB48 /* ChatChannelViewModel.swift in Sources */,
 				84A7792F271186D50066C3F4 /* MessageView.swift in Sources */,
+				842422442715AF2B003730E1 /* MessageViewModel.swift in Sources */,
 				842565EE271479C800299172 /* VideoPreviewLoader.swift in Sources */,
 				842565F027147A1100299172 /* Cache.swift in Sources */,
+				842422422715A9CA003730E1 /* MessageAttachmentView.swift in Sources */,
 				84371875270C5FC700BE76DC /* ChatChannelAnyView.swift in Sources */,
 				84A1D28227047BFB00A8DB48 /* ChatChannelNamer.swift in Sources */,
 				84E417A4270B12E7003ABCE4 /* ComponentsEnvironment.swift in Sources */,
 				8433B3F2270DAA4700A37C44 /* StreamChat.swift in Sources */,
+				842422462715B7DA003730E1 /* ReactionsView.swift in Sources */,
 				84371877270C602900BE76DC /* MessageListAnyView.swift in Sources */,
 				8437187B270C961B00BE76DC /* ChatTheme.swift in Sources */,
 				8437187D270C968E00BE76DC /* StreamColors.swift in Sources */,
 				84A1D28427047CBD00A8DB48 /* L10n.swift in Sources */,
+				842422402715A936003730E1 /* UserAvatar.swift in Sources */,
 				84A1D2922704858400A8DB48 /* ChatChannelView.swift in Sources */,
 				84E417A1270A3EEC003ABCE4 /* MessageListView.swift in Sources */,
+				8424224A27161FE5003730E1 /* Images.swift in Sources */,
 				84E4179F270A3CC0003ABCE4 /* NoContentView.swift in Sources */,
 				842565E9271466AC00299172 /* ImageAttachmentView.swift in Sources */,
+				8424224C271620B9003730E1 /* ChatMessageReactionAppeareance.swift in Sources */,
 				842565F227147AE100299172 /* InjectedValuesExtensions.swift in Sources */,
 				84A1D28F270482C700A8DB48 /* ChannelListViewModel.swift in Sources */,
 				84371874270C5FC700BE76DC /* ChatChannelAnyViewModel.swift in Sources */,
