@@ -16,6 +16,7 @@ struct ReactionsContainer: View {
                 }
                 
                 ReactionsView(message: message)
+                    .id(reactionScoresId)
                 
                 if message.isSentByCurrentUser {
                     Spacer()
@@ -25,6 +26,18 @@ struct ReactionsContainer: View {
             Spacer()
         }
         .offset(x: message.isSentByCurrentUser ? -16 : 16, y: -16)
+    }
+    
+    var reactionsId: String {
+        "\(message.id)-\(reactionScoresId)"
+    }
+    
+    var reactionScoresId: String {
+        var output = ""
+        for (key, score) in message.reactionScores {
+            output += "\(key)\(score)"
+        }
+        return output
     }
 }
 

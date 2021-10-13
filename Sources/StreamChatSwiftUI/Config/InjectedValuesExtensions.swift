@@ -33,7 +33,7 @@ extension InjectedValues {
         }
     }
     
-    var images: ChatTheme.Images {
+    var images: Images {
         get {
             streamChat.theme.images
         }

@@ -29,7 +29,8 @@ struct MessageListAnyView: View, KeyboardReadable {
                         ForEach(viewModel.channel.messages.indices, id: \.self) { index in
                             MessageView(
                                 message: viewModel.channel.messages[index],
-                                width: self.width
+                                width: self.width,
+                                onDoubleTap: {}
                             )
                             .padding()
                             .flippedUpsideDown()

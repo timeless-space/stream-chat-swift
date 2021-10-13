@@ -6,7 +6,7 @@ import Combine
 import StreamChat
 import SwiftUI
 
-public class ChatChannelViewModel: ObservableObject {
+public class ChatChannelViewModel: ObservableObject, ChatChannelControllerDelegate {
     private var cancellables = Set<AnyCancellable>()
     
     private var timer: Timer?
@@ -31,14 +31,16 @@ public class ChatChannelViewModel: ObservableObject {
     
     @Atomic private var loadingPreviousMessages: Bool = false
     
-    @ObservedObject var channelController: ChatChannelController.ObservableObject
+    @Injected(\.chatClient) var chatClient
+    
+    private var channelController: ChatChannelController
     
     @Published var scrolledId: String?
     
     @Published var text = "" {
         didSet {
             if text != "" {
-                channelController.controller.sendKeystrokeEvent()
+                channelController.sendKeystrokeEvent()
             }
         }
     }
@@ -48,22 +50,23 @@ public class ChatChannelViewModel: ObservableObject {
     @Published var currentDateString: String?
     
     @Published var typingUsers = [String]()
+    
+    @Published var messages = LazyCachedMapCollection<ChatMessage>()
             
     public init(channelController: ChatChannelController) {
-        self.channelController = channelController.observableObject
+        self.channelController = channelController
+        self.channelController.delegate = self
+        self.channelController.synchronize()
+        messages = channelController.messages
     }
     
     func subscribeToChannelChanges() {
-        channelController.controller.synchronize()
-        
-        channelController.objectWillChange.sink { [weak self] in
+        channelController.messagesChangesPublisher.sink { [weak self] _ in
             guard let self = self else { return }
-            if !self.showScrollToLatestButton {
-                self.scrollToLastMessage()
-            }
+            self.messages = self.channelController.messages
         }
         .store(in: &cancellables)
-        
+
         if let typingEvents = channelController.channel?.config.typingEventsEnabled,
            typingEvents == true {
             subscribeToTypingChanges()
@@ -71,7 +74,7 @@ public class ChatChannelViewModel: ObservableObject {
     }
        
     func sendMessage() {
-        channelController.controller.createNewMessage(text: text) { [weak self] in
+        channelController.createNewMessage(text: text) { [weak self] in
             switch $0 {
             case let .success(response):
                 print(response)
@@ -85,8 +88,8 @@ public class ChatChannelViewModel: ObservableObject {
     }
     
     func scrollToLastMessage() {
-        if scrolledId != channelController.messages.first?.id {
-            scrolledId = channelController.messages.first?.id
+        if scrolledId != messages.first?.id {
+            scrolledId = messages.first?.id
         }
     }
     
@@ -96,7 +99,7 @@ public class ChatChannelViewModel: ObservableObject {
         }
 
         if _loadingPreviousMessages.compareAndSwap(old: false, new: true) {
-            channelController.controller.loadPreviousMessages(completion: { [weak self] _ in
+            channelController.loadPreviousMessages(completion: { [weak self] _ in
                 guard let self = self else { return }
                 self.loadingPreviousMessages = false
             })
@@ -115,13 +118,42 @@ public class ChatChannelViewModel: ObservableObject {
         )
     }
     
+    public func channelController(
+        _ channelController: ChatChannelController,
+        didUpdateMessages changes: [ListChange<ChatMessage>]
+    ) {
+        messages = channelController.messages
+        if !showScrollToLatestButton {
+            scrollToLastMessage()
+        }
+    }
+    
+    public func channelController(
+        _ channelController: ChatChannelController,
+        didUpdateChannel channel: EntityChange<ChatChannel>
+    ) {
+        messages = channelController.messages
+    }
+    
+    // TODO: temp implementation
+    func addReaction(to message: ChatMessage) {
+        guard let cId = message.cid else { return }
+        
+        let messageController = chatClient.messageController(
+            cid: cId, messageId: message.id
+        )
+        
+        let reaction: MessageReactionType = "love"
+        messageController.addReaction(reaction)
+    }
+    
     // MARK: - private
     
     private func subscribeToTypingChanges() {
-        channelController.controller.typingUsersPublisher.sink { [weak self] users in
+        channelController.typingUsersPublisher.sink { [weak self] users in
             guard let self = self else { return }
             self.typingUsers = users.filter { user in
-                user.id != self.channelController.controller.client.currentUserId
+                user.id != self.channelController.client.currentUserId
             }.map { user in
                 user.name ?? ""
             }

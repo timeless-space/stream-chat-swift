@@ -11,6 +11,7 @@ import SwiftUI
 struct MessageView: View {
     let message: ChatMessage
     var width: CGFloat?
+    var onDoubleTap: () -> Void
     
     var body: some View {
         HStack {
@@ -24,6 +25,9 @@ struct MessageView: View {
                 message: message,
                 contentWidth: contentWidth
             )
+            .onTapGesture(count: 2) {
+                onDoubleTap()
+            }
             .overlay(
                 !message.reactionScores.isEmpty ?
                     ReactionsContainer(message: message) : nil
