@@ -6,11 +6,11 @@ import NukeUI
 import StreamChat
 import SwiftUI
 
-struct UserAvatar: View {
-    var message: ChatMessage
+public struct UserAvatarView: View {
+    var author: ChatUser
     
-    var body: some View {
-        if let url = message.author.imageURL?.absoluteString {
+    public var body: some View {
+        if let url = author.imageURL?.absoluteString {
             LazyImage(source: url)
                 .clipShape(Circle())
                 .frame(width: 40, height: 40)

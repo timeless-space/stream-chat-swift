@@ -6,6 +6,10 @@ import SwiftUI
 
 struct CustomNoContentView: View {
     var body: some View {
-        Image(systemName: "play")
+        VStack {
+            Spacer()
+            Text("Customized no content view")
+            Spacer()
+        }
     }
 }

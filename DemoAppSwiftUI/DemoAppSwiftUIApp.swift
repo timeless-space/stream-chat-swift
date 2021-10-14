@@ -39,7 +39,7 @@ struct DemoAppSwiftUIApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ChannelListView(viewModel: channelListViewModel)
+            ChannelListView(viewModel: channelListViewModel, viewFactory: CustomFactory.shared)
         }
     }
     
@@ -62,6 +62,10 @@ class CustomFactory: ViewFactory {
 
     func makeNoContentView() -> some View {
         CustomNoContentView()
+    }
+    
+    func makeAvatarView(for user: ChatUser) -> some View {
+        CustomUserAvatar(author: user)
     }
     
 }

@@ -4,8 +4,9 @@
 
 import SwiftUI
 
-struct MessageListView: View, KeyboardReadable {
+struct MessageListView<Factory: ViewFactory>: View, KeyboardReadable {
     @StateObject var viewModel: ChatChannelViewModel
+    var factory: Factory
     
     @State var width: CGFloat?
     @State var height: CGFloat?
@@ -28,6 +29,7 @@ struct MessageListView: View, KeyboardReadable {
                     LazyVStack {
                         ForEach(viewModel.messages.indices, id: \.self) { index in
                             MessageView(
+                                factory: factory,
                                 message: viewModel.messages[index],
                                 width: width,
                                 onDoubleTap: {

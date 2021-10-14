@@ -8,7 +8,8 @@ import NukeUI
 import StreamChat
 import SwiftUI
 
-struct MessageView: View {
+struct MessageView<Factory: ViewFactory>: View {
+    var factory: Factory
     let message: ChatMessage
     var width: CGFloat?
     var onDoubleTap: () -> Void
@@ -18,7 +19,7 @@ struct MessageView: View {
             if message.isSentByCurrentUser {
                 MessageSpacer(spacerWidth: spacerWidth)
             } else {
-                UserAvatar(message: message)
+                factory.makeAvatarView(for: message.author)
             }
             
             MessageAttachmentView(

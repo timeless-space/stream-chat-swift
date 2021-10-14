@@ -9,6 +9,8 @@ import SwiftUI
 public struct ChatChannelView<Factory: ViewFactory>: View, KeyboardReadable {
     @StateObject var viewModel: ChatChannelViewModel
     
+    var factory: Factory
+    
     var noContentView: Factory.NoContent
     var loadingContentView: Factory.LoadingContent
     
@@ -19,6 +21,7 @@ public struct ChatChannelView<Factory: ViewFactory>: View, KeyboardReadable {
         viewFactory: Factory
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        factory = viewFactory
         noContentView = viewFactory.makeNoContentView()
         loadingContentView = viewFactory.makeLoadingContentView()
     }
@@ -26,7 +29,10 @@ public struct ChatChannelView<Factory: ViewFactory>: View, KeyboardReadable {
     public var body: some View {
         VStack(spacing: 0) {
             if !viewModel.messages.isEmpty {
-                MessageListView(viewModel: viewModel)
+                MessageListView(
+                    viewModel: viewModel,
+                    factory: factory
+                )
             } else {
                 noContentView
             }

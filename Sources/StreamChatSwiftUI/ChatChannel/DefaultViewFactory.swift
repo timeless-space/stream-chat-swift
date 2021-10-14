@@ -7,9 +7,6 @@ import StreamChat
 import SwiftUI
 
 public protocol ViewFactory: AnyObject {
-    associatedtype Factory: ViewFactory
-    static var shared: Factory { get }
-    
     var chatClient: ChatClient { get }
     
     associatedtype NoContent: View
@@ -20,6 +17,9 @@ public protocol ViewFactory: AnyObject {
     
     associatedtype ChannelDestination: View
     func makeDefaultChannelDestination() -> (ChatChannel) -> ChannelDestination
+    
+    associatedtype UserAvatar: View
+    func makeAvatarView(for user: ChatUser) -> UserAvatar
 }
 
 extension ViewFactory {
@@ -36,6 +36,10 @@ extension ViewFactory {
         { [unowned self] channel in
             ChatChannelView(viewModel: makeViewModel(for: channel), viewFactory: self)
         }
+    }
+    
+    public func makeAvatarView(for user: ChatUser) -> UserAvatarView {
+        UserAvatarView(author: user)
     }
     
     private func makeViewModel(for channel: ChatChannel) -> ChatChannelViewModel {
