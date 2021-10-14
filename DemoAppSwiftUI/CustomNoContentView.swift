@@ -6,10 +6,6 @@ import SwiftUI
 
 struct CustomNoContentView: View {
     var body: some View {
-        VStack {
-            Spacer()
-            Text("This is an injected view")
-            Spacer()
-        }
+        Image(systemName: "play")
     }
 }

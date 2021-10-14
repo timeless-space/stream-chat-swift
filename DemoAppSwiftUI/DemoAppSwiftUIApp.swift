@@ -34,25 +34,34 @@ struct DemoAppSwiftUIApp: App {
     */
 
     // Bound components
-    /*
+    
     @StateObject var channelListViewModel = ChannelListViewModel()
     
     var body: some Scene {
         WindowGroup {
-            ChannelListView(viewModel: channelListViewModel) { chatChannel in
-                ChatChannelView(
-                    viewModel: channelListViewModel.makeViewModel(for: chatChannel),
-                    noContentView: CustomNoContentView()
-                )
-            }
+            ChannelListView(viewModel: channelListViewModel)
         }
     }
-    */
     
-    var body: some Scene {
-        WindowGroup {
-            ChannelsScreen()
-        }
+    
+//    var body: some Scene {
+//        WindowGroup {
+//            ChannelsScreen()
+//        }
+//    }
+    
+}
+
+class CustomFactory: ViewFactory {
+    
+    @Injected(\.chatClient) public var chatClient
+    
+    private init() {}
+    
+    public static let shared = CustomFactory()
+
+    func makeNoContentView() -> some View {
+        CustomNoContentView()
     }
     
 }

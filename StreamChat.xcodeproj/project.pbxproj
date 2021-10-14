@@ -556,6 +556,8 @@
 		843F0BC526775D2D00B342CB /* VideoPreviewLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843F0BC426775D2D00B342CB /* VideoPreviewLoader.swift */; };
 		843F0BC72677640000B342CB /* VideoAttachmentGalleryPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843F0BC62677640000B342CB /* VideoAttachmentGalleryPreview.swift */; };
 		843F0BCD2677667000B342CB /* AttachmentActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843F0BCC2677667000B342CB /* AttachmentActionButton.swift */; };
+		8445BDCF271768F5003097DE /* LoadingContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8445BDCE271768F5003097DE /* LoadingContentView.swift */; };
+		8445BDD127176A1F003097DE /* DefaultViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8445BDD027176A1F003097DE /* DefaultViewFactory.swift */; };
 		847D60292679EDD300FB701D /* GalleryCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847D60282679EDD300FB701D /* GalleryCollectionViewCell.swift */; };
 		847D602B2679EED400FB701D /* VideoAttachmentGalleryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847D602A2679EED400FB701D /* VideoAttachmentGalleryCell.swift */; };
 		847D602D2679EF8A00FB701D /* VideoPlaybackControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847D602C2679EF8A00FB701D /* VideoPlaybackControlView.swift */; };
@@ -2055,6 +2057,8 @@
 		843F0BC426775D2D00B342CB /* VideoPreviewLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPreviewLoader.swift; sourceTree = "<group>"; };
 		843F0BC62677640000B342CB /* VideoAttachmentGalleryPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAttachmentGalleryPreview.swift; sourceTree = "<group>"; };
 		843F0BCC2677667000B342CB /* AttachmentActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentActionButton.swift; sourceTree = "<group>"; };
+		8445BDCE271768F5003097DE /* LoadingContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingContentView.swift; sourceTree = "<group>"; };
+		8445BDD027176A1F003097DE /* DefaultViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultViewFactory.swift; sourceTree = "<group>"; };
 		847D60282679EDD300FB701D /* GalleryCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryCollectionViewCell.swift; sourceTree = "<group>"; };
 		847D602A2679EED400FB701D /* VideoAttachmentGalleryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAttachmentGalleryCell.swift; sourceTree = "<group>"; };
 		847D602C2679EF8A00FB701D /* VideoPlaybackControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlaybackControlView.swift; sourceTree = "<group>"; };
@@ -4379,6 +4383,8 @@
 				842565EA2714672400299172 /* VideoAttachmentView.swift */,
 				8424223F2715A936003730E1 /* UserAvatar.swift */,
 				8437186E270C33AA00BE76DC /* ChatChannelHelpers.swift */,
+				8445BDCE271768F5003097DE /* LoadingContentView.swift */,
+				8445BDD027176A1F003097DE /* DefaultViewFactory.swift */,
 			);
 			path = ChatChannel;
 			sourceTree = "<group>";
@@ -7367,8 +7373,10 @@
 				8424224A27161FE5003730E1 /* Images.swift in Sources */,
 				84E4179F270A3CC0003ABCE4 /* NoContentView.swift in Sources */,
 				842565E9271466AC00299172 /* ImageAttachmentView.swift in Sources */,
+				8445BDCF271768F5003097DE /* LoadingContentView.swift in Sources */,
 				8424224C271620B9003730E1 /* ChatMessageReactionAppeareance.swift in Sources */,
 				842565F227147AE100299172 /* InjectedValuesExtensions.swift in Sources */,
+				8445BDD127176A1F003097DE /* DefaultViewFactory.swift in Sources */,
 				84A1D28F270482C700A8DB48 /* ChannelListViewModel.swift in Sources */,
 				84371874270C5FC700BE76DC /* ChatChannelAnyViewModel.swift in Sources */,
 				84E4179927072A5E003ABCE4 /* KeyboardHandling.swift in Sources */,

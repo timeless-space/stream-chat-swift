@@ -6,17 +6,17 @@ import Combine
 import StreamChat
 import SwiftUI
 
-public struct ChannelListView<ChannelDestination: View>: View {
+public struct ChannelListView<Factory: ViewFactory>: View {
     @StateObject private var viewModel: ChannelListViewModel
     
     private var onItemTap: (ChatChannel) -> Void
     
-    private var channelDestination: (ChatChannel) -> ChannelDestination
-    
+    private var channelDestination: (ChatChannel) -> Factory.ChannelDestination
+        
     public init(
         viewModel: ChannelListViewModel,
         onItemTap: ((ChatChannel) -> Void)? = nil,
-        channelDestination: @escaping ((ChatChannel) -> ChannelDestination)
+        viewFactory: Factory
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         if let onItemTap = onItemTap {
@@ -27,7 +27,7 @@ public struct ChannelListView<ChannelDestination: View>: View {
             }
         }
         
-        self.channelDestination = channelDestination
+        channelDestination = viewFactory.makeDefaultChannelDestination()
     }
     
     public var body: some View {
@@ -43,7 +43,7 @@ public struct ChannelListView<ChannelDestination: View>: View {
                     selectedChannel: $viewModel.selectedChannel,
                     onItemTap: onItemTap,
                     channelNaming: viewModel.name(forChannel:),
-                    channelDestination: channelDestination
+                    channelDestination: self.channelDestination
                 )
             }
             .onAppear {
@@ -127,10 +127,8 @@ public struct ChannelDeepLink<ChannelDestination: View>: View {
     }
 }
 
-extension ChannelListView where ChannelDestination == ChatChannelView<NoContentView> {
+extension ChannelListView where Factory == DefaultViewFactory {
     public init(viewModel: ChannelListViewModel, onItemTap: ((ChatChannel) -> Void)? = nil) {
-        self.init(viewModel: viewModel, onItemTap: onItemTap, channelDestination: { channel in
-            ChatChannelView(viewModel: viewModel.makeViewModel(for: channel))
-        })
+        self.init(viewModel: viewModel, onItemTap: onItemTap, viewFactory: DefaultViewFactory.shared)
     }
 }

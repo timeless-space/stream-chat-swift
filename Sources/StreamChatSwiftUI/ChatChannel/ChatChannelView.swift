@@ -6,16 +6,21 @@ import NukeUI
 import StreamChat
 import SwiftUI
 
-public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
+public struct ChatChannelView<Factory: ViewFactory>: View, KeyboardReadable {
     @StateObject var viewModel: ChatChannelViewModel
     
-    var noContentView: NoContent
+    var noContentView: Factory.NoContent
+    var loadingContentView: Factory.LoadingContent
     
     @Injected(\.streamColors) var colors
     
-    public init(viewModel: ChatChannelViewModel, noContentView: NoContent) {
+    public init(
+        viewModel: ChatChannelViewModel,
+        viewFactory: Factory
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.noContentView = noContentView
+        noContentView = viewFactory.makeNoContentView()
+        loadingContentView = viewFactory.makeLoadingContentView()
     }
     
     public var body: some View {
@@ -41,11 +46,5 @@ public struct ChatChannelView<NoContent: View>: View, KeyboardReadable {
         }
         .navigationBarTitleDisplayMode(.inline)
         .background(colors.appBackground.edgesIgnoringSafeArea(.bottom))
-    }
-}
-
-extension ChatChannelView where NoContent == NoContentView {
-    public init(viewModel: ChatChannelViewModel) {
-        self.init(viewModel: viewModel, noContentView: NoContentView())
     }
 }

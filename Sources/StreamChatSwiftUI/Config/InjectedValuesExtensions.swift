@@ -6,7 +6,7 @@ import Foundation
 import StreamChat
 
 extension InjectedValues {
-    var chatClient: ChatClient {
+    public var chatClient: ChatClient {
         get {
             streamChat.chatClient
         }
@@ -15,7 +15,7 @@ extension InjectedValues {
         }
     }
     
-    var streamColors: StreamColors {
+    public var streamColors: StreamColors {
         get {
             streamChat.theme.colors
         }
@@ -24,7 +24,7 @@ extension InjectedValues {
         }
     }
     
-    var videoPreviewLoader: VideoPreviewLoader {
+    public var videoPreviewLoader: VideoPreviewLoader {
         get {
             streamChat.videoPreviewLoader
         }
@@ -33,7 +33,7 @@ extension InjectedValues {
         }
     }
     
-    var images: Images {
+    public var images: Images {
         get {
             streamChat.theme.images
         }
