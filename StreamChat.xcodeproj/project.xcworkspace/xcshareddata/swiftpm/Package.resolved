@@ -2,12 +2,30 @@
   "object": {
     "pins": [
       {
+        "package": "Gifu",
+        "repositoryURL": "https://github.com/kaishin/Gifu",
+        "state": {
+          "branch": null,
+          "revision": "51f2eab32903e336f590c013267cfa4d7f8b06c4",
+          "version": "3.3.1"
+        }
+      },
+      {
         "package": "Nuke",
         "repositoryURL": "https://github.com/kean/Nuke",
         "state": {
           "branch": null,
           "revision": "c0b32b0d7154afceb3fc08b199492f125ff4267e",
           "version": "10.3.3"
+        }
+      },
+      {
+        "package": "NukeUI",
+        "repositoryURL": "https://github.com/kean/NukeUI.git",
+        "state": {
+          "branch": "main",
+          "revision": "3ebedef0a913038297ff8342df35ed8eb4362c9e",
+          "version": null
         }
       },
       {

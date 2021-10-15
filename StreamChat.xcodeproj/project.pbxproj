@@ -520,6 +520,14 @@
 		80C6027B25157E4D00A6B714 /* View+AlertTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C6027A25157E4D00A6B714 /* View+AlertTextField.swift */; };
 		80D880432546553500908B7B /* ChatScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D880422546553500908B7B /* ChatScrollView.swift */; };
 		840B4FCF26A9E53100D5EFAB /* CustomEventRequestBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */; };
+		8424225A271706E0003730E1 /* StreamChatSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84242252271706E0003730E1 /* StreamChatSwiftUI.framework */; };
+		8424225F271706E0003730E1 /* StreamChatSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424225E271706E0003730E1 /* StreamChatSwiftUITests.swift */; };
+		84242260271706E0003730E1 /* StreamChatSwiftUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 84242254271706E0003730E1 /* StreamChatSwiftUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8424227227170A9A003730E1 /* DemoAppSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424227127170A9A003730E1 /* DemoAppSwiftUIApp.swift */; };
+		8424227427170A9A003730E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424227327170A9A003730E1 /* ContentView.swift */; };
+		8424227627170A9C003730E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8424227527170A9C003730E1 /* Assets.xcassets */; };
+		8424227927170A9C003730E1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8424227827170A9C003730E1 /* Preview Assets.xcassets */; };
+		8424228327170AC2003730E1 /* TestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424228227170AC2003730E1 /* TestView.swift */; };
 		8431843B26FB53B400B5B25E /* NotificationMessageNew+MissingFields.json in Resources */ = {isa = PBXBuildFile; fileRef = 8431843A26FB53B400B5B25E /* NotificationMessageNew+MissingFields.json */; };
 		8431843D26FB54F400B5B25E /* NotificationAddedToChannel+MissingFields.json in Resources */ = {isa = PBXBuildFile; fileRef = 8431843C26FB54F400B5B25E /* NotificationAddedToChannel+MissingFields.json */; };
 		843C53AB269370A900C7D8EA /* ImageAttachmentPayload_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843C53AA269370A900C7D8EA /* ImageAttachmentPayload_Tests.swift */; };
@@ -564,6 +572,7 @@
 		84DCB851269F4D31006CDF32 /* EventsController+Combine_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DCB850269F4D31006CDF32 /* EventsController+Combine_Tests.swift */; };
 		84DCB853269F569A006CDF32 /* EventsController+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DCB852269F569A006CDF32 /* EventsController+SwiftUI.swift */; };
 		84DCB855269F56A7006CDF32 /* EventsController+SwiftUI_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DCB854269F56A7006CDF32 /* EventsController+SwiftUI_Tests.swift */; };
+		84EAC826271971430042AA98 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 84EAC825271971430042AA98 /* NukeUI */; };
 		84F61270268B415C00DDF6EE /* ChatClientConfig_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F6126F268B415C00DDF6EE /* ChatClientConfig_Tests.swift */; };
 		8800A26F258A04D5006D64C4 /* ChatMessageAttachmentPreviewVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8800A26E258A04D5006D64C4 /* ChatMessageAttachmentPreviewVC.swift */; };
 		8800A28C258A1924006D64C4 /* ChatMessageFileAttachmentListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8800A28B258A1924006D64C4 /* ChatMessageFileAttachmentListView.swift */; };
@@ -1256,6 +1265,34 @@
 			remoteGlobalIDString = 799C941A247D2F80001F1104;
 			remoteInfo = StreamChat;
 		};
+		8424225B271706E0003730E1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8AD5EC8622E9A3E8005CFAC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 84242251271706E0003730E1;
+			remoteInfo = StreamChatSwiftUI;
+		};
+		8424227E27170AA9003730E1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8AD5EC8622E9A3E8005CFAC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 84242251271706E0003730E1;
+			remoteInfo = StreamChatSwiftUI;
+		};
+		8424228027170AB3003730E1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8AD5EC8622E9A3E8005CFAC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 799C941A247D2F80001F1104;
+			remoteInfo = StreamChat;
+		};
+		8424228527170C68003730E1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8AD5EC8622E9A3E8005CFAC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8424226E27170A9A003730E1;
+			remoteInfo = DemoAppSwiftUI;
+		};
 		AC90839A268B120300ACFB8E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8AD5EC8622E9A3E8005CFAC9 /* Project object */;
@@ -1924,6 +1961,18 @@
 		80C6027A25157E4D00A6B714 /* View+AlertTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+AlertTextField.swift"; sourceTree = "<group>"; };
 		80D880422546553500908B7B /* ChatScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatScrollView.swift; sourceTree = "<group>"; };
 		840B4FCE26A9E53100D5EFAB /* CustomEventRequestBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomEventRequestBody.swift; sourceTree = "<group>"; };
+		84242252271706E0003730E1 /* StreamChatSwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = StreamChatSwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		84242254271706E0003730E1 /* StreamChatSwiftUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StreamChatSwiftUI.h; sourceTree = "<group>"; };
+		84242259271706E0003730E1 /* StreamChatSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamChatSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8424225E271706E0003730E1 /* StreamChatSwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChatSwiftUITests.swift; sourceTree = "<group>"; };
+		8424226927170859003730E1 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8424226F27170A9A003730E1 /* DemoAppSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoAppSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8424227127170A9A003730E1 /* DemoAppSwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAppSwiftUIApp.swift; sourceTree = "<group>"; };
+		8424227327170A9A003730E1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8424227527170A9C003730E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8424227827170A9C003730E1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		8424228227170AC2003730E1 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
+		8424228427170C31003730E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8431843A26FB53B400B5B25E /* NotificationMessageNew+MissingFields.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "NotificationMessageNew+MissingFields.json"; sourceTree = "<group>"; };
 		8431843C26FB54F400B5B25E /* NotificationAddedToChannel+MissingFields.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "NotificationAddedToChannel+MissingFields.json"; sourceTree = "<group>"; };
 		843C53AA269370A900C7D8EA /* ImageAttachmentPayload_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAttachmentPayload_Tests.swift; sourceTree = "<group>"; };
@@ -2620,6 +2669,29 @@
 			files = (
 				80750A5025D1D5810027F951 /* StreamChatUI.framework in Frameworks */,
 				8082786C25D1BB56008039DD /* StreamChat.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8424224F271706E0003730E1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84EAC826271971430042AA98 /* NukeUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84242256271706E0003730E1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8424225A271706E0003730E1 /* StreamChatSwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8424226C27170A9A003730E1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3377,6 +3449,7 @@
 				790881AB254327C800896F03 /* StreamChat */,
 				793060E725778896005CF846 /* StreamChatTestTools */,
 				7908823025432C6400896F03 /* StreamChatUI */,
+				84242253271706E0003730E1 /* StreamChatSwiftUI */,
 			);
 			indentWidth = 4;
 			path = Sources;
@@ -3552,6 +3625,7 @@
 				7908824625432CC600896F03 /* StreamChatTests */,
 				7908823925432C9000896F03 /* StreamChatUITests */,
 				792A71F22578EFBB0082498D /* Shared */,
+				8424225D271706E0003730E1 /* StreamChatSwiftUITests */,
 				7908824925432CC600896F03 /* Info.plist */,
 			);
 			indentWidth = 4;
@@ -4099,6 +4173,44 @@
 			path = "00-Quick-Start";
 			sourceTree = "<group>";
 		};
+		84242253271706E0003730E1 /* StreamChatSwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				8424226927170859003730E1 /* Info.plist */,
+				84242254271706E0003730E1 /* StreamChatSwiftUI.h */,
+				8424228227170AC2003730E1 /* TestView.swift */,
+			);
+			path = StreamChatSwiftUI;
+			sourceTree = "<group>";
+		};
+		8424225D271706E0003730E1 /* StreamChatSwiftUITests */ = {
+			isa = PBXGroup;
+			children = (
+				8424225E271706E0003730E1 /* StreamChatSwiftUITests.swift */,
+			);
+			path = StreamChatSwiftUITests;
+			sourceTree = "<group>";
+		};
+		8424227027170A9A003730E1 /* DemoAppSwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				8424228427170C31003730E1 /* Info.plist */,
+				8424227127170A9A003730E1 /* DemoAppSwiftUIApp.swift */,
+				8424227327170A9A003730E1 /* ContentView.swift */,
+				8424227527170A9C003730E1 /* Assets.xcassets */,
+				8424227727170A9C003730E1 /* Preview Content */,
+			);
+			path = DemoAppSwiftUI;
+			sourceTree = "<group>";
+		};
+		8424227727170A9C003730E1 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				8424227827170A9C003730E1 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
 		843F0BCB2677666B00B342CB /* AttachmentActionButton */ = {
 			isa = PBXGroup;
 			children = (
@@ -4495,6 +4607,7 @@
 				E3D5D2142701F0450054ECE5 /* Examples */,
 				792DDA58256FB69E001DB91B /* DemoApp */,
 				437FCA0526D67BE40000223C /* DemoAppPush */,
+				8424227027170A9A003730E1 /* DemoAppSwiftUI */,
 				8AD5EC9022E9A3E8005CFAC9 /* Products */,
 				8AD5ECA722E9B3C4005CFAC9 /* Frameworks */,
 			);
@@ -4520,6 +4633,9 @@
 				E74DB0D32656631700508D22 /* UISDKDocumentation.xctest */,
 				AC908381268B115F00ACFB8E /* YouTube.app */,
 				437FCA0426D67BE40000223C /* DemoAppPush.appex */,
+				84242252271706E0003730E1 /* StreamChatSwiftUI.framework */,
+				84242259271706E0003730E1 /* StreamChatSwiftUITests.xctest */,
+				8424226F27170A9A003730E1 /* DemoAppSwiftUI.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -5254,6 +5370,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8424224D271706E0003730E1 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84242260271706E0003730E1 /* StreamChatSwiftUI.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -5462,6 +5586,65 @@
 			productReference = 8082785125D1BAD1008039DD /* DocsSnippets.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		84242251271706E0003730E1 /* StreamChatSwiftUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84242267271706E0003730E1 /* Build configuration list for PBXNativeTarget "StreamChatSwiftUI" */;
+			buildPhases = (
+				8424224D271706E0003730E1 /* Headers */,
+				8424224E271706E0003730E1 /* Sources */,
+				8424224F271706E0003730E1 /* Frameworks */,
+				84242250271706E0003730E1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8424228127170AB3003730E1 /* PBXTargetDependency */,
+			);
+			name = StreamChatSwiftUI;
+			packageProductDependencies = (
+				84EAC825271971430042AA98 /* NukeUI */,
+			);
+			productName = StreamChatSwiftUI;
+			productReference = 84242252271706E0003730E1 /* StreamChatSwiftUI.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		84242258271706E0003730E1 /* StreamChatSwiftUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84242268271706E0003730E1 /* Build configuration list for PBXNativeTarget "StreamChatSwiftUITests" */;
+			buildPhases = (
+				84242255271706E0003730E1 /* Sources */,
+				84242256271706E0003730E1 /* Frameworks */,
+				84242257271706E0003730E1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8424225C271706E0003730E1 /* PBXTargetDependency */,
+				8424228627170C68003730E1 /* PBXTargetDependency */,
+			);
+			name = StreamChatSwiftUITests;
+			productName = StreamChatSwiftUITests;
+			productReference = 84242259271706E0003730E1 /* StreamChatSwiftUITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		8424226E27170A9A003730E1 /* DemoAppSwiftUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8424227A27170A9C003730E1 /* Build configuration list for PBXNativeTarget "DemoAppSwiftUI" */;
+			buildPhases = (
+				8424226B27170A9A003730E1 /* Sources */,
+				8424226C27170A9A003730E1 /* Frameworks */,
+				8424226D27170A9A003730E1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8424227F27170AA9003730E1 /* PBXTargetDependency */,
+			);
+			name = DemoAppSwiftUI;
+			productName = DemoAppSwiftUI;
+			productReference = 8424226F27170A9A003730E1 /* DemoAppSwiftUI.app */;
+			productType = "com.apple.product-type.application";
+		};
 		AC908380268B115F00ACFB8E /* YouTube */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AC908395268B116000ACFB8E /* Build configuration list for PBXNativeTarget "YouTube" */;
@@ -5568,7 +5751,7 @@
 		8AD5EC8622E9A3E8005CFAC9 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1250;
+				LastSwiftUpdateCheck = 1300;
 				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = "Stream.io Inc";
 				TargetAttributes = {
@@ -5606,6 +5789,17 @@
 						CreatedOnToolsVersion = 12.4;
 						LastSwiftMigration = 1240;
 					};
+					84242251271706E0003730E1 = {
+						CreatedOnToolsVersion = 13.0;
+						LastSwiftMigration = 1300;
+					};
+					84242258271706E0003730E1 = {
+						CreatedOnToolsVersion = 13.0;
+						TestTargetID = 8424226E27170A9A003730E1;
+					};
+					8424226E27170A9A003730E1 = {
+						CreatedOnToolsVersion = 13.0;
+					};
 					AC908380268B115F00ACFB8E = {
 						CreatedOnToolsVersion = 12.5;
 					};
@@ -5635,6 +5829,7 @@
 				799ADAAD2563FFA1006D43F9 /* XCRemoteSwiftPackageReference "Nuke" */,
 				DB823105259C271C00E7D7FE /* XCRemoteSwiftPackageReference "SwiftyGif" */,
 				AD472EF625C425FB00A96E70 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				84EAC824271971430042AA98 /* XCRemoteSwiftPackageReference "NukeUI" */,
 			);
 			productRefGroup = 8AD5EC9022E9A3E8005CFAC9 /* Products */;
 			projectDirPath = "";
@@ -5655,6 +5850,9 @@
 				F89C23A525E508DE0082CA5B /* iMessage */,
 				AC908380268B115F00ACFB8E /* YouTube */,
 				792A4F21247FF01800EAF71D /* StreamChatSample */,
+				84242251271706E0003730E1 /* StreamChatSwiftUI */,
+				84242258271706E0003730E1 /* StreamChatSwiftUITests */,
+				8424226E27170A9A003730E1 /* DemoAppSwiftUI */,
 			);
 		};
 /* End PBXProject section */
@@ -5840,6 +6038,29 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84242250271706E0003730E1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84242257271706E0003730E1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8424226D27170A9A003730E1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8424227927170A9C003730E1 /* Preview Assets.xcassets in Resources */,
+				8424227627170A9C003730E1 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6901,6 +7122,31 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8424224E271706E0003730E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8424228327170AC2003730E1 /* TestView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84242255271706E0003730E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8424225F271706E0003730E1 /* StreamChatSwiftUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8424226B27170A9A003730E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8424227427170A9A003730E1 /* ContentView.swift in Sources */,
+				8424227227170A9A003730E1 /* DemoAppSwiftUIApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AC90837D268B115F00ACFB8E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -7078,6 +7324,26 @@
 			isa = PBXTargetDependency;
 			target = 799C941A247D2F80001F1104 /* StreamChat */;
 			targetProxy = 8082786A25D1BB50008039DD /* PBXContainerItemProxy */;
+		};
+		8424225C271706E0003730E1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 84242251271706E0003730E1 /* StreamChatSwiftUI */;
+			targetProxy = 8424225B271706E0003730E1 /* PBXContainerItemProxy */;
+		};
+		8424227F27170AA9003730E1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 84242251271706E0003730E1 /* StreamChatSwiftUI */;
+			targetProxy = 8424227E27170AA9003730E1 /* PBXContainerItemProxy */;
+		};
+		8424228127170AB3003730E1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 799C941A247D2F80001F1104 /* StreamChat */;
+			targetProxy = 8424228027170AB3003730E1 /* PBXContainerItemProxy */;
+		};
+		8424228627170C68003730E1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8424226E27170A9A003730E1 /* DemoAppSwiftUI */;
+			targetProxy = 8424228527170C68003730E1 /* PBXContainerItemProxy */;
 		};
 		AC90839B268B120300ACFB8E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -8007,6 +8273,277 @@
 			};
 			name = ReleaseTests;
 		};
+		84242261271706E0003730E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/StreamChatSwiftUI/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Stream.io Inc. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.StreamChatSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		84242262271706E0003730E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/StreamChatSwiftUI/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Stream.io Inc. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.StreamChatSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		84242263271706E0003730E1 /* ReleaseTests */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/StreamChatSwiftUI/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Stream.io Inc. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.StreamChatSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = ReleaseTests;
+		};
+		84242264271706E0003730E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.StreamChatSwiftUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DemoAppSwiftUI.app/DemoAppSwiftUI";
+			};
+			name = Debug;
+		};
+		84242265271706E0003730E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.StreamChatSwiftUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DemoAppSwiftUI.app/DemoAppSwiftUI";
+			};
+			name = Release;
+		};
+		84242266271706E0003730E1 /* ReleaseTests */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.StreamChatSwiftUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DemoAppSwiftUI.app/DemoAppSwiftUI";
+			};
+			name = ReleaseTests;
+		};
+		8424227B27170A9C003730E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DemoAppSwiftUI/Preview Content\"";
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DemoAppSwiftUI/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.DemoAppSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8424227C27170A9C003730E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DemoAppSwiftUI/Preview Content\"";
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DemoAppSwiftUI/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.DemoAppSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8424227D27170A9C003730E1 /* ReleaseTests */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DemoAppSwiftUI/Preview Content\"";
+				DEVELOPMENT_TEAM = EHV7XZLAHA;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DemoAppSwiftUI/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.getstream.iOS.DemoAppSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = ReleaseTests;
+		};
 		8AD5EC9522E9A3E8005CFAC9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -8765,6 +9302,36 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		84242267271706E0003730E1 /* Build configuration list for PBXNativeTarget "StreamChatSwiftUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84242261271706E0003730E1 /* Debug */,
+				84242262271706E0003730E1 /* Release */,
+				84242263271706E0003730E1 /* ReleaseTests */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		84242268271706E0003730E1 /* Build configuration list for PBXNativeTarget "StreamChatSwiftUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84242264271706E0003730E1 /* Debug */,
+				84242265271706E0003730E1 /* Release */,
+				84242266271706E0003730E1 /* ReleaseTests */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8424227A27170A9C003730E1 /* Build configuration list for PBXNativeTarget "DemoAppSwiftUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8424227B27170A9C003730E1 /* Debug */,
+				8424227C27170A9C003730E1 /* Release */,
+				8424227D27170A9C003730E1 /* ReleaseTests */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		8AD5EC8922E9A3E8005CFAC9 /* Build configuration list for PBXProject "StreamChat" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -8844,6 +9411,14 @@
 				minimumVersion = 4.0.4;
 			};
 		};
+		84EAC824271971430042AA98 /* XCRemoteSwiftPackageReference "NukeUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/NukeUI.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		AD472EF625C425FB00A96E70 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing.git";
@@ -8880,6 +9455,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 79A4AE0F2536EE5500C32A74 /* XCRemoteSwiftPackageReference "Starscream" */;
 			productName = Starscream;
+		};
+		84EAC825271971430042AA98 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 84EAC824271971430042AA98 /* XCRemoteSwiftPackageReference "NukeUI" */;
+			productName = NukeUI;
 		};
 		AD472EF725C425FB00A96E70 /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
