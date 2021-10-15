@@ -8,7 +8,6 @@ import StreamChatSwiftUI
 struct ContentView: View {
     
     var body: some View {
-        TestView()
-            .padding()
+        ChatChannelListView()
     }
 }
