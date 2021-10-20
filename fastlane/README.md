@@ -20,6 +20,11 @@ or alternatively using `brew install fastlane`
 fastlane release
 ```
 Release a new version
+### push_pods
+```
+fastlane push_pods
+```
+Pushes the StreamChat and StreamChatUI SDK podspecs to Cocoapods trunk
 ### set_SDK_version
 ```
 fastlane set_SDK_version
