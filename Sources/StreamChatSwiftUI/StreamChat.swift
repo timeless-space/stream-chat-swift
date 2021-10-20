@@ -10,15 +10,16 @@ import StreamChat
 public class StreamChat {
     var chatClient: ChatClient
     var appearance: Appearance
-    
-    var videoPreviewLoader: VideoPreviewLoader = DefaultVideoPreviewLoader()
+    var utils: Utils
     
     public init(
         chatClient: ChatClient,
-        appearance: Appearance = Appearance()
+        appearance: Appearance = Appearance(),
+        utils: Utils = Utils()
     ) {
         self.chatClient = chatClient
         self.appearance = appearance
+        self.utils = utils
         StreamChatProviderKey.currentValue = self
     }
 }

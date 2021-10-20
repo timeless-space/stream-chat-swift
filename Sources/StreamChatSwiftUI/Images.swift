@@ -69,4 +69,12 @@ public class Images {
         }
         set { _availableReactions = newValue }
     }
+    
+    // MARK: - Placeholders
+
+    public var userAvatarPlaceholder1: UIImage = loadImageSafely(with: "pattern1")
+    public var userAvatarPlaceholder2: UIImage = loadImageSafely(with: "pattern2")
+    public var userAvatarPlaceholder3: UIImage = loadImageSafely(with: "pattern3")
+    public var userAvatarPlaceholder4: UIImage = loadImageSafely(with: "pattern4")
+    public var userAvatarPlaceholder5: UIImage = loadImageSafely(with: "pattern5")
 }

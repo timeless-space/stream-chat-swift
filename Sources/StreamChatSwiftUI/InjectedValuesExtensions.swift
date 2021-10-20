@@ -26,13 +26,13 @@ extension InjectedValues {
         }
     }
     
-    /// Provides access to the `VideoPreviewLoader` instance.
-    public var videoPreviewLoader: VideoPreviewLoader {
+    /// Provides access to the `Utils` instance.
+    public var utils: Utils {
         get {
-            streamChat.videoPreviewLoader
+            streamChat.utils
         }
         set {
-            streamChat.videoPreviewLoader = newValue
+            streamChat.utils = newValue
         }
     }
     

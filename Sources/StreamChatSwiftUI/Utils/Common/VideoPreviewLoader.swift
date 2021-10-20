@@ -16,10 +16,10 @@ public protocol VideoPreviewLoader: AnyObject {
 }
 
 /// The `VideoPreviewLoader` implemenation used by default.
-final class DefaultVideoPreviewLoader: VideoPreviewLoader {
+public final class DefaultVideoPreviewLoader: VideoPreviewLoader {
     private let cache: Cache<URL, UIImage>
     
-    init(countLimit: Int = 50) {
+    public init(countLimit: Int = 50) {
         cache = .init(countLimit: countLimit)
         
         NotificationCenter.default.addObserver(
@@ -34,7 +34,7 @@ final class DefaultVideoPreviewLoader: VideoPreviewLoader {
         NotificationCenter.default.removeObserver(self)
     }
     
-    func loadPreviewForVideo(at url: URL, completion: @escaping (Result<UIImage, Error>) -> Void) {
+    public func loadPreviewForVideo(at url: URL, completion: @escaping (Result<UIImage, Error>) -> Void) {
         if let cached = cache[url] {
             return call(completion, with: .success(cached))
         }

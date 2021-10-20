@@ -1,0 +1,32 @@
+//
+// Copyright © 2021 Stream.io Inc. All rights reserved.
+//
+
+import Foundation
+
+/// Class providing implementations of several utilities used in the SDK.
+/// The default implementations can be replaced in the init method, or directly via the variables.
+public class Utils {
+    public var dateFormatter: DateFormatter
+    public var videoPreviewLoader: VideoPreviewLoader
+    public var imageLoader: ImageLoading
+    public var imageCDN: ImageCDN
+    public var imageProcessor: ImageProcessor
+    public var imageMerger: ImageMerging
+    
+    public init(
+        dateFormatter: DateFormatter = .makeDefault(),
+        videoPreviewLoader: VideoPreviewLoader = DefaultVideoPreviewLoader(),
+        imageLoader: ImageLoading = NukeImageLoader(),
+        imageCDN: ImageCDN = StreamImageCDN(),
+        imageProcessor: ImageProcessor = NukeImageProcessor(),
+        imageMerger: ImageMerging = DefaultImageMerger()
+    ) {
+        self.dateFormatter = dateFormatter
+        self.videoPreviewLoader = videoPreviewLoader
+        self.imageLoader = imageLoader
+        self.imageCDN = imageCDN
+        self.imageProcessor = imageProcessor
+        self.imageMerger = imageMerger
+    }
+}

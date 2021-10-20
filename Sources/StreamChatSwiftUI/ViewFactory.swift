@@ -13,12 +13,21 @@ public protocol ViewFactory: AnyObject {
     associatedtype NoChannels: View
     /// Creates the view that is displayed when there are no channels available.
     func makeNoChannelsView() -> NoChannels
+    
+    associatedtype ChannelDestination: View
+    func makeDefaultChannelDestination() -> (ChatChannel) -> ChannelDestination
 }
 
 /// Default implementations for the `ViewFactory`.
 extension ViewFactory {
     public func makeNoChannelsView() -> NoChannelsView {
         NoChannelsView()
+    }
+    
+    public func makeDefaultChannelDestination() -> (ChatChannel) -> ChatChannelView<Self> {
+        { [unowned self] channel in
+            ChatChannelView(viewFactory: self, channel: channel)
+        }
     }
 }
 
