@@ -11,6 +11,7 @@ public struct ChatChannelNavigatableListItem<ChannelDestination: View>: View {
     private var channel: ChatChannel
     private var channelName: String
     private var avatar: UIImage
+    private var disabled: Bool
     private var onlineIndicatorShown: Bool
     @Binding private var selectedChannel: ChatChannel?
     private var channelDestination: (ChatChannel) -> ChannelDestination
@@ -21,6 +22,7 @@ public struct ChatChannelNavigatableListItem<ChannelDestination: View>: View {
         channelName: String,
         avatar: UIImage,
         onlineIndicatorShown: Bool,
+        disabled: Bool = false,
         selectedChannel: Binding<ChatChannel?>,
         channelDestination: @escaping (ChatChannel) -> ChannelDestination,
         onItemTap: @escaping (ChatChannel) -> Void
@@ -31,6 +33,7 @@ public struct ChatChannelNavigatableListItem<ChannelDestination: View>: View {
         self.onItemTap = onItemTap
         self.avatar = avatar
         self.onlineIndicatorShown = onlineIndicatorShown
+        self.disabled = disabled
         _selectedChannel = selectedChannel
     }
     
@@ -41,6 +44,7 @@ public struct ChatChannelNavigatableListItem<ChannelDestination: View>: View {
                 channelName: channelName,
                 avatar: avatar,
                 onlineIndicatorShown: onlineIndicatorShown,
+                disabled: disabled,
                 onItemTap: onItemTap
             )
                                     

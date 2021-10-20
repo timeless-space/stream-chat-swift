@@ -47,16 +47,19 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
                             deeplinkChannel: $viewModel.deeplinkChannel,
                             channelDestination: channelDestination
                         )
-
+                        
                         ChannelList(
                             channels: viewModel.channels,
                             selectedChannel: $viewModel.selectedChannel,
+                            currentChannelId: $viewModel.currentChannelId,
                             onlineIndicatorShown: viewModel.onlineIndicatorShown(for:),
                             imageLoader: viewModel.image(for:),
                             onItemTap: onItemTap,
                             onItemAppear: viewModel.checkForChannels(index:),
                             channelNaming: viewModel.name(forChannel:),
-                            channelDestination: channelDestination
+                            channelDestination: channelDestination,
+                            onDelete: viewModel.onDelete(channel:),
+                            onMoreTapped: viewModel.onMoreTapped(channel:)
                         )
                     }
                 }

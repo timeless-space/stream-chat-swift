@@ -42,6 +42,7 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     @Published var selectedChannel: ChatChannel?
     @Published var deeplinkChannel: ChatChannel?
     @Published var loadedImages = [String: UIImage]()
+    @Published var currentChannelId: String?
     
     public init(selectedChannelId: String? = nil) {
         self.selectedChannelId = selectedChannelId
@@ -124,6 +125,16 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
             member.isOnline && member.id != chatClient.currentUserId
         }
         .isEmpty
+    }
+    
+    public func onDelete(channel: ChatChannel) {
+        // TODO: implement
+        print("delete tapped")
+    }
+    
+    public func onMoreTapped(channel: ChatChannel) {
+        // TODO: implement
+        print("more tapped")
     }
     
     // MARK: - ChatChannelListControllerDelegate

@@ -10,47 +10,51 @@ public struct ChatChannelListItem: View {
     @Injected(\.fonts) var fonts
     @Injected(\.colors) var colors
     @Injected(\.utils) var utils
-    
+        
     var channel: ChatChannel
     var channelName: String
     var avatar: UIImage
     var onlineIndicatorShown: Bool
+    var disabled = false
     var onItemTap: (ChatChannel) -> Void
     
     public var body: some View {
-        Button {
-            onItemTap(channel)
-        } label: {
-            HStack {
-                ChannelAvatarView(
-                    avatar: avatar,
-                    showOnlineIndicator: onlineIndicatorShown
-                )
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(channelName)
-                        .lineLimit(1)
-                        .font(fonts.bodyBold)
-                    SubtitleText(text: subtitleText)
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    if channel.unreadCount == .noUnread {
-                        Spacer()
-                    } else {
-                        UnreadIndicatorView(
-                            unreadCount: channel.unreadCount.messages
-                        )
+        ZStack {
+            Button {
+                onItemTap(channel)
+            } label: {
+                HStack {
+                    ChannelAvatarView(
+                        avatar: avatar,
+                        showOnlineIndicator: onlineIndicatorShown
+                    )
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(channelName)
+                            .lineLimit(1)
+                            .font(fonts.bodyBold)
+                        SubtitleText(text: subtitleText)
                     }
                     
-                    SubtitleText(text: timestampText)
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 4) {
+                        if channel.unreadCount == .noUnread {
+                            Spacer()
+                        } else {
+                            UnreadIndicatorView(
+                                unreadCount: channel.unreadCount.messages
+                            )
+                        }
+                        
+                        SubtitleText(text: timestampText)
+                    }
                 }
+                .padding(.all, 8)
             }
-            .padding(.all, 8)
+            .foregroundColor(.black)
+            .disabled(disabled)
         }
-        .foregroundColor(.black)
     }
     
     private var subtitleText: String {
