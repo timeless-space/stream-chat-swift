@@ -16,6 +16,9 @@ public protocol ViewFactory: AnyObject {
     
     associatedtype ChannelDestination: View
     func makeDefaultChannelDestination() -> (ChatChannel) -> ChannelDestination
+    
+    associatedtype LoadingContent: View
+    func makeLoadingView() -> LoadingContent
 }
 
 /// Default implementations for the `ViewFactory`.
@@ -28,6 +31,10 @@ extension ViewFactory {
         { [unowned self] channel in
             ChatChannelView(viewFactory: self, channel: channel)
         }
+    }
+    
+    public func makeLoadingView() -> LoadingView {
+        LoadingView()
     }
 }
 

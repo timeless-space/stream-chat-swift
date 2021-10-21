@@ -527,6 +527,7 @@
 		8424227427170A9A003730E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8424227327170A9A003730E1 /* ContentView.swift */; };
 		8424227627170A9C003730E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8424227527170A9C003730E1 /* Assets.xcassets */; };
 		8424227927170A9C003730E1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8424227827170A9C003730E1 /* Preview Assets.xcassets */; };
+		842685FD27221A550083D97B /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842685FC27221A550083D97B /* LoadingView.swift */; };
 		8431843B26FB53B400B5B25E /* NotificationMessageNew+MissingFields.json in Resources */ = {isa = PBXBuildFile; fileRef = 8431843A26FB53B400B5B25E /* NotificationMessageNew+MissingFields.json */; };
 		8431843D26FB54F400B5B25E /* NotificationAddedToChannel+MissingFields.json in Resources */ = {isa = PBXBuildFile; fileRef = 8431843C26FB54F400B5B25E /* NotificationAddedToChannel+MissingFields.json */; };
 		843C53AB269370A900C7D8EA /* ImageAttachmentPayload_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843C53AA269370A900C7D8EA /* ImageAttachmentPayload_Tests.swift */; };
@@ -2041,6 +2042,7 @@
 		8424227527170A9C003730E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8424227827170A9C003730E1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8424228427170C31003730E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		842685FC27221A550083D97B /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		8431843A26FB53B400B5B25E /* NotificationMessageNew+MissingFields.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "NotificationMessageNew+MissingFields.json"; sourceTree = "<group>"; };
 		8431843C26FB54F400B5B25E /* NotificationAddedToChannel+MissingFields.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "NotificationAddedToChannel+MissingFields.json"; sourceTree = "<group>"; };
 		843C53AA269370A900C7D8EA /* ImageAttachmentPayload_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAttachmentPayload_Tests.swift; sourceTree = "<group>"; };
@@ -4422,6 +4424,7 @@
 				84EAC86E2719D02A0042AA98 /* LazyView.swift */,
 				84EAC87F271D8BE40042AA98 /* ImageLoading.swift */,
 				84EAC881271D8C210042AA98 /* NukeImageLoader.swift */,
+				842685FC27221A550083D97B /* LoadingView.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -7388,6 +7391,7 @@
 				84EAC8742719D47C0042AA98 /* ChatChannelView.swift in Sources */,
 				84EAC8762719D4880042AA98 /* ChatChannelViewModel.swift in Sources */,
 				84EAC8592719993D0042AA98 /* ViewModelsFactory.swift in Sources */,
+				842685FD27221A550083D97B /* LoadingView.swift in Sources */,
 				84EAC84227197A7F0042AA98 /* InjectedValuesExtensions.swift in Sources */,
 				84EAC83D27197A380042AA98 /* VideoPreviewLoader.swift in Sources */,
 				84EAC832271979880042AA98 /* Appearance.swift in Sources */,

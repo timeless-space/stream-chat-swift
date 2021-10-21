@@ -39,7 +39,9 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
     public var body: some View {
         NavigationView {
             Group {
-                if viewModel.channels.isEmpty {
+                if viewModel.loading {
+                    viewFactory.makeLoadingView()
+                } else if viewModel.channels.isEmpty {
                     viewFactory.makeNoChannelsView()
                 } else {
                     ZStack {

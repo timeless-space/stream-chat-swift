@@ -52,6 +52,7 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     }
 
     @Published var alertShown = false
+    @Published var loading = false
     
     public init(selectedChannelId: String? = nil) {
         self.selectedChannelId = selectedChannelId
@@ -207,10 +208,12 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         
         channels = controller.channels
         
+        loading = true
         controller.synchronize { [unowned self] error in
+            loading = false
             if let error = error {
                 // handle error
-                print(error)
+                channelAlertType = .error
             } else {
                 // access channels
                 self.channels = controller.channels
