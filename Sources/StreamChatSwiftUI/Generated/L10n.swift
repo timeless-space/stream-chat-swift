@@ -17,8 +17,18 @@ internal enum L10n {
       internal static var cancel: String { L10n.tr("Localizable", "alert.actions.cancel") }
       /// Delete
       internal static var delete: String { L10n.tr("Localizable", "alert.actions.delete") }
+      /// Are you sure you want to delete this conversation?
+      internal static var deleteChannelMessage: String { L10n.tr("Localizable", "alert.actions.delete-channel-message") }
+      /// Delete conversation
+      internal static var deleteChannelTitle: String { L10n.tr("Localizable", "alert.actions.delete-channel-title") }
       /// Ok
       internal static var ok: String { L10n.tr("Localizable", "alert.actions.ok") }
+    }
+    internal enum Error {
+      /// The operation couldn't be completed.
+      internal static var message: String { L10n.tr("Localizable", "alert.error.message") }
+      /// Something went wrong.
+      internal static var title: String { L10n.tr("Localizable", "alert.error.title") }
     }
   }
 

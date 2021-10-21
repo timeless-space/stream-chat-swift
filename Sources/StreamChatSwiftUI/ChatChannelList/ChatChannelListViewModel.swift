@@ -14,16 +14,16 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     @Injected(\.utils) var utils: Utils
     
     /// Context provided utils.
-    private lazy var imageLoader = utils.imageLoader
-    private lazy var imageCDN = utils.imageCDN
-    private lazy var imageProcessor = utils.imageProcessor
-    private lazy var imageMerger = utils.imageMerger
+    internal lazy var imageLoader = utils.imageLoader
+    internal lazy var imageCDN = utils.imageCDN
+    internal lazy var imageProcessor = utils.imageProcessor
+    internal lazy var imageMerger = utils.imageMerger
     
     /// Placeholder images.
-    private lazy var placeholder1 = images.userAvatarPlaceholder1
-    private lazy var placeholder2 = images.userAvatarPlaceholder2
-    private lazy var placeholder3 = images.userAvatarPlaceholder3
-    private lazy var placeholder4 = images.userAvatarPlaceholder4
+    internal lazy var placeholder1 = images.userAvatarPlaceholder1
+    internal lazy var placeholder2 = images.userAvatarPlaceholder2
+    internal lazy var placeholder3 = images.userAvatarPlaceholder3
+    internal lazy var placeholder4 = images.userAvatarPlaceholder4
     
     /// The maximum number of images that combine to form a single avatar
     private let maxNumberOfImagesInCombinedAvatar = 4
@@ -43,6 +43,15 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     @Published var deeplinkChannel: ChatChannel?
     @Published var loadedImages = [String: UIImage]()
     @Published var currentChannelId: String?
+    @Published var channelAlertType: ChannelAlertType? {
+        didSet {
+            if channelAlertType != nil {
+                alertShown = true
+            }
+        }
+    }
+
+    @Published var alertShown = false
     
     public init(selectedChannelId: String? = nil) {
         self.selectedChannelId = selectedChannelId
@@ -127,9 +136,8 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         .isEmpty
     }
     
-    public func onDelete(channel: ChatChannel) {
-        // TODO: implement
-        print("delete tapped")
+    public func onDeleteTapped(channel: ChatChannel) {
+        channelAlertType = .deleteChannel(channel)
     }
     
     public func onMoreTapped(channel: ChatChannel) {
@@ -137,7 +145,24 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         print("more tapped")
     }
     
+    public func delete(channel: ChatChannel) {
+        let controller = chatClient.channelController(
+            for: .init(type: .messaging, id: channel.cid.id)
+        )
+         
+        controller.deleteChannel { error in
+            if error != nil {
+                // handle error
+                self.channelAlertType = .error
+            }
+        }
+    }
+    
     // MARK: - ChatChannelListControllerDelegate
+    
+    public func controllerWillChangeChannels(_ controller: ChatChannelListController) {
+        channels = controller.channels
+    }
     
     public func controller(
         _ controller: ChatChannelListController,
@@ -238,101 +263,10 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
             }
         }
     }
-    
-    /// Creates a merged avatar from the given images
-    /// - Parameter avatars: The individual avatars
-    /// - Returns: The merged avatar
-    private func createMergedAvatar(from avatars: [UIImage]) -> UIImage? {
-        guard !avatars.isEmpty else {
-            return nil
-        }
-        
-        var combinedImage: UIImage?
-                
-        let avatarImages = avatars.map {
-            imageProcessor.scale(image: $0, to: .avatarThumbnailSize)
-        }
-        
-        // The half of the width of the avatar
-        let halfContainerSize = CGSize(width: CGSize.avatarThumbnailSize.width / 2, height: CGSize.avatarThumbnailSize.height)
-        
-        if avatarImages.count == 1 {
-            combinedImage = avatarImages[0]
-        } else if avatarImages.count == 2 {
-            let leftImage = imageProcessor.crop(image: avatarImages[0], to: halfContainerSize)
-                ?? placeholder1
-            let rightImage = imageProcessor.crop(image: avatarImages[1], to: halfContainerSize)
-                ?? placeholder1
-            combinedImage = imageMerger.merge(
-                images: [
-                    leftImage,
-                    rightImage
-                ],
-                orientation: .horizontal
-            )
-        } else if avatarImages.count == 3 {
-            let leftImage = imageProcessor.crop(image: avatarImages[0], to: halfContainerSize)
+}
 
-            let rightCollage = imageMerger.merge(
-                images: [
-                    avatarImages[1],
-                    avatarImages[2]
-                ],
-                orientation: .vertical
-            )
-            
-            let rightImage = imageProcessor.crop(
-                image: imageProcessor
-                    .scale(image: rightCollage ?? placeholder3, to: .avatarThumbnailSize),
-                to: halfContainerSize
-            )
-            
-            combinedImage = imageMerger.merge(
-                images:
-                [
-                    leftImage ?? placeholder1,
-                    rightImage ?? placeholder2
-                ],
-                orientation: .horizontal
-            )
-        } else if avatarImages.count == 4 {
-            let leftCollage = imageMerger.merge(
-                images: [
-                    avatarImages[0],
-                    avatarImages[2]
-                ],
-                orientation: .vertical
-            )
-            
-            let leftImage = imageProcessor.crop(
-                image: imageProcessor
-                    .scale(image: leftCollage ?? placeholder1, to: .avatarThumbnailSize),
-                to: halfContainerSize
-            )
-            
-            let rightCollage = imageMerger.merge(
-                images: [
-                    avatarImages[1],
-                    avatarImages[3]
-                ],
-                orientation: .vertical
-            )
-            
-            let rightImage = imageProcessor.crop(
-                image: imageProcessor
-                    .scale(image: rightCollage ?? placeholder2, to: .avatarThumbnailSize),
-                to: halfContainerSize
-            )
-         
-            combinedImage = imageMerger.merge(
-                images: [
-                    leftImage ?? placeholder1,
-                    rightImage ?? placeholder2
-                ],
-                orientation: .horizontal
-            )
-        }
-        
-        return combinedImage
-    }
+/// Enum for the type of alert presented in the channel list view.
+public enum ChannelAlertType {
+    case deleteChannel(ChatChannel)
+    case error
 }

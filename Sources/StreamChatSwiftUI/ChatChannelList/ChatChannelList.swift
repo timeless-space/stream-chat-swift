@@ -65,6 +65,7 @@ public struct ChannelList<ChannelDestination: View>: View {
                         onMoreTapped: onMoreTapped
                     )
                     .frame(height: 48)
+                    .padding(.bottom, index == channels.count - 1 ? 20 : 0)
                     .onAppear {
                         onItemAppear(index)
                     }

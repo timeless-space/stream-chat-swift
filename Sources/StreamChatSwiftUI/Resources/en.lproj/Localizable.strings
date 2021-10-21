@@ -34,6 +34,10 @@
 "alert.actions.cancel" = "Cancel";
 "alert.actions.delete" = "Delete";
 "alert.actions.ok" = "Ok";
+"alert.actions.delete-channel-title" = "Delete conversation";
+"alert.actions.delete-channel-message" = "Are you sure you want to delete this conversation?";
+"alert.error.title" = "Something went wrong.";
+"alert.error.message" = "The operation couldn't be completed.";
 
 "message.only-visible-to-you" = "Only visible to you";
 "message.deleted-message-placeholder" = "Message deleted";

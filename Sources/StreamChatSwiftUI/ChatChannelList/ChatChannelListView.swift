@@ -58,10 +58,29 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
                             onItemAppear: viewModel.checkForChannels(index:),
                             channelNaming: viewModel.name(forChannel:),
                             channelDestination: channelDestination,
-                            onDelete: viewModel.onDelete(channel:),
+                            onDelete: viewModel.onDeleteTapped(channel:),
                             onMoreTapped: viewModel.onMoreTapped(channel:)
                         )
                     }
+                }
+            }
+            .alert(isPresented: $viewModel.alertShown) {
+                switch viewModel.channelAlertType {
+                case let .deleteChannel(channel):
+                    return Alert(
+                        title: Text(L10n.Alert.Actions.deleteChannelTitle),
+                        message: Text(L10n.Alert.Actions.deleteChannelMessage),
+                        primaryButton: .destructive(Text(L10n.Alert.Actions.delete)) {
+                            viewModel.delete(channel: channel)
+                        },
+                        secondaryButton: .cancel()
+                    )
+                default:
+                    return Alert(
+                        title: Text(L10n.Alert.Error.title),
+                        message: nil,
+                        dismissButton: .cancel(Text(L10n.Alert.Error.message))
+                    )
                 }
             }
             .edgesIgnoringSafeArea(.bottom)
