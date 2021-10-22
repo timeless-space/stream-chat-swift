@@ -8,16 +8,23 @@ import SwiftUI
 
 /// Factory used to create views.
 public protocol ViewFactory: AnyObject {
-    var chatClient: ChatClient { get }
+    /// Returns the navigation bar display mode.
+    func navigationBarDisplayMode() -> NavigationBarItem.TitleDisplayMode
+    
+    associatedtype HeaderViewModifier: ChannelHeaderViewModifier
+    /// Creates the channel header view modifier.
+    func makeChannelHeaderViewModifier(title: String) -> HeaderViewModifier
     
     associatedtype NoChannels: View
     /// Creates the view that is displayed when there are no channels available.
     func makeNoChannelsView() -> NoChannels
     
     associatedtype ChannelDestination: View
-    func makeDefaultChannelDestination() -> (ChatChannel) -> ChannelDestination
+    /// Creates the  channel destination.
+    func makeChannelDestination() -> (ChatChannel) -> ChannelDestination
     
     associatedtype LoadingContent: View
+    /// Creates the loading view.
     func makeLoadingView() -> LoadingContent
 }
 
@@ -27,7 +34,7 @@ extension ViewFactory {
         NoChannelsView()
     }
     
-    public func makeDefaultChannelDestination() -> (ChatChannel) -> ChatChannelView<Self> {
+    public func makeChannelDestination() -> (ChatChannel) -> ChatChannelView<Self> {
         { [unowned self] channel in
             ChatChannelView(viewFactory: self, channel: channel)
         }
@@ -35,6 +42,14 @@ extension ViewFactory {
     
     public func makeLoadingView() -> LoadingView {
         LoadingView()
+    }
+    
+    public func navigationBarDisplayMode() -> NavigationBarItem.TitleDisplayMode {
+        .inline
+    }
+    
+    public func makeChannelHeaderViewModifier(title: String) -> some ChannelHeaderViewModifier {
+        DefaultHeaderModifier(title: title)
     }
 }
 

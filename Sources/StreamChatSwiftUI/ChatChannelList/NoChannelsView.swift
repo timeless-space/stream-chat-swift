@@ -32,7 +32,9 @@ public struct NoChannelsView: View {
 
             Spacer()
             
-            Button {} label: {
+            NavigationLink {
+                NewChatView()
+            } label: {
                 Text(L10n.Channel.NoContent.start)
                     .foregroundColor(Color(colors.highlightedAccentBackground))
                     .font(fonts.bodyBold)

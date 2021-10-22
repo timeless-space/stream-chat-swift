@@ -7,6 +7,9 @@ import SwiftUI
 
 /// View for the chat channel list.
 public struct ChatChannelListView<Factory: ViewFactory>: View {
+    @Injected(\.fonts) var fonts
+    @Injected(\.colors) var colors
+    
     @StateObject private var viewModel: ChatChannelListViewModel
     
     private let viewFactory: Factory
@@ -33,7 +36,7 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
             }
         }
         
-        channelDestination = viewFactory.makeDefaultChannelDestination()
+        channelDestination = viewFactory.makeChannelDestination()
     }
     
     public var body: some View {
@@ -85,9 +88,9 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
                     )
                 }
             }
+            .modifier(viewFactory.makeChannelHeaderViewModifier(title: title))
             .edgesIgnoringSafeArea(.bottom)
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(viewFactory.navigationBarDisplayMode())
         }
     }
 }

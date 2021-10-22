@@ -12,7 +12,7 @@ struct DemoAppSwiftUIApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ChatChannelListView()
+            ChatChannelListView(viewFactory: CustomFactory.shared)
         }
     }
 }
@@ -24,13 +24,9 @@ class CustomFactory: ViewFactory {
     private init() {}
     
     public static let shared = CustomFactory()
-
-    func makeNoChannelsView() -> some View {
-        VStack {
-            Spacer()
-            Text("injected")
-            Spacer()
-        }
+    
+    func makeChannelHeaderViewModifier(title: String) -> some ChannelHeaderViewModifier {
+        CustomChannelModifier(title: title)
     }
     
 }
