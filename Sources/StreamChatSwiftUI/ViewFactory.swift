@@ -8,6 +8,8 @@ import SwiftUI
 
 /// Factory used to create views.
 public protocol ViewFactory: AnyObject {
+    var chatClient: ChatClient { get }
+    
     /// Returns the navigation bar display mode.
     func navigationBarDisplayMode() -> NavigationBarItem.TitleDisplayMode
     
@@ -26,6 +28,17 @@ public protocol ViewFactory: AnyObject {
     associatedtype LoadingContent: View
     /// Creates the loading view.
     func makeLoadingView() -> LoadingContent
+    
+    associatedtype MoreActionsView: View
+    func makeMoreChannelActionsView(
+        for channel: ChatChannel,
+        onDismiss: @escaping () -> Void
+    ) -> MoreActionsView
+    
+    func suppotedMoreChannelActions(
+        for channel: ChatChannel,
+        onDismiss: @escaping () -> Void
+    ) -> [ChannelAction]
 }
 
 /// Default implementations for the `ViewFactory`.
@@ -50,6 +63,30 @@ extension ViewFactory {
     
     public func makeChannelHeaderViewModifier(title: String) -> some ChannelHeaderViewModifier {
         DefaultHeaderModifier(title: title)
+    }
+    
+    public func suppotedMoreChannelActions(
+        for channel: ChatChannel,
+        onDismiss: @escaping () -> Void
+    ) -> [ChannelAction] {
+        ChannelAction.defaultActions(
+            for: channel,
+            chatClient: chatClient,
+            onDismiss: onDismiss
+        )
+    }
+    
+    public func makeMoreChannelActionsView(
+        for channel: ChatChannel,
+        onDismiss: @escaping () -> Void
+    ) -> MoreChannelActionsView {
+        MoreChannelActionsView(
+            channel: channel,
+            channelActions: suppotedMoreChannelActions(
+                for: channel, onDismiss: onDismiss
+            ),
+            onDismiss: onDismiss
+        )
     }
 }
 

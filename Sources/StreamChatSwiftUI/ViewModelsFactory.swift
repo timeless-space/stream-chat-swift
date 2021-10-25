@@ -26,4 +26,15 @@ class ViewModelsFactory {
         let viewModel = NewChatViewModel()
         return viewModel
     }
+    
+    static func makeMoreChannelActionsViewModel(
+        channel: ChatChannel,
+        actions: [ChannelAction]
+    ) -> MoreChannelActionsViewModel {
+        let viewModel = MoreChannelActionsViewModel(
+            channel: channel,
+            channelActions: actions
+        )
+        return viewModel
+    }
 }

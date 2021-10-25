@@ -18,6 +18,7 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     internal lazy var imageCDN = utils.imageCDN
     internal lazy var imageProcessor = utils.imageProcessor
     internal lazy var imageMerger = utils.imageMerger
+    internal lazy var channelNamer = utils.channelNamer
     
     /// Placeholder images.
     internal lazy var placeholder1 = images.userAvatarPlaceholder1
@@ -29,7 +30,6 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     private let maxNumberOfImagesInCombinedAvatar = 4
     
     private var controller: ChatChannelListController!
-    private let channelNamer = DefaultChatChannelNamer()
     
     /// Used when screen is shown from a deeplink.
     private var selectedChannelId: String?
@@ -51,8 +51,19 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         }
     }
 
+    @Published var customChannelPopupType: ChannelPopupType? {
+        didSet {
+            if customChannelPopupType != nil {
+                customAlertShown = true
+            } else {
+                customAlertShown = false
+            }
+        }
+    }
+
     @Published var alertShown = false
     @Published var loading = false
+    @Published var customAlertShown = false
     
     public init(selectedChannelId: String? = nil) {
         self.selectedChannelId = selectedChannelId
@@ -142,8 +153,7 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     }
     
     public func onMoreTapped(channel: ChatChannel) {
-        // TODO: implement
-        print("more tapped")
+        customChannelPopupType = .moreActions(channel)
     }
     
     public func delete(channel: ChatChannel) {
@@ -211,7 +221,7 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         loading = true
         controller.synchronize { [unowned self] error in
             loading = false
-            if let error = error {
+            if error != nil {
                 // handle error
                 channelAlertType = .error
             } else {
@@ -272,4 +282,10 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
 public enum ChannelAlertType {
     case deleteChannel(ChatChannel)
     case error
+}
+
+/// Enum describing the type of the custom popup for channel actions.
+public enum ChannelPopupType {
+    /// Shows the 'more actions' popup.
+    case moreActions(ChatChannel)
 }

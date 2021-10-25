@@ -33,7 +33,19 @@ public struct ChatChannelListItem: View {
                         Text(channelName)
                             .lineLimit(1)
                             .font(fonts.bodyBold)
-                        SubtitleText(text: subtitleText)
+                        if let image = image {
+                            HStack(spacing: 4) {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(maxHeight: 12)
+                                    .foregroundColor(Color(colors.subtitleText))
+                                SubtitleText(text: subtitleText)
+                                Spacer()
+                            }
+                        } else {
+                            SubtitleText(text: subtitleText)
+                        }
                     }
                     
                     Spacer()
@@ -58,11 +70,20 @@ public struct ChatChannelListItem: View {
     }
     
     private var subtitleText: String {
-        if let latestMessage = channel.latestMessages.first {
+        if channel.isMuted {
+            return "Channel is muted"
+        } else if let latestMessage = channel.latestMessages.first {
             return "\(latestMessage.author.name ?? latestMessage.author.id): \(latestMessage.textContent ?? latestMessage.text)"
         } else {
             return L10n.Channel.Item.emptyMessages
         }
+    }
+    
+    private var image: UIImage? {
+        if channel.isMuted {
+            return UIImage(systemName: "speaker.slash")
+        }
+        return nil
     }
     
     private var timestampText: String {
@@ -78,9 +99,10 @@ public struct ChatChannelListItem: View {
 public struct ChannelAvatarView: View {
     var avatar: UIImage
     var showOnlineIndicator: Bool
+    var size: CGSize = .defaultAvatarSize
     
     public var body: some View {
-        AvatarView(avatar: avatar)
+        AvatarView(avatar: avatar, size: size)
             .overlay(
                 showOnlineIndicator ?
                     TopRightView {

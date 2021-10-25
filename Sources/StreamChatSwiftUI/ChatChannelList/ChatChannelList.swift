@@ -80,8 +80,12 @@ public struct ChannelList<ChannelDestination: View>: View {
 
 /// Determines the uniqueness of the channel list item.
 extension ChatChannel: Identifiable {
+    private var mutedString: String {
+        isMuted ? "muted" : "unmuted"
+    }
+
     public var id: String {
-        "\(cid.id)-\(lastMessageAt ?? createdAt)-\(lastActiveMembersCount)"
+        "\(cid.id)-\(lastMessageAt ?? createdAt)-\(lastActiveMembersCount)-\(mutedString)"
     }
     
     public var lastActiveMembersCount: Int {

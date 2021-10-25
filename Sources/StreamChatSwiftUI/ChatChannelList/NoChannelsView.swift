@@ -46,8 +46,6 @@ public struct NoChannelsView: View {
     }
     
     private var bottomButtonPadding: CGFloat {
-        let window = UIApplication.shared.windows.first
-        let bottomPadding = window?.safeAreaInsets.bottom ?? 0
-        return bottomPadding + 40
+        bottomSafeArea + 40
     }
 }

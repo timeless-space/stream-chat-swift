@@ -37,15 +37,21 @@ public struct TopRightView<Content: View>: View {
 /// View representing the user's avatar.
 public struct AvatarView: View {
     var avatar: UIImage
+    var size: CGSize = .defaultAvatarSize
     
     public var body: some View {
         Image(uiImage: avatar)
             .resizable()
             .aspectRatio(contentMode: .fill)
             .frame(
-                width: 48,
-                height: 48
+                width: size.width,
+                height: size.height
             )
             .clipShape(Circle())
     }
+}
+
+extension CGSize {
+    /// Default size of the avatar used in the channel list.
+    public static var defaultAvatarSize: CGSize = CGSize(width: 48, height: 48)
 }

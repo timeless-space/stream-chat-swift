@@ -173,14 +173,18 @@ public struct ChatChannelSwipeableListItem<ChannelDestination: View>: View {
             ZStack {
                 HStack(spacing: 0) {
                     ActionItemButton(imageName: "ellipsis", action: {
-                        onMoreTapped(channel)
+                        withAnimation {
+                            onMoreTapped(channel)
+                        }
                     })
                         .frame(width: buttonWidth)
                         .foregroundColor(Color(colors.text))
                         .background(Color(colors.background1))
                         
                     ActionItemButton(imageName: "trash", action: {
-                        onDelete(channel)
+                        withAnimation {
+                            onDelete(channel)
+                        }
                     })
                         .frame(width: buttonWidth)
                         .foregroundColor(Color(colors.textInverted))
