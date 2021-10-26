@@ -268,8 +268,7 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
             case let .success(image):
                 self.loadedImages[channel.cid.id] = image
             case let .failure(error):
-                // TODO: proper logger.
-                print("error loading image: \(error.localizedDescription)")
+                log.error("error loading image: \(error.localizedDescription)")
             }
         }
     }

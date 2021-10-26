@@ -99,8 +99,7 @@ public class MoreChannelActionsViewModel: ObservableObject {
             case let .success(image):
                 self.memberAvatars[member.id] = image
             case let .failure(error):
-                // TODO: proper logger.
-                print("error loading image: \(error.localizedDescription)")
+                log.error("error loading image: \(error.localizedDescription)")
             }
         }
         
