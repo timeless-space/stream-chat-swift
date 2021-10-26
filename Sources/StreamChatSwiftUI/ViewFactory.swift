@@ -32,12 +32,14 @@ public protocol ViewFactory: AnyObject {
     associatedtype MoreActionsView: View
     func makeMoreChannelActionsView(
         for channel: ChatChannel,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> MoreActionsView
     
     func suppotedMoreChannelActions(
         for channel: ChatChannel,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> [ChannelAction]
 }
 
@@ -67,23 +69,28 @@ extension ViewFactory {
     
     public func suppotedMoreChannelActions(
         for channel: ChatChannel,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> [ChannelAction] {
         ChannelAction.defaultActions(
             for: channel,
             chatClient: chatClient,
-            onDismiss: onDismiss
+            onDismiss: onDismiss,
+            onError: onError
         )
     }
     
     public func makeMoreChannelActionsView(
         for channel: ChatChannel,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> MoreChannelActionsView {
         MoreChannelActionsView(
             channel: channel,
             channelActions: suppotedMoreChannelActions(
-                for: channel, onDismiss: onDismiss
+                for: channel,
+                onDismiss: onDismiss,
+                onError: onError
             ),
             onDismiss: onDismiss
         )

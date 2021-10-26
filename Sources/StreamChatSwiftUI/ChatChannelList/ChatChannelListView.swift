@@ -88,8 +88,8 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
                 default:
                     return Alert(
                         title: Text(L10n.Alert.Error.title),
-                        message: nil,
-                        dismissButton: .cancel(Text(L10n.Alert.Error.message))
+                        message: Text(L10n.Alert.Error.message),
+                        dismissButton: .cancel(Text(L10n.Alert.Actions.ok))
                     )
                 }
             }
@@ -109,6 +109,8 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
                 withAnimation {
                     viewModel.customChannelPopupType = nil
                 }
+            } onError: { error in
+                viewModel.showErrorPopup(error)
             }
             .edgesIgnoringSafeArea(.all)
         default:

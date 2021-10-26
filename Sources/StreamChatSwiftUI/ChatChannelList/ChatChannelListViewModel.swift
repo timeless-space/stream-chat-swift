@@ -177,6 +177,10 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         }
     }
     
+    func showErrorPopup(_ error: Error?) {
+        channelAlertType = .error
+    }
+    
     // MARK: - ChatChannelListControllerDelegate
     
     public func controllerWillChangeChannels(_ controller: ChatChannelListController) {

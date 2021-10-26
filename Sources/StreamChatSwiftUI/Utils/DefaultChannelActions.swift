@@ -15,7 +15,8 @@ extension ChannelAction {
     public static func defaultActions(
         for channel: ChatChannel,
         chatClient: ChatClient,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> [ChannelAction] {
         var actions = [ChannelAction]()
         
@@ -24,7 +25,8 @@ extension ChannelAction {
                 for: channel,
                 chatClient: chatClient,
                 userId: userId,
-                onDismiss: onDismiss
+                onDismiss: onDismiss,
+                onError: onError
             )
             
             actions.append(leaveGroup)
@@ -34,14 +36,16 @@ extension ChannelAction {
             let unmuteUser = unmuteAction(
                 for: channel,
                 chatClient: chatClient,
-                onDismiss: onDismiss
+                onDismiss: onDismiss,
+                onError: onError
             )
             actions.append(unmuteUser)
         } else {
             let muteUser = muteAction(
                 for: channel,
                 chatClient: chatClient,
-                onDismiss: onDismiss
+                onDismiss: onDismiss,
+                onError: onError
             )
             actions.append(muteUser)
         }
@@ -49,7 +53,8 @@ extension ChannelAction {
         let deleteConversation = deleteAction(
             for: channel,
             chatClient: chatClient,
-            onDismiss: onDismiss
+            onDismiss: onDismiss,
+            onError: onError
         )
         actions.append(deleteConversation)
         
@@ -69,12 +74,17 @@ extension ChannelAction {
     private static func muteAction(
         for channel: ChatChannel,
         chatClient: ChatClient,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> ChannelAction {
         let muteAction = {
             let controller = chatClient.channelController(for: channel.cid)
-            controller.muteChannel { _ in
-                onDismiss()
+            controller.muteChannel { error in
+                if let error = error {
+                    onError(error)
+                } else {
+                    onDismiss()
+                }
             }
         }
         let confirmationPopup = ConfirmationPopup(
@@ -95,12 +105,17 @@ extension ChannelAction {
     private static func unmuteAction(
         for channel: ChatChannel,
         chatClient: ChatClient,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> ChannelAction {
         let unMuteAction = {
             let controller = chatClient.channelController(for: channel.cid)
-            controller.unmuteChannel { _ in
-                onDismiss()
+            controller.unmuteChannel { error in
+                if let error = error {
+                    onError(error)
+                } else {
+                    onDismiss()
+                }
             }
         }
         let confirmationPopup = ConfirmationPopup(
@@ -122,12 +137,17 @@ extension ChannelAction {
     private static func deleteAction(
         for channel: ChatChannel,
         chatClient: ChatClient,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> ChannelAction {
         let deleteConversationAction = {
             let controller = chatClient.channelController(for: channel.cid)
-            controller.deleteChannel { _ in
-                onDismiss()
+            controller.deleteChannel { error in
+                if let error = error {
+                    onError(error)
+                } else {
+                    onDismiss()
+                }
             }
         }
         let confirmationPopup = ConfirmationPopup(
@@ -150,12 +170,17 @@ extension ChannelAction {
         for channel: ChatChannel,
         chatClient: ChatClient,
         userId: String,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
     ) -> ChannelAction {
         let leaveAction = {
             let controller = chatClient.channelController(for: channel.cid)
-            controller.removeMembers(userIds: [userId]) { _ in
-                onDismiss()
+            controller.removeMembers(userIds: [userId]) { error in
+                if let error = error {
+                    onError(error)
+                } else {
+                    onDismiss()
+                }
             }
         }
         let confirmationPopup = ConfirmationPopup(
