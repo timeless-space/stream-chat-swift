@@ -59,7 +59,7 @@ public struct MoreChannelActionsView: View {
                 }
             }
             .padding()
-            .background(Color.white)
+            .background(Color(colors.background1))
             .cornerRadius(16)
             .padding(.all, 8)
             .padding(.bottom, bottomSafeArea)

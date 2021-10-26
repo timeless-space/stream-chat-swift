@@ -33,6 +33,7 @@ public struct ChatChannelListItem: View {
                         Text(channelName)
                             .lineLimit(1)
                             .font(fonts.bodyBold)
+                            .foregroundColor(Color(colors.text))
                         if let image = image {
                             HStack(spacing: 4) {
                                 Image(uiImage: image)
@@ -123,7 +124,7 @@ public struct OnlineIndicatorView: View {
     public var body: some View {
         ZStack {
             Circle()
-                .fill(.white)
+                .fill(Color(colors.textInverted))
                 .frame(width: indicatorSize, height: indicatorSize)
             
             Circle()
