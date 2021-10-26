@@ -65,9 +65,17 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     @Published var loading = false
     @Published var customAlertShown = false
     
-    public init(selectedChannelId: String? = nil) {
+    public init(
+        channelListController: ChatChannelListController? = nil,
+        selectedChannelId: String? = nil
+    ) {
         self.selectedChannelId = selectedChannelId
-        makeChannelListController()
+        if let channelListController = channelListController {
+            controller = channelListController
+        } else {
+            makeDefaultChannelListController()
+        }
+        setupChannelListController()
     }
     
     /// Returns the name for the specified channel.
@@ -210,10 +218,13 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         }
     }
     
-    private func makeChannelListController() {
+    private func makeDefaultChannelListController() {
         controller = chatClient.channelListController(
             query: .init(filter: .containMembers(userIds: [chatClient.currentUserId!]))
         )
+    }
+    
+    private func setupChannelListController() {
         controller.delegate = self
         
         channels = controller.channels

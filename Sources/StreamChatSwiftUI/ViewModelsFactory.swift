@@ -10,8 +10,19 @@ class ViewModelsFactory {
     private init() {}
     
     /// Creates the `ChannelListViewModel`.
-    static func makeChannelListViewModel() -> ChatChannelListViewModel {
-        ChatChannelListViewModel()
+    ///
+    /// - Parameters:
+    ///    - channelListController: possibility to inject custom channel list controller.
+    ///    - selectedChannelId: pre-selected channel id (used for deeplinking).
+    /// - Returns: `ChatChannelListViewModel`.
+    static func makeChannelListViewModel(
+        channelListController: ChatChannelListController? = nil,
+        selectedChannelId: String? = nil
+    ) -> ChatChannelListViewModel {
+        ChatChannelListViewModel(
+            channelListController: channelListController,
+            selectedChannelId: selectedChannelId
+        )
     }
     
     /// Creates the `ChatChannelViewModel`.
@@ -27,6 +38,12 @@ class ViewModelsFactory {
         return viewModel
     }
     
+    /// Creates the view model for the more channel actions.
+    ///
+    /// - Parameters:
+    ///   - channel: the provided channel.
+    ///   - actions: list of the channel actions.
+    /// - Returns: `MoreChannelActionsViewModel`.
     static func makeMoreChannelActionsViewModel(
         channel: ChatChannel,
         actions: [ChannelAction]

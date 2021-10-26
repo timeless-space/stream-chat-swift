@@ -19,10 +19,15 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
     
     public init(
         viewFactory: Factory,
+        channelListController: ChatChannelListController? = nil,
         title: String = "Stream Chat",
-        onItemTap: ((ChatChannel) -> Void)? = nil
+        onItemTap: ((ChatChannel) -> Void)? = nil,
+        selectedChannelId: String? = nil
     ) {
-        let channelListVM = ViewModelsFactory.makeChannelListViewModel()
+        let channelListVM = ViewModelsFactory.makeChannelListViewModel(
+            channelListController: channelListController,
+            selectedChannelId: selectedChannelId
+        )
         _viewModel = StateObject(
             wrappedValue: channelListVM
         )

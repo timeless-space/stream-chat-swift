@@ -10,16 +10,35 @@ import StreamChatSwiftUI
 struct DemoAppSwiftUIApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @Injected(\.chatClient) public var chatClient: ChatClient
     
     var body: some Scene {
         WindowGroup {
             ChatChannelListView(viewFactory: CustomFactory.shared)
             /*
-            // Example for the channel list screen. Uncomment 
+            //Example of custom query filters.
+            ChatChannelListView(
+                viewFactory: CustomFactory.shared,
+                channelListController: customChannelListController
+            )
+            */
+            /*
+            // Example for the channel list screen.
             ChatChannelListScreen()
-             */
+            */
             
         }
+    }
+    
+    private var customChannelListController: ChatChannelListController {
+        let controller = chatClient.channelListController(
+            query: .init(
+                filter: .and([.equal(.type, to: .messaging), .containMembers(userIds: [chatClient.currentUserId!])]),
+                sort: [.init(key: .lastMessageAt, isAscending: true)],
+                pageSize: 10
+            )
+        )
+        return controller
     }
 }
 
