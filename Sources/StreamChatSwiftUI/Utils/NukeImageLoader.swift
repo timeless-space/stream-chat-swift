@@ -3,6 +3,7 @@
 //
 
 import Nuke
+import StreamChat
 import UIKit
 
 /// The class which is resposible for loading images from URLs.
@@ -86,8 +87,8 @@ open class NukeImageLoader: ImageLoading {
         completion: @escaping ((Result<UIImage, Error>) -> Void)
     ) {
         guard var url = url else {
-            // TODO: handle error
-            fatalError()
+            completion(.failure(ClientError.Unknown()))
+            return
         }
 
         let urlRequest = imageCDN.urlRequest(forImage: url)

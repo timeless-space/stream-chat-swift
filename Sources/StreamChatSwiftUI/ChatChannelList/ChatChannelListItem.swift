@@ -68,6 +68,7 @@ public struct ChatChannelListItem: View {
             .foregroundColor(.black)
             .disabled(disabled)
         }
+        .id("\(channel.id)-base")
     }
     
     private var subtitleText: String {

@@ -113,6 +113,7 @@ public struct ChatChannelSwipeableListItem<ChannelDestination: View>: View {
                 dragChanged(to: offset.width)
             }
         })
+        .id("\(channel.id)-swipeable")
     }
     
     private func dragChanged(to value: CGFloat) {
