@@ -543,6 +543,7 @@
 		84528424272683C6009857B8 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84528423272683C6009857B8 /* ViewExtensions.swift */; };
 		845284262726C7B6009857B8 /* DefaultChannelActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845284252726C7B6009857B8 /* DefaultChannelActions.swift */; };
 		845284282726FEDA009857B8 /* DateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845284272726FEDA009857B8 /* DateUtils.swift */; };
+		8452842A2727EBCE009857B8 /* ChatChannelListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845284292727EBCE009857B8 /* ChatChannelListScreen.swift */; };
 		845CEE53270F032A002C7EBD /* MessageSearchQuery_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845CEE52270F032A002C7EBD /* MessageSearchQuery_Tests.swift */; };
 		845CEE55270F1BDF002C7EBD /* SimpleChannelImageAttachmentsListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845CEE54270F1BDF002C7EBD /* SimpleChannelImageAttachmentsListController.swift */; };
 		845CEE57270F1D9C002C7EBD /* ImageAttachmentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845CEE56270F1D9C002C7EBD /* ImageAttachmentCell.swift */; };
@@ -2067,6 +2068,7 @@
 		84528423272683C6009857B8 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		845284252726C7B6009857B8 /* DefaultChannelActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultChannelActions.swift; sourceTree = "<group>"; };
 		845284272726FEDA009857B8 /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtils.swift; sourceTree = "<group>"; };
+		845284292727EBCE009857B8 /* ChatChannelListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatChannelListScreen.swift; sourceTree = "<group>"; };
 		845CEE52270F032A002C7EBD /* MessageSearchQuery_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageSearchQuery_Tests.swift; sourceTree = "<group>"; };
 		845CEE54270F1BDF002C7EBD /* SimpleChannelImageAttachmentsListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleChannelImageAttachmentsListController.swift; sourceTree = "<group>"; };
 		845CEE56270F1D9C002C7EBD /* ImageAttachmentCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAttachmentCell.swift; sourceTree = "<group>"; };
@@ -4412,6 +4414,7 @@
 		84EAC8272719750F0042AA98 /* ChatChannelList */ = {
 			isa = PBXGroup;
 			children = (
+				845284292727EBCE009857B8 /* ChatChannelListScreen.swift */,
 				84EAC828271975350042AA98 /* ChatChannelListView.swift */,
 				84EAC86C2719CC3F0042AA98 /* ChatChannelList.swift */,
 				84EAC879271D55DC0042AA98 /* ChatChannelListItem.swift */,
@@ -7409,6 +7412,7 @@
 				84EAC85527198EF90042AA98 /* BundleExtensions.swift in Sources */,
 				84EAC88A271DA83B0042AA98 /* ChatMessage+Extensions.swift in Sources */,
 				84EAC86B2719C2DB0042AA98 /* UIImage+Extensions.swift in Sources */,
+				8452842A2727EBCE009857B8 /* ChatChannelListScreen.swift in Sources */,
 				84A660C5271EB8B200501FE6 /* DateFormatter+Extensions.swift in Sources */,
 				84528424272683C6009857B8 /* ViewExtensions.swift in Sources */,
 				84EAC87A271D55DC0042AA98 /* ChatChannelListItem.swift in Sources */,

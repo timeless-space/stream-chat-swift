@@ -12,7 +12,7 @@ extension ChannelAction {
     ///     - chatClient: the chat client.
     ///     - onDimiss: called when the action is executed.
     ///  - Returns: array of `ChannelAction`.
-    static func defaultActions(
+    public static func defaultActions(
         for channel: ChatChannel,
         chatClient: ChatClient,
         onDismiss: @escaping () -> Void

@@ -125,6 +125,20 @@ public struct ChannelAction: Identifiable {
     public let action: () -> Void
     public let confirmationPopup: ConfirmationPopup?
     public let isDestructive: Bool
+    
+    public init(
+        title: String,
+        iconName: String,
+        action: @escaping () -> Void,
+        confirmationPopup: ConfirmationPopup?,
+        isDestructive: Bool
+    ) {
+        self.title = title
+        self.iconName = iconName
+        self.action = action
+        self.confirmationPopup = confirmationPopup
+        self.isDestructive = isDestructive
+    }
 }
 
 /// Model describing confirmation popup data.

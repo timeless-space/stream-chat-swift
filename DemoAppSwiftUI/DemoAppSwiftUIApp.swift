@@ -3,6 +3,7 @@
 //
 
 import SwiftUI
+import StreamChat
 import StreamChatSwiftUI
 
 @main
@@ -13,6 +14,11 @@ struct DemoAppSwiftUIApp: App {
     var body: some Scene {
         WindowGroup {
             ChatChannelListView(viewFactory: CustomFactory.shared)
+            /*
+            // Example for the channel list screen. Uncomment 
+            ChatChannelListScreen()
+             */
+            
         }
     }
 }
@@ -28,5 +34,30 @@ class CustomFactory: ViewFactory {
     func makeChannelHeaderViewModifier(title: String) -> some ChannelHeaderViewModifier {
         CustomChannelModifier(title: title)
     }
+    
+    /*
+    // Example for an injected action. Uncomment to see it in action.
+    func suppotedMoreChannelActions(
+        for channel: ChatChannel,
+        onDismiss: @escaping () -> Void
+    ) -> [ChannelAction] {
+        var defaultActions = ChannelAction.defaultActions(
+            for: channel,
+            chatClient: chatClient,
+            onDismiss: onDismiss
+        )
+        
+        let injectedAction = ChannelAction(
+            title: "Injected",
+            iconName: "plus",
+            action: onDismiss,
+            confirmationPopup: nil,
+            isDestructive: false
+        )
+        
+        defaultActions.insert(injectedAction, at: 0)
+        return defaultActions
+    }
+     */
     
 }
