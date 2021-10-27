@@ -108,7 +108,7 @@ public struct ChannelAvatarView: View {
             .overlay(
                 showOnlineIndicator ?
                     TopRightView {
-                        OnlineIndicatorView()
+                        OnlineIndicatorView(indicatorSize: size.width * 0.3)
                     }
                     .offset(x: 3, y: -1)
                     : nil
@@ -120,7 +120,7 @@ public struct ChannelAvatarView: View {
 public struct OnlineIndicatorView: View {
     @Injected(\.colors) var colors
     
-    private let indicatorSize: CGFloat = 15
+    var indicatorSize: CGFloat
     
     public var body: some View {
         ZStack {
@@ -130,8 +130,12 @@ public struct OnlineIndicatorView: View {
             
             Circle()
                 .fill(Color(colors.alternativeActiveTint))
-                .frame(width: indicatorSize - 5, height: indicatorSize - 5)
+                .frame(width: innerCircleSize, height: innerCircleSize)
         }
+    }
+    
+    private var innerCircleSize: CGFloat {
+        2 * indicatorSize / 3
     }
 }
 

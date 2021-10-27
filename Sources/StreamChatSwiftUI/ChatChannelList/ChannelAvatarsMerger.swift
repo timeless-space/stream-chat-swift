@@ -4,11 +4,34 @@
 
 import UIKit
 
-extension ChatChannelListViewModel {
+public protocol ChannelAvatarsMerging {
+    /// Creates a merged avatar from the provided user images.
+    /// - Parameter avatars: the avatars to be merged.
+    /// - Returns: optional image, if the creation succeeded.
+    func createMergedAvatar(from avatars: [UIImage]) -> UIImage?
+}
+
+/// Default implementation of `ChannelAvatarsMerging`.
+public class ChannelAvatarsMerger: ChannelAvatarsMerging {
+    public init() {}
+    
+    @Injected(\.utils) var utils
+    @Injected(\.images) var images
+    
+    /// Context provided utils.
+    private lazy var imageProcessor = utils.imageProcessor
+    private lazy var imageMerger = utils.imageMerger
+    
+    /// Placeholder images.
+    private lazy var placeholder1 = images.userAvatarPlaceholder1
+    private lazy var placeholder2 = images.userAvatarPlaceholder2
+    private lazy var placeholder3 = images.userAvatarPlaceholder3
+    private lazy var placeholder4 = images.userAvatarPlaceholder4
+    
     /// Creates a merged avatar from the given images
     /// - Parameter avatars: The individual avatars
     /// - Returns: The merged avatar
-    internal func createMergedAvatar(from avatars: [UIImage]) -> UIImage? {
+    public func createMergedAvatar(from avatars: [UIImage]) -> UIImage? {
         guard !avatars.isEmpty else {
             return nil
         }

@@ -4,13 +4,13 @@
 
 import SwiftUI
 
-/// View modifier for customizing the channel header.
-public protocol ChannelHeaderViewModifier: ViewModifier {
+/// View modifier for customizing the channel list header.
+public protocol ChannelListHeaderViewModifier: ViewModifier {
     var title: String { get }
 }
 
-/// The default channel header.
-public struct DefaultChatChannelHeader: ToolbarContent {
+/// The default channel list header.
+public struct DefaultChatChannelListHeader: ToolbarContent {
     @Injected(\.fonts) var fonts
     @Injected(\.images) var images
     
@@ -32,13 +32,13 @@ public struct DefaultChatChannelHeader: ToolbarContent {
     }
 }
 
-/// The default header modifier.
-public struct DefaultHeaderModifier: ChannelHeaderViewModifier {
+/// The default channel list header modifier.
+public struct DefaultChannelListHeaderModifier: ChannelListHeaderViewModifier {
     public var title: String
     
     public func body(content: Content) -> some View {
         content.toolbar {
-            DefaultChatChannelHeader(title: title)
+            DefaultChatChannelListHeader(title: title)
         }
     }
 }

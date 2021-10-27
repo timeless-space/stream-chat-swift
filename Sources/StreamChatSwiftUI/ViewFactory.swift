@@ -13,95 +13,58 @@ public protocol ViewFactory: AnyObject {
     /// Returns the navigation bar display mode.
     func navigationBarDisplayMode() -> NavigationBarItem.TitleDisplayMode
     
-    associatedtype HeaderViewModifier: ChannelHeaderViewModifier
-    /// Creates the channel header view modifier.
-    func makeChannelHeaderViewModifier(title: String) -> HeaderViewModifier
+    // MARK: - channels
+    
+    associatedtype HeaderViewModifier: ChannelListHeaderViewModifier
+    /// Creates the channel list header view modifier.
+    ///  - Parameter title: the title displayed in the header.
+    func makeChannelListHeaderViewModifier(title: String) -> HeaderViewModifier
     
     associatedtype NoChannels: View
     /// Creates the view that is displayed when there are no channels available.
     func makeNoChannelsView() -> NoChannels
-    
-    associatedtype ChannelDestination: View
-    /// Creates the  channel destination.
-    func makeChannelDestination() -> (ChatChannel) -> ChannelDestination
     
     associatedtype LoadingContent: View
     /// Creates the loading view.
     func makeLoadingView() -> LoadingContent
     
     associatedtype MoreActionsView: View
+    /// Creates the more channel actions view.
+    /// - Parameters:
+    ///  - channel: the channel where the actions are applied.
+    ///  - onDismiss: handler when the more actions view is dismissed.
+    ///  - onError: handler when an error happened.
     func makeMoreChannelActionsView(
         for channel: ChatChannel,
         onDismiss: @escaping () -> Void,
         onError: @escaping (Error) -> Void
     ) -> MoreActionsView
     
+    /// Returns the supported  channel actions.
+    /// - Parameters:
+    ///  - channel: the channel where the actions are applied.
+    ///  - onDismiss: handler when the more actions view is dismissed.
+    ///  - onError: handler when an error happened.
+    /// - Returns: list of `ChannelAction` items.
     func suppotedMoreChannelActions(
         for channel: ChatChannel,
         onDismiss: @escaping () -> Void,
         onError: @escaping (Error) -> Void
     ) -> [ChannelAction]
-}
-
-/// Default implementations for the `ViewFactory`.
-extension ViewFactory {
-    public func makeNoChannelsView() -> NoChannelsView {
-        NoChannelsView()
-    }
     
-    public func makeChannelDestination() -> (ChatChannel) -> ChatChannelView<Self> {
-        { [unowned self] channel in
-            ChatChannelView(viewFactory: self, channel: channel)
-        }
-    }
+    // MARK: - messages
     
-    public func makeLoadingView() -> LoadingView {
-        LoadingView()
-    }
+    associatedtype ChannelDestination: View
+    /// Returns a function that creates the channel destination.
+    func makeChannelDestination() -> (ChatChannel) -> ChannelDestination
     
-    public func navigationBarDisplayMode() -> NavigationBarItem.TitleDisplayMode {
-        .inline
-    }
+    associatedtype UserAvatar: View
+    /// Creates the message avatar view.
+    /// - Parameter author: the message author whose avatar is displayed.
+    func makeMessageAvatarView(for author: ChatUser) -> UserAvatar
     
-    public func makeChannelHeaderViewModifier(title: String) -> some ChannelHeaderViewModifier {
-        DefaultHeaderModifier(title: title)
-    }
-    
-    public func suppotedMoreChannelActions(
-        for channel: ChatChannel,
-        onDismiss: @escaping () -> Void,
-        onError: @escaping (Error) -> Void
-    ) -> [ChannelAction] {
-        ChannelAction.defaultActions(
-            for: channel,
-            chatClient: chatClient,
-            onDismiss: onDismiss,
-            onError: onError
-        )
-    }
-    
-    public func makeMoreChannelActionsView(
-        for channel: ChatChannel,
-        onDismiss: @escaping () -> Void,
-        onError: @escaping (Error) -> Void
-    ) -> MoreChannelActionsView {
-        MoreChannelActionsView(
-            channel: channel,
-            channelActions: suppotedMoreChannelActions(
-                for: channel,
-                onDismiss: onDismiss,
-                onError: onError
-            ),
-            onDismiss: onDismiss
-        )
-    }
-}
-
-/// Default class conforming to `ViewFactory`, used throughout the SDK.
-public class DefaultViewFactory: ViewFactory {
-    @Injected(\.chatClient) public var chatClient
-    
-    private init() {}
-    
-    public static let shared = DefaultViewFactory()
+    associatedtype ChatHeaderViewModifier: ChatChannelHeaderViewModifier
+    /// Creates the channel header view modifier.
+    /// - Parameter channel: the displayed channel.
+    func makeChannelHeaderViewModifier(for channel: ChatChannel) -> ChatHeaderViewModifier
 }

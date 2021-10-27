@@ -11,6 +11,7 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
     @Injected(\.colors) var colors
     
     @StateObject private var viewModel: ChatChannelListViewModel
+    @StateObject private var channelHeaderLoader = ChannelHeaderLoader()
     
     private let viewFactory: Factory
     private let title: String
@@ -63,7 +64,7 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
                             selectedChannel: $viewModel.selectedChannel,
                             currentChannelId: $viewModel.currentChannelId,
                             onlineIndicatorShown: viewModel.onlineIndicatorShown(for:),
-                            imageLoader: viewModel.image(for:),
+                            imageLoader: channelHeaderLoader.image(for:),
                             onItemTap: onItemTap,
                             onItemAppear: viewModel.checkForChannels(index:),
                             channelNaming: viewModel.name(forChannel:),
@@ -93,7 +94,7 @@ public struct ChatChannelListView<Factory: ViewFactory>: View {
                     )
                 }
             }
-            .modifier(viewFactory.makeChannelHeaderViewModifier(title: title))
+            .modifier(viewFactory.makeChannelListHeaderViewModifier(title: title))
             .edgesIgnoringSafeArea(.bottom)
             .navigationBarTitleDisplayMode(viewFactory.navigationBarDisplayMode())
             .blur(radius: (viewModel.customAlertShown || viewModel.alertShown) ? 6 : 0)

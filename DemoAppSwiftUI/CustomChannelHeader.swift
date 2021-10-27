@@ -38,7 +38,7 @@ public struct CustomChannelHeader: ToolbarContent {
     }
 }
 
-struct CustomChannelModifier: ChannelHeaderViewModifier {
+struct CustomChannelModifier: ChannelListHeaderViewModifier {
     
     var title: String
     

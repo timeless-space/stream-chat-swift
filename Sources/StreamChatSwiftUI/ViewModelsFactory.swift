@@ -26,9 +26,11 @@ class ViewModelsFactory {
     }
     
     /// Creates the `ChatChannelViewModel`.
-    /// - Parameter channel: the channel for which the view model will be created.
-    static func makeChannelViewModel(for channel: ChatChannel) -> ChatChannelViewModel {
-        let viewModel = ChatChannelViewModel(channel: channel)
+    /// - Parameter channelController: the channel controller.
+    static func makeChannelViewModel(
+        with channelController: ChatChannelController
+    ) -> ChatChannelViewModel {
+        let viewModel = ChatChannelViewModel(channelController: channelController)
         return viewModel
     }
     

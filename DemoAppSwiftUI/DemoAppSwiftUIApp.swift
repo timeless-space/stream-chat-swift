@@ -50,7 +50,7 @@ class CustomFactory: ViewFactory {
     
     public static let shared = CustomFactory()
     
-    func makeChannelHeaderViewModifier(title: String) -> some ChannelHeaderViewModifier {
+    func makeChannelListHeaderViewModifier(title: String) -> some ChannelListHeaderViewModifier {
         CustomChannelModifier(title: title)
     }
     

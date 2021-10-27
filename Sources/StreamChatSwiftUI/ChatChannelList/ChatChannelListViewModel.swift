@@ -4,6 +4,7 @@
 
 import Foundation
 import StreamChat
+import SwiftUI
 import UIKit
 
 /// View model for the `ChatChannelListView`.
@@ -14,18 +15,8 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
     @Injected(\.utils) var utils: Utils
     
     /// Context provided utils.
-    internal lazy var imageLoader = utils.imageLoader
-    internal lazy var imageCDN = utils.imageCDN
-    internal lazy var imageProcessor = utils.imageProcessor
-    internal lazy var imageMerger = utils.imageMerger
     internal lazy var channelNamer = utils.channelNamer
-    
-    /// Placeholder images.
-    internal lazy var placeholder1 = images.userAvatarPlaceholder1
-    internal lazy var placeholder2 = images.userAvatarPlaceholder2
-    internal lazy var placeholder3 = images.userAvatarPlaceholder3
-    internal lazy var placeholder4 = images.userAvatarPlaceholder4
-    
+        
     /// The maximum number of images that combine to form a single avatar
     private let maxNumberOfImagesInCombinedAvatar = 4
     
@@ -99,48 +90,6 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
                 guard let self = self else { return }
                 self.loadingNextChannels = false
                 self.channels = self.controller.channels
-            }
-        }
-    }
-    
-    /// Returns the image avatar for the provided channel.
-    ///
-    /// - Parameter channel: the provided channel.
-    /// - Returns: The resolved image avatar.
-    public func image(for channel: ChatChannel) -> UIImage {
-        if let image = loadedImages[channel.cid.id] {
-            return image
-        }
-        
-        if let url = channel.imageURL {
-            loadChannelThumbnail(for: channel, from: url)
-            return placeholder4
-        }
-        
-        if channel.isDirectMessageChannel {
-            let lastActiveMembers = self.lastActiveMembers(for: channel)
-            if let otherMember = lastActiveMembers.first, let url = otherMember.imageURL {
-                loadChannelThumbnail(for: channel, from: url)
-                return placeholder3
-            } else {
-                return placeholder4
-            }
-        } else {
-            let activeMembers = lastActiveMembers(for: channel)
-            
-            if activeMembers.isEmpty {
-                return placeholder4
-            }
-            
-            let urls = activeMembers
-                .compactMap(\.imageURL)
-                .prefix(maxNumberOfImagesInCombinedAvatar)
-            
-            if urls.isEmpty {
-                return placeholder3
-            } else {
-                loadMergedAvatar(from: channel, urls: Array(urls))
-                return placeholder4
             }
         }
     }
@@ -251,44 +200,6 @@ public class ChatChannelListViewModel: ObservableObject, ChatChannelListControll
         channel.lastActiveMembers
             .sorted { $0.memberCreatedAt < $1.memberCreatedAt }
             .filter { $0.id != chatClient.currentUserId }
-    }
-    
-    private func loadChannelThumbnail(
-        for channel: ChatChannel,
-        from url: URL
-    ) {
-        imageLoader.loadImage(
-            url: url,
-            imageCDN: imageCDN,
-            resize: true,
-            preferredSize: .avatarThumbnailSize
-        ) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case let .success(image):
-                self.loadedImages[channel.cid.id] = image
-            case let .failure(error):
-                log.error("error loading image: \(error.localizedDescription)")
-            }
-        }
-    }
-    
-    private func loadMergedAvatar(from channel: ChatChannel, urls: [URL]) {
-        imageLoader.loadImages(
-            from: urls,
-            placeholders: [],
-            loadThumbnails: true,
-            thumbnailSize: .avatarThumbnailSize,
-            imageCDN: imageCDN
-        ) { [weak self] images in
-            guard let self = self else { return }
-            DispatchQueue.global(qos: .userInteractive).async {
-                let image = self.createMergedAvatar(from: images) ?? self.placeholder2
-                DispatchQueue.main.async {
-                    self.loadedImages[channel.cid.id] = image
-                }
-            }
-        }
     }
 }
 

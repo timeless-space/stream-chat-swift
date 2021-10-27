@@ -5,6 +5,7 @@
 import StreamChat
 import SwiftUI
 
+/// View for the chat channel.
 public struct ChatChannelView<Factory: ViewFactory>: View {
     @StateObject private var viewModel: ChatChannelViewModel
     
@@ -12,15 +13,29 @@ public struct ChatChannelView<Factory: ViewFactory>: View {
     
     public init(
         viewFactory: Factory,
-        channel: ChatChannel
+        channelController: ChatChannelController
     ) {
         _viewModel = StateObject(
-            wrappedValue: ViewModelsFactory.makeChannelViewModel(for: channel)
+            wrappedValue: ViewModelsFactory.makeChannelViewModel(with: channelController)
         )
         factory = viewFactory
     }
     
     public var body: some View {
-        Text("message view")
+        VStack(spacing: 0) {
+            MessageListView(
+                factory: factory,
+                messages: $viewModel.messages,
+                scrolledId: $viewModel.scrolledId,
+                showScrollToLatestButton: $viewModel.showScrollToLatestButton,
+                currentDateString: $viewModel.currentDateString,
+                onMessageAppear: viewModel.handleMessageAppear(index:),
+                onScrollToBottom: viewModel.scrollToLastMessage
+            )
+            .onAppear {
+                viewModel.subscribeToChannelChanges()
+            }
+        }
+        .modifier(factory.makeChannelHeaderViewModifier(for: viewModel.channel))
     }
 }

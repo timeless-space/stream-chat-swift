@@ -41,32 +41,10 @@ public class MoreChannelActionsViewModel: ObservableObject {
             return ""
         }
 
-        if channel.isDirectMessageChannel {
-            guard let member = channel
-                .lastActiveMembers
-                .first(where: { $0.id != currentUserId })
-            else {
-                return ""
-            }
-
-            if member.isOnline {
-                return L10n.Message.Title.online
-            } else if let lastActiveAt = member.lastActiveAt,
-                      let timeAgo = lastSeenDateFormatter(lastActiveAt) {
-                return timeAgo
-            } else {
-                return L10n.Message.Title.offline
-            }
-        }
-
-        return L10n.Message.Title.group(channel.memberCount, channel.watcherCount)
+        return channel.onlineInfoText(currentUserId: currentUserId)
     }
     
     private let channel: ChatChannel
-    
-    private var lastSeenDateFormatter: (Date) -> String? {
-        DateUtils.timeAgo
-    }
     
     public init(
         channel: ChatChannel,
