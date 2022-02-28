@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -68,8 +68,17 @@ public struct ChatMessage {
     ///
     public let isSilent: Bool
     
+    /// A flag indicating whether the message is a shadowed message.
+    ///
+    /// Shadowed message are special messages that are sent from shadow banned users.
+    ///
+    public let isShadowed: Bool
+    
     /// The reactions to the message created by any user.
     public let reactionScores: [MessageReactionType: Int]
+
+    /// The number of reactions per reaction type.
+    public let reactionCounts: [MessageReactionType: Int]
     
     /// The user which is the author of the message.
     ///
@@ -158,7 +167,9 @@ public struct ChatMessage {
         extraData: [String: RawJSON],
         quotedMessage: @escaping () -> ChatMessage?,
         isSilent: Bool,
+        isShadowed: Bool,
         reactionScores: [MessageReactionType: Int],
+        reactionCounts: [MessageReactionType: Int],
         author: @escaping () -> ChatUser,
         mentionedUsers: @escaping () -> Set<ChatUser>,
         threadParticipants: @escaping () -> [ChatUser],
@@ -187,7 +198,9 @@ public struct ChatMessage {
         self.replyCount = replyCount
         self.extraData = extraData
         self.isSilent = isSilent
+        self.isShadowed = isShadowed
         self.reactionScores = reactionScores
+        self.reactionCounts = reactionCounts
         self.localState = localState
         self.isFlaggedByCurrentUser = isFlaggedByCurrentUser
         self.isSentByCurrentUser = isSentByCurrentUser
@@ -204,14 +217,17 @@ public struct ChatMessage {
     }
 }
 
-extension ChatMessage {
+public extension ChatMessage {
     /// Indicates whether the message is pinned or not.
-    public var isPinned: Bool {
+    var isPinned: Bool {
         pinDetails != nil
     }
-}
 
-public extension ChatMessage {
+    /// The total number of reactions.
+    var totalReactionsCount: Int {
+        reactionCounts.values.reduce(0, +)
+    }
+
     /// Returns all the attachments with the payload of the provided type.
     ///
     /// - Important: Attachments are loaded lazily and cached to maintain high performance.
@@ -316,7 +332,7 @@ public struct MessagePinDetails {
     public let pinnedBy: ChatUser
 
     /// Date when the message pin expires. An nil value means that message does not expire
-    public let expiresAt: Date
+    public let expiresAt: Date?
 }
 
 /// A possible additional local state of the message. Applies only for the messages of the current user.
@@ -338,5 +354,28 @@ public enum LocalMessageState: String {
     /// The message is waiting to be deleted.
     case deleting
     /// Deleting of the message failed after multiple of tries. The system is not trying to delete this message anymore.
+    case deletingFailed
+}
+
+public enum LocalReactionState: String {
+    ///  The reaction state is unknown
+    case unknown = ""
+    
+    /// The reaction is waiting to be sent to the server
+    case pendingSend
+
+    /// The reaction is being sent
+    case sending
+
+    /// Creating the reaction failed and cannot be fulfilled
+    case sendingFailed
+
+    /// The reaction is waiting to be deleted from the server
+    case pendingDelete
+    
+    /// The reaction is being deleted
+    case deleting
+    
+    /// Deleting of the reaction failed and cannot be fulfilled
     case deletingFailed
 }

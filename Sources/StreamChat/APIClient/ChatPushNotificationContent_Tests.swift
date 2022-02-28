@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -31,7 +31,7 @@ class ChatPushNotificationContent_Tests: XCTestCase {
         database = DatabaseContainerMock()
 
         var env = ChatClient.Environment()
-        env.databaseContainerBuilder = { _, _, _, _, _ in self.database }
+        env.databaseContainerBuilder = { _, _, _, _, _, _ in self.database }
         env.apiClientBuilder = { _, _, _, _, _ in self.apiClient }
         
         clientWithOffline = ChatClient(
@@ -107,7 +107,7 @@ class ChatPushNotificationContent_Tests: XCTestCase {
         }))
 
         apiClient.test_simulateResponse(Result<MessagePayload.Boxed, Error>.success(exampleMessagePayload))
-        wait(for: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: defaultTimeout)
     }
     
     func testCompletion_withUnknownEvent() throws {
@@ -123,7 +123,7 @@ class ChatPushNotificationContent_Tests: XCTestCase {
         XCTAssertTrue(handler.handleNotification(completion: { notification in
             expectation.fulfill()
             
-            guard case let .unknown(content) = notification else {
+            guard case .unknown = notification else {
                 XCTFail()
                 return
             }

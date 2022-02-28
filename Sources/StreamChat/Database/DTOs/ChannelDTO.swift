@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -41,6 +41,7 @@ class ChannelDTO: NSManagedObject {
     
     @NSManaged var isFrozen: Bool
     @NSManaged var cooldownDuration: Int
+    @NSManaged var team: String?
 
     // MARK: - Queries
 
@@ -53,7 +54,6 @@ class ChannelDTO: NSManagedObject {
     // MARK: - Relationships
     
     @NSManaged var createdBy: UserDTO?
-    @NSManaged var team: TeamDTO?
     @NSManaged var members: Set<MemberDTO>
 
     /// If the current user is a member of the channel, this is their MemberDTO
@@ -64,6 +64,7 @@ class ChannelDTO: NSManagedObject {
     @NSManaged var reads: Set<ChannelReadDTO>
     @NSManaged var attachments: Set<AttachmentDTO>
     @NSManaged var watchers: Set<UserDTO>
+    @NSManaged var memberListQueries: Set<ChannelMemberListQueryDTO>
 
     override func willSave() {
         super.willSave()
@@ -183,8 +184,7 @@ extension NSManagedObjectContext {
         }
         
         dto.cooldownDuration = payload.cooldownDuration
-
-        dto.team = try payload.team.map { try saveTeam(teamId: $0) }
+        dto.team = payload.team
 
         if let createdByPayload = payload.createdBy {
             let creatorDTO = try saveUser(payload: createdByPayload)
@@ -210,12 +210,12 @@ extension NSManagedObjectContext {
     ) throws -> ChannelDTO {
         let dto = try saveChannel(payload: payload.channel, query: query)
 
-        try payload.messages.forEach { _ = try saveMessage(payload: $0, channelDTO: dto) }
+        try payload.messages.forEach { _ = try saveMessage(payload: $0, channelDTO: dto, syncOwnReactions: true) }
 
         dto.updateOldestMessageAt(payload: payload)
 
         try payload.pinnedMessages.forEach {
-            _ = try saveMessage(payload: $0, channelDTO: dto)
+            _ = try saveMessage(payload: $0, channelDTO: dto, syncOwnReactions: true)
         }
         
         try payload.channelReads.forEach { _ = try saveChannelRead(payload: $0, for: payload.channel.cid) }
@@ -338,11 +338,12 @@ extension ChatChannel {
             
             // Fetch count of all mentioned messages after last read
             // (this is not 100% accurate but it's the best we have)
-            let metionedUnreadMessagesRequest = NSFetchRequest<MessageDTO>(entityName: MessageDTO.entityName)
-            metionedUnreadMessagesRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            let mentionedUnreadMessagesRequest = NSFetchRequest<MessageDTO>(entityName: MessageDTO.entityName)
+            mentionedUnreadMessagesRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
                 MessageDTO.channelMessagesPredicate(
                     for: dto.cid,
-                    deletedMessagesVisibility: context.deletedMessagesVisibility ?? .visibleForCurrentUser
+                    deletedMessagesVisibility: context.deletedMessagesVisibility ?? .visibleForCurrentUser,
+                    shouldShowShadowedMessages: context.shouldShowShadowedMessages ?? false
                 ),
                 NSPredicate(format: "createdAt > %@", currentUserRead?.lastReadAt as NSDate? ?? NSDate(timeIntervalSince1970: 0)),
                 NSPredicate(format: "%@ IN mentionedUsers", currentUser.user)
@@ -351,7 +352,7 @@ extension ChatChannel {
             do {
                 return ChannelUnreadCount(
                     messages: allUnreadMessages,
-                    mentionedMessages: try context.count(for: metionedUnreadMessagesRequest)
+                    mentionedMessages: try context.count(for: mentionedUnreadMessagesRequest)
                 )
             } catch {
                 log.error("Failed to fetch unread counts for channel `\(cid)`. Error: \(error)")
@@ -409,7 +410,7 @@ extension ChatChannel {
             membership: dto.membership.map { $0.asModel() },
             currentlyTypingUsers: { Set(dto.currentlyTypingUsers.map { $0.asModel() }) },
             lastActiveWatchers: { fetchWatchers() },
-            team: dto.team?.id,
+            team: dto.team,
             unreadCount: { unreadCount() },
             watcherCount: Int(dto.watcherCount),
             memberCount: Int(dto.memberCount),

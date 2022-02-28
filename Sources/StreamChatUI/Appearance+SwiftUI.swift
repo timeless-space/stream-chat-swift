@@ -1,17 +1,18 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
+import Combine
 import StreamChat
 import SwiftUI
 
 @available(iOS 13.0, *)
 extension Appearance {
-    /// Used to initialize `_Components` as `ObservableObject`.
+    /// Used to initialize `Components` as `ObservableObject`.
     public var asObservableObject: ObservableObject { .init(self) }
 
     @dynamicMemberLookup
-    /// `_Components` represented as `ObservableObject` class for SwiftUI requirements.
+    /// `Components` represented as `ObservableObject` class for SwiftUI requirements.
     public class ObservableObject: SwiftUI.ObservableObject {
         private let wrappedAppearance: Appearance
 

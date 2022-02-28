@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -10,7 +10,7 @@ open class ChatMessageLayoutOptionsResolver {
     /// The minimum time interval between messages to treat them as a single message group.
     public let minTimeIntervalBetweenMessagesInGroup: TimeInterval
 
-    /// Creates the `_ChatMessageLayoutOptionsResolver` with the given `minTimeIntervalBetweenMessagesInGroup` value
+    /// Creates the `ChatMessageLayoutOptionsResolver` with the given `minTimeIntervalBetweenMessagesInGroup` value
     public init(minTimeIntervalBetweenMessagesInGroup: TimeInterval = 30) {
         self.minTimeIntervalBetweenMessagesInGroup = minTimeIntervalBetweenMessagesInGroup
     }
@@ -28,6 +28,12 @@ open class ChatMessageLayoutOptionsResolver {
         with messages: AnyRandomAccessCollection<ChatMessage>,
         appearance: Appearance
     ) -> ChatMessageLayoutOptions {
+        // Make sure the message exists. Sometimes when switching channels really fast on iPad's split view,
+        // it can happen that this method is called for old data from a previous channel.
+        guard indexPath.item < messages.count else {
+            return []
+        }
+
         let messageIndex = messages.index(messages.startIndex, offsetBy: indexPath.item)
         let message = messages[messageIndex]
 
@@ -38,8 +44,8 @@ open class ChatMessageLayoutOptionsResolver {
         
         var options: ChatMessageLayoutOptions = []
 
-        // The text should be centered without a bubble for system messages
-        guard message.type != .system else {
+        // The text should be centered without a bubble for system or error messages
+        guard message.type != .system && message.type != .error else {
             return [.text, .centered]
         }
 
@@ -137,13 +143,19 @@ open class ChatMessageLayoutOptionsResolver {
         messages: AnyRandomAccessCollection<ChatMessage>
     ) -> Bool {
         let messageIndex = messages.index(messages.startIndex, offsetBy: messageIndexPath.item)
-        let message = messages[messageIndex]
+        guard let message = messages[safe: messageIndex] else {
+            indexNotFoundAssertion()
+            return true
+        }
 
         // The current message is the last message so it's either a standalone or last in sequence.
         guard messageIndexPath.item > 0 else { return true }
 
         let nextMessageIndex = messages.index(before: messageIndex)
-        let nextMessage = messages[nextMessageIndex]
+        guard let nextMessage = messages[safe: nextMessageIndex] else {
+            indexNotFoundAssertion()
+            return true
+        }
 
         // The message after the current one has different author so the current message
         // is either a standalone or last in sequence.

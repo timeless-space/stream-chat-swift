@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -24,20 +24,42 @@ final class MessageEndpoints_Tests: XCTestCase {
         XCTAssertEqual(AnyEndpoint(expectedEndpoint), AnyEndpoint(endpoint))
     }
     
-    func test_deleteMessage_buildsCorrectly() {
+    func test_deleteMessage_whenHardDeleteDisabled_buildsCorrectly() {
         let messageId: MessageId = .unique
         
-        let expectedEndpoint = Endpoint<EmptyResponse>(
+        let expectedEndpoint = Endpoint<MessagePayload.Boxed>(
             path: "messages/\(messageId)",
             method: .delete,
             queryItems: nil,
             requiresConnectionId: false,
-            body: nil
+            body: [
+                "hard": false
+            ]
         )
         
         // Build endpoint
-        let endpoint: Endpoint<EmptyResponse> = .deleteMessage(messageId: messageId)
+        let endpoint: Endpoint<MessagePayload.Boxed> = .deleteMessage(messageId: messageId, hard: false)
         
+        // Assert endpoint is built correctly
+        XCTAssertEqual(AnyEndpoint(expectedEndpoint), AnyEndpoint(endpoint))
+    }
+
+    func test_deleteMessage_whenHardDeleteEnabled_buildsCorrectly() {
+        let messageId: MessageId = .unique
+
+        let expectedEndpoint = Endpoint<MessagePayload.Boxed>(
+            path: "messages/\(messageId)",
+            method: .delete,
+            queryItems: nil,
+            requiresConnectionId: false,
+            body: [
+                "hard": true
+            ]
+        )
+
+        // Build endpoint
+        let endpoint: Endpoint<MessagePayload.Boxed> = .deleteMessage(messageId: messageId, hard: true)
+
         // Assert endpoint is built correctly
         XCTAssertEqual(AnyEndpoint(expectedEndpoint), AnyEndpoint(endpoint))
     }
@@ -82,6 +104,22 @@ final class MessageEndpoints_Tests: XCTestCase {
         
         // Assert endpoint is built correctly
         XCTAssertEqual(AnyEndpoint(expectedEndpoint), AnyEndpoint(endpoint))
+    }
+
+    func test_loadReactions_buildsCorrectly() {
+        let messageId: MessageId = "ID"
+        let pagination: Pagination = .init(pageSize: 10)
+
+        let endpoint: Endpoint<MessageReactionsPayload> = .loadReactions(
+            messageId: messageId,
+            pagination: pagination
+        )
+
+        XCTAssertEqual(endpoint.path, "messages/ID/reactions")
+        XCTAssertEqual(endpoint.method, .get)
+        XCTAssertTrue(endpoint.queryItems == nil)
+        XCTAssertEqual(endpoint.requiresConnectionId, false)
+        XCTAssertEqual(endpoint.body?.asAnyEncodable, pagination.asAnyEncodable)
     }
     
     func test_addReaction_buildsCorrectly() {

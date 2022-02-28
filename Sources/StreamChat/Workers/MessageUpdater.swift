@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -7,6 +7,8 @@ import Foundation
 
 /// The type provides the API for getting/editing/deleting a message
 class MessageUpdater: Worker {
+    private var retryOptions: RetryOptions = .init()
+
     /// Fetches the message from the backend and saves it into the database
     /// - Parameters:
     ///   - cid: The channel identifier the message relates to.
@@ -18,7 +20,7 @@ class MessageUpdater: Worker {
             switch $0 {
             case let .success(boxed):
                 self.database.write({ session in
-                    try session.saveMessage(payload: boxed.message, for: cid)
+                    try session.saveMessage(payload: boxed.message, for: cid, syncOwnReactions: true)
                 }, completion: { error in
                     completion?(error)
                 })
@@ -39,8 +41,9 @@ class MessageUpdater: Worker {
     ///
     /// - Parameters:
     ///   - messageId: The message identifier.
+    ///   - hard: A Boolean value to determine if the message will be delete permanently on the backend.
     ///   - completion: The completion. Will be called with an error if smth goes wrong, otherwise - will be called with `nil`.
-    func deleteMessage(messageId: MessageId, completion: ((Error?) -> Void)? = nil) {
+    func deleteMessage(messageId: MessageId, hard: Bool, completion: ((Error?) -> Void)? = nil) {
         var shouldDeleteOnBackend = true
         
         database.write({ session in
@@ -50,6 +53,8 @@ class MessageUpdater: Worker {
                 // to try to delete the message on the backend.
                 return
             }
+
+            messageDTO.isHardDeleted = hard
             
             if messageDTO.existsOnlyLocally {
                 messageDTO.type = MessageType.deleted.rawValue
@@ -64,14 +69,26 @@ class MessageUpdater: Worker {
                 return
             }
             
-            self.apiClient.request(endpoint: .deleteMessage(messageId: messageId)) { result in
+            self.apiClient.request(endpoint: .deleteMessage(messageId: messageId, hard: hard)) { result in
                 self.database.write({ session in
                     let messageDTO = session.message(id: messageId)
                     switch result {
-                    case .success:
-                        messageDTO?.localMessageState = nil
+                    case let .success(response):
+                        guard let cid = messageDTO?.channel?.cid else { return }
+
+                        let deletedMessage = try session.saveMessage(
+                            payload: response.message,
+                            for: ChannelId(cid: cid),
+                            syncOwnReactions: false
+                        )
+                        deletedMessage?.localMessageState = nil
+
+                        if hard, let message = deletedMessage {
+                            session.delete(message: message)
+                        }
                     case .failure:
                         messageDTO?.localMessageState = .deletingFailed
+                        messageDTO?.isHardDeleted = false
                     }
                 }, completion: { error in
                     completion?(result.error ?? error)
@@ -85,18 +102,36 @@ class MessageUpdater: Worker {
     ///  - Parameters:
     ///   - messageId: The message identifier.
     ///   - text: The updated message text.
+    ///   - extraData: Extra Data for the message.
     ///   - completion: The completion. Will be called with an error if smth goes wrong, otherwise - will be called with `nil`.
-    func editMessage(messageId: MessageId, text: String, completion: ((Error?) -> Void)? = nil) {
+    func editMessage(
+        messageId: MessageId,
+        text: String,
+        extraData: [String: RawJSON]? = nil,
+        completion: ((Error?) -> Void)? = nil
+    ) {
         database.write({ session in
             let messageDTO = try session.messageEditableByCurrentUser(messageId)
+            
+            let encodedExtraData = extraData.map { try? JSONEncoder.default.encode($0) } ?? messageDTO.extraData
+
+            let updateQuotingMessages = {
+                messageDTO.quotedBy.forEach { message in
+                    message.updatedAt = messageDTO.updatedAt
+                }
+            }
 
             switch messageDTO.localMessageState {
             case nil, .pendingSync, .syncingFailed, .deletingFailed:
                 messageDTO.text = text
+                messageDTO.extraData = encodedExtraData
                 messageDTO.localMessageState = .pendingSync
+                updateQuotingMessages()
             case .pendingSend, .sendingFailed:
                 messageDTO.text = text
+                messageDTO.extraData = encodedExtraData
                 messageDTO.localMessageState = .pendingSend
+                updateQuotingMessages()
             case .sending, .syncing, .deleting:
                 throw ClientError.MessageEditing(
                     messageId: messageId,
@@ -185,12 +220,46 @@ class MessageUpdater: Worker {
             switch $0 {
             case let .success(payload):
                 self.database.write({ session in
-                    try payload.messages.forEach { try session.saveMessage(payload: $0, for: cid) }
+                    try payload.messages.forEach { try session.saveMessage(payload: $0, for: cid, syncOwnReactions: true) }
                 }, completion: { error in
                     if let error = error {
                         completion?(.failure(error))
                     } else {
                         completion?(.success(payload))
+                    }
+                })
+            case let .failure(error):
+                completion?(.failure(error))
+            }
+        }
+    }
+
+    func loadReactions(
+        cid: ChannelId,
+        messageId: MessageId,
+        pagination: Pagination,
+        completion: ((Result<[ChatMessageReaction], Error>) -> Void)? = nil
+    ) {
+        let endpoint: Endpoint<MessageReactionsPayload> = .loadReactions(
+            messageId: messageId,
+            pagination: pagination
+        )
+
+        apiClient.request(endpoint: endpoint) { result in
+            switch result {
+            case let .success(payload):
+                var reactions: [ChatMessageReaction] = []
+                self.database.write({ session in
+                    try payload.reactions.forEach {
+                        let reactionDTO = try session.saveReaction(payload: $0)
+                        let reaction = reactionDTO.asModel()
+                        reactions.append(reaction)
+                    }
+                }, completion: { error in
+                    if let error = error {
+                        completion?(.failure(error))
+                    } else {
+                        completion?(.success(reactions))
                     }
                 })
             case let .failure(error):
@@ -255,6 +324,9 @@ class MessageUpdater: Worker {
         messageId: MessageId,
         completion: ((Error?) -> Void)? = nil
     ) {
+        var reactionDTO: MessageReactionDTO?
+        let version = UUID().uuidString
+
         let endpoint: Endpoint<EmptyResponse> = .addReaction(
             type,
             score: score,
@@ -262,8 +334,37 @@ class MessageUpdater: Worker {
             extraData: extraData,
             messageId: messageId
         )
-        apiClient.request(endpoint: endpoint) {
-            completion?($0.error)
+
+        database.write { session in
+            do {
+                reactionDTO = try session.addReaction(
+                    to: messageId,
+                    type: type,
+                    score: score,
+                    extraData: extraData
+                )
+            } catch {
+                log.warning("Failed to optimistically add the reaction to the database: \(error)")
+            }
+
+            if let reaction = reactionDTO {
+                reaction.localState = .sending
+                reaction.version = version
+            }
+        } completion: { error in
+            self.apiClient.request(endpoint: endpoint, retryOptions: self.retryOptions) { result in
+                if result.error == nil {
+                    return
+                }
+
+                self.database.write { session in
+                    guard let reaction = try? session.removeReaction(from: messageId, type: type, on: version) else {
+                        return
+                    }
+                    reaction.localState = .sendingFailed
+                }
+            }
+            completion?(error)
         }
     }
     
@@ -277,8 +378,37 @@ class MessageUpdater: Worker {
         messageId: MessageId,
         completion: ((Error?) -> Void)? = nil
     ) {
-        apiClient.request(endpoint: .deleteReaction(type, messageId: messageId)) {
-            completion?($0.error)
+        var reactionDTO: MessageReactionDTO?
+
+        database.write { session in
+            do {
+                reactionDTO = try session.removeReaction(from: messageId, type: type, on: nil)
+            } catch {
+                log.warning("Failed to remove the reaction from to the database: \(error)")
+            }
+
+            guard let reaction = reactionDTO else {
+                return
+            }
+            reaction.localState = .pendingDelete
+        } completion: { error in
+            self.apiClient
+                .request(endpoint: .deleteReaction(type, messageId: messageId), retryOptions: self.retryOptions) { result in
+                    if result.error == nil {
+                        return
+                    }
+
+                    guard let reaction = reactionDTO else {
+                        return
+                    }
+
+                    self.database.write { session in
+                        if let reaction = session.reaction(messageId: messageId, userId: reaction.user.id, type: type) {
+                            reaction.localState = nil
+                        }
+                    }
+                }
+            completion?(error)
         }
     }
 
@@ -420,7 +550,7 @@ class MessageUpdater: Worker {
                 switch $0 {
                 case let .success(payload):
                     self.database.write({ session in
-                        try session.saveMessage(payload: payload.message, for: cid)
+                        try session.saveMessage(payload: payload.message, for: cid, syncOwnReactions: true)
                     }, completion: { error in
                         completion?(error)
                     })

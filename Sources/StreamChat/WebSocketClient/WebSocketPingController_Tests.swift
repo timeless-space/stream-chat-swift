@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -18,6 +18,14 @@ class WebSocketPingController_Tests: XCTestCase {
         
         delegate = TestWebSocketPingControllerDelegate()
         pingController.delegate = delegate
+    }
+    
+    override func tearDown() {
+        time = nil
+        VirtualTimeTimer.time = nil
+        pingController = nil
+        delegate = nil
+        super.tearDown()
     }
     
     func test_sendPing_called_whenTheConnectionIsConnected() throws {
@@ -54,7 +62,7 @@ class WebSocketPingController_Tests: XCTestCase {
         }
         
         // Simulate pong received
-        pingController.pongRecieved()
+        pingController.pongReceived()
         
         // Simulate time passed pongTimeoutTimeInterval + 1 and check disconnectOnNoPongReceived wasn't called
         assert(delegate.disconnectOnNoPongReceived_calledCount == 0)

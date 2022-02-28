@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -354,12 +354,14 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
             guard let cid = self.cid else { return nil }
             let sortAscending = self.messageOrdering == .topToBottom ? false : true
             var deletedMessageVisibility: ChatClientConfig.DeletedMessageVisibility?
+            var shouldShowShadowedMessages: Bool?
             self.client.databaseContainer.viewContext.performAndWait { [weak self] in
                 guard let self = self else {
                     log.warning("Callback called while self is nil")
                     return
                 }
                 deletedMessageVisibility = self.client.databaseContainer.viewContext.deletedMessagesVisibility
+                shouldShowShadowedMessages = self.client.databaseContainer.viewContext.shouldShowShadowedMessages
             }
 
             let observer = ListDatabaseObserver(
@@ -367,7 +369,8 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
                 fetchRequest: MessageDTO.messagesFetchRequest(
                     for: cid,
                     sortAscending: sortAscending,
-                    deletedMessagesVisibility: deletedMessageVisibility ?? .visibleForCurrentUser
+                    deletedMessagesVisibility: deletedMessageVisibility ?? .visibleForCurrentUser,
+                    shouldShowShadowedMessages: shouldShowShadowedMessages ?? false
                 ),
                 itemCreator: { $0.asModel() as ChatMessage }
             )
@@ -877,8 +880,6 @@ public extension ChatChannelController {
     func createNewMessage(
         text: String,
         pinning: MessagePinning? = nil,
-//        command: String? = nil,
-//        arguments: String? = nil,
         isSilent: Bool = false,
         attachments: [AnyAttachmentPayload] = [],
         mentionedUserIds: [UserId] = [],
@@ -1050,21 +1051,14 @@ public extension ChatChannelController {
             return
         }
         
-        if channel?.isUnread != true {
+        guard channel?.isUnread == true else {
             callback {
                 completion?(nil)
             }
             return
         }
 
-        guard let userId = client.currentUserId else {
-            callback {
-                completion?(nil)
-            }
-            return
-        }
-
-        guard channel?.latestMessages.first?.author.id != userId else {
+        guard let currentUserId = client.currentUserId else {
             callback {
                 completion?(nil)
             }
@@ -1077,7 +1071,7 @@ public extension ChatChannelController {
 
         markingRead = true
 
-        updater.markRead(cid: cid, userId: userId) { error in
+        updater.markRead(cid: cid, userId: currentUserId) { error in
             self.callback {
                 self.markingRead = false
                 completion?(error)
@@ -1141,11 +1135,9 @@ public extension ChatChannelController {
     ///
     /// Please check [documentation](https://getstream.io/chat/docs/android/watch_channel/?language=swift) for more information.
     ///
-    /// We keep these functions internal since we're not sure how we should interface this behavior.
-    /// If you have suggestions, please open a ticket or send us an email at support@getstream.io
     ///
     /// - Parameter completion: Called when the API call is finished. Called with `Error` if the remote update fails.
-    internal func startWatching(completion: ((Error?) -> Void)? = nil) {
+    func startWatching(completion: ((Error?) -> Void)? = nil) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
         guard let cid = cid, isChannelAlreadyCreated else {
             channelModificationFailed(completion)
@@ -1171,11 +1163,11 @@ public extension ChatChannelController {
     ///
     /// Please check [documentation](https://getstream.io/chat/docs/android/watch_channel/?language=swift) for more information.
     ///
-    /// We keep these functions internal since we're not sure how we should interface this behavior.
-    /// If you have suggestions, please open a ticket or send us an email at support@getstream.io
+    /// - Warning: If you're using `ChannelListController`, calling this function can disrupt `ChannelListController`'s functions,
+    /// such as updating channel data.
     ///
     /// - Parameter completion: Called when the API call is finished. Called with `Error` if the remote update fails.
-    internal func stopWatching(completion: ((Error?) -> Void)? = nil) {
+    func stopWatching(completion: ((Error?) -> Void)? = nil) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
         guard let cid = cid, isChannelAlreadyCreated else {
             channelModificationFailed(completion)
@@ -1278,6 +1270,44 @@ public extension ChatChannelController {
         updater.uploadFile(type: .image, localFileURL: localFileURL, cid: cid, progress: progress) { result in
             self.callback {
                 completion(result)
+            }
+        }
+    }
+    
+    /// Loads the given number of pinned messages based on pagination parameter in the current channel.
+    ///
+    /// - Parameters:
+    ///   - pageSize: The number of pinned messages to load. Equals to `25` by default.
+    ///   - sorting: The sorting options. By default, results are sorted descending by `pinned_at` field.
+    ///   - pagination: The pagination parameter. If `nil` is provided, most recently pinned messages are fetched.
+    ///   - completion: The completion to be called on **callbackQueue** when request is completed.
+    func loadPinnedMessages(
+        pageSize: Int = .messagesPageSize,
+        sorting: [Sorting<PinnedMessagesSortingKey>] = [],
+        pagination: PinnedMessagesPagination? = nil,
+        completion: @escaping (Result<[ChatMessage], Error>) -> Void
+    ) {
+        guard let cid = cid, isChannelAlreadyCreated else {
+            channelModificationFailed { completion(.failure($0 ?? ClientError.ChannelNotCreatedYet())) }
+            return
+        }
+        
+        let query = PinnedMessagesQuery(
+            pageSize: pageSize,
+            sorting: sorting,
+            pagination: pagination
+        )
+        
+        updater.loadPinnedMessages(in: cid, query: query) {
+            switch $0 {
+            case let .success(messages):
+                self.callback {
+                    completion(.success(messages))
+                }
+            case let .failure(error):
+                self.callback {
+                    completion(.failure(error))
+                }
             }
         }
     }

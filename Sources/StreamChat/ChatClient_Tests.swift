@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -59,6 +59,16 @@ class ChatClient_Tests: XCTestCase {
         }
     ]
     
+    var expectedIdentifier: String {
+        #if canImport(StreamChatSwiftUI)
+        "swiftui"
+        #elseif canImport(StreamChatUI)
+        "uikit"
+        #else
+        "swift"
+        #endif
+    }
+    
     // MARK: - Database stack tests
     
     func test_clientDatabaseStackInitialization_whenLocalStorageEnabled_respectsConfigValues() {
@@ -73,24 +83,27 @@ class ChatClient_Tests: XCTestCase {
         config.localCaching.chatChannel.lastActiveWatchersLimit = .unique
 
         config.deletedMessagesVisibility = .alwaysVisible
+        config.shouldShowShadowedMessages = .random()
 
         var usedDatabaseKind: DatabaseContainer.Kind?
         var shouldFlushDBOnStart: Bool?
         var shouldResetEphemeralValues: Bool?
         var localCachingSettings: ChatClientConfig.LocalCaching?
         var deleteMessagesVisibility: ChatClientConfig.DeletedMessageVisibility?
+        var shouldShowShadowedMessages: Bool?
         
         // Create env object with custom database builder
         var env = ChatClient.Environment()
         env.clientUpdaterBuilder = ChatClientUpdaterMock.init
         env
             .databaseContainerBuilder =
-            { kind, shouldFlushOnStart, shouldResetEphemeralValuesOnStart, cachingSettings, messageVisibility in
+            { kind, shouldFlushOnStart, shouldResetEphemeralValuesOnStart, cachingSettings, messageVisibility, showShadowedMessages in
                 usedDatabaseKind = kind
                 shouldFlushDBOnStart = shouldFlushOnStart
                 shouldResetEphemeralValues = shouldResetEphemeralValuesOnStart
                 localCachingSettings = cachingSettings
                 deleteMessagesVisibility = messageVisibility
+                shouldShowShadowedMessages = showShadowedMessages
                 return DatabaseContainerMock()
             }
         
@@ -110,6 +123,7 @@ class ChatClient_Tests: XCTestCase {
         XCTAssertEqual(shouldResetEphemeralValues, config.isClientInActiveMode)
         XCTAssertEqual(localCachingSettings, config.localCaching)
         XCTAssertEqual(deleteMessagesVisibility, config.deletedMessagesVisibility)
+        XCTAssertEqual(shouldShowShadowedMessages, config.shouldShowShadowedMessages)
     }
     
     func test_clientDatabaseStackInitialization_whenLocalStorageDisabled() {
@@ -122,7 +136,7 @@ class ChatClient_Tests: XCTestCase {
         // Create env object with custom database builder
         var env = ChatClient.Environment()
         env.clientUpdaterBuilder = ChatClientUpdaterMock.init
-        env.databaseContainerBuilder = { kind, _, _, _, _ in
+        env.databaseContainerBuilder = { kind, _, _, _, _, _ in
             usedDatabaseKind = kind
             return DatabaseContainerMock()
         }
@@ -157,7 +171,7 @@ class ChatClient_Tests: XCTestCase {
         // Create env object and store all `kinds it's called with.
         var env = ChatClient.Environment()
         env.clientUpdaterBuilder = ChatClientUpdaterMock.init
-        env.databaseContainerBuilder = { kind, _, _, _, _ in
+        env.databaseContainerBuilder = { kind, _, _, _, _, _ in
             usedDatabaseKinds.append(kind)
             // Return error for the first time
             if let error = errorsToReturn.pop() {
@@ -198,7 +212,7 @@ class ChatClient_Tests: XCTestCase {
         XCTAssertEqual(internetConnection.init_notificationCenter, client.eventNotificationCenter)
     }
     
-    func test_whenInterentConnectionDisappearsAndComesBack_clientReconnects() {
+    func test_whenInternetConnectionDisappearsAndComesBack_clientReconnects() {
         // Create a new chat client
         let client = ChatClient(
             config: inMemoryStorageConfig,
@@ -309,8 +323,6 @@ class ChatClient_Tests: XCTestCase {
         XCTAssertNotNil(typingStateUpdaterMiddlewareIndex)
         // Assert `ChannelMemberTypingStateUpdaterMiddleware` goes after `TypingStartCleanupMiddleware`
         XCTAssertTrue(typingStateUpdaterMiddlewareIndex! > typingStartCleanupMiddlewareIndex!)
-        // Assert `MessageReactionsMiddleware` exists
-        XCTAssert(middlewares.contains(where: { $0 is MessageReactionsMiddleware }))
         // Assert `ChannelTruncatedEventMiddleware` exists
         XCTAssert(middlewares.contains(where: { $0 is ChannelTruncatedEventMiddleware }))
         // Assert `MemberEventMiddleware` exists
@@ -1183,6 +1195,27 @@ class ChatClient_Tests: XCTestCase {
         testEnv.backgroundTaskScheduler?.startListeningForAppStateUpdates_onForeground?()
         XCTAssertEqual(testEnv.clientUpdater?.connect_called, true)
     }
+    
+    // Test identifier setup
+    func test_sessionHeaders_sdkIdentifier_correctValue() {
+        // Given
+        let client = ChatClient(
+            config: inMemoryStorageConfig,
+            workerBuilders: workerBuilders,
+            eventWorkerBuilders: [],
+            environment: testEnv.environment
+        )
+        
+        let prefix = "stream-chat-\(expectedIdentifier)-client-v"
+        
+        // When
+        client.connectAnonymousUser()
+        
+        // Then
+        let sessionHeaders = client.apiClient.session.configuration.httpAdditionalHeaders
+        let streamHeader = sessionHeaders!["X-Stream-Client"] as! String
+        XCTAssert(streamHeader.starts(with: prefix))
+    }
 }
 
 class TestWorker: Worker {
@@ -1262,7 +1295,8 @@ private class TestEnvironment {
                     shouldFlushOnStart: $1,
                     shouldResetEphemeralValuesOnStart: $2,
                     localCachingSettings: $3,
-                    deletedMessagesVisibility: $4
+                    deletedMessagesVisibility: $4,
+                    shouldShowShadowedMessages: $5
                 )
                 return self.databaseContainer!
             },
@@ -1320,7 +1354,7 @@ extension ChatClient_Tests {
         let headers = config.httpAdditionalHeaders as? [String: String] ?? [:]
         XCTAssertEqual(
             headers["X-Stream-Client"],
-            "stream-chat-swift-client-v\(SystemEnvironment.version)"
+            "stream-chat-\(expectedIdentifier)-client-v\(SystemEnvironment.version)"
         )
     }
 }

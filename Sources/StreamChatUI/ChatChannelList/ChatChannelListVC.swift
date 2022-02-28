@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -17,7 +17,7 @@ open class ChatChannelListVC: _ViewController,
     /// The `ChatChannelListController` instance that provides channels data.
     public var controller: ChatChannelListController!
 
-    private var loadingPreviousMessages: Bool = false
+    private var isPaginatingChannels: Bool = false
 
     open private(set) lazy var loadingIndicator: UIActivityIndicatorView = {
         if #available(iOS 13.0, *) {
@@ -57,6 +57,38 @@ open class ChatChannelListVC: _ViewController,
 
     /// Used for mapping `ListChanges` to sets of `IndexPath` and verifying possible conflicts
     private let collectionUpdatesMapper = CollectionUpdatesMapper()
+    
+    /// Create a new `ChatChannelListViewController`
+    /// - Parameters:
+    ///   - controller: Your created `ChatChannelListController` with required query
+    ///   - storyboard: The storyboard to instantiate your `ViewController` from
+    ///   - storyboardId: The `storyboardId` that is set in your `UIStoryboard` reference
+    /// - Returns: A newly created `ChatChannelListViewController`
+    public static func make(
+        with controller: ChatChannelListController,
+        storyboard: UIStoryboard? = nil,
+        storyboardId: String? = nil
+    ) -> Self {
+        var chatChannelListVC: Self!
+        
+        // Check if we have a UIStoryboard and/or StoryboardId
+        if let storyboardId = storyboardId, let storyboard = storyboard {
+            // Safely unwrap the ViewController from the Storyboard
+            guard let localViewControllerFromStoryboard = storyboard
+                .instantiateViewController(withIdentifier: storyboardId) as? Self else {
+                fatalError("Failed to load from UIStoryboard, please check your storyboardId and/or UIStoryboard reference.")
+            }
+            chatChannelListVC = localViewControllerFromStoryboard
+        } else {
+            chatChannelListVC = Self()
+        }
+        
+        // Set the Controller on the ViewController
+        chatChannelListVC.controller = controller
+
+        // Return the newly created ChatChannelListVC
+        return chatChannelListVC
+    }
 
     override open func setUp() {
         super.setUp()
@@ -88,6 +120,10 @@ open class ChatChannelListVC: _ViewController,
         forItemAt indexPath: IndexPath
     ) {
         if controller.state != .remoteDataFetched {
+            return
+        }
+
+        guard collectionView.isTrackingOrDecelerating else {
             return
         }
 
@@ -135,12 +171,11 @@ open class ChatChannelListVC: _ViewController,
             withReuseIdentifier: collectionViewCellReuseIdentifier,
             for: indexPath
         ) as! ChatChannelListCollectionViewCell
-    
+
+        guard let channel = getChannel(at: indexPath) else { return cell }
+
         cell.components = components
-        cell.itemView.content = .init(
-            channel: controller.channels[indexPath.row],
-            currentUserId: controller.client.currentUserId
-        )
+        cell.itemView.content = .init(channel: channel, currentUserId: controller.client.currentUserId)
 
         cell.swipeableView.delegate = self
         cell.swipeableView.indexPath = { [weak cell, weak self] in
@@ -164,7 +199,7 @@ open class ChatChannelListVC: _ViewController,
     }
         
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let channel = controller.channels[indexPath.row]
+        guard let channel = getChannel(at: indexPath) else { return }
         router.showChannel(for: channel.cid)
     }
         
@@ -189,14 +224,14 @@ open class ChatChannelListVC: _ViewController,
     }
 
     open func loadMoreChannels() {
-        guard !loadingPreviousMessages else {
+        guard !isPaginatingChannels else {
             return
         }
-        loadingPreviousMessages = true
+        isPaginatingChannels = true
 
-        controller.loadNextChannels(completion: { [weak self] _ in
-            self?.loadingPreviousMessages = false
-        })
+        controller.loadNextChannels { [weak self] _ in
+            self?.isPaginatingChannels = false
+        }
     }
 
     open func swipeableViewWillShowActionViews(for indexPath: IndexPath) {
@@ -232,13 +267,15 @@ open class ChatChannelListVC: _ViewController,
     /// This function is called when delete button is pressed from action items of a cell.
     /// - Parameter indexPath: IndexPath of given cell to fetch the content of it.
     open func deleteButtonPressedForCell(at indexPath: IndexPath) {
-        router.didTapDeleteButton(for: controller.channels[indexPath.row].cid)
+        guard let channel = getChannel(at: indexPath) else { return }
+        router.didTapDeleteButton(for: channel.cid)
     }
 
     /// This function is called when more button is pressed from action items of a cell.
     /// - Parameter indexPath: IndexPath of given cell to fetch the content of it.
     open func moreButtonPressedForCell(at indexPath: IndexPath) {
-        router.didTapMoreButton(for: controller.channels[indexPath.row].cid)
+        guard let channel = getChannel(at: indexPath) else { return }
+        router.didTapMoreButton(for: channel.cid)
     }
     
     // MARK: - ChatChannelListControllerDelegate
@@ -253,12 +290,12 @@ open class ChatChannelListVC: _ViewController,
         didChangeChannels changes: [ListChange<ChatChannel>]
     ) {
         guard let indices = collectionUpdatesMapper.mapToSetsOfIndexPaths(
-            changes: changes,
-            onConflict: {
-                channelsCount = controller.channels.count
-                collectionView.reloadData()
-            }
-        ) else { return }
+            changes: changes
+        ) else {
+            channelsCount = controller.channels.count
+            collectionView.reloadData()
+            return
+        }
 
         collectionView.performBatchUpdates(
             {
@@ -280,11 +317,11 @@ open class ChatChannelListVC: _ViewController,
     }
     
     open func controller(_ controller: ChatChannelListController, shouldAddNewChannelToList channel: ChatChannel) -> Bool {
-        true
+        channel.membership != nil
     }
     
     open func controller(_ controller: ChatChannelListController, shouldListUpdatedChannel channel: ChatChannel) -> Bool {
-        true
+        channel.membership != nil
     }
     
     // MARK: - DataControllerStateDelegate
@@ -300,5 +337,11 @@ open class ChatChannelListVC: _ViewController,
         default:
             loadingIndicator.stopAnimating()
         }
+    }
+
+    private func getChannel(at indexPath: IndexPath) -> ChatChannel? {
+        let index = indexPath.row
+        controller.channels.assertIndexIsPresent(index)
+        return controller.channels[safe: index]
     }
 }

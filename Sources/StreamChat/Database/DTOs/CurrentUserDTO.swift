@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -206,7 +206,7 @@ extension CurrentChatUser {
             createdAt: user.userCreatedAt,
             updatedAt: user.userUpdatedAt,
             lastActiveAt: user.lastActivityAt,
-            teams: Set(user.teams?.map(\.id) ?? []),
+            teams: Set(user.teams),
             extraData: extraData,
             devices: dto.devices.map { $0.asModel() },
             currentDevice: dto.currentDevice?.asModel(),

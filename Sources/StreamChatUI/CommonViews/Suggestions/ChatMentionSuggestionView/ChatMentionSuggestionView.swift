@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -14,7 +14,7 @@ open class ChatMentionSuggestionView: _View, ThemeProvider {
         }
     }
 
-    /// `_ChatChannelAvatarView` instance which holds photo of user for tagging.
+    /// `ChatChannelAvatarView` instance which holds photo of user for tagging.
     open private(set) lazy var avatarView: ChatUserAvatarView = components
         .mentionAvatarView
         .init()

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -156,6 +156,14 @@ class ChatChannelListVC_Tests: XCTestCase {
         AssertSnapshot(vc, isEmbeddedInNavigationController: true, variants: .onlyUserInterfaceStyles)
     }
     
+    func test_makeChatChannelListVC() {
+        let mockedController = ChatChannelListController_Mock.mock()
+        let mockChatChannelListVC = TestChatChannelListVC.make(with: mockedController)
+        
+        XCTAssertNotNil(mockChatChannelListVC)
+        XCTAssert(mockChatChannelListVC.isKind(of: ChatChannelListVC.self))
+    }
+    
     func test_router_openCurrentUserProfile() {
         vc.executeLifecycleMethods()
         
@@ -302,6 +310,38 @@ extension ChatChannelListVC_Tests {
         channelListVC.controller(mockedChannelListController, didChangeChannels: hasConflictChanges)
         XCTAssertEqual(channelListVC.mockedCollectionView.performBatchUpdatesCallCount, 0)
         XCTAssertEqual(channelListVC.mockedCollectionView.reloadDataCallCount, 1)
+    }
+
+    func test_shouldAddNewChannelToList_whenCurrentUserIsMember_shouldReturnTrue() {
+        let channelListVC = FakeChatChannelListVC()
+        channelListVC.controller = mockedChannelListController
+
+        let channel = ChatChannel.mock(cid: .unique, membership: .mock(id: .unique))
+        XCTAssertTrue(channelListVC.controller(mockedChannelListController, shouldAddNewChannelToList: channel))
+    }
+
+    func test_shouldAddNewChannelToList_whenCurrentUserIsNotMember_shouldReturnFalse() {
+        let channelListVC = FakeChatChannelListVC()
+        channelListVC.controller = mockedChannelListController
+
+        let channel = ChatChannel.mock(cid: .unique, membership: nil)
+        XCTAssertFalse(channelListVC.controller(mockedChannelListController, shouldAddNewChannelToList: channel))
+    }
+
+    func test_shouldListUpdatedChannel_whenCurrentUserIsMember_shouldReturnTrue() {
+        let channelListVC = FakeChatChannelListVC()
+        channelListVC.controller = mockedChannelListController
+
+        let channel = ChatChannel.mock(cid: .unique, membership: .mock(id: .unique))
+        XCTAssertTrue(channelListVC.controller(mockedChannelListController, shouldListUpdatedChannel: channel))
+    }
+
+    func test_shouldListUpdatedChannel_whenCurrentUserIsNotMember_shouldReturnFalse() {
+        let channelListVC = FakeChatChannelListVC()
+        channelListVC.controller = mockedChannelListController
+
+        let channel = ChatChannel.mock(cid: .unique, membership: nil)
+        XCTAssertFalse(channelListVC.controller(mockedChannelListController, shouldListUpdatedChannel: channel))
     }
 
     private class FakeChatChannelListVC: ChatChannelListVC {

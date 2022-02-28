@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -18,10 +18,14 @@ extension Bundle {
         // See https://github.com/GetStream/stream-chat-swift/issues/774
         #if COCOAPODS
         return Bundle(for: BundleIdentifyingClass.self)
-            .url(forResource: "StreamChatUI", withExtension: "bundle")
+            .url(forResource: "StreamChatUIResources", withExtension: "bundle")
             .flatMap(Bundle.init(url:))!
         #elseif SWIFT_PACKAGE
         return Bundle.module
+        #elseif STATIC_LIBRARY
+        return Bundle.main
+            .url(forResource: "StreamChatUIResources", withExtension: "bundle")
+            .flatMap(Bundle.init(url:))!
         #else
         return Bundle(for: BundleIdentifyingClass.self)
         #endif

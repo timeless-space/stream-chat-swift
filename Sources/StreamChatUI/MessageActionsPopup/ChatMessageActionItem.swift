@@ -1,12 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 
 /// Protocol for action item.
-/// Action items are then showed in `_ChatMessageActionsView`.
+/// Action items are then showed in `ChatMessageActionsView`.
 /// Setup individual item by creating new instance that conforms to this protocol.
 public protocol ChatMessageActionItem {
     /// Title of `ChatMessageActionItem`.
@@ -219,5 +219,24 @@ public struct ResendActionItem: ChatMessageActionItem {
     ) {
         self.action = action
         icon = appearance.images.messageActionResend
+    }
+}
+
+/// Instance of `FlagActionItem` for flagging a message action.
+public struct FlagActionItem: ChatMessageActionItem {
+    public var title: String { L10n.Message.Actions.flag }
+    public let icon: UIImage
+    public let action: (ChatMessageActionItem) -> Void
+    
+    /// Init of `FlagActionItem`.
+    /// - Parameters:
+    ///     - action: Action to be triggered when `FlagActionItem` is tapped.
+    ///     - appearance: `Appearance` that is used to configure UI properties.
+    public init(
+        action: @escaping (ChatMessageActionItem) -> Void,
+        appearance: Appearance = .default
+    ) {
+        self.action = action
+        icon = appearance.images.messageActionFlag
     }
 }

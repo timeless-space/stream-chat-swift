@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,6 +7,7 @@ import Foundation
 /// Coding keys for message-related JSON payloads
 enum MessagePayloadsCodingKeys: String, CodingKey, CaseIterable {
     case id
+    case cid
     case type
     case user
     case createdAt = "created_at"
@@ -75,8 +76,10 @@ class MessagePayload: Decodable {
     let latestReactions: [MessageReactionPayload]
     let ownReactions: [MessageReactionPayload]
     let reactionScores: [MessageReactionType: Int]
+    let reactionCounts: [MessageReactionType: Int]
     let attachments: [MessageAttachmentPayload]
     let isSilent: Bool
+    let isShadowed: Bool
 
     var pinned: Bool
     var pinnedBy: UserPayload?
@@ -97,6 +100,7 @@ class MessagePayload: Decodable {
         deletedAt = try container.decodeIfPresent(Date.self, forKey: .deletedAt)
         text = try container.decode(String.self, forKey: .text).trimmingCharacters(in: .whitespacesAndNewlines)
         isSilent = try container.decodeIfPresent(Bool.self, forKey: .isSilent) ?? false
+        isShadowed = try container.decodeIfPresent(Bool.self, forKey: .shadowed) ?? false
         command = try container.decodeIfPresent(String.self, forKey: .command)
         args = try container.decodeIfPresent(String.self, forKey: .args)
         parentId = try container.decodeIfPresent(String.self, forKey: .parentId)
@@ -108,9 +112,15 @@ class MessagePayload: Decodable {
         replyCount = try container.decode(Int.self, forKey: .replyCount)
         latestReactions = try container.decode([MessageReactionPayload].self, forKey: .latestReactions)
         ownReactions = try container.decode([MessageReactionPayload].self, forKey: .ownReactions)
+
         reactionScores = try container
             .decodeIfPresent([String: Int].self, forKey: .reactionScores)?
             .mapKeys { MessageReactionType(rawValue: $0) } ?? [:]
+
+        reactionCounts = try container
+            .decodeIfPresent([String: Int].self, forKey: .reactionCounts)?
+            .mapKeys { MessageReactionType(rawValue: $0) } ?? [:]
+
         // Because attachment objects can be malformed, we wrap those into `OptionalDecodable`
         // and if decoding of those fail, it assignes `nil` instead of throwing whole MessagePayload away.
         attachments = try container.decode([OptionalDecodable].self, forKey: .attachments)
@@ -153,7 +163,9 @@ class MessagePayload: Decodable {
         latestReactions: [MessageReactionPayload] = [],
         ownReactions: [MessageReactionPayload] = [],
         reactionScores: [MessageReactionType: Int],
+        reactionCounts: [MessageReactionType: Int],
         isSilent: Bool,
+        isShadowed: Bool,
         attachments: [MessageAttachmentPayload],
         channel: ChannelDetailPayload? = nil,
         pinned: Bool = false,
@@ -180,7 +192,9 @@ class MessagePayload: Decodable {
         self.latestReactions = latestReactions
         self.ownReactions = ownReactions
         self.reactionScores = reactionScores
+        self.reactionCounts = reactionCounts
         self.isSilent = isSilent
+        self.isShadowed = isShadowed
         self.attachments = attachments
         self.channel = channel
         self.pinned = pinned
@@ -265,9 +279,18 @@ struct MessageRequestBody: Encodable {
     }
 }
 
-/// An object describing the message replies JSON payload.
-struct MessageRepliesPayload: Decodable {
+/// An object describing pinned messages JSON payload.
+typealias PinnedMessagesPayload = MessageListPayload
+
+/// An object describing the message list JSON payload.
+typealias MessageRepliesPayload = MessageListPayload
+
+struct MessageListPayload: Decodable {
     let messages: [MessagePayload]
+}
+
+struct MessageReactionsPayload: Decodable {
+    let reactions: [MessageReactionPayload]
 }
 
 // TODO: Command???

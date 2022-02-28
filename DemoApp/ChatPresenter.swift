@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -14,6 +14,8 @@ class DemoChatChannelListRouter: ChatChannelListRouter {
     }
 
     var channelPresentingStyle: ChannelPresentingStyle = .push
+
+    lazy var streamModalTransitioningDelegate = StreamModalTransitioningDelegate()
 
     func showCreateNewChannelFlow() {
         let storyboard = UIStoryboard(name: "Main", bundle: .main)
@@ -52,7 +54,10 @@ class DemoChatChannelListRouter: ChatChannelListRouter {
         case .modally:
             let vc = components.channelVC.init()
             vc.channelController = rootViewController.controller.client.channelController(for: cid)
-            rootNavigationController?.present(vc, animated: true, completion: nil)
+            let navVc = UINavigationController(rootViewController: vc)
+            navVc.transitioningDelegate = streamModalTransitioningDelegate
+            navVc.modalPresentationStyle = .custom
+            rootNavigationController?.present(navVc, animated: true, completion: nil)
 
         case .embeddedInTabBar:
             let vc = components.channelVC.init()
@@ -277,69 +282,5 @@ class DemoChatChannelListRouter: ChatChannelListRouter {
                 self.rootViewController.presentAlert(title: "Channel \(cid) couldn't be deleted", message: "\(error)")
             }
         }
-    }
-}
-
-class DemoChannelListVC: ChatChannelListVC {
-    /// The `UIButton` instance used for navigating to new channel screen creation,
-    lazy var createChannelButton: UIButton = {
-        let button = UIButton()
-        button.setImage(UIImage(systemName: "plus.message")!, for: .normal)
-        return button
-    }()
-    
-    lazy var hiddenChannelsButton: UIButton = {
-        let button = UIButton()
-        button.setImage(UIImage(systemName: "archivebox")!, for: .normal)
-        return button
-    }()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(customView: hiddenChannelsButton),
-            UIBarButtonItem(customView: createChannelButton)
-        ]
-        createChannelButton.addTarget(self, action: #selector(didTapCreateNewChannel), for: .touchUpInside)
-        hiddenChannelsButton.addTarget(self, action: #selector(didTapHiddenChannelsButton), for: .touchUpInside)
-    }
-
-    @objc private func didTapCreateNewChannel(_ sender: Any) {
-        (router as! DemoChatChannelListRouter).showCreateNewChannelFlow()
-    }
-    
-    @objc private func didTapHiddenChannelsButton(_ sender: Any) {
-        let channelListVC = HiddenChannelListVC()
-        channelListVC.controller = controller
-            .client
-            .channelListController(
-                query: .init(
-                    filter: .and(
-                        [
-                            .containMembers(userIds: [controller.client.currentUserId!]),
-                            .equal(.hidden, to: true)
-                        ]
-                    )
-                )
-            )
-        navigationController?.pushViewController(channelListVC, animated: true)
-    }
-    
-    override func controller(_ controller: ChatChannelListController, shouldListUpdatedChannel channel: ChatChannel) -> Bool {
-        channel.lastActiveMembers.contains(where: { $0.id == controller.client.currentUserId })
-    }
-    
-    override func controller(_ controller: ChatChannelListController, shouldAddNewChannelToList channel: ChatChannel) -> Bool {
-        channel.lastActiveMembers.contains(where: { $0.id == controller.client.currentUserId })
-    }
-}
-
-class HiddenChannelListVC: ChatChannelListVC {
-    override func setUpAppearance() {
-        super.setUpAppearance()
-        
-        title = "Hidden Channels"
-        navigationItem.leftBarButtonItem = nil
     }
 }

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -14,7 +14,6 @@ class ChannelListUpdater: Worker {
     ///
     func update(
         channelListQuery: ChannelListQuery,
-        trumpExistingChannels: Bool = false,
         completion: ((Result<ChannelListPayload, Error>) -> Void)? = nil
     ) {
         apiClient
@@ -25,10 +24,6 @@ class ChannelListUpdater: Worker {
                 switch result {
                 case let .success(channelListPayload):
                     self?.database.write { session in
-//                        if trumpExistingChannels {
-//                            try session.deleteChannels(query: channelListQuery)
-//                        }
-                        
                         try session.saveChannelList(payload: channelListPayload, query: channelListQuery)
                     } completion: { error in
                         if let error = error {

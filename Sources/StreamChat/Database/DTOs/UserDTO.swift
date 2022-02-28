@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -23,7 +23,7 @@ class UserDTO: NSManagedObject {
 
     @NSManaged var members: Set<MemberDTO>?
     @NSManaged var currentUser: CurrentUserDTO?
-    @NSManaged var teams: Set<TeamDTO>?
+    @NSManaged var teams: [TeamId]
     @NSManaged var channelMutes: Set<ChannelMuteDTO>
 
     /// Returns a fetch request for the dto with the provided `userId`.
@@ -87,6 +87,7 @@ extension UserDTO {
         
         let new = NSEntityDescription.insertNewObject(forEntityName: Self.entityName, into: context) as! UserDTO
         new.id = id
+        new.teams = []
         return new
     }
     
@@ -132,8 +133,7 @@ extension NSManagedObjectContext: UserDatabaseSession {
             dto.extraData = Data()
         }
 
-        let teams = try payload.teams.map { try saveTeam(teamId: $0) }
-        dto.teams = Set(teams)
+        dto.teams = payload.teams
 
         // payloadHash doesn't cover the query
         if let query = query, let queryDTO = try saveQuery(query: query) {
@@ -218,7 +218,7 @@ extension ChatUser {
             createdAt: dto.userCreatedAt,
             updatedAt: dto.userUpdatedAt,
             lastActiveAt: dto.lastActivityAt,
-            teams: Set(dto.teams?.map(\.id) ?? []),
+            teams: Set(dto.teams),
             extraData: extraData
         )
     }

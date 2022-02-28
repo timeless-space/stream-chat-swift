@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -162,7 +162,7 @@ extension ChatChannelMember {
             userCreatedAt: dto.user.userCreatedAt,
             userUpdatedAt: dto.user.userUpdatedAt,
             lastActiveAt: dto.user.lastActivityAt,
-            teams: Set(dto.user.teams?.map(\.id) ?? []),
+            teams: Set(dto.user.teams),
             extraData: extraData,
             memberRole: role,
             memberCreatedAt: dto.memberCreatedAt,

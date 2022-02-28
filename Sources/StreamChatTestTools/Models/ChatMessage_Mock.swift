@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -25,7 +25,9 @@ public extension ChatMessage {
         replyCount: Int = 0,
         extraData: [String: RawJSON] = [:],
         isSilent: Bool = false,
+        isShadowed: Bool = false,
         reactionScores: [MessageReactionType: Int] = [:],
+        reactionCounts: [MessageReactionType: Int] = [:],
         mentionedUsers: Set<ChatUser> = [],
         threadParticipants: [ChatUser] = [],
         attachments: [AnyChatMessageAttachment] = [],
@@ -54,7 +56,9 @@ public extension ChatMessage {
             extraData: extraData,
             quotedMessage: { quotedMessage },
             isSilent: isSilent,
+            isShadowed: isShadowed,
             reactionScores: reactionScores,
+            reactionCounts: reactionCounts,
             author: { author },
             mentionedUsers: { mentionedUsers },
             threadParticipants: { threadParticipants },

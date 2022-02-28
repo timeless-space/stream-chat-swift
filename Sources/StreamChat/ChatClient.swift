@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -50,7 +50,6 @@ public class ChatClient {
             ),
             ChannelReadUpdaterMiddleware(),
             UserTypingStateUpdaterMiddleware(),
-            MessageReactionsMiddleware(),
             ChannelTruncatedEventMiddleware(),
             MemberEventMiddleware(),
             UserChannelBanEventsMiddleware(),
@@ -137,7 +136,8 @@ public class ChatClient {
                     config.shouldFlushLocalStorageOnStart,
                     config.isClientInActiveMode, // Only reset Ephemeral values in active mode
                     config.localCaching,
-                    config.deletedMessagesVisibility
+                    config.deletedMessagesVisibility,
+                    config.shouldShowShadowedMessages
                 )
             }
             
@@ -154,7 +154,8 @@ public class ChatClient {
                 config.shouldFlushLocalStorageOnStart,
                 config.isClientInActiveMode, // Only reset Ephemeral values in active mode
                 config.localCaching,
-                config.deletedMessagesVisibility
+                config.deletedMessagesVisibility,
+                config.shouldShowShadowedMessages
             )
         } catch {
             fatalError("Failed to initialize the in-memory storage with error: \(error). This is a non-recoverable error.")
@@ -188,8 +189,19 @@ public class ChatClient {
     
     /// Stream-specific request headers.
     private let sessionHeaders: [String: String] = [
-        "X-Stream-Client": "stream-chat-swift-client-v\(SystemEnvironment.version)"
+        "X-Stream-Client": "stream-chat-\(sdkIdentifier)-client-v\(SystemEnvironment.version)"
     ]
+    
+    /// Identifies which SDK is being used.
+    private static var sdkIdentifier: String {
+        #if canImport(StreamChatSwiftUI)
+        return "swiftui"
+        #elseif canImport(StreamChatUI)
+        return "uikit"
+        #else
+        return "swift"
+        #endif
+    }
     
     /// The current connection id
     @Atomic var connectionId: String?
@@ -527,14 +539,16 @@ extension ChatClient {
             _ shouldFlushOnStart: Bool,
             _ shouldResetEphemeralValuesOnStart: Bool,
             _ localCachingSettings: ChatClientConfig.LocalCaching?,
-            _ deletedMessageVisibility: ChatClientConfig.DeletedMessageVisibility?
+            _ deletedMessageVisibility: ChatClientConfig.DeletedMessageVisibility?,
+            _ shouldShowShadowedMessages: Bool?
         ) throws -> DatabaseContainer = {
             try DatabaseContainer(
                 kind: $0,
                 shouldFlushOnStart: $1,
                 shouldResetEphemeralValuesOnStart: $2,
                 localCachingSettings: $3,
-                deletedMessagesVisibility: $4
+                deletedMessagesVisibility: $4,
+                shouldShowShadowedMessages: $5
             )
         }
         
@@ -576,7 +590,13 @@ extension ClientError {
     
     public class ConnectionNotSuccessful: ClientError {
         override public var localizedDescription: String {
-            "Connecting to the chat servers wasn't successful. Please check the console log for additional info."
+            """
+            Connection to the API has failed.
+            You can read more about making a successful connection in our docs:
+            https://getstream.io/chat/docs/sdk/ios/basics/getting-started/#your-first-app-with-stream-chat
+            \n
+            API Error: \(String(describing: errorDescription))
+            """
         }
     }
     

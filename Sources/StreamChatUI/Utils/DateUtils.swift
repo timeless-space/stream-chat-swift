@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -19,7 +19,7 @@ class DateUtils {
             let hourAgo = calendar.date(byAdding: .hour, value: -1, to: now),
             let dayAgo = calendar.date(byAdding: .day, value: -1, to: now),
             let weekAgo = calendar.date(byAdding: .day, value: -7, to: now),
-            let monthAgo = calendar.date(byAdding: .day, value: -31, to: now)
+            let monthAgo = calendar.date(byAdding: .month, value: -1, to: now)
         else { return nil }
         
         if minuteAgo < date {

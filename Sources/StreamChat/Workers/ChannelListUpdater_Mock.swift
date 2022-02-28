@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -21,7 +21,6 @@ class ChannelListUpdaterMock: ChannelListUpdater {
     
     override func update(
         channelListQuery: ChannelListQuery,
-        trumpExistingChannels: Bool = false,
         completion: ((Result<ChannelListPayload, Error>) -> Void)? = nil
     ) {
         _update_queries.mutate { $0.append(channelListQuery) }

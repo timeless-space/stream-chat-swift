@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -13,10 +13,12 @@ final class MessageUpdaterMock: MessageUpdater {
 
     @Atomic var deleteMessage_messageId: MessageId?
     @Atomic var deleteMessage_completion: ((Error?) -> Void)?
+    @Atomic var deleteMessage_hard: Bool?
 
     @Atomic var editMessage_messageId: MessageId?
     @Atomic var editMessage_text: String?
     @Atomic var editMessage_completion: ((Error?) -> Void)?
+    @Atomic var editMessage_extraData: [String: RawJSON]?
     
     @Atomic var createNewReply_cid: ChannelId?
     @Atomic var createNewReply_text: String?
@@ -36,6 +38,12 @@ final class MessageUpdaterMock: MessageUpdater {
     @Atomic var loadReplies_messageId: MessageId?
     @Atomic var loadReplies_pagination: MessagesPagination?
     @Atomic var loadReplies_completion: ((Result<MessageRepliesPayload, Error>) -> Void)? = nil
+
+    @Atomic var loadReactions_cid: ChannelId?
+    @Atomic var loadReactions_messageId: MessageId?
+    @Atomic var loadReactions_pagination: Pagination?
+    @Atomic var loadReactions_completion: ((Result<[ChatMessageReaction], Error>) -> Void)? = nil
+    @Atomic var loadReactions_result: Result<[ChatMessageReaction], Error>? = nil
     
     @Atomic var flagMessage_flag: Bool?
     @Atomic var flagMessage_messageId: MessageId?
@@ -100,6 +108,12 @@ final class MessageUpdaterMock: MessageUpdater {
         loadReplies_messageId = nil
         loadReplies_pagination = nil
         loadReplies_completion = nil
+
+        loadReactions_cid = nil
+        loadReactions_messageId = nil
+        loadReactions_pagination = nil
+        loadReactions_completion = nil
+        loadReactions_result = nil
         
         flagMessage_flag = nil
         flagMessage_messageId = nil
@@ -141,14 +155,21 @@ final class MessageUpdaterMock: MessageUpdater {
         getMessage_completion = completion
     }
     
-    override func deleteMessage(messageId: MessageId, completion: ((Error?) -> Void)? = nil) {
+    override func deleteMessage(messageId: MessageId, hard: Bool, completion: ((Error?) -> Void)? = nil) {
         deleteMessage_messageId = messageId
+        deleteMessage_hard = hard
         deleteMessage_completion = completion
     }
-    
-    override func editMessage(messageId: MessageId, text: String, completion: ((Error?) -> Void)? = nil) {
+
+    override func editMessage(
+        messageId: MessageId,
+        text: String,
+        extraData: [String: RawJSON]? = nil,
+        completion: ((Error?) -> Void)? = nil
+    ) {
         editMessage_messageId = messageId
         editMessage_text = text
+        editMessage_extraData = extraData
         editMessage_completion = completion
     }
 
@@ -197,6 +218,21 @@ final class MessageUpdaterMock: MessageUpdater {
         loadReplies_messageId = messageId
         loadReplies_pagination = pagination
         loadReplies_completion = completion
+    }
+
+    override func loadReactions(
+        cid: ChannelId,
+        messageId: MessageId,
+        pagination: Pagination,
+        completion: ((Result<[ChatMessageReaction], Error>) -> Void)? = nil
+    ) {
+        loadReactions_cid = cid
+        loadReactions_messageId = messageId
+        loadReactions_pagination = pagination
+        loadReactions_completion = completion
+        if let loadReactionsResult = loadReactions_result {
+            completion?(loadReactionsResult)
+        }
     }
     
     override func flagMessage(_ flag: Bool, with messageId: MessageId, in cid: ChannelId, completion: ((Error?) -> Void)? = nil) {

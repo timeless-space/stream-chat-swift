@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -46,19 +46,11 @@ open class GalleryVC:
         return videos + images
     }
     
-    /// Returns the date formater function used to represent when the user was last seen online
-    open var lastSeenDateFormatter: (Date) -> String? { DateUtils.timeAgo }
+    /// Returns the date formatter function used to represent when the user was last seen online.
+    open var lastSeenDateFormatter: (Date) -> String? { appearance.formatters.userLastActivity.format }
 
     /// Controller for handling the transition for dismissal
     open var transitionController: ZoomTransitionController!
-    
-    /// `DateComponentsFormatter` for showing when the message was sent.
-    open private(set) lazy var dateFormatter: DateComponentsFormatter = {
-        let df = DateComponentsFormatter()
-        df.allowedUnits = [.minute]
-        df.unitsStyle = .full
-        return df
-    }()
     
     /// `UICollectionViewFlowLayout` instance for `attachmentsCollectionView`.
     open private(set) lazy var attachmentsFlowLayout: UICollectionViewFlowLayout = .init()
@@ -219,6 +211,7 @@ open class GalleryVC:
         bottomBarView.embed(bottomBarContainerStackView)
         
         shareButton.setContentHuggingPriority(.streamRequire, for: .horizontal)
+        shareButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         bottomBarContainerStackView.addArrangedSubview(shareButton)
 
         currentPhotoLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -340,8 +333,10 @@ open class GalleryVC:
             withReuseIdentifier: reuseIdentifier,
             for: indexPath
         ) as! GalleryCollectionViewCell
-        
-        cell.content = items[indexPath.item]
+
+        guard let item = getItem(at: indexPath) else { return cell }
+
+        cell.content = item
         
         cell.didTapOnce = { [weak self] in
             self?.handleSingleTapOnCell(at: indexPath)
@@ -388,20 +383,37 @@ open class GalleryVC:
     
     /// A currently visible gallery item.
     open var currentItem: AnyChatMessageAttachment {
-        items[currentItemIndexPath.item]
+        items.assertIndexIsPresent(currentItemIndexPath.item)
+        return items[currentItemIndexPath.item]
     }
     
     /// Returns a share item for the gallery item at given index path.
     /// - Parameter indexPath: An index path.
     /// - Returns: An item to share.
     open func shareItem(at indexPath: IndexPath) -> Any? {
-        let item = items[indexPath.item]
-        
-        if let image = item.attachment(payloadType: ImageAttachmentPayload.self) {
-            return image.imageURL
-        } else if let video = item.attachment(payloadType: VideoAttachmentPayload.self) {
-            return video.videoURL
-        } else {
+        guard let item = getItem(at: indexPath) else { return nil }
+
+        switch item.type {
+        case .image:
+            let cell = attachmentsCollectionView
+                .cellForItem(at: indexPath) as? ImageAttachmentGalleryCell
+            return cell?.imageView.image
+        case .video:
+            guard let itemAttachment = item.attachment(payloadType: VideoAttachmentPayload.self),
+                  let urlData = try? Data(contentsOf: itemAttachment.videoURL) else {
+                return nil
+            }
+
+            let fileName = itemAttachment.payload.title ?? itemAttachment.id.messageId.lowercased() + ".mp4"
+            let filePath = NSTemporaryDirectory().appending("\(fileName)")
+            let url = URL(fileURLWithPath: filePath)
+            do {
+                try urlData.write(to: url)
+                return url
+            } catch {
+                return nil
+            }
+        default:
             return nil
         }
     }
@@ -410,8 +422,8 @@ open class GalleryVC:
     /// - Parameter indexPath: An index path.
     /// - Returns: A cell reuse identifier.
     open func cellReuseIdentifierForItem(at indexPath: IndexPath) -> String? {
-        let item = items[indexPath.item]
-        
+        guard let item = getItem(at: indexPath) else { return nil }
+
         switch item.type {
         case .image:
             return components.imageAttachmentGalleryCell.reuseId
@@ -440,8 +452,9 @@ open class GalleryVC:
     /// Returns an image view to animate during interactive dismissing.
     open var imageViewToAnimateWhenDismissing: UIImageView? {
         let indexPath = currentItemIndexPath
-        
-        switch items[indexPath.item].type {
+        guard let item = getItem(at: indexPath) else { return nil }
+
+        switch item.type {
         case .image:
             let cell = attachmentsCollectionView
                 .cellForItem(at: indexPath) as? ImageAttachmentGalleryCell
@@ -453,5 +466,11 @@ open class GalleryVC:
         default:
             return nil
         }
+    }
+
+    private func getItem(at indexPath: IndexPath) -> AnyChatMessageAttachment? {
+        let index = indexPath.item
+        items.assertIndexIsPresent(index)
+        return items[safe: index]
     }
 }

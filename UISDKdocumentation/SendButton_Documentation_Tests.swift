@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -21,7 +21,7 @@ class SendButton_Documentation_Tests: XCTestCase {
         view.isEnabled = true
         generateDocs(
             for: view,
-            annotations: [],
+            annotations: { _ in [] },
             name: "SendButton_documentation_enabled",
             variants: .onlyUserInterfaceStyles
         )
@@ -29,7 +29,7 @@ class SendButton_Documentation_Tests: XCTestCase {
         view.isEnabled = false
         generateDocs(
             for: view,
-            annotations: [],
+            annotations: { _ in [] },
             name: "SendButton_documentation_disabled",
             variants: .onlyUserInterfaceStyles
         )

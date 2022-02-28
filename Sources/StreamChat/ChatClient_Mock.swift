@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -146,7 +146,8 @@ extension ChatClient.Environment {
                         shouldFlushOnStart: $1,
                         shouldResetEphemeralValuesOnStart: $2,
                         localCachingSettings: $3,
-                        deletedMessagesVisibility: $4
+                        deletedMessagesVisibility: $4,
+                        shouldShowShadowedMessages: $5
                     )
                 } catch {
                     XCTFail("Unable to initialize DatabaseContainerMock \(error)")

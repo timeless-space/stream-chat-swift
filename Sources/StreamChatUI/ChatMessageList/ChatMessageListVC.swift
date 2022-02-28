@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -19,10 +19,13 @@ open class ChatMessageListVC:
     LinkPreviewViewDelegate,
     UITableViewDataSource,
     UITableViewDelegate,
-    UIGestureRecognizerDelegate,
-    UIAdaptivePresentationControllerDelegate {
+    UIGestureRecognizerDelegate {
     /// The object that acts as the data source of the message list.
-    public weak var dataSource: ChatMessageListVCDataSource?
+    public weak var dataSource: ChatMessageListVCDataSource? {
+        didSet {
+            listView.reloadData()
+        }
+    }
 
     /// The object that acts as the delegate of the message list.
     public weak var delegate: ChatMessageListVCDelegate?
@@ -80,6 +83,20 @@ open class ChatMessageListVC:
 
         return !listView.isLastCellFullyVisible && isMoreContentThanOnePage
     }
+
+    /// A formatter that converts the message date to textual representation.
+    /// This date formatter is used between each group message and the top overlay.
+    public lazy var dateSeparatorFormatter = appearance.formatters.messageDateSeparator
+
+    /// A boolean value that determines wether the date overlay should be displayed while scrolling.
+    open var isDateOverlayEnabled: Bool {
+        components.messageListDateOverlayEnabled
+    }
+
+    /// A boolean value that determines wether date separators should be shown between each message.
+    open var isDateSeparatorEnabled: Bool {
+        components.messageListDateSeparatorEnabled
+    }
     
     override open func setUp() {
         super.setUp()
@@ -93,8 +110,6 @@ open class ChatMessageListVC:
         tapOnList.delegate = self
         listView.addGestureRecognizer(tapOnList)
 
-        navigationController?.presentationController?.delegate = self
-        
         scrollToLatestMessageButton.addTarget(self, action: #selector(scrollToLatestMessage), for: .touchUpInside)
     }
     
@@ -103,6 +118,9 @@ open class ChatMessageListVC:
 
         view.addSubview(listView)
         listView.pin(anchors: [.top, .leading, .trailing, .bottom], to: view)
+        // Add a top padding to the table view so that the top message is not in the edge of the nav bar
+        // Note: we use "bottom" because the table view is inverted.
+        listView.contentInset = .init(top: 0, left: 0, bottom: 8, right: 0)
 
         view.addSubview(typingIndicatorView)
         typingIndicatorView.isHidden = true
@@ -116,13 +134,15 @@ open class ChatMessageListVC:
         scrollToLatestMessageButton.widthAnchor.pin(equalTo: scrollToLatestMessageButton.heightAnchor).isActive = true
         scrollToLatestMessageButton.heightAnchor.pin(equalToConstant: 40).isActive = true
         setScrollToLatestMessageButton(visible: false, animated: false)
-        
-        view.addSubview(dateOverlayView)
-        NSLayoutConstraint.activate([
-            dateOverlayView.centerXAnchor.pin(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
-            dateOverlayView.topAnchor.pin(equalToSystemSpacingBelow: view.safeAreaLayoutGuide.topAnchor)
-        ])
-        dateOverlayView.isHidden = true
+
+        if isDateOverlayEnabled {
+            view.addSubview(dateOverlayView)
+            NSLayoutConstraint.activate([
+                dateOverlayView.centerXAnchor.pin(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+                dateOverlayView.topAnchor.pin(equalToSystemSpacingBelow: view.safeAreaLayoutGuide.topAnchor)
+            ])
+            dateOverlayView.isHidden = true
+        }
     }
 
     override open func setUpAppearance() {
@@ -198,6 +218,7 @@ open class ChatMessageListVC:
     ///
     /// Default implementation will dismiss the keyboard if it is open
     @objc open func handleTap(_ gesture: UITapGestureRecognizer) {
+        delegate?.chatMessageListVC(self, didTapOnMessageListView: listView, with: gesture)
         view.endEditing(true)
     }
 
@@ -287,6 +308,31 @@ open class ChatMessageListVC:
         typingIndicatorView.isHidden = true
     }
 
+    /// Check if the current message being displayed should show the date separator.
+    /// - Parameters:
+    ///   - message: The message being displayed.
+    ///   - indexPath: The indexPath of the message.
+    /// - Returns: A Boolean value depending if it should show the date separator or not.
+    func shouldShowDateSeparator(forMessage message: ChatMessage, at indexPath: IndexPath) -> Bool {
+        guard isDateSeparatorEnabled else {
+            return false
+        }
+        
+        let previousIndexPath = IndexPath(row: indexPath.row + 1, section: indexPath.section)
+        guard let previousMessage = dataSource?.chatMessageListVC(self, messageAt: previousIndexPath) else {
+            // If previous message doesn't exist show the separator as well.
+            return true
+        }
+        
+        // Only show the separator if the previous message has a different day.
+        let isDifferentDay = !Calendar.current.isDate(
+            message.createdAt,
+            equalTo: previousMessage.createdAt,
+            toGranularity: .day
+        )
+        return isDifferentDay
+    }
+
     // MARK: - UITableViewDataSource & UITableViewDelegate
 
     open func numberOfSections(in tableView: UITableView) -> Int {
@@ -298,8 +344,6 @@ open class ChatMessageListVC:
     }
 
     open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
-
         let cell: ChatMessageCell = listView.dequeueReusableCell(
             contentViewClass: cellContentClassForMessage(at: indexPath),
             attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
@@ -307,8 +351,15 @@ open class ChatMessageListVC:
             for: indexPath
         )
 
+        guard let message = dataSource?.chatMessageListVC(self, messageAt: indexPath) else {
+            return cell
+        }
+
         cell.messageContentView?.delegate = self
         cell.messageContentView?.content = message
+
+        cell.dateSeparatorView.isHidden = !shouldShowDateSeparator(forMessage: message, at: indexPath)
+        cell.dateSeparatorView.content = dateSeparatorFormatter.format(message.createdAt)
 
         return cell
     }
@@ -333,9 +384,7 @@ open class ChatMessageListVC:
             return nil
         }
 
-        return DateFormatter
-            .messageListDateOverlay
-            .string(from: message.createdAt)
+        return dateSeparatorFormatter.format(message.createdAt)
     }
 
     // MARK: - ChatMessageActionsVCDelegate
@@ -461,6 +510,19 @@ open class ChatMessageListVC:
             .dispatchEphemeralMessageAction(action)
     }
 
+    open func messageContentViewDidTapOnReactionsView(_ indexPath: IndexPath?) {
+        guard let indexPath = indexPath,
+              let cell = listView.cellForRow(at: indexPath) as? ChatMessageCell,
+              let messageContentView = cell.messageContentView else {
+            return
+        }
+
+        router.showReactionsPopUp(
+            messageContentView: messageContentView,
+            client: client
+        )
+    }
+
     // MARK: - UIGestureRecognizerDelegate
 
     open func gestureRecognizer(
@@ -469,13 +531,5 @@ open class ChatMessageListVC:
     ) -> Bool {
         // To prevent the gesture recognizer consuming up the events from UIControls, we receive touch only when the view isn't a UIControl.
         !(touch.view is UIControl)
-    }
-
-    // MARK: - UIAdaptivePresentationControllerDelegate
-
-    public func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-        // A workaround is required because we are using an inverted UITableView for the message list.
-        // More details on the issue: https://github.com/GetStream/stream-chat-swift/issues/1307
-        !listView.isDragging
     }
 }

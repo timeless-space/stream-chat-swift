@@ -1,11 +1,11 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 
-/// Controller for the message reactions picker as a list of toggles
+/// Controller for the message reactions picker as a list of toggles.
 open class ChatMessageReactionsVC: _ViewController, ThemeProvider, ChatMessageControllerDelegate {
     public var messageController: ChatMessageController!
 

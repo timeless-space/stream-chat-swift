@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -14,6 +14,10 @@ extension ChatMessageGalleryView {
         public var didTapActionButton: (() -> Void)?
         
         open var minBottomContainerHeight: CGFloat = 24
+
+        /// The number formatter that converts the uploading progress percentage to textual representation.
+        open lazy var uploadingProgressFormatter: UploadingProgressFormatter =
+            appearance.formatters.uploadingProgress
 
         // MARK: - Subviews
         
@@ -99,7 +103,7 @@ extension ChatMessageGalleryView {
             
             actionButton.content = content.flatMap {
                 switch $0.state {
-                case .pendingUpload, .uploading:
+                case .pendingUpload, .uploading, .unknown:
                     // TODO: Return `.cancel` when it's is supported.
                     return nil
                 case .uploadingFailed:
@@ -113,10 +117,10 @@ extension ChatMessageGalleryView {
             uploadingProgressLabel.text = content.flatMap {
                 switch $0.state {
                 case let .uploading(progress):
-                    return NumberFormatter.uploadingPercentage.string(from: .init(value: progress))
+                    return uploadingProgressFormatter.format(progress)
                 case .pendingUpload:
-                    return NumberFormatter.uploadingPercentage.string(from: 0)
-                case .uploaded:
+                    return uploadingProgressFormatter.format(0)
+                case .uploaded, .unknown:
                     return nil
                 case .uploadingFailed:
                     return L10n.Message.Sending.attachmentUploadingFailed
@@ -157,7 +161,7 @@ extension AttachmentUploadingState {
             return "\(uploadedSize)/\(file.sizeString)"
         case .pendingUpload:
             return "0/\(file.sizeString)"
-        case .uploaded, .uploadingFailed:
+        case .uploaded, .uploadingFailed, .unknown:
             return file.sizeString
         }
     }

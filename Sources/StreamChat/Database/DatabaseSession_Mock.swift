@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -21,6 +21,21 @@ class DatabaseSessionMock: DatabaseSession {
 // Here start the boilerplate that forwards and intercepts the session calls if needed
 
 extension DatabaseSessionMock {
+    func addReaction(
+        to messageId: MessageId,
+        type: MessageReactionType,
+        score: Int,
+        extraData: [String: RawJSON]
+    ) throws -> MessageReactionDTO {
+        try throwErrorIfNeeded()
+        return try underlyingSession.addReaction(to: messageId, type: type, score: score, extraData: extraData)
+    }
+    
+    func removeReaction(from messageId: MessageId, type: MessageReactionType, on version: String?) throws -> MessageReactionDTO? {
+        try throwErrorIfNeeded()
+        return try underlyingSession.removeReaction(from: messageId, type: type, on: version)
+    }
+
     func saveCurrentDevice(_ deviceId: String) throws {
         try throwErrorIfNeeded()
         return try saveCurrentDevice(deviceId)
@@ -112,14 +127,14 @@ extension DatabaseSessionMock {
         )
     }
     
-    func saveMessage(payload: MessagePayload, channelDTO: ChannelDTO) throws -> MessageDTO {
+    func saveMessage(payload: MessagePayload, for cid: ChannelId?, syncOwnReactions: Bool) throws -> MessageDTO? {
         try throwErrorIfNeeded()
-        return try underlyingSession.saveMessage(payload: payload, channelDTO: channelDTO)
+        return try? underlyingSession.saveMessage(payload: payload, for: cid, syncOwnReactions: syncOwnReactions)
     }
-
-    func saveMessage(payload: MessagePayload, for cid: ChannelId?) throws -> MessageDTO? {
+    
+    func saveMessage(payload: MessagePayload, channelDTO: ChannelDTO, syncOwnReactions: Bool) throws -> MessageDTO {
         try throwErrorIfNeeded()
-        return try? underlyingSession.saveMessage(payload: payload, for: cid)
+        return try underlyingSession.saveMessage(payload: payload, channelDTO: channelDTO, syncOwnReactions: syncOwnReactions)
     }
     
     func pin(message: MessageDTO, pinning: MessagePinning) throws {
@@ -259,7 +274,7 @@ extension DatabaseSessionMock {
     }
     
     func delete(query: ChannelListQuery) {
-        try underlyingSession.delete(query: query)
+        underlyingSession.delete(query: query)
     }
 
     func saveMessage(payload: MessagePayload, for query: MessageSearchQuery) throws -> MessageDTO? {

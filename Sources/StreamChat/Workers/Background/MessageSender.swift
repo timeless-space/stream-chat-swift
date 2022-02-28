@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -202,7 +202,7 @@ private class MessageSendingQueue {
     
     private func saveSuccessfullySentMessage(cid: ChannelId, message: MessagePayload, completion: @escaping () -> Void) {
         database.write({
-            guard let messageDTO = try? $0.saveMessage(payload: message, for: cid) else {
+            guard let messageDTO = try? $0.saveMessage(payload: message, for: cid, syncOwnReactions: false) else {
                 return
             }
             if messageDTO.localMessageState == .sending {

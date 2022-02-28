@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -42,7 +42,7 @@ class UserDTO_Tests: XCTestCase {
             Assert.willBeEqual(payload.createdAt, loadedUserDTO.userCreatedAt)
             Assert.willBeEqual(payload.updatedAt, loadedUserDTO.userUpdatedAt)
             Assert.willBeEqual(payload.lastActiveAt, loadedUserDTO.lastActivityAt)
-            Assert.willBeEqual(payload.teams.sorted(), loadedUserDTO.teams?.map(\.id).sorted())
+            Assert.willBeEqual(payload.teams, loadedUserDTO.teams)
             Assert.willBeEqual(
                 payload.extraData,
                 try? JSONDecoder.default.decode([String: RawJSON].self, from: loadedUserDTO.extraData)

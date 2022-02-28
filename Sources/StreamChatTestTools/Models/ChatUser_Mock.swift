@@ -1,12 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
 @testable import StreamChat
 
 public extension ChatUser {
-    /// Creates a new `_ChatUser` object from the provided data.
+    /// Creates a new `ChatUser` object from the provided data.
     static func mock(
         id: UserId,
         name: String? = nil,
