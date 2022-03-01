@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -609,7 +609,7 @@ class ChannelController_Tests: XCTestCase {
         )
         // Save the message payload and check `channel.lastMessageAt` is updated
         try client.databaseContainer.writeSynchronously {
-            try $0.saveMessage(payload: newerMessagePayload, for: channelId)
+            try $0.saveMessage(payload: newerMessagePayload, for: channelId, syncOwnReactions: true)
         }
         channel = try XCTUnwrap(client.databaseContainer.viewContext.channel(cid: channelId))
         XCTAssertEqual(channel.lastMessageAt, newerMessagePayload.createdAt)
@@ -891,7 +891,7 @@ class ChannelController_Tests: XCTestCase {
         )
         _ = try waitFor {
             client.databaseContainer.write({ session in
-                try session.saveMessage(payload: newMessagePayload, for: self.channelId)
+                try session.saveMessage(payload: newMessagePayload, for: self.channelId, syncOwnReactions: true)
             }, completion: $0)
         }
         
@@ -916,8 +916,8 @@ class ChannelController_Tests: XCTestCase {
         let message2: MessagePayload = .dummy(messageId: .unique, authorUserId: .unique)
         
         try client.databaseContainer.writeSynchronously {
-            try $0.saveMessage(payload: message1, for: self.channelId)
-            try $0.saveMessage(payload: message2, for: self.channelId)
+            try $0.saveMessage(payload: message1, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: message2, for: self.channelId, syncOwnReactions: true)
         }
         
         // Check the order of messages is correct
@@ -942,8 +942,8 @@ class ChannelController_Tests: XCTestCase {
         let message2: MessagePayload = .dummy(messageId: .unique, authorUserId: .unique)
         
         try client.databaseContainer.writeSynchronously {
-            try $0.saveMessage(payload: message1, for: self.channelId)
-            try $0.saveMessage(payload: message2, for: self.channelId)
+            try $0.saveMessage(payload: message1, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: message2, for: self.channelId, syncOwnReactions: true)
         }
         
         // Check the order of messages is correct
@@ -960,12 +960,12 @@ class ChannelController_Tests: XCTestCase {
         )
         
         // Insert two messages
-        let message1: MessagePayload = .dummy(messageId: .unique, authorUserId: .unique)
-        let message2: MessagePayload = .dummy(messageId: .unique, authorUserId: .unique)
+        let message1: MessagePayload = .dummy(messageId: "msg1-" + .unique, authorUserId: .unique)
+        let message2: MessagePayload = .dummy(messageId: "msg2-" + .unique, authorUserId: .unique)
         
         // Insert reply that should be shown in channel.
         let reply1: MessagePayload = .dummy(
-            messageId: .unique,
+            messageId: "reply1-" + .unique,
             parentId: message2.id,
             showReplyInChannel: true,
             authorUserId: .unique
@@ -973,22 +973,50 @@ class ChannelController_Tests: XCTestCase {
         
         // Insert reply that should be visible only in thread.
         let reply2: MessagePayload = .dummy(
-            messageId: .unique,
+            messageId: "reply2-" + .unique,
             parentId: message2.id,
             showReplyInChannel: false,
             authorUserId: .unique
         )
         
         try client.databaseContainer.writeSynchronously {
-            try $0.saveMessage(payload: message1, for: self.channelId)
-            try $0.saveMessage(payload: message2, for: self.channelId)
-            try $0.saveMessage(payload: reply1, for: self.channelId)
-            try $0.saveMessage(payload: reply2, for: self.channelId)
+            try $0.saveMessage(payload: message1, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: message2, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: reply1, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: reply2, for: self.channelId, syncOwnReactions: true)
         }
         
         // Check the relevant reply is shown in channel
         let messagesWithReply = [message1, message2, reply1].sorted { $0.createdAt > $1.createdAt }.map(\.id)
         XCTAssertEqual(controller.messages.map(\.id), messagesWithReply)
+    }
+    
+    func test_threadEphemeralMessages_areNotShownInChannel() throws {
+        // Create a channel
+        try client.databaseContainer.createChannel(cid: channelId, withMessages: false)
+        controller = client.channelController(
+            for: channelId,
+            messageOrdering: .topToBottom
+        )
+        
+        // Insert a message
+        let message1: MessagePayload = .dummy(messageId: .unique, authorUserId: .unique)
+        
+        // Insert ephemeral message in message1's thread
+        let ephemeralMessage: MessagePayload = .dummy(
+            type: .ephemeral,
+            messageId: .unique,
+            parentId: message1.id,
+            authorUserId: .unique
+        )
+        
+        try client.databaseContainer.writeSynchronously {
+            try $0.saveMessage(payload: message1, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: ephemeralMessage, for: self.channelId, syncOwnReactions: true)
+        }
+        
+        // Check the relevant ephemeral message is not shown in channel
+        XCTAssertEqual(controller.messages.map(\.id), [message1].map(\.id))
     }
 
     func test_deletedMessages_withVisibleForCurrentUser_messageVisibility() throws {
@@ -1018,8 +1046,8 @@ class ChannelController_Tests: XCTestCase {
         )
 
         try client.databaseContainer.writeSynchronously {
-            try $0.saveMessage(payload: incomingDeletedMessage, for: self.channelId)
-            try $0.saveMessage(payload: outgoingDeletedMessage, for: self.channelId)
+            try $0.saveMessage(payload: incomingDeletedMessage, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: outgoingDeletedMessage, for: self.channelId, syncOwnReactions: true)
         }
 
         // Only outgoing deleted messages are returned by controller
@@ -1053,8 +1081,8 @@ class ChannelController_Tests: XCTestCase {
         )
 
         try client.databaseContainer.writeSynchronously {
-            try $0.saveMessage(payload: incomingDeletedMessage, for: self.channelId)
-            try $0.saveMessage(payload: outgoingDeletedMessage, for: self.channelId)
+            try $0.saveMessage(payload: incomingDeletedMessage, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: outgoingDeletedMessage, for: self.channelId, syncOwnReactions: true)
         }
 
         // Both outgoing and incoming messages should NOT be visible
@@ -1088,8 +1116,8 @@ class ChannelController_Tests: XCTestCase {
         )
 
         try client.databaseContainer.writeSynchronously {
-            try $0.saveMessage(payload: incomingDeletedMessage, for: self.channelId)
-            try $0.saveMessage(payload: outgoingDeletedMessage, for: self.channelId)
+            try $0.saveMessage(payload: incomingDeletedMessage, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: outgoingDeletedMessage, for: self.channelId, syncOwnReactions: true)
         }
 
         // Both outgoing and incoming messages should be visible
@@ -1115,6 +1143,73 @@ class ChannelController_Tests: XCTestCase {
         // Check only the 5 messages after the truncatedAt date are visible
         XCTAssertEqual(controller.messages.count, 5)
         XCTAssert(controller.messages.allSatisfy { $0.createdAt > truncatedAtDate })
+    }
+    
+    func test_shadowedMessages_whenVisible() throws {
+        // Simulate the config setting
+        client.databaseContainer.viewContext.shouldShowShadowedMessages = true
+        
+        let currentUserID: UserId = .unique
+        
+        // Create current user
+        try client.databaseContainer.createCurrentUser(id: currentUserID)
+        
+        // Create a channel
+        try client.databaseContainer.createChannel(cid: channelId, withMessages: false)
+        
+        // Create incoming shadowed message
+        let shadowedMessage: MessagePayload = .dummy(
+            messageId: .unique,
+            authorUserId: .unique,
+            isShadowed: true
+        )
+        
+        // Create incoming non-shadowed message
+        let nonShadowedMessage: MessagePayload = .dummy(
+            messageId: .unique,
+            authorUserId: .unique,
+            isShadowed: false
+        )
+        
+        try client.databaseContainer.writeSynchronously {
+            try $0.saveMessage(payload: shadowedMessage, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: nonShadowedMessage, for: self.channelId, syncOwnReactions: true)
+        }
+        
+        // Both messages should be visible
+        XCTAssertEqual(Set(controller.messages.map(\.id)), Set([nonShadowedMessage.id, shadowedMessage.id]))
+    }
+    
+    func test_shadowedMessages_defaultBehavior_isToHide() throws {
+        let currentUserID: UserId = .unique
+        
+        // Create current user
+        try client.databaseContainer.createCurrentUser(id: currentUserID)
+        
+        // Create a channel
+        try client.databaseContainer.createChannel(cid: channelId, withMessages: false)
+        
+        // Create incoming shadowed message
+        let shadowedMessage: MessagePayload = .dummy(
+            messageId: .unique,
+            authorUserId: .unique,
+            isShadowed: true
+        )
+        
+        // Create incoming non-shadowed message
+        let nonShadowedMessage: MessagePayload = .dummy(
+            messageId: .unique,
+            authorUserId: .unique,
+            isShadowed: false
+        )
+        
+        try client.databaseContainer.writeSynchronously {
+            try $0.saveMessage(payload: shadowedMessage, for: self.channelId, syncOwnReactions: true)
+            try $0.saveMessage(payload: nonShadowedMessage, for: self.channelId, syncOwnReactions: true)
+        }
+        
+        // Only non-shadowed message should be visible
+        XCTAssertEqual(Set(controller.messages.map(\.id)), Set([nonShadowedMessage.id]))
     }
 
     // MARK: - Delegate tests
@@ -3820,6 +3915,68 @@ class ChannelController_Tests: XCTestCase {
         
         // Completion should be called with the error
         AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
+    }
+    
+    // MARK: - Load pinned messages
+    
+    func test_loadPinnedMessages_failsForNewChannel() throws {
+        //  Create `ChannelController` for new channel
+        let query = ChannelQuery(channelPayload: .unique)
+        setupControllerForNewChannel(query: query)
+        
+        // Simulate `loadPinnedMessages` call and assert error is returned
+        let error: Error? = try waitFor { [callbackQueueID] completion in
+            controller.loadPinnedMessages { result in
+                AssertTestQueue(withId: callbackQueueID)
+                completion(result.error)
+            }
+        }
+        
+        // Assert `ClientError.ChannelNotCreatedYet` is propagated to completion
+        XCTAssert(error is ClientError.ChannelNotCreatedYet)
+    }
+    
+    func test_loadPinnedMessages_callsChannelUpdater() {
+        let pageSize = 10
+        let pagination = PinnedMessagesPagination.aroundMessage(.unique)
+        
+        // Simulate `loadPinnedMessages` call
+        controller.loadPinnedMessages(pageSize: pageSize, pagination: pagination) { _ in }
+        
+        // Assert call is propagated to updater
+        XCTAssertEqual(env.channelUpdater!.loadPinnedMessages_cid, controller.cid)
+        XCTAssertEqual(env.channelUpdater!.loadPinnedMessages_query, .init(pageSize: pageSize, pagination: pagination))
+    }
+    
+    func test_loadPinnedMessages_propagatesErrorFromUpdater() {
+        // Simulate `loadPinnedMessages` call and catch the completion
+        var completionError: Error?
+        controller.loadPinnedMessages { [callbackQueueID] in
+            AssertTestQueue(withId: callbackQueueID)
+            completionError = $0.error
+        }
+        
+        // Simulate failed update
+        let testError = TestError()
+        env.channelUpdater!.loadPinnedMessages_completion!(.failure(testError))
+        
+        // Error is propagated to completion
+        AssertAsync.willBeEqual(completionError as? TestError, testError)
+    }
+    
+    func test_loadPinnedMessages_keepsControllerAlive() {
+        // Simulate `loadPinnedMessages` call
+        controller.loadPinnedMessages { _ in }
+        
+        // Keep a weak ref so we can check if it's actually deallocated
+        weak var weakController = controller
+        
+        // (Try to) deallocate the controller
+        // by not keeping any references to it
+        controller = nil
+        
+        // Assert controller is kept alive
+        AssertAsync.staysTrue(weakController != nil)
     }
 }
 

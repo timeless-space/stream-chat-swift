@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -37,11 +37,14 @@ extension MessagePayload {
         pinnedByUserId: UserId? = nil,
         pinnedAt: Date? = nil,
         pinExpires: Date? = nil,
-        isSilent: Bool = false
+        isSilent: Bool = false,
+        isShadowed: Bool = false,
+        reactionScores: [MessageReactionType: Int] = ["like": 1],
+        reactionCounts: [MessageReactionType: Int] = ["like": 1]
     ) -> MessagePayload {
         .init(
             id: messageId,
-            type: type ?? (parentId == nil ? .regular : .reply),
+            type: type ?? (parentId == nil ? .regular : showReplyInChannel == true ? .regular : .reply),
             user: UserPayload.dummy(userId: authorUserId) as UserPayload,
             createdAt: createdAt != nil ? createdAt! : XCTestCase.channelCreatedDate
                 .addingTimeInterval(TimeInterval.random(in: 100...900)),
@@ -60,8 +63,10 @@ extension MessagePayload {
             extraData: extraData,
             latestReactions: latestReactions,
             ownReactions: ownReactions,
-            reactionScores: ["like": 1],
+            reactionScores: reactionScores,
+            reactionCounts: reactionCounts,
             isSilent: isSilent,
+            isShadowed: isShadowed,
             attachments: attachments,
             channel: channel,
             pinned: pinned,

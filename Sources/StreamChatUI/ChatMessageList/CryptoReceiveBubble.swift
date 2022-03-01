@@ -21,7 +21,7 @@ class CryptoReceiveBubble: UITableViewCell {
     public private(set) var blockExplorerButton: UIButton!
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     public var blockExpAction: ((URL) -> Void)?
     var client: ChatClient?
 
@@ -173,7 +173,7 @@ class CryptoReceiveBubble: UITableViewCell {
 
     func configData() {
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampLabel?.text = dateFormatter.format(createdAt)
         } else {
             timestampLabel?.text = nil
         }

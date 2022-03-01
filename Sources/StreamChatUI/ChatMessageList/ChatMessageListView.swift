@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -68,7 +68,7 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
     ) -> String {
         let components = [
             ChatMessageCell.reuseId,
-            String(layoutOptions.rawValue),
+            String(layoutOptions.id),
             String(describing: contentViewClass),
             String(describing: attachmentViewInjectorType)
         ]
@@ -172,39 +172,49 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
         with changes: [ListChange<ChatMessage>],
         completion: (() -> Void)? = nil
     ) {
-        guard let _ = collectionUpdatesMapper.mapToSetsOfIndexPaths(
-            changes: changes,
-            onConflict: {
-                reloadData()
-            }
-        ) else { return }
+        defer {
+            completion?()
+        }
 
-        if changes.count > 1 {
+        let hasConflictUpdates = collectionUpdatesMapper.mapToSetsOfIndexPaths(changes: changes) == nil
+        if hasConflictUpdates {
             reloadData()
             return
         }
 
-        changes.forEach {
-            switch $0 {
-            case let .insert(message, index: index):
-                UIView.performWithoutAnimation {
-                    self.reloadData()
+        guard changes.count == 1, let change = changes.first else {
+            reloadData()
+            return
+        }
+
+        switch change {
+        case let .insert(message, index: index):
+            UIView.performWithoutAnimation {
+                self.performBatchUpdates {
+                    self.insertRows(at: [index], with: .none)
+                } completion: { _ in
+                    guard self.numberOfRows(inSection: index.section) > index.row + 1 else { return }
+                    // Update previous row to remove timestamp if needed
+                    // +1 instead of -1 because the message list is inverted
+                    let previousIndex = IndexPath(row: index.row + 1, section: index.section)
+                    self.reloadRows(at: [previousIndex], with: .none)
                 }
-                if message.isSentByCurrentUser, index == IndexPath(item: 0, section: 0) {
-                    self.scrollToBottomAction = .init { [weak self] in
-                        self?.scrollToMostRecentMessage()
-                    }
-                }
-
-            case let .move(_, fromIndex: fromIndex, toIndex: toIndex):
-                self.moveRow(at: fromIndex, to: toIndex)
-
-            case let .update(_, index: index):
-                self.reloadRows(at: [index], with: .automatic)
-
-            case .remove:
-                self.reloadData()
             }
+
+            if message.isSentByCurrentUser, index == IndexPath(item: 0, section: 0) {
+                scrollToBottomAction = .init { [weak self] in
+                    self?.scrollToMostRecentMessage()
+                }
+            }
+
+        case let .move(_, fromIndex: fromIndex, toIndex: toIndex):
+            moveRow(at: fromIndex, to: toIndex)
+
+        case let .update(_, index: index):
+            reloadRows(at: [index], with: .automatic)
+
+        case .remove:
+            reloadData()
         }
     }
 
@@ -228,11 +238,15 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
                 cellBeforeUpdateReuseIdentifier == cellAfterUpdateReuseIdentifier,
                 cellBeforeUpdateMessage?.id == cellAfterUpdateMessage?.id,
                 cellBeforeUpdateMessage?.type == cellAfterUpdateMessage?.type,
-                cellBeforeUpdateMessage?.deletedAt == cellAfterUpdateMessage?.deletedAt {
+                cellBeforeUpdateMessage?.deletedAt == cellAfterUpdateMessage?.deletedAt,
+                cellBeforeUpdateMessage?.text == cellAfterUpdateMessage?.text,
+                cellBeforeUpdateMessage?.quotedMessage?.text == cellAfterUpdateMessage?.quotedMessage?.text,
+                cellBeforeUpdateMessage?.extraData == cellAfterUpdateMessage?.extraData {
                 // If identifiers and messages match we can simply update the current cell with new content
                 cellBeforeUpdate?.messageContentView?.content = cellAfterUpdateMessage
             } else {
-                // If identifiers does not match we do a reload to let the table view dequeue another cell
+                // If identifiers do not match or the cell size will need to change, ex: Editing text
+                // we do a reload to let the table view dequeue another cell
                 // with the layout fitting the updated message.
                 indexPathToReload.append(indexPath)
             }

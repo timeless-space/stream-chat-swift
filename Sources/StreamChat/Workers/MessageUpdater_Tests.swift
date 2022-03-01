@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -68,35 +68,47 @@ final class MessageUpdater_Tests: XCTestCase {
             (.pendingSync, .pendingSync),
             (.pendingSend, .pendingSend)
         ]
-        
+
         for (initialState, expectedState) in pairs {
             let currentUserId: UserId = .unique
             let messageId: MessageId = .unique
             let updatedText: String = .unique
-            
+
             // Flush the database
             try database.removeAllData()
-            
+
             // Create current user is the database
             try database.createCurrentUser(id: currentUserId)
-            
+
             // Create a new message in the database
             try database.createMessage(id: messageId, authorId: currentUserId, localState: initialState)
-            
+
+            // Load the message
+            let message = try XCTUnwrap(database.viewContext.message(id: messageId))
+
+            // Create a new message quoting the message that will be edited
+            let quotingMessageId = MessageId.unique
+            try database.createMessage(id: quotingMessageId, authorId: currentUserId, quotedMessageId: messageId)
+
             // Edit created message with new text
             let completionError = try waitFor {
                 messageUpdater.editMessage(messageId: messageId, text: updatedText, completion: $0)
             }
-            
-            // Load the message
-            let message = try XCTUnwrap(database.viewContext.message(id: messageId))
-            
+
+            // Load the edited message
+            let editedMessage = try XCTUnwrap(database.viewContext.message(id: messageId))
+
+            // Load the message quoting the edited message
+            let quotingMessage = try XCTUnwrap(database.viewContext.message(id: quotingMessageId))
+
             // Assert completion is called without any error
             XCTAssertNil(completionError)
             // Assert message still has expected local state
             XCTAssertEqual(message.localMessageState, expectedState)
             // Assert message text is updated correctly
             XCTAssertEqual(message.text, updatedText)
+            // The quoting message should have the same updatedAt so that it triggers a DB Update
+            XCTAssertEqual(editedMessage.updatedAt, quotingMessage.updatedAt)
         }
     }
     
@@ -129,6 +141,10 @@ final class MessageUpdater_Tests: XCTestCase {
             
             // Load the message
             let message = try XCTUnwrap(database.viewContext.message(id: messageId))
+            let extraData = try XCTUnwrap(
+                message.extraData
+                    .map { try? JSONDecoder.default.decode([String: RawJSON].self, from: $0) }
+            )
             
             // Assert `MessageEditing` error is received
             XCTAssertTrue(completionError is ClientError.MessageEditing)
@@ -136,7 +152,86 @@ final class MessageUpdater_Tests: XCTestCase {
             XCTAssertEqual(message.localMessageState, state)
             // Assert message's text stays the same
             XCTAssertEqual(message.text, initialText)
+            // Assert message's extra data stays the same
+            XCTAssertEqual(extraData, [:])
         }
+    }
+
+    func test_editMessage_updatesLocalMessageCorrectlyWithExtraData() throws {
+        let currentUserId: UserId = .unique
+        let messageId: MessageId = .unique
+        let updatedText: String = .unique
+        let extraData: [String: RawJSON] = ["custom": .number(0)]
+        let updatedExtraData: [String: RawJSON] = ["custom": .number(1)]
+
+        // Create current user is the database
+        try database.createCurrentUser(id: currentUserId)
+
+        // Create a new message in the database
+        try database.createMessage(id: messageId, authorId: currentUserId, extraData: extraData)
+        let createdMessage = try XCTUnwrap(database.viewContext.message(id: messageId))
+
+        let encodedCreatedExtraData = try XCTUnwrap(
+            createdMessage.extraData
+                .map { try? JSONDecoder.default.decode([String: RawJSON].self, from: $0) }
+        )
+        // Assert message's extra data is updated
+        XCTAssertEqual(encodedCreatedExtraData, extraData)
+
+        // Edit created message with new text
+        let completionError = try waitFor {
+            messageUpdater.editMessage(messageId: messageId, text: updatedText, extraData: updatedExtraData, completion: $0)
+        }
+
+        // Load the message
+        let message = try XCTUnwrap(database.viewContext.message(id: messageId))
+        let encodedExtraData = try XCTUnwrap(
+            message.extraData
+                .map { try? JSONDecoder.default.decode([String: RawJSON].self, from: $0) }
+        )
+
+        // Assert completion is called without any error
+        XCTAssertNil(completionError)
+        // Assert message's extra data is updated
+        XCTAssertEqual(encodedExtraData, updatedExtraData)
+    }
+
+    func test_editMessage_doesntUpdatesLocalMessageIfExtraDataAreNil() throws {
+        let currentUserId: UserId = .unique
+        let messageId: MessageId = .unique
+        let updatedText: String = .unique
+        let extraData: [String: RawJSON] = ["custom": .number(0)]
+
+        // Create current user is the database
+        try database.createCurrentUser(id: currentUserId)
+
+        // Create a new message in the database
+        try database.createMessage(id: messageId, authorId: currentUserId, extraData: extraData)
+        let createdMessage = try XCTUnwrap(database.viewContext.message(id: messageId))
+
+        let encodedCreatedExtraData = try XCTUnwrap(
+            createdMessage.extraData
+                .map { try? JSONDecoder.default.decode([String: RawJSON].self, from: $0) }
+        )
+        // Assert message's extra data is updated
+        XCTAssertEqual(encodedCreatedExtraData, extraData)
+
+        // Edit created message with new text
+        let completionError = try waitFor {
+            messageUpdater.editMessage(messageId: messageId, text: updatedText, extraData: nil, completion: $0)
+        }
+
+        // Load the message
+        let message = try XCTUnwrap(database.viewContext.message(id: messageId))
+        let encodedExtraData = try XCTUnwrap(
+            message.extraData
+                .map { try? JSONDecoder.default.decode([String: RawJSON].self, from: $0) }
+        )
+
+        // Assert completion is called without any error
+        XCTAssertNil(completionError)
+        // Assert message's extra data is updated
+        XCTAssertEqual(encodedExtraData, extraData)
     }
     
     // MARK: Delete message
@@ -148,10 +243,10 @@ final class MessageUpdater_Tests: XCTestCase {
         try database.createCurrentUser()
         
         // Simulate `deleteMessage(messageId:)` call
-        messageUpdater.deleteMessage(messageId: messageId)
+        messageUpdater.deleteMessage(messageId: messageId, hard: false)
         
         // Assert correct endpoint is called
-        let expectedEndpoint: Endpoint<EmptyResponse> = .deleteMessage(messageId: messageId)
+        let expectedEndpoint: Endpoint<MessagePayload.Boxed> = .deleteMessage(messageId: messageId, hard: false)
         AssertAsync.willBeEqual(apiClient.request_endpoint, AnyEndpoint(expectedEndpoint))
     }
     
@@ -163,18 +258,19 @@ final class MessageUpdater_Tests: XCTestCase {
         
         // Simulate `deleteMessage(messageId:)` call
         var completionCalledError: Error?
-        messageUpdater.deleteMessage(messageId: messageId) {
+        messageUpdater.deleteMessage(messageId: messageId, hard: false) {
             completionCalledError = $0
         }
         
         // Assert correct endpoint is called
-        let expectedEndpoint: Endpoint<EmptyResponse> = .deleteMessage(messageId: messageId)
+        let expectedEndpoint: Endpoint<MessagePayload.Boxed> = .deleteMessage(messageId: messageId, hard: false)
         AssertAsync.willBeEqual(apiClient.request_endpoint, AnyEndpoint(expectedEndpoint))
         
-        // Simulate API response with success
+        // Simulate API response with error
         let testError = TestError()
-        apiClient.test_simulateResponse(Result<EmptyResponse, Error>.failure(testError))
-                
+        let response: Result<MessagePayload.Boxed, Error> = .failure(testError)
+        apiClient.test_simulateResponse(response)
+
         // Assert completion is called without any error
         AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
     }
@@ -186,7 +282,7 @@ final class MessageUpdater_Tests: XCTestCase {
         
         // Simulate `deleteMessage(messageId:)` call
         let completionError = try waitFor {
-            messageUpdater.deleteMessage(messageId: .unique, completion: $0)
+            messageUpdater.deleteMessage(messageId: .unique, hard: false, completion: $0)
         }
         
         // Assert database error is propogated
@@ -201,12 +297,12 @@ final class MessageUpdater_Tests: XCTestCase {
 
         // Simulate `deleteMessage(messageId:)` call
         var completionCalledError: Error?
-        messageUpdater.deleteMessage(messageId: messageId) {
+        messageUpdater.deleteMessage(messageId: messageId, hard: false) {
             completionCalledError = $0
         }
         
         // Assert correct endpoint is called
-        let expectedEndpoint: Endpoint<EmptyResponse> = .deleteMessage(messageId: messageId)
+        let expectedEndpoint: Endpoint<MessagePayload.Boxed> = .deleteMessage(messageId: messageId, hard: false)
         AssertAsync.willBeEqual(apiClient.request_endpoint, AnyEndpoint(expectedEndpoint))
         
         // Update database container to throw the error on write
@@ -214,8 +310,10 @@ final class MessageUpdater_Tests: XCTestCase {
         database.write_errorResponse = databaseError
         
         // Simulate API response with success
-        apiClient.test_simulateResponse(Result<EmptyResponse, Error>.success(.init()))
-                
+        let response: Result<MessagePayload.Boxed, Error> =
+            .success(.init(message: .dummy(messageId: .unique, authorUserId: .unique)))
+        apiClient.test_simulateResponse(response)
+
         // Assert database error is propogated
         AssertAsync.willBeEqual(completionCalledError as? TestError, databaseError)
     }
@@ -230,42 +328,37 @@ final class MessageUpdater_Tests: XCTestCase {
             
             // Create current user in the database
             try database.createCurrentUser(id: currentUserId)
-                   
+
             // Create a new message in the database
             try database.createMessage(id: messageId, authorId: currentUserId, localState: state)
 
+            let expectation = expectation(description: "deleteMessage")
+
             // Simulate `deleteMessage(messageId:)` call
-            var completionCalled = false
-            messageUpdater.deleteMessage(messageId: messageId) { error in
+            messageUpdater.deleteMessage(messageId: messageId, hard: false) { error in
                 XCTAssertNil(error)
-                completionCalled = true
+                expectation.fulfill()
             }
-            
+
+            wait(for: [expectation], timeout: 0.1)
             let message = try XCTUnwrap(database.viewContext.message(id: messageId))
-            
-            AssertAsync {
-                // Assert completion is called
-                Assert.willBeTrue(completionCalled)
-                // Assert `deletedAt` is set for the message
-                Assert.willBeTrue(message.deletedAt != nil)
-                // Assert `type` is set to `.deleted`
-                Assert.willBeEqual(message.type, MessageType.deleted.rawValue)
-                // Assert API is not called
-                Assert.staysTrue(self.apiClient.request_endpoint == nil)
-            }
+
+            XCTAssertNotNil(message.deletedAt)
+            XCTAssertEqual(message.type, MessageType.deleted.rawValue)
+            XCTAssertNil(apiClient.request_endpoint)
         }
     }
     
     func test_deleteMessage_updatesMessageStateCorrectly() throws {
-        let pairs: [(Result<EmptyResponse, Error>, LocalMessageState?)] = [
-            (.success(.init()), nil),
+        let currentUserId: UserId = .unique
+        let messageId: MessageId = .unique
+
+        let pairs: [(Result<MessagePayload.Boxed, Error>, LocalMessageState?)] = [
+            (.success(.init(message: .dummy(messageId: messageId, authorUserId: currentUserId))), nil),
             (.failure(TestError()), .deletingFailed)
         ]
         
         for (networkResult, expectedState) in pairs {
-            let currentUserId: UserId = .unique
-            let messageId: MessageId = .unique
-            
             // Flush the database
             try database.removeAllData()
             
@@ -274,22 +367,94 @@ final class MessageUpdater_Tests: XCTestCase {
             
             // Create message authored by current user in the database
             try database.createMessage(id: messageId, authorId: currentUserId)
-            
+
             // Simulate `deleteMessage(messageId:)` call
-            messageUpdater.deleteMessage(messageId: messageId)
-            
+            messageUpdater.deleteMessage(messageId: messageId, hard: false)
+
             // Load the message
             let message = try XCTUnwrap(database.viewContext.message(id: messageId))
-            
+
             // Assert message's local state becomes `deleting`
             AssertAsync.willBeEqual(message.localMessageState, .deleting)
-            
+
             // Simulate API response
             apiClient.test_simulateResponse(networkResult)
-            
+
             // Assert message's local state becomes expected
             AssertAsync.willBeEqual(message.localMessageState, expectedState)
         }
+    }
+
+    func test_deleteMessage_whenHardDelete_whenSuccess_removesFromDatabase() throws {
+        let currentUserId: UserId = .unique
+        let messageId: MessageId = .unique
+
+        // Flush the database
+        try database.removeAllData()
+
+        // Create current user in the database
+        try database.createCurrentUser(id: currentUserId)
+
+        // Create message authored by current user in the database
+        try database.createMessage(id: messageId, authorId: currentUserId)
+
+        // Simulate `deleteMessage(messageId:)` call
+        messageUpdater.deleteMessage(messageId: messageId, hard: true)
+
+        // Load the message
+        let message = try XCTUnwrap(database.viewContext.message(id: messageId))
+
+        // Assert message's local state becomes `deleting`
+        AssertAsync.willBeEqual(message.localMessageState, .deleting)
+
+        // The message is marked has being hard deleted
+        XCTAssertEqual(message.isHardDeleted, true)
+
+        // Simulate API response
+        let networkResult: Result<MessagePayload.Boxed, Error> = .success(
+            .init(message: .dummy(messageId: messageId, authorUserId: currentUserId))
+        )
+        apiClient.test_simulateResponse(networkResult)
+
+        // Message will be marked for delete
+        AssertAsync.willBeEqual(message.isDeleted, true)
+    }
+
+    func test_deleteMessage_whenHardDelete_whenFailure_resetsIsHardDelete() throws {
+        let currentUserId: UserId = .unique
+        let messageId: MessageId = .unique
+
+        // Flush the database
+        try database.removeAllData()
+
+        // Create current user in the database
+        try database.createCurrentUser(id: currentUserId)
+
+        // Create message authored by current user in the database
+        try database.createMessage(id: messageId, authorId: currentUserId)
+
+        // Simulate `deleteMessage(messageId:)` call
+        messageUpdater.deleteMessage(messageId: messageId, hard: true)
+
+        // Load the message
+        let message = try XCTUnwrap(database.viewContext.message(id: messageId))
+
+        // Assert message's local state becomes `deleting`
+        AssertAsync.willBeEqual(message.localMessageState, .deleting)
+
+        // The message is marked has being hard deleted
+        XCTAssertEqual(message.isHardDeleted, true)
+
+        // Simulate API response
+        let networkResult: Result<MessagePayload.Boxed, Error> = .failure(TestError())
+        apiClient.test_simulateResponse(networkResult)
+
+        // Local message state is set to deleting failed
+        AssertAsync.willBeEqual(message.localMessageState, .deletingFailed)
+
+        // isHardDelete state is reset
+        let messageAfterHardDelete = database.viewContext.message(id: messageId)
+        XCTAssertEqual(messageAfterHardDelete?.isHardDeleted, false)
     }
     
     // MARK: Get message
@@ -300,7 +465,7 @@ final class MessageUpdater_Tests: XCTestCase {
         
         // Simulate `getMessage(cid:, messageId:)` call
         messageUpdater.getMessage(cid: cid, messageId: messageId)
-                
+
         // Assert correct endpoint is called
         let expectedEndpoint: Endpoint<MessagePayload.Boxed> = .getMessage(messageId: messageId)
         XCTAssertEqual(apiClient.request_endpoint, AnyEndpoint(expectedEndpoint))
@@ -316,7 +481,7 @@ final class MessageUpdater_Tests: XCTestCase {
         // Simulate API response with failure
         let error = TestError()
         apiClient.test_simulateResponse(Result<MessagePayload.Boxed, Error>.failure(error))
-                
+
         // Assert the completion is called with the error
         AssertAsync.willBeEqual(completionCalledError as? TestError, error)
     }
@@ -342,7 +507,7 @@ final class MessageUpdater_Tests: XCTestCase {
         
         // Simulate API response with success
         apiClient.test_simulateResponse(Result<MessagePayload.Boxed, Error>.success(messagePayload))
-                
+
         // Assert database error is propogated
         AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
     }
@@ -571,6 +736,96 @@ final class MessageUpdater_Tests: XCTestCase {
         
         // Assert fetched message is saved to the database
         XCTAssertNotNil(database.viewContext.message(id: messageId))
+    }
+
+    // MARK: - Load reactions
+
+    func test_loadReactions_makesCorrectAPICall() {
+        let messageId: MessageId = .unique
+        let pagination: Pagination = .init(pageSize: 25)
+
+        messageUpdater.loadReactions(cid: .unique, messageId: messageId, pagination: pagination)
+
+        let expectedEndpoint: Endpoint<MessageReactionsPayload> = .loadReactions(
+            messageId: messageId,
+            pagination: pagination
+        )
+        XCTAssertEqual(apiClient.request_endpoint, AnyEndpoint(expectedEndpoint))
+    }
+
+    func test_loadReactions_propagatesRequestError() {
+        var completionCalledError: Error?
+        messageUpdater.loadReactions(cid: .unique, messageId: .unique, pagination: .init(pageSize: 25)) {
+            completionCalledError = $0.error
+        }
+
+        let error = TestError()
+        apiClient.test_simulateResponse(Result<MessageReactionsPayload, Error>.failure(error))
+
+        AssertAsync.willBeEqual(completionCalledError as? TestError, error)
+    }
+
+    func test_loadReactions_propagatesDatabaseError() throws {
+        let reactionsPayload: MessageReactionsPayload = .init(
+            reactions: [
+                .dummy(messageId: .unique, user: .dummy(userId: .unique)),
+                .dummy(messageId: .unique, user: .dummy(userId: .unique))
+            ]
+        )
+
+        // Create channel in the database
+        let cid = ChannelId.unique
+        try database.createChannel(cid: cid)
+
+        // Update database container to throw the error on write
+        let testError = TestError()
+        database.write_errorResponse = testError
+
+        var completionCalledError: Error?
+        messageUpdater.loadReactions(cid: cid, messageId: .unique, pagination: .init(pageSize: 25)) {
+            completionCalledError = $0.error
+        }
+
+        // Simulate API response with success
+        apiClient.test_simulateResponse(Result<MessageReactionsPayload, Error>.success(reactionsPayload))
+
+        // Assert database error is propagated
+        AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
+    }
+
+    func test_loadReactions_savesReactionsToDatabase_andCallsCompletionWithReactions() throws {
+        let currentUserId: UserId = .unique
+        let messageId: MessageId = .unique
+        let cid: ChannelId = .unique
+
+        // Create current user in the database
+        try database.createCurrentUser(id: currentUserId)
+
+        // Create channel in the database
+        try database.createChannel(cid: cid)
+
+        // Create message in the database
+        try database.createMessage(id: messageId)
+
+        let reactionsPayload: MessageReactionsPayload = .init(
+            reactions: [
+                .dummy(type: "like", messageId: messageId, user: .dummy(userId: currentUserId)),
+                .dummy(type: "dislike", messageId: messageId, user: .dummy(userId: currentUserId))
+            ]
+        )
+
+        var completionCalled = false
+        messageUpdater.loadReactions(cid: cid, messageId: messageId, pagination: .init(pageSize: 25)) { result in
+            XCTAssertEqual(try? result.get().count, reactionsPayload.reactions.count)
+            completionCalled = true
+        }
+
+        // Simulate API response with success
+        apiClient.test_simulateResponse(Result<MessageReactionsPayload, Error>.success(reactionsPayload))
+
+        AssertAsync.willBeTrue(completionCalled)
+        XCTAssertNotNil(database.viewContext.reaction(messageId: messageId, userId: currentUserId, type: "like"))
+        XCTAssertNotNil(database.viewContext.reaction(messageId: messageId, userId: currentUserId, type: "dislike"))
     }
     
     // MARK: - Flag message
@@ -805,11 +1060,20 @@ final class MessageUpdater_Tests: XCTestCase {
     
     // MARK: - Add reaction
 
-    func test_addReaction_makesCorrectAPICall() {
+    func setupReactionData(userId: UserId = .unique) throws -> MessageId {
+        let messageId: MessageId = .unique
+        try database.createCurrentUser(id: userId)
+        try database.createMessage(id: messageId, authorId: userId)
+        return messageId
+    }
+
+    func test_addReaction_makesCorrectAPICall() throws {
         let reactionType: MessageReactionType = "like"
         let reactionScore = 1
         let reactionExtraData: [String: RawJSON] = [:]
-        let messageId: MessageId = .unique
+        let messageId: MessageId = try setupReactionData()
+
+        let dbCall = XCTestExpectation(description: "database call")
 
         // Simulate `addReaction` call.
         messageUpdater.addReaction(
@@ -818,11 +1082,21 @@ final class MessageUpdater_Tests: XCTestCase {
             enforceUnique: false,
             extraData: reactionExtraData,
             messageId: messageId
-        )
+        ) { error in
+            dbCall.fulfill()
+            XCTAssertNil(error)
+        }
+        
+        // wait for the db call to be done
+        wait(for: [dbCall], timeout: 0.1)
+
+        let request = apiClient.waitForRequest()
+
+        XCTAssertNotNil(apiClient.request_endpoint)
 
         // Assert correct endpoint is called.
         XCTAssertEqual(
-            apiClient.request_endpoint,
+            request,
             AnyEndpoint(.addReaction(
                 reactionType,
                 score: reactionScore,
@@ -833,95 +1107,163 @@ final class MessageUpdater_Tests: XCTestCase {
         )
     }
 
-    func test_addReaction_propagatesSuccessfulResponse() {
+    func test_addReaction_propagatesSuccessfulResponse() throws {
+        let messageId: MessageId = try setupReactionData()
+        let dbCall = XCTestExpectation(description: "database call")
+
         // Simulate `addReaction` call
-        var completionCalled = false
         messageUpdater.addReaction(
             .init(rawValue: .unique),
             score: 1,
             enforceUnique: false,
             extraData: [:],
-            messageId: .unique
+            messageId: messageId
         ) { error in
             XCTAssertNil(error)
-            completionCalled = true
+            dbCall.fulfill()
         }
 
-        // Assert completion is not called yet
-        XCTAssertFalse(completionCalled)
+        wait(for: [dbCall], timeout: 0.1)
+
+        // Requests are sent async so we need to wait for that
+        apiClient.waitForRequest()
 
         // Simulate API response with success
         apiClient.test_simulateResponse(Result<EmptyResponse, Error>.success(.init()))
-
-        // Assert completion is called
-        AssertAsync.willBeTrue(completionCalled)
     }
 
-    func test_addReaction_propagatesError() {
+    func test_addReaction_retry() throws {
+        let userId: UserId = .unique
+        let messageId: MessageId = try setupReactionData(userId: userId)
+        let reactionType: MessageReactionType = .init(rawValue: .unique)
+        let dbCall = XCTestExpectation(description: "database call")
+
         // Simulate `addReaction` call
-        var completionCalledError: Error?
         messageUpdater.addReaction(
-            .init(rawValue: .unique),
+            reactionType,
             score: 1,
             enforceUnique: false,
             extraData: [:],
-            messageId: .unique
-        ) {
-            completionCalledError = $0
+            messageId: messageId
+        ) { error in
+            XCTAssertNil(error)
+            dbCall.fulfill()
         }
 
-        // Simulate API response with failure
-        let error = TestError()
-        apiClient.test_simulateResponse(Result<EmptyResponse, Error>.failure(error))
+        // wait for the db call to be done
+        wait(for: [dbCall], timeout: 0.1)
 
-        // Assert the completion is called with the error
-        AssertAsync.willBeEqual(completionCalledError as? TestError, error)
+        guard let reaction = database.viewContext.reaction(messageId: messageId, userId: userId, type: reactionType) else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(reaction.localState, .sending)
+
+        // Simulate API response with failure - this kind of error is not retried
+        apiClient.test_simulateResponse(Result<EmptyResponse, Error>.failure(TestError()))
+        apiClient.waitForRequest()
+
+        try database.writeSynchronously { _ in
+            try self.database.writableContext.save()
+        }
+
+        guard let reactionReloaded = database.viewContext.reaction(messageId: messageId, userId: userId, type: reactionType) else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(reactionReloaded.localState, .sendingFailed)
     }
     
     // MARK: - Delete reaction
 
-    func test_deleteReaction_makesCorrectAPICall() {
+    func test_deleteReaction_makesCorrectAPICall() throws {
         let reactionType: MessageReactionType = "like"
-        let messageId: MessageId = .unique
+        let messageId: MessageId = try setupReactionData()
+
+        let dbCall = XCTestExpectation(description: "database call")
 
         // Simulate `deleteReaction` call.
-        messageUpdater.deleteReaction(reactionType, messageId: messageId)
+        messageUpdater.deleteReaction(reactionType, messageId: messageId) { error in
+            XCTAssertNil(error)
+            dbCall.fulfill()
+        }
+
+        // wait for the db call to be done
+        wait(for: [dbCall], timeout: 0.1)
 
         // Assert correct endpoint is called.
+        apiClient.waitForRequest()
         XCTAssertEqual(apiClient.request_endpoint, AnyEndpoint(.deleteReaction(reactionType, messageId: messageId)))
     }
 
-    func test_deleteReaction_propagatesSuccessfulResponse() {
+    func test_deleteReaction_propagatesSuccessfulResponse() throws {
+        let reactionType: MessageReactionType = "like"
+        let messageId: MessageId = try setupReactionData()
+
         // Simulate `deleteReaction` call.
-        var completionCalled = false
-        messageUpdater.deleteReaction(.init(rawValue: .unique), messageId: .unique) { error in
+        let dbCall = XCTestExpectation(description: "database call")
+        messageUpdater.deleteReaction(reactionType, messageId: messageId) { error in
             XCTAssertNil(error)
-            completionCalled = true
+            dbCall.fulfill()
         }
 
-        // Assert completion is not called yet.
-        XCTAssertFalse(completionCalled)
+        // wait for the db call to be done
+        wait(for: [dbCall], timeout: 0.1)
 
         // Simulate API response with success.
+        apiClient.waitForRequest()
         apiClient.test_simulateResponse(Result<EmptyResponse, Error>.success(.init()))
-
-        // Assert completion is called.
-        AssertAsync.willBeTrue(completionCalled)
     }
 
-    func test_deleteReaction_propagatesError() {
-        // Simulate `deleteReaction` call.
-        var completionCalledError: Error?
-        messageUpdater.deleteReaction(.init(rawValue: .unique), messageId: .unique) {
-            completionCalledError = $0
+    func test_deleteReaction_propagatesError() throws {
+        let userId: UserId = .unique
+        let messageId: MessageId = try setupReactionData(userId: userId)
+        let reactionType: MessageReactionType = .init(rawValue: .unique)
+
+        try database.writeSynchronously { _ in
+            try self.database.writableContext
+                .saveReaction(payload: .dummy(
+                    type: reactionType,
+                    messageId: messageId,
+                    user: .dummy(userId: userId),
+                    extraData: [:]
+                ))
         }
+
+        // Simulate `deleteReaction` call.
+        let dbCall = XCTestExpectation(description: "database call")
+        messageUpdater.deleteReaction(reactionType, messageId: messageId) { error in
+            XCTAssertNil(error)
+            dbCall.fulfill()
+        }
+
+        // wait for the db call to be done
+        wait(for: [dbCall], timeout: 0.1)
+
+        guard let reaction = database.viewContext.reaction(messageId: messageId, userId: userId, type: reactionType) else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(reaction.localState, .pendingDelete)
 
         // Simulate API response with failure.
         let error = TestError()
         apiClient.test_simulateResponse(Result<EmptyResponse, Error>.failure(error))
+        apiClient.waitForRequest()
 
-        // Assert the completion is called with the error.
-        AssertAsync.willBeEqual(completionCalledError as? TestError, error)
+        try database.writeSynchronously { _ in
+            try self.database.writableContext.save()
+        }
+
+        guard let reactionReloaded = database.viewContext.reaction(messageId: messageId, userId: userId, type: reactionType) else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(reactionReloaded.localState, .unknown)
     }
 
     // MARK: - Pinning message

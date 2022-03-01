@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -50,7 +50,7 @@ open class ChatThreadVC:
 
     public var messageComposerBottomConstraint: NSLayoutConstraint?
 
-    @Atomic private var loadingPreviousMessages: Bool = false
+    private var isLoadingPreviousMessages: Bool = false
 
     override open func setUp() {
         super.setUp()
@@ -66,20 +66,27 @@ open class ChatThreadVC:
         }
 
         messageController.delegate = self
-        let updateMessageControllerMessage: () -> Void = { [messageController, messageComposerVC] in
+
+        let completeSetUp: (ChatMessage?) -> Void = { [messageController, messageComposerVC] message in
             if messageComposerVC.content.threadMessage == nil,
                let message = messageController?.message {
                 messageComposerVC.content.threadMessage = message
             }
-        }
-        channelController.synchronize { [messageController] _ in
-            messageController?.synchronize { _ in
-                updateMessageControllerMessage()
-                messageController?.loadPreviousReplies()
+            // We only need to load the replies
+            // when we don't already have all the replies
+            if let message = message, message.latestReplies.count != message.replyCount {
+                self.loadPreviousMessages()
             }
         }
 
-        userSuggestionSearchController.search(term: nil)
+        if let message = messageController.message {
+            completeSetUp(message)
+            return
+        }
+
+        messageController.synchronize { [weak self] _ in
+            completeSetUp(self?.messageController.message)
+        }
     }
 
     override open func setUpLayout() {
@@ -153,7 +160,11 @@ open class ChatThreadVC:
 
     open func chatMessageListVC(_ vc: ChatMessageListVC, messageAt indexPath: IndexPath) -> ChatMessage? {
         guard indexPath.item < replies.count else { return nil }
-        return replies[indexPath.item]
+        guard let reply = replies[safe: indexPath.item] else {
+            indexNotFoundAssertion()
+            return nil
+        }
+        return reply
     }
 
     open func chatMessageListVC(
@@ -176,6 +187,17 @@ open class ChatThreadVC:
         return layoutOptions
     }
 
+    open func loadPreviousMessages() {
+        guard !isLoadingPreviousMessages else {
+            return
+        }
+        isLoadingPreviousMessages = true
+
+        messageController.loadPreviousReplies { [weak self] _ in
+            self?.isLoadingPreviousMessages = false
+        }
+    }
+
     // MARK: - ChatMessageListVCDelegate
 
     open func chatMessageListVC(
@@ -189,15 +211,8 @@ open class ChatThreadVC:
         if indexPath.row < replies.count - 10 {
             return
         }
-
-        if _loadingPreviousMessages.compareAndSwap(old: false, new: true) {
-            messageController.loadPreviousReplies(completion: { [weak self] _ in
-                guard let self = self else {
-                    return
-                }
-                self.loadingPreviousMessages = false
-            })
-        }
+        
+        loadPreviousMessages()
     }
 
     open func chatMessageListVC(
@@ -225,6 +240,14 @@ open class ChatThreadVC:
     ) {
         // No-op. By default this component is not interest in scrollView events,
         // but you as customer can override this function and provide an implementation.
+    }
+
+    open func chatMessageListVC(
+        _ vc: ChatMessageListVC,
+        didTapOnMessageListView messageListView: ChatMessageListView,
+        with gestureRecognizer: UITapGestureRecognizer
+    ) {
+        messageComposerVC.dismissSuggestions()
     }
 
     // MARK: -  ChatMessageControllerDelegate

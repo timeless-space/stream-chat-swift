@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -25,6 +25,14 @@ class AttachmentTypes_Tests: XCTestCase {
             
             // Assert objects encoded correctly
             XCTAssertEqual(types.map(\.rawValue), encoded)
+        }
+    }
+    
+    func test_attachmentFileType_isUnaffected_byUppercase() {
+        let types = AttachmentFileType.allCases
+        
+        for type in types {
+            XCTAssertEqual(type, AttachmentFileType(ext: type.rawValue.uppercased()))
         }
     }
     

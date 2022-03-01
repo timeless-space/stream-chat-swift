@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -16,10 +16,12 @@ class CommandLabelView_Documentation_Tests: XCTestCase {
             
         generateDocs(
             for: view,
-            annotations: [
-                .init(view: view.iconView, descriptionLabelPosition: .topLeft),
-                .init(view: view.nameLabel, descriptionLabelPosition: .topRight)
-            ],
+            annotations: { view in
+                [
+                    .init(view: view.iconView, descriptionLabelPosition: .topLeft),
+                    .init(view: view.nameLabel, descriptionLabelPosition: .topRight)
+                ]
+            },
             name: "CommandLabelView_documentation",
             variants: .onlyUserInterfaceStyles
         )

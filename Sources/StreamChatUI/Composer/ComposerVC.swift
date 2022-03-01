@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -73,6 +73,8 @@ open class ComposerVC: _ViewController,
         public var mentionedUsers: Set<ChatUser>
         /// The command of the message.
         public let command: Command?
+        /// The extra data assigned to message.
+        public var extraData: [String: RawJSON]
 
         /// A boolean that checks if the message contains any content.
         public var isEmpty: Bool {
@@ -92,7 +94,8 @@ open class ComposerVC: _ViewController,
             threadMessage: ChatMessage?,
             attachments: [AnyAttachmentPayload],
             mentionedUsers: Set<ChatUser>,
-            command: Command?
+            command: Command?,
+            extraData: [String: RawJSON] = [:]
         ) {
             self.text = text
             self.state = state
@@ -102,6 +105,7 @@ open class ComposerVC: _ViewController,
             self.attachments = attachments
             self.mentionedUsers = mentionedUsers
             self.command = command
+            self.extraData = extraData
         }
 
         /// Creates a new content struct with all empty data.
@@ -114,7 +118,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: nil,
                 attachments: [],
                 mentionedUsers: [],
-                command: nil
+                command: nil,
+                extraData: [:]
             )
         }
 
@@ -128,7 +133,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: [],
                 mentionedUsers: [],
-                command: nil
+                command: nil,
+                extraData: [:]
             )
         }
 
@@ -144,7 +150,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: attachments,
                 mentionedUsers: message.mentionedUsers,
-                command: command
+                command: command,
+                extraData: message.extraData
             )
         }
 
@@ -160,7 +167,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: attachments,
                 mentionedUsers: mentionedUsers,
-                command: command
+                command: command,
+                extraData: extraData
             )
         }
 
@@ -173,7 +181,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: [],
                 mentionedUsers: mentionedUsers,
-                command: command
+                command: command,
+                extraData: extraData
             )
         }
     }
@@ -804,7 +813,8 @@ open class ComposerVC: _ViewController,
                 attachments: content.attachments,
                 mentionedUserIds: content.mentionedUsers.map(\.id),
                 showReplyInChannel: composerView.checkboxControl.isSelected,
-                quotedMessageId: content.quotingMessage?.id
+                quotedMessageId: content.quotingMessage?.id,
+                extraData: content.extraData
             )
             return
         }
@@ -814,7 +824,8 @@ open class ComposerVC: _ViewController,
             pinning: nil,
             attachments: content.attachments,
             mentionedUserIds: content.mentionedUsers.map(\.id),
-            quotedMessageId: content.quotingMessage?.id
+            quotedMessageId: content.quotingMessage?.id,
+            extraData: content.extraData
         )
     }
 
@@ -864,7 +875,7 @@ open class ComposerVC: _ViewController,
         )
         // TODO: Adjust LLC to edit attachments also
         // TODO: Adjust LLC to edit mentions
-        messageController?.editMessage(text: newText)
+        messageController?.editMessage(text: newText, extraData: content.extraData)
     }
 
     /// Returns a potential user mention in case the user is currently typing a username.
@@ -933,7 +944,11 @@ open class ComposerVC: _ViewController,
             } else if commandName == "redpacket" {
                 self?.sendRedPacketAction()
             } else {
-                self?.content.addCommand(commandHints[commandIndex])
+                guard let hintCommand = commandHints[safe: commandIndex] else {
+                    indexNotFoundAssertion()
+                    return
+                }
+                self?.content.addCommand(hintCommand)
                 self?.dismissSuggestions()
             }
         }
@@ -953,7 +968,7 @@ open class ComposerVC: _ViewController,
     /// user searching logic.
     ///
     /// - Parameter typingMention: The potential user mention the current user is typing.
-    /// - Returns: `_UserListQuery` instance that will be used for searching users.
+    /// - Returns: `UserListQuery` instance that will be used for searching users.
     open func queryForMentionSuggestionsSearch(typingMention term: String) -> UserListQuery {
         UserListQuery(
             filter: .or([
@@ -1001,9 +1016,12 @@ open class ComposerVC: _ViewController,
             guard dataSource.usersCache.count >= userIndex else {
                 return
             }
+            guard let user = dataSource.usersCache[safe: userIndex] else {
+                indexNotFoundAssertion()
+                return
+            }
 
             let textView = self.composerView.inputMessageView.textView
-            let user = dataSource.usersCache[userIndex]
             let text = textView.text as NSString
             let mentionText = self.mentionText(for: user)
             let newText = text.replacingCharacters(in: mentionRange, with: mentionText)

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -331,7 +331,7 @@ open class _ViewController: UIViewController, Customizable {
         // When `self` is being added to the parent controller, the default `next` implementation returns nil
         // unless the `self.view` is added as a subview to `parent.view`. But `self.viewDidLoad` is
         // called before the transition finishes so the subviews are created from `Components.default`.
-        // To prevent responder chain from being cutoff during `_ViewController` lifecycle we fallback to parent.
+        // To prevent responder chain from being cutoff during `ViewController` lifecycle we fallback to parent.
         super.next ?? parent
     }
     
@@ -344,6 +344,17 @@ open class _ViewController: UIViewController, Customizable {
         updateContent()
     }
     
+    /**
+     A function that will be called on first launch of the `View` it's a function that can be used
+     for any initial setup work required by the `View` such as setting delegates or data sources
+     
+     `setUp()` is an important function within the ViewController lifecycle
+     Its responsibility is to set the delegates and also call `synchronize()`
+     this will make sure your local & remote data is in sync.
+     
+     - Important: If you override this method without calling `super.setUp()`, it's essential
+     to make sure `synchronize()` is called.
+     */
     open func setUp() { /* default empty implementation */ }
     open func setUpAppearance() { view.setNeedsLayout() }
     open func setUpLayout() { view.setNeedsLayout() }

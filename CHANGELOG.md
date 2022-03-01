@@ -5,6 +5,164 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### 🔄 Changed
 
+# [4.10.1](https://github.com/GetStream/stream-chat-swift/releases/tag/4.10.1)
+_February 16, 2022_
+
+### 🔄 Changed
+- `ChannelListVC` now keeps track of channels where user is a member only instead of all channels loaded in the SDK. [#1785](https://github.com/GetStream/stream-chat-swift/pull/1785)
+
+### 🐞 Fixed
+- Make SendButton animation overridable [#1781](https://github.com/GetStream/stream-chat-swift/issues/1781)
+- Make ChannelId.rawValue public [#1780](https://github.com/GetStream/stream-chat-swift/pull/1780)
+- Fix channel not removed from channel list when user leaves the channel [#1785](https://github.com/GetStream/stream-chat-swift/pull/1785)
+- Fix `ChannelListController.loadNextChannels` using incorrect `limit` when argument is omitted [#1786](https://github.com/GetStream/stream-chat-swift/issues/1786)
+- Fix Message Input Accessibility for Large Text [#1787](https://github.com/GetStream/stream-chat-swift/pull/1787)
+- Fix crash on iOS 12 when local storage enabled [#1784](https://github.com/GetStream/stream-chat-swift/pull/1784)
+
+# [4.10.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.10.0)
+_February 01, 2022_
+
+### ✅ Added
+- Make Date Formatters Configurable [#1742](https://github.com/GetStream/stream-chat-swift/pull/1742)
+- Add quoted video support [#1765](https://github.com/GetStream/stream-chat-swift/pull/1765)
+
+### 🔄 Changed
+- In case you are presenting the `ChatChannelVC` in a modal, you should now be using the `StreamModalTransitioningDelegate`. The workaround to fix the message list being dismissed when scrolling to the bottom has been removed in favor of the custom modal transition. Please check the following PR description to see how to use it: [#1760](https://github.com/GetStream/stream-chat-swift/pull/1760)
+
+### 🐞 Fixed
+- Add custom modal transition for message list [#1760](https://github.com/GetStream/stream-chat-swift/pull/1760)
+- Fix composer not showing any files when >3 files are selected in bulk [#1768](https://github.com/GetStream/stream-chat-swift/issues/1768)
+- Crashfix for hanging `DispatchWorkItem` reference in `WebSocketClient`[#1766](https://github.com/GetStream/stream-chat-swift/issues/1766)
+
+# [4.9.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.9.0)
+_January 18, 2022_
+
+### ✅ Added
+- Add hard delete messages support [#1745](https://github.com/GetStream/stream-chat-swift/pull/1745)
+
+### 🐞 Fixed
+- Fix wrong image resolution when images are being quoted [#1747](https://github.com/GetStream/stream-chat-swift/pull/1747)
+- Fix message list NSInternalInconsistencyException crash [#1752](https://github.com/GetStream/stream-chat-swift/pull/1752)
+- Fix Image and Video sharing behaviour [#1753](https://github.com/GetStream/stream-chat-swift/pull/1753)
+
+# [4.8.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.8.0)
+_January 4, 2022_
+
+### ✅ Added
+- Add support to paginate messages pinned in a channel [#1741](https://github.com/GetStream/stream-chat-swift/issues/1741)
+
+### 🐞 Fixed
+- `notification.channel_deleted` events are now handled by the SDK [#1737](https://github.com/GetStream/stream-chat-swift/pull/1737)
+- `MemberListController` receives new members correctly [#1736](https://github.com/GetStream/stream-chat-swift/issues/1736)
+- `ChatChannel.membership` is correctly reflected in all cases [#1736](https://github.com/GetStream/stream-chat-swift/issues/1736)
+
+# [4.7.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.7.0)
+_December 28, 2021_
+
+### ✅ Added
+- `ChannelListQuery.membersLimit` param for controlling the number of members returned for each channel [#1721](https://github.com/GetStream/stream-chat-swift/issues/1721)
+- Adds support to pass extra data for message from `ComposerVC` [#1722](https://github.com/GetStream/stream-chat-swift/pull/1722)
+
+### 🐞 Fixed
+- Fix multiple pagination requests being fired from `ChatChannelVC` and `ChatChannelListVC` [#1706](https://github.com/GetStream/stream-chat-swift/issues/1706)
+- Fix rendering unavailable reactions on `ChatMessageReactionAuthorsVC` [#1719](https://github.com/GetStream/stream-chat-swift/issues/1719)
+- Fix unncessary API calls performed when loading threads [#1716](https://github.com/GetStream/stream-chat-swift/issues/1716)
+- Fix quoted messages not updated after edit [#1703](https://github.com/GetStream/stream-chat-swift/pull/1703)
+- Fix deleted replies being shown in channel [#1707](https://github.com/GetStream/stream-chat-swift/pull/1707)
+- Fix Date._unconditionallyBridgeFromObjectiveC crashes [#1646](https://github.com/GetStream/stream-chat-swift/pull/1646)
+
+# [4.6.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.6.0)
+_December 20, 2021_
+
+### ⚠️ Important
+- Dependencies are no longer exposed (this includes Nuke, SwiftyGif and Starscream). If you were using those dependencies we were exposing, you would need to import them manually. This is due to our newest addition supporting Module Stable XCFrameworks, see more below in the "Added" section.
+
+### 🔄 Changed
+- Change `ChatMessageLayoutOptions` to a `Set` instead of an `OptionSet` for a more flexible and safer customization [#1651](https://github.com/GetStream/stream-chat-swift/issues/1651)
+- There is a new `ChatMessageListDateSeparatorView` component that should be used instead of the `ChatMessageListScrollOverlayView` if the goal is customize the styling of the date separator. Read [here](https://getstream.io/chat/docs/sdk/ios/uikit/components/message/#date-separators) for more details.
+- `UnknownEvent` is now deprecated, use `UnknownChannelEvent` or `UnknownUserEvent` instead. [#1695](https://github.com/GetStream/stream-chat-swift/pull/1695).
+- SwiftyGif now points to [v5.4.2](https://github.com/kirualex/SwiftyGif/releases/tag/5.4.2) that resolves crash related to leaked delegate reference.
+
+### 🐞 Fixed
+- Fix `stopTyping` can be called on `TypingEventSender` after calling `startTyping` [#1649](https://github.com/GetStream/stream-chat-swift/issues/1649).
+- Reactions no longer cover the text in message bubble [#1666](https://github.com/GetStream/stream-chat-swift/pull/1666).
+- Fix `error` type messages rendered as user's messages and interactive [#1672](https://github.com/GetStream/stream-chat-swift/issues/1672).
+- Fix `ChannelListController` makes one redundant API call [#1687](https://github.com/GetStream/stream-chat-swift/issues/1687).
+- Safely access indexes of collections [#1692](https://github.com/GetStream/stream-chat-swift/pull/1692).
+
+### ✅ Added
+- Add support for pre-built XCFrameworks [#1665](https://github.com/GetStream/stream-chat-swift/pull/1665).
+- Added `LogConfig.destinationTypes` for ease of adding new destinations to logger [#1681](https://github.com/GetStream/stream-chat-swift/issues/1681).
+- Expose container embedding top & bottom containers by `ChatChannelListItemView` [#1670](https://github.com/GetStream/stream-chat-swift/issues/1670).
+- Add Static Message List Date Separators [#1686](https://github.com/GetStream/stream-chat-swift/issues/1686) (You can read this [doc](https://getstream.io/chat/docs/sdk/ios/uikit/components/message/#date-separators) to understand how to configure this feature).
+- Adds `UnknownUserEvent` that models custom user event [#1695](https://github.com/GetStream/stream-chat-swift/pull/1695).
+- `ChannelQuery.options` and `ChannelListQuery.options` are now public and mutable [#1696](https://github.com/GetStream/stream-chat-swift/issues/1696)
+- `ChannelController.startWatching` and `stopWatching` are now `public`. You can explicitly stop watching a channel [#1696](https://github.com/GetStream/stream-chat-swift/issues/1696).
+
+# [4.5.2](https://github.com/GetStream/stream-chat-swift/releases/tag/4.5.2)
+_December 10, 2021_
+
+### 🐞 Fixed
+
+- Fix regression for reactions left by the current user being not accurate [#1680](https://github.com/GetStream/stream-chat-swift/issues/1680)
+
+# [4.5.1](https://github.com/GetStream/stream-chat-swift/releases/tag/4.5.1)
+_December 01, 2021_
+
+### 🐞 Fixed
+- Fix memory leak in GalleryVC [#1631](https://github.com/GetStream/stream-chat-swift/pull/1631)
+- Increase tappable area surrounding the ShareButton inside the GalleryVC [#1640](https://github.com/GetStream/stream-chat-swift/pull/1640)
+- Fix giphy action message (ephemeral message) in a thread is also shown in the channel [#1641](https://github.com/GetStream/stream-chat-swift/issues/1641)
+- Fix crash when sending giphies. (Requires update of SwiftyGif to 5.4.1) [SwiftyGif#158](https://github.com/kirualex/SwiftyGif/pull/158)
+- Improve stability of marking channel read [#1656](https://github.com/GetStream/stream-chat-swift/issues/1656)
+
+### 🔄 Changed
+- Make `LogDetails` fields `public` so they are be accessible. Typical usage is when overriding `process(logDetails:)` when subclassing `BaseLogDestination` [#1650](https://github.com/GetStream/stream-chat-swift/issues/1650)
+
+# [4.5.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.5.0)
+_November 16, 2021_
+
+### 🐞 Fixed
+- Fix message list scrolling jumps when a new message is received [#1605](https://github.com/GetStream/stream-chat-swift/pull/1605)
+- Fix message cell not resized after editing a message with bigger/smaller content [#1605](https://github.com/GetStream/stream-chat-swift/pull/1605)
+- Improve send button tap responsiveness [#1626](https://github.com/GetStream/stream-chat-swift/pull/1626)
+- Dismiss suggestions popup when tapping outside [#1627](https://github.com/GetStream/stream-chat-swift/pull/1627)
+
+### ✅ Added
+
+- Optimistic Reaction UI, adding/removing reactions can be done offline and API calls are performed asynchronously [#1592](https://github.com/GetStream/stream-chat-swift/pull/1592)
+- Automatically retry failed API calls for adding and removing reactions [#1592](https://github.com/GetStream/stream-chat-swift/pull/1592)
+
+# [4.4.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.4.0)
+_November 11, 2021_
+
+### 🐞 Fixed
+- Using Xcode 13 & CocoaPods should load all the required assets. [#1602](https://github.com/GetStream/stream-chat-swift/pull/1602)
+- Make the NukeImageLoader initialiser accessible [#1600](https://github.com/GetStream/stream-chat-swift/issues/1600)
+- Fix message not pinned when there is no expiration date [#1603](https://github.com/GetStream/stream-chat-swift/issues/1603)
+- Fix uploaded videos' mime types were not encoded correctly [#1604](https://github.com/GetStream/stream-chat-swift/issues/1604)
+
+### ✅ Added
+- Added a new `make` API within our ChatChannelListVC so it's easier to instantiate, this eliminates the need to setup within the ViewController lifecycle [#1597](https://github.com/GetStream/stream-chat-swift/issues/1597)
+- Add view to show all reactions of a message when tapping reactions [#1582](https://github.com/GetStream/stream-chat-swift/pull/1582)
+
+# [4.3.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.3.0)
+_November 03, 2021_
+
+### 🐞 Fixed
+- `flag` command is no longer visible on Composer [#1590](https://github.com/GetStream/stream-chat-swift/issues/1590)
+- Fix long-pressed message being swapped with newly received message if both have the same visual style [#1596](https://github.com/GetStream/stream-chat-swift/issues/1596)
+- Fix crash when message actions pop-up is dismissed with the selected message being outside the visible area of message list [#1596](https://github.com/GetStream/stream-chat-swift/issues/1596)
+
+### 🔄 Changed
+- The message action icons were changed to be a bit more darker color [#1583](https://github.com/GetStream/stream-chat-swift/issues/1583)
+- The long-pressed message view is no longer moved across `ChatMessageListVC` and `ChatMessagePopupVC` hierarchies [#1596](https://github.com/GetStream/stream-chat-swift/issues/1596)
+
+### ✅ Added
+- Added Flag message action [#1583](https://github.com/GetStream/stream-chat-swift/issues/1583)
+- Added handling of "shadowed" messages (messages from shadow banned users). The behavior is controlled by `ChatClientConfig.shouldShowShadowedMessages` and defaults to `false`. [#1591](https://github.com/GetStream/stream-chat-swift/issues/1591)
+- Add message actions transition controller to `Components` [#1596](https://github.com/GetStream/stream-chat-swift/issues/1596)
+
 # [4.2.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.2.0)
 _October 26, 2021_
 

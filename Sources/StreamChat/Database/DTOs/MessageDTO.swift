@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -16,23 +16,29 @@ class MessageDTO: NSManagedObject {
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
     @NSManaged var deletedAt: Date?
+    @NSManaged var isHardDeleted: Bool
     @NSManaged var args: String?
     @NSManaged var parentMessageId: MessageId?
     @NSManaged var showReplyInChannel: Bool
     @NSManaged var replyCount: Int32
-    @NSManaged var extraData: Data
+    @NSManaged var extraData: Data?
     @NSManaged var isSilent: Bool
+    @NSManaged var isShadowed: Bool
     @NSManaged var reactionScores: [String: Int]
-    
+    @NSManaged var reactionCounts: [String: Int]
+
+    @NSManaged var latestReactions: [String]
+    @NSManaged var ownReactions: [String]
+
     @NSManaged var user: UserDTO
     @NSManaged var mentionedUsers: Set<UserDTO>
     @NSManaged var threadParticipants: NSOrderedSet
     @NSManaged var channel: ChannelDTO?
     @NSManaged var replies: Set<MessageDTO>
     @NSManaged var flaggedBy: CurrentUserDTO?
-    @NSManaged var reactions: Set<MessageReactionDTO>
     @NSManaged var attachments: Set<AttachmentDTO>
     @NSManaged var quotedMessage: MessageDTO?
+    @NSManaged var quotedBy: Set<MessageDTO>
     @NSManaged var searches: Set<MessageSearchQueryDTO>
 
     @NSManaged var pinned: Bool
@@ -109,6 +115,7 @@ class MessageDTO: NSManagedObject {
         deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility
     ) -> NSPredicate {
         let deletedMessagesPredicate: NSPredicate
+
         switch deletedMessagesVisibility {
         case .alwaysHidden:
             deletedMessagesPredicate = nonDeletedMessagesPredicate()
@@ -117,7 +124,15 @@ class MessageDTO: NSManagedObject {
         case .alwaysVisible:
             deletedMessagesPredicate = NSPredicate(value: true) // an empty predicate to avoid optionals
         }
-        return deletedMessagesPredicate
+
+        let ignoreHardDeletedMessagesPredicate = NSPredicate(
+            format: "isHardDeleted == NO"
+        )
+
+        return NSCompoundPredicate(andPredicateWithSubpredicates: [
+            deletedMessagesPredicate,
+            ignoreHardDeletedMessagesPredicate
+        ])
     }
 
     /// Returns a predicate that filters out all deleted messages
@@ -136,56 +151,88 @@ class MessageDTO: NSManagedObject {
     /// Returns predicate with channel messages and replies that should be shown in channel.
     static func channelMessagesPredicate(
         for cid: String,
-        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility
+        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility,
+        shouldShowShadowedMessages: Bool
     ) -> NSCompoundPredicate {
         let channelMessage = NSPredicate(
             format: "channel.cid == %@", cid
         )
 
-        let messageTypePredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [
-            .init(format: "type != %@", MessageType.reply.rawValue),
-            .init(format: "type == %@ AND showReplyInChannel == 1", MessageType.reply.rawValue)
+        let channelMessagePredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [
+            .init(format: "showReplyInChannel == 1"),
+            .init(format: "parentMessageId == nil")
         ])
-        
+
+        let validTypes = [
+            MessageType.regular.rawValue,
+            MessageType.ephemeral.rawValue,
+            MessageType.system.rawValue,
+            MessageType.deleted.rawValue,
+            MessageType.error.rawValue
+        ]
+
+        let messageTypePredicate = NSCompoundPredicate(format: "type IN %@", validTypes)
+
         // Some pinned messages might be in the local database, but should not be fetched
         // if they do not belong to the regular channel query.
         let ignoreOlderMessagesPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [
             .init(format: "channel.oldestMessageAt == nil"),
             .init(format: "createdAt >= channel.oldestMessageAt")
         ])
-
-        return .init(andPredicateWithSubpredicates: [
+        
+        var subpredicates = [
             channelMessage,
+            channelMessagePredicate,
             messageTypePredicate,
             nonTruncatedMessagesPredicate(),
             ignoreOlderMessagesPredicate,
             deletedMessagesPredicate(deletedMessagesVisibility: deletedMessagesVisibility)
-        ])
+        ]
+        
+        if !shouldShowShadowedMessages {
+            let ignoreShadowedMessages = NSPredicate(format: "isShadowed == NO")
+            subpredicates.append(ignoreShadowedMessages)
+        }
+
+        return .init(andPredicateWithSubpredicates: subpredicates)
     }
     
     /// Returns predicate with thread messages that should be shown in the thread.
     static func threadRepliesPredicate(
         for messageId: MessageId,
-        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility
+        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility,
+        shouldShowShadowedMessages: Bool
     ) -> NSCompoundPredicate {
         let replyMessage = NSPredicate(format: "parentMessageId == %@", messageId)
         
-        return .init(andPredicateWithSubpredicates: [
+        var subpredicates = [
             replyMessage,
             deletedMessagesPredicate(deletedMessagesVisibility: deletedMessagesVisibility),
             nonTruncatedMessagesPredicate()
-        ])
+        ]
+        
+        if !shouldShowShadowedMessages {
+            let ignoreShadowedMessages = NSPredicate(format: "isShadowed == NO")
+            subpredicates.append(ignoreShadowedMessages)
+        }
+        
+        return .init(andPredicateWithSubpredicates: subpredicates)
     }
     
     /// Returns a fetch request for messages from the channel with the provided `cid`.
     static func messagesFetchRequest(
         for cid: ChannelId,
         sortAscending: Bool = false,
-        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility
+        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility,
+        shouldShowShadowedMessages: Bool
     ) -> NSFetchRequest<MessageDTO> {
         let request = NSFetchRequest<MessageDTO>(entityName: MessageDTO.entityName)
         request.sortDescriptors = [NSSortDescriptor(keyPath: \MessageDTO.defaultSortingKey, ascending: sortAscending)]
-        request.predicate = channelMessagesPredicate(for: cid.rawValue, deletedMessagesVisibility: deletedMessagesVisibility)
+        request.predicate = channelMessagesPredicate(
+            for: cid.rawValue,
+            deletedMessagesVisibility: deletedMessagesVisibility,
+            shouldShowShadowedMessages: shouldShowShadowedMessages
+        )
         return request
     }
     
@@ -193,11 +240,16 @@ class MessageDTO: NSManagedObject {
     static func repliesFetchRequest(
         for messageId: MessageId,
         sortAscending: Bool = false,
-        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility
+        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility,
+        shouldShowShadowedMessages: Bool
     ) -> NSFetchRequest<MessageDTO> {
         let request = NSFetchRequest<MessageDTO>(entityName: MessageDTO.entityName)
         request.sortDescriptors = [NSSortDescriptor(keyPath: \MessageDTO.defaultSortingKey, ascending: sortAscending)]
-        request.predicate = threadRepliesPredicate(for: messageId, deletedMessagesVisibility: deletedMessagesVisibility)
+        request.predicate = threadRepliesPredicate(
+            for: messageId,
+            deletedMessagesVisibility: deletedMessagesVisibility,
+            shouldShowShadowedMessages: shouldShowShadowedMessages
+        )
         return request
     }
     
@@ -220,7 +272,8 @@ class MessageDTO: NSManagedObject {
         let request = NSFetchRequest<MessageDTO>(entityName: entityName)
         request.predicate = channelMessagesPredicate(
             for: cid,
-            deletedMessagesVisibility: context.deletedMessagesVisibility ?? .visibleForCurrentUser
+            deletedMessagesVisibility: context.deletedMessagesVisibility ?? .visibleForCurrentUser,
+            shouldShowShadowedMessages: context.shouldShowShadowedMessages ?? false
         )
         request.sortDescriptors = [NSSortDescriptor(keyPath: \MessageDTO.createdAt, ascending: false)]
         request.fetchLimit = limit
@@ -241,6 +294,8 @@ class MessageDTO: NSManagedObject {
         
         let new = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! Self
         new.id = id
+        new.latestReactions = []
+        new.ownReactions = []
         return new
     }
     
@@ -317,6 +372,7 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         message.extraData = try JSONEncoder.default.encode(extraData)
         message.isSilent = isSilent
         message.reactionScores = [:]
+        message.reactionCounts = [:]
 
         message.attachments = Set(
             try attachments.enumerated().map { index, attachment in
@@ -350,8 +406,8 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         
         return message
     }
-    
-    func saveMessage(payload: MessagePayload, channelDTO: ChannelDTO) throws -> MessageDTO {
+
+    func saveMessage(payload: MessagePayload, channelDTO: ChannelDTO, syncOwnReactions: Bool) throws -> MessageDTO {
         let cid = try ChannelId(cid: channelDTO.cid)
         let dto = MessageDTO.loadOrCreate(id: payload.id, context: self)
 
@@ -377,6 +433,16 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         }
         
         dto.isSilent = payload.isSilent
+        dto.isShadowed = payload.isShadowed
+        // Due to backend not working as advertised
+        // (sending `shadowed: true` flag to the shadow banned user)
+        // we have to implement this workaround to get the advertised behavior
+        // info on slack: https://getstream.slack.com/archives/CE5N802GP/p1635785568060500
+        // TODO: Remove the workaround once backend bug is fixed
+        if currentUser?.user.id == payload.user.id {
+            dto.isShadowed = false
+        }
+        
         dto.pinned = payload.pinned
         dto.pinExpires = payload.pinExpires
         dto.pinnedAt = payload.pinnedAt
@@ -385,7 +451,7 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         }
 
         if let quotedMessage = payload.quotedMessage {
-            dto.quotedMessage = try saveMessage(payload: quotedMessage, channelDTO: channelDTO)
+            dto.quotedMessage = try saveMessage(payload: quotedMessage, channelDTO: channelDTO, syncOwnReactions: false)
         } else if let quotedMessageId = payload.quotedMessageId {
             // In case we do not have a fully formed quoted message in the payload,
             // we check for quotedMessageId. This can happen in the case of nested quoted messages.
@@ -398,6 +464,7 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         dto.user = user
 
         dto.reactionScores = payload.reactionScores.mapKeys { $0.rawValue }
+        dto.reactionCounts = payload.reactionScores.mapKeys { $0.rawValue }
 
         // If user edited their message to remove mentioned users, we need to get rid of it
         // as backend does
@@ -420,10 +487,19 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         }
         
         dto.channel = channelDTO
-        
-        let reactions = payload.latestReactions + payload.ownReactions
-        try reactions.forEach { try saveReaction(payload: $0) }
-        
+
+        dto.latestReactions = payload
+            .latestReactions
+            .compactMap { try? saveReaction(payload: $0) }
+            .map(\.id)
+
+        if syncOwnReactions {
+            dto.ownReactions = payload
+                .ownReactions
+                .compactMap { try? saveReaction(payload: $0) }
+                .map(\.id)
+        }
+
         let attachments: Set<AttachmentDTO> = try Set(
             payload.attachments.enumerated().map { index, attachment in
                 let id = AttachmentId(cid: cid, messageId: payload.id, index: index)
@@ -432,7 +508,7 @@ extension NSManagedObjectContext: MessageDatabaseSession {
             }
         )
         dto.attachments = attachments
-        
+
         if let parentMessageId = payload.parentId,
            let parentMessageDTO = MessageDTO.load(id: parentMessageId, context: self) {
             parentMessageDTO.replies.insert(dto)
@@ -448,7 +524,7 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         return dto
     }
 
-    func saveMessage(payload: MessagePayload, for cid: ChannelId?) throws -> MessageDTO? {
+    func saveMessage(payload: MessagePayload, for cid: ChannelId?, syncOwnReactions: Bool = true) throws -> MessageDTO? {
         guard payload.channel != nil || cid != nil else {
             throw ClientError.MessagePayloadSavingFailure("""
             Either `payload.channel` or `cid` must be provided to sucessfuly save the message payload.
@@ -472,12 +548,12 @@ extension NSManagedObjectContext: MessageDatabaseSession {
             return nil
         }
 
-        guard let channelDTO = channelDTO else {
+        guard let channel = channelDTO else {
             log.assertionFailure("Should never happen, a channel should have been fetched.")
             return nil
         }
         
-        return try saveMessage(payload: payload, channelDTO: channelDTO)
+        return try saveMessage(payload: payload, channelDTO: channel, syncOwnReactions: syncOwnReactions)
     }
     
     func saveMessage(payload: MessagePayload, for query: MessageSearchQuery) throws -> MessageDTO? {
@@ -512,6 +588,93 @@ extension NSManagedObjectContext: MessageDatabaseSession {
         message.pinnedBy = nil
         message.pinExpires = nil
     }
+
+    /// Adds the reaction for the current user to the message with id `messageId`
+    ///
+    /// Notes:
+    /// - The reaction is added to the database and it updates the message `reactionScores` property
+    /// - This method will throw if there is no current user set
+    /// - If the message is not found, there will be no side effect and the method will return `nil`
+    /// - If a reaction for the same user, type and message exists
+    func addReaction(
+        to messageId: MessageId,
+        type: MessageReactionType,
+        score: Int,
+        extraData: [String: RawJSON]
+    ) throws -> MessageReactionDTO {
+        guard let currentUserDTO = currentUser else {
+            throw ClientError.CurrentUserDoesNotExist()
+        }
+
+        guard let message = MessageDTO.load(id: messageId, context: self) else {
+            throw ClientError.MessageDoesNotExist(messageId: messageId)
+        }
+
+        let dto = MessageReactionDTO.loadOrCreate(
+            message: message,
+            type: type,
+            user: currentUserDTO.user,
+            context: self
+        )
+
+        // make sure we update the reactionScores for the message in a way that works for new or updated reactions
+        let scoreDiff = Int64(score) - dto.score
+        let newScore = max(0, message.reactionScores[type.rawValue] ?? Int(dto.score) + Int(scoreDiff))
+        message.reactionScores[type.rawValue] = newScore
+
+        dto.score = Int64(score)
+        dto.extraData = try JSONEncoder.default.encode(extraData)
+
+        let reactionId = dto.id
+        
+        if !message.latestReactions.contains(reactionId) {
+            message.latestReactions.append(reactionId)
+        }
+
+        if !message.ownReactions.contains(reactionId) {
+            message.ownReactions.append(reactionId)
+        }
+
+        return dto
+    }
+
+    /// Removes the reaction for the current user to the message with id `messageId`
+    ///
+    /// Notes:
+    /// - The reaction is *not* removed from the database
+    /// - This method will throw if there is no current user set
+    /// - If the message is not found, there will be no side effect and the method will return `nil`
+    /// - If there is no reaction found in the database, this method returns `nil`
+    func removeReaction(from messageId: MessageId, type: MessageReactionType, on version: String?) throws -> MessageReactionDTO? {
+        guard let currentUserDTO = currentUser else {
+            throw ClientError.CurrentUserDoesNotExist()
+        }
+
+        guard let message = MessageDTO.load(id: messageId, context: self) else {
+            throw ClientError.MessageDoesNotExist(messageId: messageId)
+        }
+
+        guard let reaction = MessageReactionDTO
+            .load(userId: currentUserDTO.user.id, messageId: messageId, type: type, context: self) else {
+            return nil
+        }
+
+        // if the reaction on the database does not match the version, do nothing
+        guard version == nil || version == reaction.version else {
+            return nil
+        }
+        
+        message.latestReactions = message.latestReactions.filter { $0 != reaction.id }
+        message.ownReactions = message.ownReactions.filter { $0 != reaction.id }
+
+        guard let reactionScore = message.reactionScores.removeValue(forKey: type.rawValue), reactionScore > 1 else {
+            return reaction
+        }
+
+        message.reactionScores[type.rawValue] = max(reactionScore - Int(reaction.score), 0)
+        message.reactionScores[type.rawValue] = reactionScore
+        return reaction
+    }
 }
 
 extension MessageDTO {
@@ -520,15 +683,20 @@ extension MessageDTO {
     
     /// Snapshots the current state of `MessageDTO` and returns its representation for the use in API calls.
     func asRequestBody() -> MessageRequestBody {
-        var extraData: [String: RawJSON]
-        do {
-            extraData = try JSONDecoder.default.decode([String: RawJSON].self, from: self.extraData)
-        } catch {
-            log.assertionFailure(
-                "Failed decoding saved extra data with error: \(error). This should never happen because"
-                    + "the extra data must be a valid JSON to be saved."
-            )
-            extraData = [:]
+        var decodedExtraData: [String: RawJSON]
+        
+        if let extraData = self.extraData {
+            do {
+                decodedExtraData = try JSONDecoder.default.decode([String: RawJSON].self, from: extraData)
+            } catch {
+                log.assertionFailure(
+                    "Failed decoding saved extra data with error: \(error). This should never happen because"
+                        + "the extra data must be a valid JSON to be saved."
+                )
+                decodedExtraData = [:]
+            }
+        } else {
+            decodedExtraData = [:]
         }
         
         return .init(
@@ -547,7 +715,7 @@ extension MessageDTO {
             mentionedUserIds: mentionedUsers.map(\.id),
             pinned: pinned,
             pinExpires: pinExpires,
-            extraData: extraData
+            extraData: decodedExtraData
         )
     }
 }
@@ -570,12 +738,21 @@ private extension ChatMessage {
         showReplyInChannel = dto.showReplyInChannel
         replyCount = Int(dto.replyCount)
         isSilent = dto.isSilent
+        isShadowed = dto.isShadowed
         reactionScores = dto.reactionScores.mapKeys { MessageReactionType(rawValue: $0) }
-        
-        do {
-            extraData = try JSONDecoder.default.decode([String: RawJSON].self, from: dto.extraData)
-        } catch {
-            log.error("Failed to decode extra data for Message with id: <\(dto.id)>, using default value instead. Error: \(error)")
+        reactionCounts = dto.reactionCounts.mapKeys { MessageReactionType(rawValue: $0) }
+                
+        if let extraData = dto.extraData, !extraData.isEmpty {
+            do {
+                self.extraData = try JSONDecoder.default.decode([String: RawJSON].self, from: extraData)
+            } catch {
+                log
+                    .error(
+                        "Failed to decode extra data for Message with id: <\(dto.id)>, using default value instead. Error: \(error)"
+                    )
+                self.extraData = [:]
+            }
+        } else {
             extraData = [:]
         }
 
@@ -584,36 +761,38 @@ private extension ChatMessage {
         
         if dto.pinned,
            let pinnedAt = dto.pinnedAt,
-           let pinnedBy = dto.pinnedBy,
-           let pinExpires = dto.pinExpires {
+           let pinnedBy = dto.pinnedBy {
             pinDetails = .init(
                 pinnedAt: pinnedAt,
                 pinnedBy: pinnedBy.asModel(),
-                expiresAt: pinExpires
+                expiresAt: dto.pinExpires
             )
         } else {
             pinDetails = nil
         }
-        
+
         if let currentUser = context.currentUser {
             isSentByCurrentUser = currentUser.user.id == dto.user.id
-            
-            if dto.reactions.isEmpty {
-                $_currentUserReactions = ({ [] }, nil)
-            } else {
-                $_currentUserReactions = ({
-                    Set(
-                        MessageReactionDTO
-                            .loadReactions(for: dto.id, authoredBy: currentUser.user.id, context: context)
-                            .map { $0.asModel() }
-                    )
-                }, dto.managedObjectContext)
-            }
+            $_currentUserReactions = ({
+                Set(
+                    MessageReactionDTO
+                        .loadReactions(ids: dto.ownReactions, context: context)
+                        .map { $0.asModel() }
+                )
+            }, dto.managedObjectContext)
         } else {
             isSentByCurrentUser = false
             $_currentUserReactions = ({ [] }, nil)
         }
         
+        $_latestReactions = ({
+            Set(
+                MessageReactionDTO
+                    .loadReactions(ids: dto.latestReactions, context: context)
+                    .map { $0.asModel() }
+            )
+        }, dto.managedObjectContext)
+
         if dto.threadParticipants.array.isEmpty {
             $_threadParticipants = ({ [] }, nil)
         } else {
@@ -643,19 +822,7 @@ private extension ChatMessage {
                     .map(ChatMessage.init)
             }, dto.managedObjectContext)
         }
-        
-        if dto.reactions.isEmpty {
-            $_latestReactions = ({ [] }, nil)
-        } else {
-            $_latestReactions = ({
-                Set(
-                    MessageReactionDTO
-                        .loadLatestReactions(for: dto.id, limit: 5, context: context)
-                        .map { $0.asModel() }
-                )
-            }, dto.managedObjectContext)
-        }
-        
+
         $_quotedMessage = ({ dto.quotedMessage?.asModel() }, dto.managedObjectContext)
     }
 }

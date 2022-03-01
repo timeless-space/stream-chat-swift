@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,7 +7,7 @@ import Foundation
 /// A namespace for the `FilterKey`s suitable to be used for `UserListQuery`. This scope is not aware of any extra data types.
 public protocol AnyUserListFilterScope {}
 
-/// An extra-data-specific namespace for the `FilterKey`s suitable to be used for `_UserListQuery`.
+/// An extra-data-specific namespace for the `FilterKey`s suitable to be used for `UserListQuery`.
 ///
 public class UserListFilterScope: FilterScope, AnyUserListFilterScope {}
 

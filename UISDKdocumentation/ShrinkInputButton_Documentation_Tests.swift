@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -20,7 +20,7 @@ class ShrinkInputButton_Documentation_Tests: XCTestCase {
         
         generateDocs(
             for: view,
-            annotations: [],
+            annotations: { _ in [] },
             name: "ShrinkInputButton_documentation",
             variants: .onlyUserInterfaceStyles
         )

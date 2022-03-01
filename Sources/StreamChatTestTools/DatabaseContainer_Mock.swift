@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -32,7 +32,8 @@ class DatabaseContainerMock: DatabaseContainer {
         modelName: String = "StreamChatModel",
         bundle: Bundle? = nil,
         localCachingSettings: ChatClientConfig.LocalCaching? = nil,
-        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility? = nil
+        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility? = nil,
+        shouldShowShadowedMessages: Bool? = nil
     ) throws {
         init_kind = kind
         try super.init(
@@ -42,7 +43,8 @@ class DatabaseContainerMock: DatabaseContainer {
             modelName: modelName,
             bundle: bundle,
             localCachingSettings: localCachingSettings,
-            deletedMessagesVisibility: deletedMessagesVisibility
+            deletedMessagesVisibility: deletedMessagesVisibility,
+            shouldShowShadowedMessages: shouldShowShadowedMessages
         )
     }
     
@@ -207,6 +209,7 @@ extension DatabaseContainer {
         authorId: UserId = .unique,
         cid: ChannelId = .unique,
         text: String = .unique,
+        extraData: [String: RawJSON] = [:],
         pinned: Bool = false,
         pinnedByUserId: UserId? = nil,
         pinnedAt: Date? = nil,
@@ -215,9 +218,12 @@ extension DatabaseContainer {
         latestReactions: [MessageReactionPayload] = [],
         ownReactions: [MessageReactionPayload] = [],
         attachments: [MessageAttachmentPayload] = [],
+        reactionScores: [MessageReactionType: Int] = [:],
+        reactionCounts: [MessageReactionType: Int] = [:],
         localState: LocalMessageState? = nil,
         type: MessageType? = nil,
-        numberOfReplies: Int = 0
+        numberOfReplies: Int = 0,
+        quotedMessageId: MessageId? = nil
     ) throws {
         try writeSynchronously { session in
             let channelDTO = try session.saveChannel(payload: XCTestCase().dummyPayload(with: cid))
@@ -225,20 +231,26 @@ extension DatabaseContainer {
             let message: MessagePayload = .dummy(
                 type: type,
                 messageId: id,
+                quotedMessageId: quotedMessageId,
                 attachments: attachments,
                 authorUserId: authorId,
                 text: text,
+                extraData: extraData,
                 latestReactions: latestReactions,
                 ownReactions: ownReactions,
                 updatedAt: updatedAt,
                 pinned: pinned,
                 pinnedByUserId: pinnedByUserId,
                 pinnedAt: pinnedAt,
-                pinExpires: pinExpires
+                pinExpires: pinExpires,
+                reactionScores: reactionScores,
+                reactionCounts: reactionCounts
             )
             
-            let messageDTO = try session.saveMessage(payload: message, channelDTO: channelDTO)
+            let messageDTO = try session.saveMessage(payload: message, channelDTO: channelDTO, syncOwnReactions: true)
             messageDTO.localMessageState = localState
+            messageDTO.reactionCounts = reactionCounts.mapKeys(\.rawValue)
+            messageDTO.reactionScores = reactionScores.mapKeys(\.rawValue)
             
             for idx in 0..<numberOfReplies {
                 let reply: MessagePayload = .dummy(
@@ -246,10 +258,11 @@ extension DatabaseContainer {
                     messageId: .unique,
                     parentId: id,
                     authorUserId: authorId,
-                    text: "Reply \(idx)"
+                    text: "Reply \(idx)",
+                    extraData: extraData
                 )
                 
-                let replyDTO = try session.saveMessage(payload: reply, for: cid)!
+                let replyDTO = try session.saveMessage(payload: reply, for: cid, syncOwnReactions: true)!
                 messageDTO.replies.insert(replyDTO)
             }
         }

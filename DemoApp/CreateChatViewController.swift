@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -352,6 +352,10 @@ extension CreateChatViewController: UITableViewDelegate, UITableViewDataSource {
         } catch {
             print(error.localizedDescription)
         }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        72
     }
     
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {

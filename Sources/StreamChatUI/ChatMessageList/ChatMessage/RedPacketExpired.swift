@@ -21,7 +21,7 @@ class RedPacketExpired: UITableViewCell {
     private var detailsStack: UIStackView!
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     var isSender = false
     var channel: ChatChannel?
     var client: ChatClient?
@@ -204,7 +204,7 @@ class RedPacketExpired: UITableViewCell {
 
     func configData() {
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampLabel?.text = dateFormatter.format(createdAt)
         } else {
             timestampLabel?.text = nil
         }

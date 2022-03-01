@@ -1,8 +1,7 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
-import Nuke
 import XCTest
 
 public extension XCTestCase {

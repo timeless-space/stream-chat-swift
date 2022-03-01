@@ -18,7 +18,7 @@ class RedPacketAmountBubble: UITableViewCell {
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
     var client: ChatClient?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
 
     var isSender = false
 
@@ -133,7 +133,7 @@ class RedPacketAmountBubble: UITableViewCell {
 
     func configData() {
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampLabel?.text = dateFormatter.format(createdAt)
         } else {
             timestampLabel?.text = nil
         }

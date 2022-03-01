@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -7,7 +7,7 @@ import CoreData
 @objc(MessageSearchQueryDTO)
 class MessageSearchQueryDTO: NSManagedObject {
     /// Unique identifier of the query/
-    @NSManaged var filterHash: String
+    @NSManaged var filterHash: String?
     
     @NSManaged var messages: Set<MessageDTO>
     

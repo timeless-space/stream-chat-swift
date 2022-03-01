@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -25,12 +25,18 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         didSet { updateContentIfNeeded() }
     }
 
-    /// The date formatter of the `timestampLabel`
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    /// A formatter that converts the message timestamp to textual representation.
+    public lazy var timestampFormatter: MessageTimestampFormatter = appearance.formatters.messageTimestamp
 
     /// Main container which holds `avatarView` and two horizontal containers `title` and `unreadCount` and
     /// `subtitle` and `timestampLabel`
     open private(set) lazy var mainContainer: ContainerStackView = ContainerStackView().withoutAutoresizingMaskConstraints
+    
+    /// This container embeded by `mainContainer` containing `topContainer` and `bottomContainer`.
+    open private(set) lazy var rightContainer: ContainerStackView = ContainerStackView(
+        axis: .vertical,
+        spacing: 4
+    ).withoutAutoresizingMaskConstraints
 
     /// By default contains `title` and `unreadCount`.
     /// This container is embed inside `mainContainer ` and is the one above `bottomContainer`
@@ -72,7 +78,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
     /// Text of `titleLabel` which contains the channel name.
     open var titleText: String? {
         if let channel = content?.channel {
-            return components.channelNamer(channel, channel.membership?.id)
+            return appearance.formatters.channelName.format(channel: channel, forCurrentUserId: channel.membership?.id)
         } else {
             return nil
         }
@@ -122,7 +128,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
     /// Text of `timestampLabel` which contains the time of the last sent message.
     open var timestampText: String? {
         if let lastMessageAt = content?.channel.lastMessageAt {
-            return dateFormatter.string(from: lastMessageAt)
+            return timestampFormatter.format(lastMessageAt)
         } else {
             return nil
         }
@@ -163,6 +169,10 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         bottomContainer.addArrangedSubviews([
             subtitleLabel.flexible(axis: .horizontal), timestampLabel
         ])
+        
+        rightContainer.addArrangedSubviews([
+            topContainer, bottomContainer
+        ])
 
         NSLayoutConstraint.activate([
             avatarView.heightAnchor.pin(equalToConstant: 48),
@@ -171,11 +181,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
 
         mainContainer.addArrangedSubviews([
             avatarView,
-            ContainerStackView(
-                axis: .vertical,
-                spacing: 4,
-                arrangedSubviews: [topContainer, bottomContainer]
-            )
+            rightContainer
         ])
         
         mainContainer.alignment = .center

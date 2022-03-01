@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -146,6 +146,7 @@ open class ComposerView: _View, ThemeProvider {
         embed(container)
 
         container.isLayoutMarginsRelativeArrangement = true
+        container.layoutMargins = .init(top: 8, left: 4, bottom: 8, right: 4)
         container.axis = .vertical
         container.alignment = .fill
         container.distribution = .fill
@@ -170,16 +171,18 @@ open class ComposerView: _View, ThemeProvider {
         centerContainer.layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
         centerContainer.isLayoutMarginsRelativeArrangement = true
         centerContainer.axis = .horizontal
-        centerContainer.alignment = .center//.bottom
+        centerContainer.alignment = .center
         centerContainer.spacing = .auto
         centerContainer.addArrangedSubview(leadingContainer)
         centerContainer.addArrangedSubview(inputMessageView)
         inputMessageView.layoutMargins = UIEdgeInsets(top: 2, left: -5, bottom: 3, right: 0)
         centerContainer.addArrangedSubview(trailingContainer)
+        
+        //centerContainer.layoutMargins = .zero
+        
         trailingContainer.alignment = .center
-        trailingContainer.spacing = .auto
+        trailingContainer.spacing = 0
         trailingContainer.distribution = .equal
-        trailingContainer.isLayoutMarginsRelativeArrangement = true
         trailingContainer.directionalLayoutMargins = .zero
         //trailingContainer.addArrangedSubview(sendButton)
         trailingContainer.addArrangedSubview(confirmButton)
@@ -187,9 +190,8 @@ open class ComposerView: _View, ThemeProvider {
 
         leadingContainer.axis = .horizontal
         leadingContainer.alignment = .center
-        leadingContainer.spacing = .init(0)
+        leadingContainer.spacing = 0
         leadingContainer.distribution = .equal
-        leadingContainer.isLayoutMarginsRelativeArrangement = true
         leadingContainer.directionalLayoutMargins = .zero
         //leadingContainer.addArrangedSubview(attachmentButton)
         //leadingContainer.addArrangedSubview(commandsButton)
@@ -207,11 +209,6 @@ open class ComposerView: _View, ThemeProvider {
         titleLabel.centerXAnchor.pin(equalTo: centerXAnchor).isActive = true
         titleLabel.pin(anchors: [.top, .bottom], to: headerView)
 
-        /*[shrinkInputButton, attachmentButton, commandsButton, moneyTransferButton, sendButton, confirmButton]
-            .forEach { button in
-                button.pin(anchors: [.width], to: 30)
-                button.pin(anchors: [.height], to: 38)
-            }*/
         toolbarToggleButton.pin(anchors: [.width], to: 40)
         toolbarToggleButton.pin(anchors: [.height], to: 38) //44
         toolbarBackButton.pin(anchors: [.width], to: 40)

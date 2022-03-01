@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -66,7 +66,9 @@ extension XCTestCase {
             replyCount: 0,
             extraData: [:],
             reactionScores: ["like": 1],
+            reactionCounts: ["like": 1],
             isSilent: false,
+            isShadowed: false,
             attachments: []
         )
     }
@@ -91,7 +93,9 @@ extension XCTestCase {
             replyCount: 0,
             extraData: [:],
             reactionScores: ["like": 1],
+            reactionCounts: ["like": 1],
             isSilent: false,
+            isShadowed: false,
             attachments: [],
             pinned: true,
             pinnedBy: dummyUser,
@@ -198,7 +202,9 @@ extension XCTestCase {
             replyCount: 0,
             extraData: [:],
             reactionScores: [:],
+            reactionCounts: [:],
             isSilent: false,
+            isShadowed: false,
             attachments: []
         )
     }

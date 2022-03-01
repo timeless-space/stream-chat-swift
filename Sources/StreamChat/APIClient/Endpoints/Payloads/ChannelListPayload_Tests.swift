@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -84,7 +84,6 @@ class ChannelPayload_Tests: XCTestCase {
         XCTAssertEqual(config.searchEnabled, true)
         XCTAssertEqual(config.mutesEnabled, true)
         XCTAssertEqual(config.urlEnrichmentEnabled, true)
-        XCTAssertEqual(config.flagsEnabled, false)
         XCTAssertEqual(config.messageRetention, "infinite")
         XCTAssertEqual(config.maxMessageLength, 5000)
         XCTAssertEqual(

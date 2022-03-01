@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -79,16 +79,23 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             message.isDeleted == false
         else { return [] }
         var actions: [ChatMessageActionItem] = []
-        actions.append(inlineReplyActionItem())
-        actions.append(copyActionItem())
-        actions.append(translateMessageItem())
-        actions.append(moreItem())
-        return [
-            inlineReplyActionItem(),
-            copyActionItem(),
-            translateMessageItem(),
-            moreItem()
-        ]
+        switch message.localState {
+        case nil:
+            actions.append(inlineReplyActionItem())
+            actions.append(copyActionItem())
+            actions.append(translateMessageItem())
+            actions.append(moreItem())
+            return actions
+        case .pendingSend, .sendingFailed, .pendingSync, .syncingFailed, .deletingFailed:
+            if message.localState == .sendingFailed {
+                actions.append(resendActionItem())
+                return actions
+            } else {
+                return []
+            }
+        default:
+            return []
+        }
     }
     
     /// Returns `ChatMessageActionItem` for edit action
@@ -107,7 +114,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
                 self.alertsRouter.showMessageDeletionConfirmationAlert { confirmed in
                     guard confirmed else { return }
 
-                    self.messageController.deleteMessage { _ in
+                    self.messageController.deleteMessage() { _ in
                         self.delegate?.chatMessageActionsVCDidFinish(self)
                     }
                 }
@@ -191,6 +198,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             appearance: appearance
         )
     }
+    
     //TranslateMessageActionItem
     open func translateMessageItem() -> ChatMessageActionItem {
         TranslateMessageActionItem(action: { [weak self] _ in
@@ -208,6 +216,23 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             print("------------>>>>>>>> more tapped")
             self.delegate?.chatMessageActionsVCDidFinish(self)
         }, appearance: appearance)
+    }
+    
+    /// Returns `ChatMessageActionItem` for flag action.
+    open func flagActionItem() -> ChatMessageActionItem {
+        FlagActionItem(
+            action: { [weak self] _ in
+                guard let self = self else { return }
+                self.alertsRouter.showMessageFlagConfirmationAlert { confirmed in
+                    guard confirmed else { return }
+                    
+                    self.messageController.flag { _ in
+                        self.delegate?.chatMessageActionsVCDidFinish(self)
+                    }
+                }
+            },
+            appearance: appearance
+        )
     }
 
     /// Triggered for actions which should be handled by `delegate` and not in this view controller.

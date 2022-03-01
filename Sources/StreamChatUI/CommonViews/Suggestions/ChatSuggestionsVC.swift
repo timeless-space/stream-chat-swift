@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -180,7 +180,12 @@ open class ChatMessageComposerSuggestionsCommandDataSource: NSObject, UICollecti
         ) as! ChatCommandSuggestionCollectionViewCell
 
         cell.components = components
-        cell.commandView.content = commands[indexPath.row]
+        guard let command = commands[safe: indexPath.row] else {
+            indexNotFoundAssertion()
+            return cell
+        }
+
+        cell.commandView.content = command
 
         return cell
     }
@@ -248,7 +253,10 @@ open class ChatMessageComposerSuggestionsMentionDataSource: NSObject,
             for: indexPath
         ) as! ChatMentionSuggestionCollectionViewCell
 
-        let user = usersCache[indexPath.row]
+        guard let user = usersCache[safe: indexPath.row] else {
+            indexNotFoundAssertion()
+            return cell
+        }
         // We need to make sure we set the components before accessing the mentionView,
         // so the mentionView is created with the most up-to-dated components.
         cell.components = components

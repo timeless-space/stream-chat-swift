@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -24,6 +24,8 @@ enum AttachmentCodingKeys: String, CodingKey, CaseIterable {
 
 /// A local state of the attachment. Applies only for attachments linked to the new messages sent from current device.
 public enum LocalAttachmentState: Hashable {
+    /// The current state is unknown
+    case unknown
     /// The attachment is waiting to be uploaded.
     case pendingUpload
     /// The attachment is currently being uploaded. The progress in [0, 1] range.
@@ -127,10 +129,12 @@ public struct AttachmentFile: Codable, Hashable {
     public let mimeType: String?
     /// A file size formatter.
     public static let sizeFormatter = ByteCountFormatter()
-    
+
+    // TODO: This should be deprecated in the future. UI Formatting should not belong to domain models.
+    // All formatting logic should come from `Appearance.formatters`.
     /// A formatted file size.
     public var sizeString: String { AttachmentFile.sizeFormatter.string(fromByteCount: size) }
-    
+
     /// Init an attachment file.
     /// - Parameters:
     ///   - type: a file type.
@@ -217,6 +221,10 @@ public enum AttachmentFileType: String, Codable, Equatable, CaseIterable {
     ///
     /// - Parameter ext: a file extension.
     public init(ext: String) {
+        // We've seen that iOS sometimes uppercases the filename (and also extension)
+        // which breaks our file type detection code.
+        // We lowercase it for extra safety
+        let ext = ext.lowercased()
         if ext == "jpg" {
             self = .jpeg
             return

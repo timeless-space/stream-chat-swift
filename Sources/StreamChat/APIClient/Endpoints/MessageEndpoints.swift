@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -15,13 +15,13 @@ extension Endpoint {
         )
     }
     
-    static func deleteMessage(messageId: MessageId) -> Endpoint<EmptyResponse> {
+    static func deleteMessage(messageId: MessageId, hard: Bool) -> Endpoint<MessagePayload.Boxed> {
         .init(
             path: messageId.path,
             method: .delete,
             queryItems: nil,
             requiresConnectionId: false,
-            body: nil
+            body: ["hard": hard]
         )
     }
     
@@ -46,6 +46,16 @@ extension Endpoint {
             body: pagination
         )
     }
+
+    static func loadReactions(messageId: MessageId, pagination: Pagination) -> Endpoint<MessageReactionsPayload> {
+        .init(
+            path: messageId.reactionsPath,
+            method: .get,
+            queryItems: nil,
+            requiresConnectionId: false,
+            body: pagination
+        )
+    }
     
     static func addReaction(
         _ type: MessageReactionType,
@@ -55,7 +65,7 @@ extension Endpoint {
         messageId: MessageId
     ) -> Endpoint<EmptyResponse> {
         .init(
-            path: messageId.reactionsPath,
+            path: messageId.reactionPath,
             method: .post,
             queryItems: nil,
             requiresConnectionId: false,
@@ -72,7 +82,7 @@ extension Endpoint {
     
     static func deleteReaction(_ type: MessageReactionType, messageId: MessageId) -> Endpoint<EmptyResponse> {
         .init(
-            path: messageId.reactionsPath.appending("/\(type.rawValue)"),
+            path: messageId.reactionPath.appending("/\(type.rawValue)"),
             method: .delete,
             queryItems: nil,
             requiresConnectionId: false,
@@ -111,8 +121,12 @@ private extension MessageId {
     var repliesPath: String {
         "messages/\(self)/replies"
     }
-    
+
     var reactionsPath: String {
+        "messages/\(self)/reactions"
+    }
+    
+    var reactionPath: String {
         path.appending("/reaction")
     }
 

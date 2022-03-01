@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -72,7 +72,7 @@ struct ChannelReadUpdaterMiddleware: EventMiddleware {
 
         // Try to get the existing channel read for the current user
         if let read = session.loadChannelRead(cid: cid, userId: currentUserId) {
-            if message.createdAt > read.lastReadAt {
+            if message.createdAt > read.lastReadAt ?? Date.distantPast {
                 read.unreadMessageCount += 1
             }
         } else {

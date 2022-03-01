@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
@@ -32,7 +32,9 @@ class MessagePayload_Tests: XCTestCase {
         XCTAssertEqual(payload.latestReactions.count, 1)
         XCTAssertEqual(payload.ownReactions.count, 1)
         XCTAssertEqual(payload.reactionScores, ["love": 1])
+        XCTAssertEqual(payload.reactionCounts, ["love": 1])
         XCTAssertEqual(payload.isSilent, true)
+        XCTAssertEqual(payload.isShadowed, true)
         XCTAssertEqual(payload.channel?.cid.rawValue, "messaging:channel-ex7-63")
         XCTAssertEqual(payload.quotedMessage?.id, "4C0CC2DA-8AB5-421F-808E-50DC7E40653D")
         XCTAssertEqual(payload.pinned, true)
@@ -67,7 +69,9 @@ class MessagePayload_Tests: XCTestCase {
         XCTAssertEqual(payload.latestReactions.count, 1)
         XCTAssertEqual(payload.ownReactions.count, 1)
         XCTAssertEqual(payload.reactionScores, ["love": 1])
+        XCTAssertEqual(payload.reactionCounts, ["love": 1])
         XCTAssertEqual(payload.isSilent, true)
+        XCTAssertEqual(payload.isShadowed, false)
         XCTAssertEqual(payload.channel?.cid.rawValue, "messaging:channel-ex7-63")
         XCTAssertEqual(payload.quotedMessage?.id, "4C0CC2DA-8AB5-421F-808E-50DC7E40653D")
         XCTAssertEqual(payload.attachments.count, 2)
@@ -100,7 +104,9 @@ class MessagePayload_Tests: XCTestCase {
         XCTAssertEqual(payload.latestReactions.count, 1)
         XCTAssertEqual(payload.ownReactions.count, 1)
         XCTAssertEqual(payload.reactionScores, ["love": 1])
+        XCTAssertEqual(payload.reactionCounts, ["love": 1])
         XCTAssertEqual(payload.isSilent, true)
+        XCTAssertEqual(payload.isShadowed, true)
         XCTAssertEqual(payload.channel?.cid.rawValue, "messaging:channel-ex7-63")
         XCTAssertEqual(payload.quotedMessage?.id, "4C0CC2DA-8AB5-421F-808E-50DC7E40653D")
         XCTAssertEqual(payload.pinned, true)
@@ -193,5 +199,15 @@ class MessageRepliesPayload_Tests: XCTestCase {
         
         // Assert 2 messages successfully decoded.
         XCTAssertTrue(payload.messages.count == 2)
+    }
+}
+
+class MessageReactionsPayload_Tests: XCTestCase {
+    func test_isSerialized() throws {
+        let mockJSON = XCTestCase.mockData(fromFile: "MessageReactionsPayload")
+        let payload = try JSONDecoder.default.decode(MessageReactionsPayload.self, from: mockJSON)
+
+        // Assert 2 reactions successfully decoded.
+        XCTAssertTrue(payload.reactions.count == 2)
     }
 }

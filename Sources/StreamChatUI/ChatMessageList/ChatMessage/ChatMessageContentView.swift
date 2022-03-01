@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -29,6 +29,11 @@ public protocol ChatMessageContentViewDelegate: AnyObject {
     /// - Parameter indexPath: The index path of the cell displaying the content view. Equals to `nil` when
     /// the content view is displayed outside the collection/table view.
     func messageContentViewDidTapOnAvatarView(_ indexPath: IndexPath?)
+
+    /// Gets called when reactions view is tapped.
+    /// - Parameter indexPath: The index path of the cell displaying the content view. Equals to `nil` when
+    /// the content view is displayed outside the collection/table view.
+    func messageContentViewDidTapOnReactionsView(_ indexPath: IndexPath?)
 }
 
 /// A view that displays the message content.
@@ -51,8 +56,8 @@ open class ChatMessageContentView: _View, ThemeProvider {
         didSet { updateContentIfNeeded() }
     }
 
-    /// The date formatter of the `timestampLabel`
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    /// A formatter that converts the message timestamp to textual representation.
+    public lazy var timestampFormatter: MessageTimestampFormatter = appearance.formatters.messageTimestamp
 
     /// Specifies the max possible width of `mainContainer`.
     /// Should be in [0...1] range, where 1 makes the container fill the entire superview's width.
@@ -326,7 +331,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
             reactionsView.pin(to: reactionsBubbleView.layoutMarginsGuide)
 
             bubbleToReactionsConstraint = (bubbleView ?? bubbleContentContainer).topAnchor
-                .pin(equalTo: reactionsBubbleView.centerYAnchor)
+                .pin(equalTo: reactionsBubbleView.centerYAnchor, constant: 5)
             constraintsToActivate += [
                 reactionsBubbleView.topAnchor.pin(equalTo: topAnchor),
                 bubbleToReactionsConstraint,
@@ -447,7 +452,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
             textColor = appearance.colorPalette.textLowEmphasis
         } else if content?.shouldRenderAsJumbomoji == true {
             textFont = appearance.fonts.emoji
-        } else if content?.type == .system {
+        } else if content?.type == .system || content?.type == .error {
             textFont = appearance.fonts.caption1.bold
             textColor = appearance.colorPalette.textLowEmphasis
         }
@@ -506,7 +511,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
         authorNameLabel?.text = content?.author.name
 
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampLabel?.text = timestampFormatter.format(createdAt)
         } else {
             timestampLabel?.text = nil
         }
@@ -587,6 +592,10 @@ open class ChatMessageContentView: _View, ThemeProvider {
     @objc open func handleTapOnAvatarView() {
         delegate?.messageContentViewDidTapOnAvatarView(indexPath?())
     }
+
+    @objc open func handleTapOnReactionsView() {
+        delegate?.messageContentViewDidTapOnReactionsView(indexPath?())
+    }
 	
     // MARK: - Setups
 
@@ -646,7 +655,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
     /// - Returns: The `threadArrowView` subview.
     open func createThreadArrowView() -> ChatThreadArrowView {
         if threadArrowView == nil {
-            // TODO: view type should be taken from `components` once `_ThreadArrowView` is audited
+            // TODO: view type should be taken from `components` once `ThreadArrowView` is audited
             threadArrowView = ChatThreadArrowView()
                 .withoutAutoresizingMaskConstraints
         }
@@ -700,6 +709,12 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 .messageReactionsView
                 .init()
                 .withoutAutoresizingMaskConstraints
+
+            let tapRecognizer = UITapGestureRecognizer(
+                target: self,
+                action: #selector(handleTapOnReactionsView)
+            )
+            reactionsBubbleView?.addGestureRecognizer(tapRecognizer)
         }
         return reactionsView!
     }
