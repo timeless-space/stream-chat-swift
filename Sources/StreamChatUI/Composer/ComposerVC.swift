@@ -506,48 +506,61 @@ open class ComposerVC: _ViewController,
         }
     }
 
+    fileprivate func menuAction(_ action: MenuType) {
+        switch action {
+        case .media:
+            self.composerView.inputMessageView.textView.resignFirstResponder()
+            self.showAttachmentsPicker()
+            self.animateToolkitView(isHide: true)
+        case .disburseFund:
+            guard let channel = self.channelController?.channel else {
+                return
+            }
+            if channel.extraData.signers.contains(ChatClient.shared.currentUserId ?? "") {
+                self.animateToolkitView(isHide: true)
+                self.disburseFundAction()
+            } else {
+                Snackbar.show(text: "Only admins are allowed to disburse the fund.")
+            }
+        case .weather:
+            break
+        case .crypto:
+            self.showPayment()
+        case .oneN:
+            self.animateToolkitView(isHide: true)
+            break
+        case .nft:
+            self.animateToolkitView(isHide: true)
+        case .redPacket:
+            self.animateToolkitView(isHide: true)
+            self.composerView.inputMessageView.textView.resignFirstResponder()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let `self` = self else { return }
+                self.sendRedPacketAction()
+            }
+        case .dao:
+            self.animateToolkitView(isHide: true)
+            break
+        default:
+            self.animateToolkitView(isHide: true)
+        }
+    }
+
     func bindMenuController() {
         menuController = ChatMenuViewController.instantiateController(storyboard: .wallet)
         menuController?.extraData = self.channelController?.channel?.extraData ?? [:]
         menuController?.didTapAction = { [weak self] action in
             guard let `self` = self else { return }
             self.lockInputViewObserver = true
-            switch action {
-            case .media:
-                self.composerView.inputMessageView.textView.resignFirstResponder()
-                self.showAttachmentsPicker()
-                self.animateToolkitView(isHide: true)
-            case .disburseFund:
-                guard let channel = self.channelController?.channel else {
-                    return
-                }
-                if channel.extraData.signers.contains(ChatClient.shared.currentUserId ?? "") {
-                    self.animateToolkitView(isHide: true)
-                    self.disburseFundAction()
-                } else {
-                    Snackbar.show(text: "Only admins are allowed to disburse the fund.")
-                }
-            case .weather:
-                break
-            case .crypto:
-                self.showPayment()
-            case .oneN:
-                self.animateToolkitView(isHide: true)
-                break
-            case .nft:
-                self.animateToolkitView(isHide: true)
-            case .redPacket:
-                self.animateToolkitView(isHide: true)
-                self.composerView.inputMessageView.textView.resignFirstResponder()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            if self.channelController?.isNewConversation ?? false {
+                self.channelController?.synchronize({ [weak self] error in
                     guard let `self` = self else { return }
-                    self.sendRedPacketAction()
-                }
-            case .dao:
-                self.animateToolkitView(isHide: true)
-                break
-            default:
-                break
+                    NotificationCenter.default.post(name: .didCreateChannel, object: nil)
+                    self.channelController?.isNewConversation = false
+                    self.menuAction(action)
+                })
+            } else {
+                self.menuAction(action)
             }
         }
 
@@ -799,8 +812,22 @@ open class ComposerVC: _ViewController,
     /// Creates a new message and notifies the delegate that a new message was created.
     /// - Parameter text: The text content of the message.
     open func createNewMessage(text: String) {
+        if channelController?.isNewConversation ?? false {
+            channelController?.synchronize({ [weak self] error in
+                guard let `self` = self else { return }
+                NotificationCenter.default.post(name: .didCreateChannel, object: nil)
+                self.channelController?.isNewConversation = false
+                self.createNewMessageWithChannel(text: text)
+            })
+        } else {
+            createNewMessageWithChannel(text: text)
+        }
+
+    }
+
+    open func createNewMessageWithChannel(text: String) {
         guard let cid = channelController?.cid else { return }
-        
+
         // If the user included some mentions via suggestions,
         // but then removed them from text, we should remove them from
         // the content we'll send

@@ -8,6 +8,7 @@ import StreamChatUI
 extension Notification.Name {
     public static let showTabbar = Notification.Name("kStreamChatshowTabbar")
     public static let hideTabbar = Notification.Name("kStreamHideTabbar")
+    public static let didCreateChannel = Notification.Name("kStreamDidCreateChannel")
     public static let showDaoShareScreen = Notification.Name("showDaoShareScreen")
     public static let hidePaymentOptions = Notification.Name("kStreamHidePaymentOptions")
     public static let showFriendScreen = Notification.Name("showFriendScreen")
@@ -64,6 +65,17 @@ open class ChatChannelVC:
         view.backgroundColor =  Appearance.default.colorPalette.walletTabbarBackground
         return view
     }()
+
+    open var channelName: String?
+    open var channelImageUrl: URL?
+
+    open var isDirectChannel: Bool {
+        if channelController?.isNewConversation ?? false {
+            return true
+        } else {
+            return channelController?.channel?.isDirectMessageChannel ?? false
+        }
+    }
 
     open private(set) lazy var moreButton: UIButton = {
         let button = UIButton()
@@ -183,8 +195,10 @@ open class ChatChannelVC:
         messageComposerVC?.userSearchController = userSuggestionSearchController
 
         channelController?.delegate = self
-        channelController?.synchronize { [weak self] _ in
-            self?.messageComposerVC?.updateContent()
+        if !(channelController?.isNewConversation ?? false) {
+            channelController?.synchronize { [weak self] _ in
+                self?.messageComposerVC?.updateContent()
+            }
         }
     }
 
@@ -300,11 +314,20 @@ open class ChatChannelVC:
         headerView.titleContainerView.subtitleLabel.setChatNavSubtitleColor()
         
         navigationHeaderView.backgroundColor = Appearance.default.colorPalette.chatNavBarBackgroundColor
+
+        if channelController?.isNewConversation ?? false {
+            self.headerView.titleContainerView.content = (channelName, "", true)
+            self.headerView.timer = nil
+            if let channelAvatarUrl = channelImageUrl {
+                self.channelAvatarView.loadChannelAvatar(from: channelAvatarUrl)
+            }
+        }
     }
 
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        NotificationCenter.default.addObserver(self, selector: #selector(didChannelCreate), name: .didCreateChannel, object: nil)
     }
 
     open override func viewWillAppear(_ animated: Bool) {
@@ -329,13 +352,30 @@ open class ChatChannelVC:
 
     @objc func backAction(_ sender: Any) {
         deallocManually()
+        if let channel = self.channelController?.channel {
+            if channel.lastMessageAt == nil && channel.isDirectMessageChannel {
+                self.channelController?.hideChannel(clearHistory: true, completion: { error in
+                    print(error)
+                })
+            }
+        }
         self.popWithAnimation()
         self.dismiss(animated: true, completion: nil)
         NotificationCenter.default.post(name: .showTabbar, object: nil)
     }
+
+    @objc func didChannelCreate() {
+        guard let cid = channelController?.cid else {
+            return
+        }
+        self.channelController?.isNewConversation = false
+        headerView.channelController = client?.channelController(for: cid)
+        channelAvatarView.content = (channelController?.channel, client?.currentUserId)
+
+    }
     
     @objc func headerViewAction(_ sender: Any) {
-        if self.channelController?.channel?.isDirectMessageChannel ?? true {
+        if self.isDirectChannel ?? true {
             return
         }
         guard let controller: ChatGroupDetailsVC = ChatGroupDetailsVC.instantiateController(storyboard: .GroupChat) else {
@@ -346,7 +386,7 @@ open class ChatChannelVC:
     }
 
     @objc func avatarViewAction(_ sender: Any) {
-        if self.channelController?.channel?.isDirectMessageChannel ?? true {
+        if self.isDirectChannel ?? true {
             return
         }
         showPinViewButton()
@@ -429,7 +469,7 @@ open class ChatChannelVC:
 
     private func setupUI() {
         KeyboardService.shared.observeKeyboard(self.view)
-        if channelController?.channel?.isDirectMessageChannel ?? false {
+        if isDirectChannel {
             shareView.isHidden = true
             moreButton.isHidden = true
         } else {
@@ -439,6 +479,7 @@ open class ChatChannelVC:
             }
         }
         channelController?.markRead()
+
     }
 
     private func showPinViewButton() {
@@ -815,7 +856,7 @@ open class ChatChannelVC:
             }
             return actions
         } else {
-            if channelController?.channel?.isDirectMessageChannel ?? false {
+            if isDirectChannel {
                 var actions: [UIAction] = []
                 actions.append(search)
                 if channelController?.channel?.isMuted ?? false {

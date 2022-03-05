@@ -220,6 +220,8 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
     /// Describes the ordering the messages are presented.
     public let messageOrdering: MessageOrdering
 
+    public var isNewConversation = false
+
     /// The worker used to fetch the remote data and communicate with servers.
     private lazy var updater: ChannelUpdater = self.environment.channelUpdaterBuilder(
         client.databaseContainer,
@@ -407,6 +409,7 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
     }
     
     override public func synchronize(_ completion: ((_ error: Error?) -> Void)? = nil) {
+        print("synchronize call",#function)
         let channelCreatedCallback = isChannelAlreadyCreated ? nil : channelCreated(forwardErrorTo: setLocalStateBasedOnError)
         updater.update(
             channelQuery: channelQuery,
@@ -907,6 +910,28 @@ public extension ChatChannelController {
         extraData: [String: RawJSON] = [:],
         completion: ((Result<MessageId, Error>) -> Void)? = nil
     ) {
+        /// create channel for new conversation
+        if isNewConversation {
+            self.synchronize { [weak self] error in
+                guard let `self` = self else { return }
+                self.isNewConversation = false
+                self.createNewMessageWithChannel(text: text, pinning: pinning, isSilent: isSilent, attachments: attachments, mentionedUserIds: mentionedUserIds, quotedMessageId: quotedMessageId, extraData: extraData, completion: completion)
+            }
+        } else {
+            createNewMessageWithChannel(text: text, pinning: pinning, isSilent: isSilent, attachments: attachments, mentionedUserIds: mentionedUserIds, quotedMessageId: quotedMessageId, extraData: extraData, completion: completion)
+        }
+    }
+
+    func createNewMessageWithChannel(
+        text: String,
+        pinning: MessagePinning? = nil,
+        isSilent: Bool = false,
+        attachments: [AnyAttachmentPayload] = [],
+        mentionedUserIds: [UserId] = [],
+        quotedMessageId: MessageId? = nil,
+        extraData: [String: RawJSON] = [:],
+        completion: ((Result<MessageId, Error>) -> Void)? = nil
+    ) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
         guard let cid = cid, isChannelAlreadyCreated else {
             channelModificationFailed { error in
@@ -914,10 +939,10 @@ public extension ChatChannelController {
             }
             return
         }
-        
+
         /// Send stop typing event.
         eventSender.stopTyping(in: cid)
-        
+
         updater.createNewMessage(
             in: cid,
             text: text,

@@ -441,6 +441,7 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
         }
         //
         do {
+
             let controller = try client
                 .channelController(
                     createDirectMessageChannelWith: [selectedUserId, currentUserId],
@@ -448,6 +449,12 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
                     imageURL: nil,
                     extraData: [:]
                 )
+            let chatChannelVC = ChatChannelVC()
+//            controller.isNewConversation = true
+//            chatChannelVC.channelName = user?.name
+//            chatChannelVC.channelImageUrl = user?.imageURL
+            chatChannelVC.channelController = controller
+
             controller.synchronize { [weak self] error in
                 guard let weakSelf = self else {
                     return
