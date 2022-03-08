@@ -40,7 +40,7 @@ public class ChatAddFriendVC: ChatBaseVC {
         let obj = ChatUserListVC.instantiateController(storyboard: .GroupChat) as? ChatUserListVC
         return obj!
     }()
-    private var curentSortType: Em_ChatUserListFilterTypes = .sortByLastSeen
+    private var currentSortType: Em_ChatUserListFilterTypes = .sortByLastSeen
     private var isFullScreen = false
     public var selectedUsers = [ChatUser]()
     public var existingUsers = [ChatUser]()
