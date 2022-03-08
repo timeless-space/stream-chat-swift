@@ -39,6 +39,7 @@ public class ChatUserListVC: UIViewController {
     @IBOutlet private weak var noMatchView: UIView!
     private var tableView: UITableView?
     // MARK: - VARIABLES
+    public var selectedUsers = [ChatUser]()
     public var viewModel = UserListViewModel(sortType: .sortByLastSeen)
     public var sortType: Em_ChatUserListFilterTypes = .sortByLastSeen {
         didSet {
