@@ -22,6 +22,7 @@ public class ChatGroupDetailsVC: ChatBaseVC {
     @IBOutlet private var notificationSwitch: UISwitch!
     var filesContainerView = UIView()
     // MARK: - VARIABLES
+    public var groupInviteLink: String?
     public var selectedUsers: [ChatChannelMember] = []
     public var channelController: ChatChannelController?
     private var arrController = [UIViewController]()
@@ -127,10 +128,13 @@ public class ChatGroupDetailsVC: ChatBaseVC {
         popWithAnimation()
     }
     @IBAction func addFriendButtonAction(_ sender: UIButton) {
+        guard let channelVC = self.channelController else { return }
         guard let controller = ChatAddFriendVC
                 .instantiateController(storyboard: .GroupChat)  as? ChatAddFriendVC else {
                     return
                 }
+        controller.groupInviteLink = self.groupInviteLink
+        controller.channelController = channelVC
         controller.selectionType = .addFriend
         controller.existingUsers = selectedUsers
         controller.bCallbackInviteFriend = { [weak self] users in
