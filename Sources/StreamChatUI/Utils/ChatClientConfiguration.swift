@@ -42,3 +42,16 @@ open class ChatClientConfiguration {
     // MARK: - Init
     public init() {}
 }
+
+public struct ChatGroupUIConfiguration {
+    private static let groupNameColors = [Appearance.default.colorPalette.groupChatUserColorBlue,Appearance.default.colorPalette.groupChatUserColorYellow,Appearance.default.colorPalette.groupChatUserColorPink,Appearance.default.colorPalette.groupChatUserColorGreen]
+    public static var userColorContainer = [UserId: UIColor?]()
+    public static func getRandomColor(userID: UserId) -> UIColor {
+        if let color = ChatGroupUIConfiguration.userColorContainer[userID] as? UIColor {
+            return color
+        }
+        let color = groupNameColors.randomElement() ?? UIColor.white
+        ChatGroupUIConfiguration.userColorContainer[userID] = color
+        return color
+    }
+}

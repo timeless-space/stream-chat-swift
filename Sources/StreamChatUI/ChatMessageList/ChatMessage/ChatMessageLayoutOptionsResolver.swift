@@ -30,11 +30,25 @@ open class ChatMessageLayoutOptionsResolver {
     ) -> ChatMessageLayoutOptions {
         let messageIndex = messages.index(messages.startIndex, offsetBy: indexPath.item)
         let message = messages[messageIndex]
-
-        let isLastInSequence = isMessageLastInSequence(
+        
+//        let isLastInSequence = isMessageLastInSequence(
+//            messageIndexPath: indexPath,
+//            messages: messages
+//        )
+        let checkForTimeStamp = isMessageLastInSequence(
             messageIndexPath: indexPath,
             messages: messages
         )
+        var isLastInSequence = false
+        if messages.indices.contains(messages.index(after: messageIndex)) {
+            let nextMessageIndex = messages.index(after: messageIndex)
+            let nextMessage = messages[nextMessageIndex]
+            
+            if nextMessage.author == message.author {
+                let delay = message.createdAt.timeIntervalSince(nextMessage.createdAt)
+                isLastInSequence = delay < minTimeIntervalBetweenMessagesInGroup
+            }
+        }
         
         var options: ChatMessageLayoutOptions = []
 
@@ -49,16 +63,36 @@ open class ChatMessageLayoutOptionsResolver {
         }
         if message.isSentByCurrentUser {
             options.insert(.flipped)
-        }
-        if isLastInSequence {
-            options.insert(.continuousBubble)
-        }
-        if options.contains(.continuousBubble) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+            if isLastInSequence {
+                options.insert(.continuousBubble)
+            } else {
+                options.insert(.timestamp)
+            }
+        } else if !channel.isDirectMessageChannel {
             options.insert(.avatarSizePadding)
+            if isLastInSequence {
+                options.insert(.continuousBubble)
+            } else {
+                options.insert(.authorName)
+                options.insert(.avatar)
+                options.insert(.timestamp)
+            }
+        } else {
+            if isLastInSequence {
+                options.insert(.continuousBubble)
+            } else {
+                options.insert(.timestamp)
+            }
         }
-        if !isLastInSequence {
-            options.insert(.timestamp)
-        }
+//        if !isLastInSequence {
+//            options.insert(.continuousBubble)
+//        }
+//        if options.contains(.continuousBubble) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+//            options.insert(.avatarSizePadding)
+//        }
+//        if !isLastInSequence {
+//            options.insert(.timestamp)
+//        }
         if message.isOnlyVisibleForCurrentUser {
             options.insert(.onlyVisibleForYouIndicator)
         }
@@ -70,12 +104,12 @@ open class ChatMessageLayoutOptionsResolver {
             return options
         }
         
-        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
-            options.insert(.avatar)
-        }
-        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
-            options.insert(.authorName)
-        }
+//        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+//            options.insert(.avatar)
+//        }
+//        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+//            options.insert(.authorName)
+//        }
         if hasQuotedMessage(message) {
             options.insert(.quotedMessage)
         }

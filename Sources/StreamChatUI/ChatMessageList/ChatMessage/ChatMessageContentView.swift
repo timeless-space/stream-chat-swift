@@ -764,15 +764,9 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 .withBidirectionalLanguagesSupport
                 .withoutAutoresizingMaskConstraints
             authorNameLabel!.font = appearance.fonts.footnote
-            let namesColor = [Appearance.default.colorPalette.groupChatUserColorBlue,Appearance.default.colorPalette.groupChatUserColorYellow,Appearance.default.colorPalette.groupChatUserColorPink,Appearance.default.colorPalette.groupChatUserColorGreen].randomElement()
             
             if let author = content?.author {
-                if let color = ChatChannelVC.GroupUserColors.colors[author.id] {
-                    authorNameLabel!.textColor = color
-                } else {
-                    ChatChannelVC.GroupUserColors.colors[author.id] = namesColor
-                    authorNameLabel!.textColor = namesColor
-                }
+                authorNameLabel!.textColor = ChatGroupUIConfiguration.getRandomColor(userID: author.id)
             } else {
                 authorNameLabel!.textColor = appearance.colorPalette.subtitleText
             }
