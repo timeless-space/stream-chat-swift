@@ -81,4 +81,5 @@ public extension ChatMessage {
         guard attachmentCounts.isEmpty, let textContent = textContent, !textContent.isEmpty else { return false }
         return textContent.count <= 3 && textContent.containsOnlyEmoji
     }
+    
 }

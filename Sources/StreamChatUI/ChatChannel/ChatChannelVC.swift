@@ -853,3 +853,9 @@ open class ChatChannelVC:
         }
     }
 }
+/// colors for group user name
+extension ChatChannelVC {
+    public struct GroupUserColors {
+        public static var colors = [String: UIColor?]()
+    }
+}

@@ -78,10 +78,10 @@ public extension Appearance {
         public var incommingMessageColor: UIColor = .incommingMessageColor
         public var searchPlaceHolder: UIColor = .searchPlaceHolder
         public var placeHolderBalanceBG: UIColor = .placeHolderBalanceBG
-        public var groupChatUserColorYellow: UIColor = .groupChatUserColorYellow
-        public var groupChatUserColorPink: UIColor = .groupChatUserColorPink
-        public var groupChatUserColorBlue: UIColor = .groupChatUserColorBlue
-        public var groupChatUserColorGreen: UIColor = .groupChatUserColorGreen
+        public var groupChatUserColorYellow: UIColor = .init(rgb: 0xFBD273)
+        public var groupChatUserColorPink: UIColor = .init(rgb: 0xE886A5)
+        public var groupChatUserColorBlue: UIColor = .init(rgb: 0x93CBFC)
+        public var groupChatUserColorGreen: UIColor = .init(rgb: 0xAFE993)
     }
 }
 

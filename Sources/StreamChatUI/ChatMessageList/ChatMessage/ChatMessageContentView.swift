@@ -266,7 +266,8 @@ open class ChatMessageContentView: _View, ThemeProvider {
             var metadataSubviews: [UIView] = []
             
             if options.contains(.authorName) {
-                metadataSubviews.append(createAuthorNameLabel())
+                //metadataSubviews.append(createAuthorNameLabel())
+                self.bubbleContentContainer.addArrangedSubview(createAuthorNameLabel(), respectsLayoutMargins: true)
             }
             if options.contains(.timestamp) {
                 metadataSubviews.append(createTimestampLabel())
@@ -501,10 +502,12 @@ open class ChatMessageContentView: _View, ThemeProvider {
 
         // Metadata
         onlyVisibleForYouContainer?.isVisible = content?.isOnlyVisibleForCurrentUser == true
-
         authorNameLabel?.isVisible = layoutOptions?.contains(.authorName) == true
-        authorNameLabel?.text = content?.author.name
-
+        authorNameLabel?.text = ""
+        if let author = content?.author {
+            authorNameLabel?.text = "\(author.name ?? "")"
+        }
+        
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.string(from: createdAt)
         } else {
@@ -760,13 +763,35 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 .withAdjustingFontForContentSizeCategory
                 .withBidirectionalLanguagesSupport
                 .withoutAutoresizingMaskConstraints
-
-            authorNameLabel!.textColor = appearance.colorPalette.subtitleText
             authorNameLabel!.font = appearance.fonts.footnote
+            let namesColor = [Appearance.default.colorPalette.groupChatUserColorBlue,Appearance.default.colorPalette.groupChatUserColorYellow,Appearance.default.colorPalette.groupChatUserColorPink,Appearance.default.colorPalette.groupChatUserColorGreen].randomElement()
+            
+            if let author = content?.author {
+                if let color = ChatChannelVC.GroupUserColors.colors[author.id] {
+                    authorNameLabel!.textColor = color
+                } else {
+                    ChatChannelVC.GroupUserColors.colors[author.id] = namesColor
+                    authorNameLabel!.textColor = namesColor
+                }
+            } else {
+                authorNameLabel!.textColor = appearance.colorPalette.subtitleText
+            }
         }
         return authorNameLabel!
     }
-
+    var paddingView: UIView?
+    
+//    open func createPaddingView() -> UIView {
+//        if paddingView == nil {
+//            paddingView = UIView()
+//                .withoutAutoresizingMaskConstraints
+//            var paddingFrame = paddingView!.frame
+//            paddingFrame.size = CGSize(width: paddingView!.frame.width, height: 10)
+//            paddingView!.frame = paddingFrame
+//            paddingView?.backgroundColor = .red
+//        }
+//        return paddingView!
+//    }
     /// Instantiates, configures and assigns `onlyVisibleForYouIconImageView` when called for the first time.
     /// - Returns: The `onlyVisibleForYouIconImageView` subview.
     open func createOnlyVisibleForYouIconImageView() -> UIImageView {

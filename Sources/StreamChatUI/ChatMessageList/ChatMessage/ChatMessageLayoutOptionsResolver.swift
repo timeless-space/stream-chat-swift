@@ -47,17 +47,16 @@ open class ChatMessageLayoutOptionsResolver {
         if !message.shouldRenderAsJumbomoji {
             options.insert(.bubble)
         }
-
         if message.isSentByCurrentUser {
             options.insert(.flipped)
         }
-        if !isLastInSequence {
+        if isLastInSequence {
             options.insert(.continuousBubble)
         }
-        if !isLastInSequence && !message.isSentByCurrentUser {
+        if options.contains(.continuousBubble) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.avatarSizePadding)
         }
-        if isLastInSequence {
+        if !isLastInSequence {
             options.insert(.timestamp)
         }
         if message.isOnlyVisibleForCurrentUser {
@@ -70,11 +69,11 @@ open class ChatMessageLayoutOptionsResolver {
         guard message.isDeleted == false else {
             return options
         }
-
-        if isLastInSequence && !message.isSentByCurrentUser {
+        
+        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.avatar)
         }
-        if isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.authorName)
         }
         if hasQuotedMessage(message) {

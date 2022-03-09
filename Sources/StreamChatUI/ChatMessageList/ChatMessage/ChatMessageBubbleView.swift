@@ -28,8 +28,8 @@ open class ChatMessageBubbleView: _View, AppearanceProvider, SwiftUIRepresentabl
     override open func setUpAppearance() {
         super.setUpAppearance()
         layer.borderColor = UIColor.clear.cgColor
-        layer.cornerRadius = 18
-        layer.borderWidth = 1
+        layer.cornerRadius = 15
+        layer.borderWidth = 0
     }
 
     override open func updateContent() {
