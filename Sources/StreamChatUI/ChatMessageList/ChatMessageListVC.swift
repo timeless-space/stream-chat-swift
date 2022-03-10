@@ -5,7 +5,9 @@
 import StreamChat
 import UIKit
 import SafariServices
-
+// Cells Padding
+public let IncommingCellPadding: CGFloat = 12
+public let OutgoingCellPadding:CGFloat = -12
 /// Controller that shows list of messages and composer together in the selected channel.
 @available(iOSApplicationExtension, unavailable)
 open class ChatMessageListVC:
