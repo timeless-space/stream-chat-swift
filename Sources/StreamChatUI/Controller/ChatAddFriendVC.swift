@@ -40,7 +40,7 @@ public class ChatAddFriendVC: ChatBaseVC {
         let obj = ChatUserListVC.instantiateController(storyboard: .GroupChat) as? ChatUserListVC
         return obj!
     }()
-    private var currentSortType: Em_ChatUserListFilterTypes = .sortByLastSeen
+    //private var currentSortType: ChatUserListFilterTypes = .sortByLastSeen
     private var isFullScreen = false
     public var selectedUsers = [ChatUser]()
     public var existingUsers = [ChatUser]()
@@ -76,9 +76,9 @@ public class ChatAddFriendVC: ChatBaseVC {
         tableviewContainerView.updateChildViewContraint(childView: chatUserList.view)
         chatUserList.delegate = self
         chatUserList.userSelectionType = .addFriend
-        chatUserList.sortType = .sortByAtoZ
-        chatUserList.viewModel.existingUsers = existingUsers
-        chatUserList.viewModel.fetchUserList()
+        //chatUserList.sortType = .sortByAtoZ
+        //chatUserList.viewModel.existingUsers = existingUsers
+        //chatUserList.viewModel.fetchUserList()
         viewContainerLeadingConst.constant = 5
         viewContainerTrailingConst.constant = 5
         setupUI()
@@ -93,7 +93,7 @@ public class ChatAddFriendVC: ChatBaseVC {
     }
     
     @objc private func textDidChange(_ sender: UITextField) {
-        self.chatUserList.viewModel.searchDataUsing(searchString: sender.text)
+        //self.chatUserList.viewModel.searchDataUsing(searchString: sender.text)
     }
     //
     // MARK: - Actions
@@ -166,7 +166,7 @@ extension ChatAddFriendVC: UITextFieldDelegate {
 // MARK: - ChatUserListDelegate
 extension ChatAddFriendVC: ChatUserListDelegate {
     public func chatUserDidSelect() {
-        self.selectedUsers = self.chatUserList.viewModel.selectedUsers
+        //self.selectedUsers = self.chatUserList.viewModel.selectedUsers
         self.btnAddFriend?.isEnabled = !self.selectedUsers.isEmpty
         self.btnInviteLink?.isEnabled = !self.selectedUsers.isEmpty
     }

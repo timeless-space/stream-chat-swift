@@ -17,6 +17,7 @@ class TableViewHeaderCreateChat: UITableViewCell {
     var bCallbackGroupJoinViaQR: (() -> Void)?
     // MARK: - OUTLETS
     @IBOutlet weak var labelSortingType: UILabel!
+    @IBOutlet weak var viewSortBy: UIView!
     // MARK: - Life Cycle
     override func awakeFromNib() {
         super.awakeFromNib()

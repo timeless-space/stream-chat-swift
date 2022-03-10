@@ -86,6 +86,8 @@ target 'StreamChatUI' do
   use_frameworks!
   pod 'swiftScan', :git => 'https://github.com/MxABC/swiftScan.git'
   pod 'SkeletonView'
+  pod 'web3swift', :git => 'https://github.com/skywinder/web3swift.git', :branch => 'develop'
+  pod 'SwiftProtobuf', '1.18.0'
   # Pods for StreamChatUI
   
   target 'StreamChatUITests' do

@@ -25,4 +25,6 @@ Pod::Spec.new do |spec|
     spec.dependency "EFQRCode", "~> 6.2.0"
     spec.dependency "swiftScan"
     spec.dependency "SkeletonView"
+    spec.dependency "web3swift"
+    spec.dependency "SwiftProtobuf", "~> 1.18.0"
   end

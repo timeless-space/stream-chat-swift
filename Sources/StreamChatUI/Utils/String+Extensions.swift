@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import web3swift
 
 extension StringProtocol {
     var firstUppercased: String { prefix(1).uppercased() + dropFirst() }
@@ -113,5 +114,23 @@ extension String {
     
     func capitalizingFirstLetter() -> String {
         return prefix(1).capitalized + dropFirst()
+    }
+}
+
+extension String {
+    func convertBech32ToEthereum() -> String {
+        if self.prefix(2) != "0x" {
+            let bech32 = Bech32()
+            do {
+                let decoded = try bech32.decode(self)
+                let decodedData = try bech32.convertBits(from: 5, to: 8, pad: false, idata: decoded.checksum)
+                if let result = EthereumAddress(decodedData) {
+                    return result.address
+                }
+            } catch {
+                print("error", error)
+            }
+        }
+        return self
     }
 }
