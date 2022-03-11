@@ -38,7 +38,7 @@ class CryptoReceiveBubble: UITableViewCell {
         NSLayoutConstraint.activate([
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 4),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -4),
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8),
+            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: IncommingCellPadding),
             viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth),
         ])
 

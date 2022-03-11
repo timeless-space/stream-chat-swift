@@ -36,7 +36,6 @@ public final class ChatMessageCell: _TableViewCell {
         )
         messageContentView!.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0).isActive = true
         messageContentView!.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 0).isActive = true
-        let isOutgoing = messageContentView!.layoutOptions?.contains(.flipped)
         messageContentView!.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: IncommingCellPadding).isActive = true
         messageContentView!.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: OutgoingCellPadding).isActive = true
         updateBottomSpacing()

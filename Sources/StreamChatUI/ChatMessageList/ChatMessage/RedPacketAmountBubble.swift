@@ -48,9 +48,9 @@ class RedPacketAmountBubble: UITableViewCell {
         ])
         if isSender {
             viewContainer.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8).isActive = true
+            viewContainer.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: OutgoingCellPadding).isActive = true
         } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
+            viewContainer.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: IncommingCellPadding).isActive = true
             viewContainer.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -cellWidth).isActive = true
         }
 

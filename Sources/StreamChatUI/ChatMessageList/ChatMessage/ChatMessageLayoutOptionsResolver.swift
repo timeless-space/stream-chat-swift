@@ -69,12 +69,12 @@ open class ChatMessageLayoutOptionsResolver {
                 options.insert(.timestamp)
             }
         } else if !channel.isDirectMessageChannel {
-            options.insert(.avatarSizePadding)
+            //options.insert(.avatarSizePadding)
             if isLastInSequence {
                 options.insert(.continuousBubble)
             } else {
                 options.insert(.authorName)
-                options.insert(.avatar)
+                //options.insert(.avatar)
                 options.insert(.timestamp)
             }
         } else {
