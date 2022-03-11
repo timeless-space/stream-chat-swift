@@ -39,7 +39,7 @@ public class ChatAddFriendVC: ChatBaseVC {
         let obj = ChatUserListVC.instantiateController(storyboard: .GroupChat) as? ChatUserListVC
         return obj!
     }()
-    private var curentSortType: Em_ChatUserListFilterTypes = .sortByLastSeen
+    private var currentSortType: Em_ChatUserListFilterTypes = .sortByLastSeen
     private var isFullScreen = false
     public var selectedUsers = [ChatUser]()
     public var existingUsers = [ChatUser]()
@@ -68,7 +68,7 @@ public class ChatAddFriendVC: ChatBaseVC {
         titleLabel.text = selectionType.title
         self.searchField.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
         self.searchField.delegate = self
-        
+        // User List
         addChild(chatUserList)
         tableviewContainerView.addSubview(chatUserList.view)
         chatUserList.didMove(toParent: self)
@@ -85,7 +85,6 @@ public class ChatAddFriendVC: ChatBaseVC {
     
     private func setupUI() {
         let cornorRadius = viewContainerLeadingConst.constant > 0 ? 32 : 0
-        
         viewHeaderView.backgroundColor = Appearance.default.colorPalette.chatViewBackground
         searchBarContainerView.backgroundColor = Appearance.default.colorPalette.searchBarBackground
         searchBarContainerView.layer.cornerRadius = 20.0
@@ -101,27 +100,26 @@ public class ChatAddFriendVC: ChatBaseVC {
     }
     
     @IBAction private func invitLinkAction(_ sender: UIButton) {
-        // TODO: Will add in future release
-//        self.dismiss(animated: true, completion: nil)
-//        guard let inviteLink = self.groupInviteLink else { return }
-//        guard let shareInviteVC = ShareInviteLinkVC.instantiateController(storyboard: .GroupChat) as? ShareInviteLinkVC else {
-//            return
-//        }
-//        shareInviteVC.groupInviteLink = self.groupInviteLink
-//        shareInviteVC.channelController = self.channelController
-//        shareInviteVC.selectedUsers = self.selectedUsers
-//        shareInviteVC.callbackSelectedUser = { [weak self] users in
-//            guard let weakSelf = self else { return }
-//            weakSelf.selectedUsers = users
-//            weakSelf.chatUserList.selectedUsers = users
-//            weakSelf.chatUserList.reloadData()
-//        }
-//        let nav = UINavigationController(rootViewController: shareInviteVC)
-//        nav.navigationBar.isHidden = true
-//        nav.modalPresentationStyle = .overCurrentContext
-//        nav.modalTransitionStyle = .crossDissolve
-//        UIApplication.shared.getTopViewController()?.present(nav, animated: true, completion: nil)
-//        UIApplication.shared.windows.first?.bringSubviewToFront(nav.view)
+        self.dismiss(animated: true, completion: nil)
+        guard let inviteLink = self.groupInviteLink else { return }
+        guard let shareInviteVC = ShareInviteLinkVC.instantiateController(storyboard: .GroupChat) as? ShareInviteLinkVC else {
+            return
+        }
+        shareInviteVC.groupInviteLink = self.groupInviteLink
+        shareInviteVC.channelController = self.channelController
+        shareInviteVC.selectedUsers = self.selectedUsers
+        shareInviteVC.callbackSelectedUser = { [weak self] users in
+            guard let weakSelf = self else { return }
+            weakSelf.selectedUsers = users
+            weakSelf.chatUserList.viewModel.selectedUsers = users
+            weakSelf.chatUserList.reloadData()
+        }
+        let nav = UINavigationController(rootViewController: shareInviteVC)
+        nav.navigationBar.isHidden = true
+        nav.modalPresentationStyle = .overCurrentContext
+        nav.modalTransitionStyle = .crossDissolve
+        UIApplication.shared.getTopViewController()?.present(nav, animated: true, completion: nil)
+        UIApplication.shared.windows.first?.bringSubviewToFront(nav.view)
     }
     
     // swiftlint:disable redundant_type_annotation

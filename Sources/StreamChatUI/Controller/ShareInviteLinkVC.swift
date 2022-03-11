@@ -33,7 +33,10 @@ public class ShareInviteLinkVC: UIViewController {
         self.view.backgroundColor = .clear
         groupImageView.layer.cornerRadius = groupImageView.bounds.width / 2
         groupImageView.content = (channelController.channel, nil)
-        groupNameLabel.text = channelController.channel!.name!.capitalizingFirstLetter()
+        groupNameLabel.text = ""
+        if let channel = channelController.channel, let name = channel.name {
+            groupNameLabel.text = name.capitalizingFirstLetter()
+        }
         self.containerView.layer.cornerRadius = 30.0
         self.joinGroupButton.layer.cornerRadius = joinGroupButton.bounds.height/2
         let tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(backgroundViewAction))
