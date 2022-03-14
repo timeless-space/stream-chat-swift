@@ -144,6 +144,9 @@ extension UserListViewModel {
             return
         }
         searchOperation?.cancel()
+        if self.dataLoadingState == .loading || self.dataLoadingState == .loadMoreData {
+            return
+        }
         if self.dataLoadingState != .loading && fetchMoreData == false {
             self.dataLoadingState = .loading
         }
