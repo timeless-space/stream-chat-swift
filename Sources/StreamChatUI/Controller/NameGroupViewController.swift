@@ -92,6 +92,10 @@ public class NameGroupViewController: ChatBaseVC {
 
     @IBAction func doneTapped(_ sender: UIButton) {
         self.view.endEditing(true)
+        guard ChatClient.shared.connectionStatus == .connected  else {
+            Snackbar.show(text: "Internet may not be available.")
+            return
+        }
         guard let name = nameField.text, !name.isEmpty else {
             Snackbar.show(text: "Group name cannot be blank")
             return
