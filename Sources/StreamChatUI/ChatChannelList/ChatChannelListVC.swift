@@ -292,12 +292,15 @@ open class ChatChannelListVC: _ViewController,
 //    }
         
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        defer {
+            collectionView.deselectItem(at: indexPath, animated: true)
+        }
         NotificationCenter.default.post(name: .hideTabbar, object: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self = self else {
                 return
             }
-            let channel = self.controller.channels[indexPath.row]
+            guard let channel = self.getChannel(at: indexPath) else { return }
             self.router.showChannel(for: channel.cid)
         }
     }

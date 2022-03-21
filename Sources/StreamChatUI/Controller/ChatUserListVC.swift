@@ -255,12 +255,19 @@ extension ChatUserListVC {
                 self.update(for: .error)
                 return
             }
-            var newQuery = self.serachListController.query
-            newQuery.filter = .and([
-                .autocomplete(.name, text: strName),
-                .exists(.lastActiveAt),
-                .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
-            ])
+            var newQuery = UserListQuery(
+                filter: .and([
+                    .autocomplete(.name, text: strName),
+                    .exists(.lastActiveAt),
+                    .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
+                ]),
+                sort: [],
+                pageSize: 30)//self.serachListController.query
+//            newQuery.filter = .and([
+//                .autocomplete(.name, text: strName),
+//                .exists(.lastActiveAt),
+//                .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
+//            ])
             serachListController.search(query: newQuery) { [weak self] error in
                 guard let weakSelf = self else { return }
                 if let error = error {
