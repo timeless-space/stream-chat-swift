@@ -471,6 +471,9 @@ open class ChatMessageListVC:
             )
             cell.messageContentView?.delegate = self
             cell.messageContentView?.content = message
+            if let channel = dataSource?.channel(for: self), !channel.isDirectMessageChannel {
+                cell.messageContentView?.isGroupChannel = true
+            }
             return cell
         }
     }

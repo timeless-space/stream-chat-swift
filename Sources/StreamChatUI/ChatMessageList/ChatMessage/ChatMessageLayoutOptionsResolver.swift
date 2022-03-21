@@ -30,26 +30,27 @@ open class ChatMessageLayoutOptionsResolver {
     ) -> ChatMessageLayoutOptions {
         let messageIndex = messages.index(messages.startIndex, offsetBy: indexPath.item)
         let message = messages[messageIndex]
-        
+        // Keeping old method for understanding 
 //        let isLastInSequence = isMessageLastInSequence(
 //            messageIndexPath: indexPath,
 //            messages: messages
 //        )
-        let checkForTimeStamp = isMessageLastInSequence(
-            messageIndexPath: indexPath,
-            messages: messages
-        )
+
         var isLastInSequence = false
+        var isLastAuthorSequence = false
         if messages.indices.contains(messages.index(after: messageIndex)) {
             let nextMessageIndex = messages.index(after: messageIndex)
             let nextMessage = messages[nextMessageIndex]
-            
+            let delay = message.createdAt.timeIntervalSince(nextMessage.createdAt)
             if nextMessage.author == message.author {
-                let delay = message.createdAt.timeIntervalSince(nextMessage.createdAt)
-                isLastInSequence = delay < minTimeIntervalBetweenMessagesInGroup
+                isLastInSequence = true
+                isLastAuthorSequence = true
+            }
+            if delay > minTimeIntervalBetweenMessagesInGroup {
+                isLastInSequence = false
             }
         }
-        
+
         var options: ChatMessageLayoutOptions = []
 
         // The text should be centered without a bubble for system messages
@@ -65,9 +66,10 @@ open class ChatMessageLayoutOptionsResolver {
             options.insert(.flipped)
             if isLastInSequence {
                 options.insert(.continuousBubble)
-            } else {
-                options.insert(.timestamp)
             }
+//            else {
+//                options.insert(.timestamp)
+//            }
         } else if !channel.isDirectMessageChannel {
             //options.insert(.avatarSizePadding)
             if isLastInSequence {
@@ -75,24 +77,19 @@ open class ChatMessageLayoutOptionsResolver {
             } else {
                 options.insert(.authorName)
                 //options.insert(.avatar)
-                options.insert(.timestamp)
+                //options.insert(.timestamp)
             }
+//            else {
+//                options.insert(.timestamp)
+//            }
         } else {
             if isLastInSequence {
                 options.insert(.continuousBubble)
-            } else {
-                options.insert(.timestamp)
             }
+//            else {
+//                options.insert(.timestamp)
+//            }
         }
-//        if !isLastInSequence {
-//            options.insert(.continuousBubble)
-//        }
-//        if options.contains(.continuousBubble) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
-//            options.insert(.avatarSizePadding)
-//        }
-//        if !isLastInSequence {
-//            options.insert(.timestamp)
-//        }
         if message.isOnlyVisibleForCurrentUser {
             options.insert(.onlyVisibleForYouIndicator)
         }
@@ -104,12 +101,6 @@ open class ChatMessageLayoutOptionsResolver {
             return options
         }
         
-//        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
-//            options.insert(.avatar)
-//        }
-//        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
-//            options.insert(.authorName)
-//        }
         if hasQuotedMessage(message) {
             options.insert(.quotedMessage)
         }
