@@ -94,8 +94,6 @@ extension ChatUserListVC {
         self.searchField.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
     }
     
-    public func tableViewFrameUpdate() { }
-    
     private func setupTableView() {
         tableView?.removeFromSuperview()
         let tableViewStyle: UITableView.Style = self.sortType == .sortByName ? .grouped : .plain
@@ -135,7 +133,20 @@ extension ChatUserListVC {
     private func updateUI() {
         noMatchView.isHidden = true
         switch self.viewModel.dataLoadingState {
-        case .error,.searchingError:
+        case .error:
+            self.sectionWiseList.removeAll()
+            noMatchView.isHidden = false
+            alertImage.image = nil
+            alertText.text = ""
+            if self.currentSectionType == .createChatHeader {
+                self.sectionWiseList.insert(ChatUserListData.init(letter: "", sectionType: .createChatHeader), at: 0)
+            }
+            self.tableView?.reloadData()
+        case .searchingError:
+            self.sectionWiseList.removeAll()
+            noMatchView.isHidden = false
+            alertImage.image = Appearance.Images.systemMagnifying
+            alertText.text = "No user matches these keywords..."
             self.noMatchView.isHidden = true
         case .searching,.loading:
             self.noMatchView.isHidden = true
@@ -267,6 +278,11 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             cell.showShimmer()
             return cell
         default:
+            guard self.sectionWiseList.indices.contains(indexPath.section) else {
+                let cell = UITableViewCell.init(frame: .zero)
+                cell.backgroundColor = .clear
+                return UITableViewCell.init(frame: .zero)
+            }
             let sectionType = sectionWiseList[indexPath.section].sectionType
             switch sectionType {
             case .createChatHeader:

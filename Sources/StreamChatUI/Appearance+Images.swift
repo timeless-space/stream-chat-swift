@@ -148,6 +148,13 @@ public extension Appearance {
                 return loadImageSafely(with: "arrow")
             }
         }()
+        public var muteChannel: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "speaker.slash.fill")!.withTintColor(.gray)
+            } else {
+                return nil
+            }
+        }()
         public var commands: UIImage = loadImageSafely(with: "bolt")
         public var smallBolt: UIImage = loadImageSafely(with: "bolt_small")
         public var openAttachments: UIImage = loadImageSafely(with: "clip")
@@ -180,6 +187,14 @@ public extension Appearance {
                 return Appearance.default.images.sendArrow.tinted(with: .white)
             }
         }()
+        public var handPointUp: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "hand.point.up")?.withTintColor(.white.withAlphaComponent(0.6))
+            } else {
+                return Appearance.default.images.sendArrow.tinted(with: .white)
+            }
+        }()
+
         // MARK: - Reactions
 
         public var reactionLoveSmall: UIImage = loadImageSafely(with: "reaction_love_small")

@@ -51,6 +51,7 @@ public class UserListViewModel: NSObject {
 }
 // MARK: - SORT METHODS
 extension UserListViewModel {
+    // TODO:  Will try improve filter user list in future
     public func sortAtoZ(filteredUsers: [ChatUser]) -> ChatUserListData {
         let alphabetUsers = filteredUsers.filter { ($0.name?.isFirstCharacterAlp ?? false) && $0.name?.isBlank == false }.sorted{ $0.name!.localizedCaseInsensitiveCompare($1.name!) == ComparisonResult.orderedAscending}
         let otherUsers = filteredUsers.filter { ($0.name?.isFirstCharacterAlp ?? false) == false }.sorted{ $0.id.localizedCaseInsensitiveCompare($1.id) == ComparisonResult.orderedAscending}
@@ -59,6 +60,7 @@ extension UserListViewModel {
         data.users.append(contentsOf: otherUsers)
         return data
     }
+    
     public func sortLastSeen(filteredUsers: [ChatUser]) -> ChatUserListData{
         let onlineUser = filteredUsers.filter({ $0.isOnline && $0.name?.isBlank == false }).sorted{ $0.name!.localizedCaseInsensitiveCompare($1.name!) == ComparisonResult.orderedAscending}
         let alphabetUsers = onlineUser.filter { ($0.name?.isFirstCharacterAlp ?? false) }
@@ -70,6 +72,7 @@ extension UserListViewModel {
         data.users.append(contentsOf: otherUsers)
         return data
     }
+    
     public func shortByName(filteredUsers: [ChatUser]) -> [ChatUserListData] {
         let alphabetUsers = filteredUsers.filter { ($0.name?.isFirstCharacterAlp ?? false) && $0.name?.isBlank == false }.sorted{ $0.name!.localizedCaseInsensitiveCompare($1.name!) == ComparisonResult.orderedAscending}
         let otherUsers = filteredUsers.filter { ($0.name?.isFirstCharacterAlp ?? false) == false }.sorted{ $0.id.localizedCaseInsensitiveCompare($1.id) == ComparisonResult.orderedAscending}
@@ -120,14 +123,11 @@ extension UserListViewModel {
                 if let error = error {
                     weakSelf.dataLoadingState = .searchingError
                 } else {
-                    let filterData = weakSelf.searchListController.users.filter { $0.name?.isEmpty == false }.filter { $0.id.isEmpty == false }.filter { $0.id != ChatClient.shared.currentUserId ?? "" }
+                    let filterData = weakSelf.getFilteredData(users: weakSelf.searchListController.users)
                     weakSelf.bCallbackDataUserList?(filterData)
                     weakSelf.dataLoadingState = .completed
                 }
             }
-        } else {
-            self.searchText = nil
-            self.fetchUserList()
         }
     }
     
@@ -135,6 +135,7 @@ extension UserListViewModel {
         guard self.searchText == nil else {
             return
         }
+        searchOperation?.cancel()
         if self.dataLoadingState != .loading && fetchMoreData == false {
             self.dataLoadingState = .loading
         }
@@ -147,12 +148,14 @@ extension UserListViewModel {
             self.userListController.synchronize { [weak self] error in
                 guard let weakSelf = self else { return }
                 if error == nil {
-                    let filterData = weakSelf.userListController.users.filter { $0.name?.isEmpty == false }.filter { $0.id.isEmpty == false }.filter { $0.id != ChatClient.shared.currentUserId ?? "" }
-                    weakSelf.bCallbackDataUserList?(filterData)
-                    weakSelf.dataLoadingState = .completed
-                    return
+                    DispatchQueue.main.async {
+                        let filterData = weakSelf.getFilteredData(users: weakSelf.userListController.users)
+                        weakSelf.bCallbackDataUserList?(filterData)
+                        weakSelf.dataLoadingState = .completed
+                    }
+                } else {
+                    weakSelf.dataLoadingState = .error
                 }
-                weakSelf.dataLoadingState = .error
             }
         } else {
             let date = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
@@ -161,24 +164,30 @@ extension UserListViewModel {
             self.userListController.synchronize { [weak self] error in
                 guard let weakSelf = self else { return }
                 if error == nil {
-                    let filterData = weakSelf.userListController.users.filter { $0.name?.isEmpty == false }.filter { $0.id.isEmpty == false }.filter { $0.id != ChatClient.shared.currentUserId ?? "" }
-                    weakSelf.bCallbackDataUserList?(filterData)
-                    weakSelf.dataLoadingState = .completed
-                    return
+                    DispatchQueue.main.async {
+                        let filterData = weakSelf.getFilteredData(users: weakSelf.userListController.users)
+                        weakSelf.bCallbackDataUserList?(filterData)
+                        weakSelf.dataLoadingState = .completed
+                    }
+                } else {
+                    weakSelf.dataLoadingState = .error
                 }
-                weakSelf.dataLoadingState = .error
             }
         }
     }
     
     open func sortUserList() {
         if let strName = searchText, strName.isBlank == false {
-            let filterData = self.searchListController.users.filter { $0.name?.isEmpty == false }.filter { $0.id.isEmpty == false }.filter { $0.id != ChatClient.shared.currentUserId ?? "" }
+            let filterData = self.getFilteredData(users: self.searchListController.users)
             self.bCallbackDataUserList?(filterData)
         } else  {
-            let filterData = self.userListController.users.filter { $0.name?.isEmpty == false }.filter { $0.id.isEmpty == false }.filter { $0.id != ChatClient.shared.currentUserId ?? "" }
+            let filterData = self.getFilteredData(users: self.userListController.users)
             self.bCallbackDataUserList?(filterData)
         }
+    }
+    
+    private func getFilteredData(users: LazyCachedMapCollection<ChatUser>) -> [ChatUser] {
+        return users.filter { $0.name?.isEmpty == false && $0.id.isEmpty == false && $0.id != ChatClient.shared.currentUserId ?? ""}
     }
 }
 // MARK: - Chat user controller delegate
@@ -187,12 +196,4 @@ extension UserListViewModel: ChatUserListControllerDelegate {
         // To Do
     }
 }
-public struct DTFormatter {
-    public static var formatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        formatter.dateStyle = .short
-        formatter.doesRelativeDateFormatting = true
-        return formatter
-    }()
-}
+

@@ -124,6 +124,8 @@
 		6E0D12EC27B3CF85003DD1AA /* TableViewCellChatUser.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E0D12E827B3CF85003DD1AA /* TableViewCellChatUser.xib */; };
 		6E1BA5C427C62A70004046D2 /* StreamChatBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1BA5C327C62A70004046D2 /* StreamChatBackButton.swift */; };
 		6E1BA5C527C62A70004046D2 /* StreamChatBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1BA5C327C62A70004046D2 /* StreamChatBackButton.swift */; };
+		6E3DEF6A27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */; };
+		6E3DEF6B27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */; };
 		6E297C0F27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */; };
 		6E297C1027CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */; };
 		6E297C1127CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */; };
@@ -163,6 +165,10 @@
 		6EC85CDE27D5EB9400063EB8 /* CollectionViewCellGroupUsers.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6EC85CDA27D5EB9400063EB8 /* CollectionViewCellGroupUsers.xib */; };
 		6EC85CE027D5EC8400063EB8 /* CollectionViewGroupUserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC85CDF27D5EC8400063EB8 /* CollectionViewGroupUserList.swift */; };
 		6EC85CE127D5EC8400063EB8 /* CollectionViewGroupUserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC85CDF27D5EC8400063EB8 /* CollectionViewGroupUserList.swift */; };
+		6EBB724127CD003D00FAF482 /* SkeletonView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EBB724027CD003D00FAF482 /* SkeletonView.framework */; };
+		6EBB724227CD003D00FAF482 /* SkeletonView.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6EBB724027CD003D00FAF482 /* SkeletonView.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6EBB724527CD005400FAF482 /* SkeletonView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EBB724427CD005400FAF482 /* SkeletonView.framework */; };
+		6EBB724627CD005400FAF482 /* SkeletonView.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6EBB724427CD005400FAF482 /* SkeletonView.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6ED0BE5227C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED0BE5027C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift */; };
 		6ED0BE5327C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED0BE5027C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift */; };
 		6ED0BE5427C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6ED0BE5127C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib */; };
@@ -1697,6 +1703,10 @@
 		6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellGroupDetailsAttachmentsList.xib; sourceTree = "<group>"; };
 		6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChatCustomButton.swift; sourceTree = "<group>"; };
 		6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupRequestVC.swift; sourceTree = "<group>"; };
+		6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupRequestVC.swift; sourceTree = "<group>"; };
+		6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellGroupDetailsAttachmentsList.swift; sourceTree = "<group>"; };
+		6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellGroupDetailsAttachmentsList.xib; sourceTree = "<group>"; };
+		6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChatCustomButton.swift; sourceTree = "<group>"; };
 		6E41867527C3CD630061E03F /* SFCompactText-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFCompactText-Regular.ttf"; sourceTree = "<group>"; };
 		6E41867627C3CD630061E03F /* SFProText-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProText-Semibold.ttf"; sourceTree = "<group>"; };
 		6E41867727C3CD630061E03F /* SFProText-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProText-Regular.ttf"; sourceTree = "<group>"; };
@@ -1712,6 +1722,8 @@
 		6EC85CD927D5EB9400063EB8 /* CollectionViewCellGroupUsers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCellGroupUsers.swift; sourceTree = "<group>"; };
 		6EC85CDA27D5EB9400063EB8 /* CollectionViewCellGroupUsers.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CollectionViewCellGroupUsers.xib; sourceTree = "<group>"; };
 		6EC85CDF27D5EC8400063EB8 /* CollectionViewGroupUserList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewGroupUserList.swift; sourceTree = "<group>"; };
+		6EBB724027CD003D00FAF482 /* SkeletonView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SkeletonView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6EBB724427CD005400FAF482 /* SkeletonView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SkeletonView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6ED0BE5027C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewHeaderCreateChat.swift; sourceTree = "<group>"; };
 		6ED0BE5127C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewHeaderCreateChat.xib; sourceTree = "<group>"; };
 		6ED3E44027B4D4C900A05C0A /* ChatBaseVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBaseVC.swift; sourceTree = "<group>"; };
@@ -3122,6 +3134,8 @@
 				6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */,
 				6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */,
 				6EC85CDF27D5EC8400063EB8 /* CollectionViewGroupUserList.swift */,
+				6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */,
+				6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */,
 			);
 			path = CustomView;
 			sourceTree = "<group>";
@@ -5498,10 +5512,10 @@
 				6ED3E44E27B53AE200A05C0A /* AttachmentListCollectionViewCell.xib */,
 				6ED0BE5027C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift */,
 				6ED0BE5127C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib */,
-				6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */,
-				6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */,
 				6EC85CD927D5EB9400063EB8 /* CollectionViewCellGroupUsers.swift */,
 				6EC85CDA27D5EB9400063EB8 /* CollectionViewCellGroupUsers.xib */,
+				6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */,
+				6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
