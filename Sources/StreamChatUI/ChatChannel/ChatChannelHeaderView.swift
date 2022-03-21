@@ -58,7 +58,8 @@ open class ChatChannelHeaderView:
 
         channelTitleText { [weak self] title in
             guard let self = self else { return }
-            self.titleContainerView.content = (title?.trimStringBy(count: 10), self.subtitleText, self.channelController?.channelQuery.type == .announcement ? true : false)
+            self.titleContainerView.content = (title?.trimStringBy(count: 25), self.subtitleText, self.channelController?.channelQuery.type == .announcement ? true : false, self.channelController?.channel?.isMuted ?? false)
+            self.titleContainerView.setUpLayout()
         }
     }
 
@@ -203,10 +204,9 @@ open class ChatChannelHeaderView:
 extension String {
     func trimStringBy(count: Int) -> String {
         let newString = self.trimmingCharacters(in: .whitespacesAndNewlines)
-        if self.count > count * 2 {
+        if self.count > count {
             let prefix = String(newString.prefix(count))
-            let suffix = String(newString.suffix(count))
-            return "\(prefix)...\(suffix)"
+            return "\(prefix)..."
         }
         return self
     }

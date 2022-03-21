@@ -158,8 +158,10 @@ public class ChatUserSearchController: DataController, DelegateCallable, DataSto
             lastQuery = newQuery
             //
 
-            userQueryUpdater.update(userListQuery: newQuery, policy: .replace) { error in
-                //
+            userQueryUpdater.update(userListQuery: newQuery, policy: .replace) { [weak self] error in
+                guard let self = self else {
+                    return
+                }
                 self.state = error == nil ? .remoteDataFetched : .remoteDataFetchFailed(ClientError(with: error))
                 self.callback { completion?(error) }
             }
