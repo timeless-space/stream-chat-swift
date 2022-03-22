@@ -89,7 +89,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
 
     /// Shows message author name.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options containing `.authorName`.
-    public private(set) var authorNameLabel: UITextView?
+    public private(set) var authorNameLabel: UILabel?
 
     /// Shows the icon part of the indicator saying the message is visible for current user only.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options
@@ -274,12 +274,11 @@ open class ChatMessageContentView: _View, ThemeProvider {
             
             if options.contains(.authorName) {
                 // Keeping old code reference for future understanding
-                //metadataSubviews.append(createAuthorNameLabel())
-                self.bubbleContentContainer.addArrangedSubview(createAuthorNameLabel())
+                metadataSubviews.append(createAuthorNameLabel())
             }
-//            if options.contains(.timestamp) {
-//                metadataSubviews.append(createTimestampLabel())
-//            }
+            if options.contains(.timestamp) {
+                metadataSubviews.append(createTimestampLabel())
+            }
             if options.contains(.onlyVisibleForYouIndicator) {
                 onlyVisibleForYouContainer = ContainerStackView()
                 onlyVisibleForYouContainer!.addArrangedSubview(createOnlyVisibleForYouIconImageView())
@@ -512,10 +511,8 @@ open class ChatMessageContentView: _View, ThemeProvider {
         onlyVisibleForYouContainer?.isVisible = content?.isOnlyVisibleForCurrentUser == true
         authorNameLabel?.isVisible = layoutOptions?.contains(.authorName) == true
         authorNameLabel?.text = ""
-        authorNameLabel?.textColor = appearance.colorPalette.themeBlue
         if let author = content?.author {
             authorNameLabel?.text = "\(author.name ?? "")"
-            authorNameLabel?.textColor = ChatGroupUIConfiguration.getRandomColor(userID: author.id)
         }
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.string(from: createdAt)
@@ -605,7 +602,6 @@ open class ChatMessageContentView: _View, ThemeProvider {
     /// Instantiates, configures and assigns `textView` when called for the first time.
     /// - Returns: The `textView` subview.
     open func createTextView() -> UITextView {
-        let topPadding: CGFloat = layoutOptions?.contains(.authorName) == true ? 0 : 12
         if textView == nil {
             textView = OnlyLinkTappableTextView().withoutAutoresizingMaskConstraints
             textView?.isEditable = false
@@ -613,7 +609,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
             textView?.isScrollEnabled = false
             textView?.backgroundColor = .clear
             textView?.adjustsFontForContentSizeCategory = true
-            textView?.textContainerInset = .init(top: topPadding, left: 14, bottom: 10, right: 14)
+            textView?.textContainerInset = .init(top: 10, left: 14, bottom: 10, right: 14)
             textView?.textContainer.lineFragmentPadding = 0
             textView?.font = Appearance.default.fonts.chatMessage
             textView?.tintColor = appearance.colorPalette.themeBlue
@@ -767,33 +763,15 @@ open class ChatMessageContentView: _View, ThemeProvider {
 
     /// Instantiates, configures and assigns `authorNameLabel` when called for the first time.
     /// - Returns: The `authorNameLabel` subview.
-    open func createAuthorNameLabel() -> UITextView {
-        // Keeping old code for future reference
-//        if authorNameLabel == nil {
-//            authorNameLabel = UILabel()
-//                .withAdjustingFontForContentSizeCategory
-//                .withBidirectionalLanguagesSupport
-//                .withoutAutoresizingMaskConstraints
-//            authorNameLabel!.font = appearance.fonts.footnote
-//
-//            if let author = content?.author {
-//                authorNameLabel!.textColor = ChatGroupUIConfiguration.getRandomColor(userID: author.id)
-//            } else {
-//                authorNameLabel!.textColor = appearance.colorPalette.subtitleText
-//            }
-//        }
+    open func createAuthorNameLabel() -> UILabel {
         if authorNameLabel == nil {
-            authorNameLabel = UITextView().withoutAutoresizingMaskConstraints
-            authorNameLabel?.isEditable = false
-            authorNameLabel?.dataDetectorTypes = .init(rawValue: 0)
-            authorNameLabel?.isScrollEnabled = false
-            authorNameLabel?.isSelectable = false
-            authorNameLabel?.backgroundColor = .clear
-            authorNameLabel?.adjustsFontForContentSizeCategory = true
-            authorNameLabel?.textContainerInset = .init(top: 13, left: 14, bottom: 0, right: 14)
-            authorNameLabel?.textContainer.lineFragmentPadding = 0
-            authorNameLabel?.font = Appearance.default.fonts.groupUserName
-            authorNameLabel?.tintColor = .clear
+            authorNameLabel = UILabel()
+                .withAdjustingFontForContentSizeCategory
+                .withBidirectionalLanguagesSupport
+                .withoutAutoresizingMaskConstraints
+            
+            authorNameLabel!.textColor = appearance.colorPalette.subtitleText
+            authorNameLabel!.font = appearance.fonts.footnote
         }
         return authorNameLabel!
     }

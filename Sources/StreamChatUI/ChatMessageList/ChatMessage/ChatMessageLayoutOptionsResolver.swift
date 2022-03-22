@@ -31,25 +31,25 @@ open class ChatMessageLayoutOptionsResolver {
         let messageIndex = messages.index(messages.startIndex, offsetBy: indexPath.item)
         let message = messages[messageIndex]
         // Keeping old method for understanding 
-//        let isLastInSequence = isMessageLastInSequence(
-//            messageIndexPath: indexPath,
-//            messages: messages
-//        )
+        let isLastInSequence = isMessageLastInSequence(
+            messageIndexPath: indexPath,
+            messages: messages
+        )
 
-        var isLastInSequence = false
-        var isLastAuthorSequence = false
-        if messages.indices.contains(messages.index(after: messageIndex)) {
-            let nextMessageIndex = messages.index(after: messageIndex)
-            let nextMessage = messages[nextMessageIndex]
-            let delay = message.createdAt.timeIntervalSince(nextMessage.createdAt)
-            if nextMessage.author == message.author {
-                isLastInSequence = true
-                isLastAuthorSequence = true
-            }
-            if delay > minTimeIntervalBetweenMessagesInGroup {
-                isLastInSequence = false
-            }
-        }
+//        var isLastInSequence = false
+//        var isLastAuthorSequence = false
+//        if messages.indices.contains(messages.index(after: messageIndex)) {
+//            let nextMessageIndex = messages.index(after: messageIndex)
+//            let nextMessage = messages[nextMessageIndex]
+//            let delay = message.createdAt.timeIntervalSince(nextMessage.createdAt)
+//            if nextMessage.author == message.author {
+//                isLastInSequence = true
+//                isLastAuthorSequence = true
+//            }
+//            if delay > minTimeIntervalBetweenMessagesInGroup {
+//                isLastInSequence = false
+//            }
+//        }
 
         var options: ChatMessageLayoutOptions = []
 
@@ -66,18 +66,17 @@ open class ChatMessageLayoutOptionsResolver {
             options.insert(.flipped)
             if isLastInSequence {
                 options.insert(.continuousBubble)
+            } else {
+                options.insert(.timestamp)
             }
-//            else {
-//                options.insert(.timestamp)
-//            }
         } else if !channel.isDirectMessageChannel {
-            //options.insert(.avatarSizePadding)
             if isLastInSequence {
                 options.insert(.continuousBubble)
+                options.insert(.avatarSizePadding)
             } else {
                 options.insert(.authorName)
-                //options.insert(.avatar)
-                //options.insert(.timestamp)
+                options.insert(.avatar)
+                options.insert(.timestamp)
             }
 //            else {
 //                options.insert(.timestamp)
@@ -86,9 +85,9 @@ open class ChatMessageLayoutOptionsResolver {
             if isLastInSequence {
                 options.insert(.continuousBubble)
             }
-//            else {
-//                options.insert(.timestamp)
-//            }
+            else {
+                options.insert(.timestamp)
+            }
         }
         if message.isOnlyVisibleForCurrentUser {
             options.insert(.onlyVisibleForYouIndicator)
