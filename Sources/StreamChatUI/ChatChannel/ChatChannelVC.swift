@@ -283,6 +283,7 @@ open class ChatChannelVC:
             messageComposerVC?.composerView.isUserInteractionEnabled = false
             messageComposerVC?.composerView.alpha = 0.5
             headerView.titleContainerView.subtitleLabel.isHidden = true
+            messageComposerVC?.composerView.inputMessageView.textView.resignFirstResponder()
             channelAvatarView.isHidden = true
             moreButton.isHidden = true
         } else {
@@ -684,7 +685,7 @@ open class ChatChannelVC:
             return
         }
         
-        guard messageListVC.listView.isTrackingOrDecelerating else {
+        guard messageListVC?.listView.isTrackingOrDecelerating ?? false else {
             return
         }
         
@@ -698,7 +699,7 @@ open class ChatChannelVC:
         
         isLoadingPreviousMessages = true
         
-        channelController.loadPreviousMessages { [weak self] _ in
+        channelController?.loadPreviousMessages { [weak self] _ in
             self?.isLoadingPreviousMessages = false
         }
     }
@@ -728,9 +729,8 @@ open class ChatChannelVC:
 
     open func chatMessageListVC(_ vc: ChatMessageListVC, scrollViewDidScroll scrollView: UIScrollView) {
         if isLastMessageFullyVisible {
-            channelController.markRead()
-
-            messageListVC.scrollToLatestMessageButton.content = .noUnread
+            channelController?.markRead()
+            messageListVC?.scrollToLatestMessageButton.content = .noUnread
         }
     }
 

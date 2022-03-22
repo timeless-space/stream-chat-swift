@@ -26,5 +26,11 @@ public extension Appearance {
 
         /// A formatter that generates a name for the given channel.
         public var channelName: ChannelNameFormatter = DefaultChannelNameFormatter()
+        
+        /// A formatter that convert date to string in channelList screen
+        public var channelList: ChannelListDateFormatter = ChannelListDateFormatter()
+        
+        /// A formatter that convert date to string in channel setting screen
+        public var chatUserList: ChatUserListDateFormatter = ChatUserListDateFormatter()
     }
 }

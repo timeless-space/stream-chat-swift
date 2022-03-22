@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Nuke
 import StreamChat
 import StreamChatUI
 import SkeletonView

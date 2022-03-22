@@ -29,7 +29,7 @@ open class ChatChannelListCollectionViewCell: _CollectionViewCell,
         didSet {
             itemView.backgroundColor = isSelected
                 ? appearance.colorPalette.highlightedBackground
-                : appearance.colorPalette.background
+            : .clear
         }
     }
 
@@ -65,6 +65,7 @@ open class ChatChannelListCollectionViewCell: _CollectionViewCell,
             itemView.trailingAnchor.pin(equalTo: swipeableView.contentTrailingAnchor),
             itemView.bottomAnchor.pin(equalTo: contentView.bottomAnchor)
         ])
+        itemView.backgroundColor = .clear
     }
 
     override open func preferredLayoutAttributesFitting(

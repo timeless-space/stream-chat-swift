@@ -7,13 +7,14 @@
 
 import UIKit
 import StreamChat
-import Nuke
+import AVKit
 
 class WalletRequestPayBubble: UITableViewCell {
 
     public private(set) var viewContainer: UIView!
     public private(set) var subContainer: UIView!
     public private(set) var sentThumbImageView: UIImageView!
+    public private(set) var playerView: UIView!
     public private(set) var timestampLabel: UILabel!
     public private(set) var descriptionLabel: UILabel!
     public private(set) var requestMessageLabel: UILabel!
@@ -21,6 +22,7 @@ class WalletRequestPayBubble: UITableViewCell {
     public private(set) var pickUpButton: UIButton!
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
+    var imageLoader: ImageLoading?
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
@@ -113,7 +115,11 @@ class WalletRequestPayBubble: UITableViewCell {
                 if imageUrl.pathExtension == "gif" {
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
-                    Nuke.loadImage(with: themeURL, into: sentThumbImageView)
+                    imageLoader?.loadImage(
+                        into: sentThumbImageView,
+                        url: URL(string: themeURL),
+                        imageCDN: StreamImageCDN(),
+                        placeholder: nil)
                 }
             }
             lblDetails.text = "REQUEST: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"

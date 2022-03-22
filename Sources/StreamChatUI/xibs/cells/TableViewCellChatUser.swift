@@ -8,7 +8,6 @@
 import StreamChat
 import StreamChatUI
 import UIKit
-import Nuke
 import SkeletonView
 
 public class TableViewCellChatUser: UITableViewCell {
@@ -22,6 +21,7 @@ public class TableViewCellChatUser: UITableViewCell {
     @IBOutlet public var lblRole: UILabel!
     // MARK: - Variables
     private var user: ChatUser?
+    var imageLoader: ImageLoading?
     private let shimmerBackgroundColor = Appearance.default.colorPalette.placeHolderBalanceBG
     private lazy var shimmerGradient = SkeletonGradient(colors: [
         shimmerBackgroundColor.withAlphaComponent(0.3),
@@ -33,20 +33,22 @@ public class TableViewCellChatUser: UITableViewCell {
         lblRole.isHidden = true
         avatarView.layer.cornerRadius = avatarView.bounds.height / 2
         accessoryImageView.layer.cornerRadius = accessoryImageView.bounds.height / 2
-        self.containerView.backgroundColor = .clear
+        containerView.backgroundColor = .clear
         SkeletonAppearance.default.gradient = shimmerGradient
+        backgroundColor = .clear
+        selectionStyle = .none
     }
 }
 // MARK: - Config
 extension TableViewCellChatUser {
     public func config(user: ChatUser, selectedImage: UIImage?) {
         if let imageURL = user.imageURL {
-            let options = ImageLoadingOptions(
-                placeholder: Appearance.default.images.userAvatarPlaceholder4,
-                transition: .fadeIn(duration: 0.1),
-                failureImage: Appearance.default.images.userAvatarPlaceholder4
+            imageLoader?.loadImage(
+                into: avatarView,
+                url: imageURL,
+                imageCDN: StreamImageCDN(),
+                placeholder: Appearance.default.images.userAvatarPlaceholder4
             )
-            Nuke.loadImage(with: imageURL, options: options, into: avatarView)
         }
         avatarView.backgroundColor = .clear
         nameLabel.setChatTitleColor()
@@ -63,9 +65,9 @@ extension TableViewCellChatUser {
             descriptionLabel.textColor = Appearance.default.colorPalette.statusColorBlue
             descriptionLabel.text = "Online"
         } else if let lastActive = user.lastActiveAt {
-            descriptionLabel.text = "Last seen: " + DTFormatter.formatter.string(from: lastActive)
+            descriptionLabel.text = "Last seen: " + Appearance.default.formatters.chatUserList.format(lastActive)
         } else if let lastActive = user.lastActiveAt {
-            descriptionLabel.text = "Last seen: " + DTFormatter.formatter.string(from: lastActive)
+            descriptionLabel.text = "Last seen: " + Appearance.default.formatters.chatUserList.format(lastActive)
         } else {
             descriptionLabel.text = "Never seen"
         }

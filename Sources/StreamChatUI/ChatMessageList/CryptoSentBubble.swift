@@ -9,7 +9,6 @@
 import UIKit
 import StreamChat
 import StreamChatUI
-import Nuke
 
 class CryptoSentBubble: UITableViewCell {
 
@@ -22,6 +21,7 @@ class CryptoSentBubble: UITableViewCell {
     public private(set) var blockExplorerButton: UIButton!
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
+    var imageLoader: ImageLoading?
     public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     public var blockExpAction: ((URL) -> Void)?
 
@@ -213,10 +213,18 @@ class CryptoSentBubble: UITableViewCell {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
-                Nuke.loadImage(with: imageUrl, into: sentThumbImageView)
+                imageLoader?.loadImage(
+                    into: sentThumbImageView,
+                    url: imageUrl,
+                    imageCDN: StreamImageCDN(),
+                    placeholder: nil)
             }
         } else {
-            Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
+            imageLoader?.loadImage(
+                into: sentThumbImageView,
+                url: URL(string: defaultURL),
+                imageCDN: StreamImageCDN(),
+                placeholder: nil)
         }
     }
 

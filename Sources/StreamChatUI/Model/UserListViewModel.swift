@@ -112,12 +112,14 @@ extension UserListViewModel {
                 self.dataLoadingState = .searchingError
                 return
             }
-            var newQuery = self.searchListController.query
-            newQuery.filter = .and([
-                .autocomplete(.name, text: strName),
-                .exists(.lastActiveAt),
-                .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
-            ])
+            var newQuery = UserListQuery.init(
+                filter: .and([
+                    .autocomplete(.name, text: strName),
+                    .exists(.lastActiveAt),
+                    .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
+                ]),
+                sort: [],
+                pageSize: 30)
             searchListController.search(query: newQuery) { [weak self] error in
                 guard let weakSelf = self else { return }
                 if let error = error {

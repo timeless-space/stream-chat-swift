@@ -10,7 +10,7 @@ import UIKit
 import StreamChat
 import StreamChatUI
 
-public class CollectionViewGroupUserList: UIView {
+public class CollectionViewGroupUserList: UIView, ThemeProvider {
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -68,6 +68,7 @@ extension CollectionViewGroupUserList: UICollectionViewDelegate , UICollectionVi
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCellGroupUsers.reuseID, for: indexPath) as? CollectionViewCellGroupUsers else {
             return UICollectionViewCell.init(frame: .zero)
         }
+        cell.imageLoader = components.imageLoader
         cell.configCell(user: selectedUsers[indexPath.row])
         cell.removeUserButton.isHidden = self.isRemovreButtonHidden
         return cell

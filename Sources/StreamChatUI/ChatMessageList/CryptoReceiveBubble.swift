@@ -8,7 +8,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 
 class CryptoReceiveBubble: UITableViewCell {
 
@@ -19,6 +18,8 @@ class CryptoReceiveBubble: UITableViewCell {
     public private(set) var descriptionLabel: UILabel!
     public private(set) var sentCryptoLabel: UILabel!
     public private(set) var blockExplorerButton: UIButton!
+    
+    var imageLoader: ImageLoading?
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
@@ -208,10 +209,19 @@ class CryptoReceiveBubble: UITableViewCell {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
-                Nuke.loadImage(with: imageUrl, into: sentThumbImageView)
+                imageLoader?.loadImage(
+                    into: sentThumbImageView,
+                    url: imageUrl,
+                    imageCDN: StreamImageCDN(),
+                    placeholder: Appearance.default.images.userAvatarPlaceholder4)
             }
         } else {
-            Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
+            //Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
+            imageLoader?.loadImage(
+                into: sentThumbImageView,
+                url: URL(string: defaultURL),
+                imageCDN: StreamImageCDN(),
+                placeholder: Appearance.default.images.userAvatarPlaceholder4)
         }
     }
 

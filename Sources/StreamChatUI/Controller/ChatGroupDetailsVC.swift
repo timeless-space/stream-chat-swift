@@ -6,12 +6,11 @@
 //
 
 import Foundation
-import Nuke
 import StreamChat
 import StreamChatUI
 import UIKit
 
-public class ChatGroupDetailsVC: ChatBaseVC {
+public class ChatGroupDetailsVC: ChatBaseVC, ThemeProvider {
     enum GroupDetailsSection: CaseIterable {
         case userList,attachmentList
     }
@@ -220,6 +219,7 @@ extension ChatGroupDetailsVC: UITableViewDataSource , UITableViewDelegate {
                 for: indexPath) as? TableViewCellChatUser else {
                 return UITableViewCell()
             }
+            cell.imageLoader = components.imageLoader
             let user: ChatChannelMember = selectedUsers[indexPath.row]
             cell.configGroupDetails(channelMember: user, selectedImage: nil)
             cell.backgroundColor = .clear
