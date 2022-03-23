@@ -39,7 +39,6 @@ public class ChatAddFriendVC: ChatBaseVC {
         let obj = ChatUserListVC.instantiateController(storyboard: .GroupChat) as? ChatUserListVC
         return obj!
     }()
-    private var curentSortType: Em_ChatUserListFilterTypes = .sortByLastSeen
     private var isFullScreen = false
     public var selectedUsers = [ChatUser]()
     public var existingUsers = [ChatUser]()
@@ -53,18 +52,10 @@ public class ChatAddFriendVC: ChatBaseVC {
         super.viewDidLoad()
         setup()
     }
-    public override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.view.layoutIfNeeded()
-    }
     // MARK: - METHODS
     public func setup() {
         self.view.backgroundColor = .clear
         btnBack?.setImage(Appearance.Images.closeCircle, for: .normal)
-//        btnAddFriend?.setTitle("", for: .normal)
-//        btnAddFriend?.isEnabled = !self.selectedUsers.isEmpty
-//        btnInviteLink?.isEnabled = !self.selectedUsers.isEmpty
-//        btnAddFriend?.isHidden = selectionType == .inviteUser
         btnAddFriend?.isHidden = true
         titleLabel.text = selectionType.title
         self.searchField.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
@@ -114,6 +105,7 @@ public class ChatAddFriendVC: ChatBaseVC {
             self.chatUserList.viewModel.fetchUserList(true)
         }
     }
+    
     private func showAddFriendConfirmPopup(user: ChatUser) {
         let message = "Add \(user.name ?? user.id) to the group?"
         let alert = UIAlertController.init(title: message, message: nil, preferredStyle: .alert)
