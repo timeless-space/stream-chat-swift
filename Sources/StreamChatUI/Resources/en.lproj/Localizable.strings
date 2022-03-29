@@ -12,7 +12,7 @@
 "message.actions.inline-reply" = "Reply";
 "message.actions.thread-reply" = "Thread Reply";
 "message.actions.edit" = "Edit Message";
-"message.actions.copy" = "Copy Message";
+"message.actions.copy" = "Copy";
 "message.actions.translate" = "Translate";
 "message.actions.more" = "More...";
 "message.actions.delete" = "Delete Message";

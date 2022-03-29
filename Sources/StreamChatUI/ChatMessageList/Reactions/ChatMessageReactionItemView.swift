@@ -33,7 +33,7 @@ open class ChatMessageReactionItemView: _Button, AppearanceProvider {
         super.updateContent()
 
         setImage(reactionImage, for: .normal)
-        imageView?.tintColor = reactionImageTint
+        imageView?.tintColor = appearance.colorPalette.inactiveTint//reactionImageTint
         isUserInteractionEnabled = content?.onTap != nil
     }
 

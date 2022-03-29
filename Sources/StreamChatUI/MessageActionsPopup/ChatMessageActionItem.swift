@@ -45,7 +45,7 @@ public struct InlineReplyActionItem: ChatMessageActionItem {
         appearance: Appearance = .default
     ) {
         self.action = action
-        icon = appearance.images.messageActionInlineReply
+        icon = appearance.images.messageActionInlineReply ?? UIImage()
     }
 }
 
@@ -102,7 +102,7 @@ public struct CopyActionItem: ChatMessageActionItem {
         appearance: Appearance = .default
     ) {
         self.action = action
-        icon = appearance.images.messageActionCopy
+        icon = appearance.images.messageActionCopy ?? UIImage()
     }
 }
 

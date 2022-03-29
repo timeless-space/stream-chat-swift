@@ -40,7 +40,9 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     public var actionsController: ChatMessageActionsVC!
     /// `_ChatMessageReactionsVC` instance for showing reactions.
     public var reactionsController: ChatMessageReactionsVC?
-
+    /// empty padding view
+    private lazy var paddingView = UIView()
+    
     override open func setUp() {
         super.setUp()
         
@@ -60,7 +62,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         view.embed(blurView)
 
         messageContainerStackView.axis = .vertical
-        messageContainerStackView.spacing = 8
+        messageContainerStackView.spacing = 0
         view.addSubview(messageContainerStackView)
 
         var constraints: [NSLayoutConstraint] = [
@@ -89,8 +91,12 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 ]
             } else {
                 constraints += [
+                    reactionsController.view.leadingAnchor
+                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left),
                     reactionsController.reactionsBubble.tailLeadingAnchor
-                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
+                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right),
+//                    reactionsController.reactionsBubble.tailLeadingAnchor
+//                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
                 ]
             }
         }
@@ -98,13 +104,16 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         constraints.append(
             actionsController.view.widthAnchor.pin(equalTo: view.widthAnchor, multiplier: 0.7)
         )
-
+        paddingView.translatesAutoresizingMaskIntoConstraints = false
+        constraints.append(
+            paddingView.heightAnchor.constraint(equalToConstant: 12)
+        )
         messageContainerStackView.addArrangedSubview(messageContentContainerView)
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
             messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
         ]
-
+        messageContainerStackView.addArrangedSubview(paddingView)
         let actionsContainerStackView = ContainerStackView()
         actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
         messageContainerStackView.addArrangedSubview(actionsContainerStackView)

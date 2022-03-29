@@ -65,8 +65,9 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
 
         messageActions.forEach {
             let actionView = actionButtonClass.init()
-            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
             actionView.content = $0
+            actionView.containerStackView.backgroundColor = Appearance.default.colorPalette.chatViewBackground
             messageActionsContainerStackView.addArrangedSubview(actionView)
         }
     }
