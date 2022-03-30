@@ -84,19 +84,23 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             
             if message.isSentByCurrentUser {
                 constraints += [
-                    reactionsController.view.leadingAnchor
-                        .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
+                    // Keeping it for future reference
+//                    reactionsController.view.leadingAnchor
+//                        .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
+//                    reactionsController.reactionsBubble.tailTrailingAnchor
+//                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left)
+                    reactionsController.view.trailingAnchor
+                        .pin(equalTo: view.trailingAnchor, constant: -messageBubbleViewInsets.right),
                     reactionsController.reactionsBubble.tailTrailingAnchor
-                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left)
+                        .pin(greaterThanOrEqualTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left),
                 ]
             } else {
                 constraints += [
+                    // added leadingAnchor
                     reactionsController.view.leadingAnchor
                         .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left),
                     reactionsController.reactionsBubble.tailLeadingAnchor
-                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right),
-//                    reactionsController.reactionsBubble.tailLeadingAnchor
-//                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
+                        .pin(lessThanOrEqualTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right),
                 ]
             }
         }
@@ -104,6 +108,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         constraints.append(
             actionsController.view.widthAnchor.pin(equalTo: view.widthAnchor, multiplier: 0.7)
         )
+        
         paddingView.translatesAutoresizingMaskIntoConstraints = false
         constraints.append(
             paddingView.heightAnchor.constraint(equalToConstant: 12)
@@ -123,7 +128,9 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
 
         if message.isSentByCurrentUser {
             constraints.append(
-                actionsController.view.trailingAnchor.pin(equalTo: messageContentContainerView.trailingAnchor)
+                // Keeping it for future reference
+//                actionsController.view.trailingAnchor.pin(equalTo: messageContentContainerView.trailingAnchor)
+                actionsController.view.trailingAnchor.constraint(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
             )
         } else {
             constraints.append(

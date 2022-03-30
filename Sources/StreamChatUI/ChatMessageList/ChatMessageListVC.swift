@@ -276,12 +276,7 @@ open class ChatMessageListVC:
             controller.messageController = messageController
             return controller
         }()
-        // TODO: -
-        let generator = UISelectionFeedbackGenerator()
-        generator.prepare()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            generator.selectionChanged()
-        }
+        
         router.showMessageActionsPopUp(
             messageContentView: messageContentView,
             messageActionsController: actionsController,
