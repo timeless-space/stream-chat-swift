@@ -328,10 +328,8 @@ public extension Appearance {
                 return nil
             }
         }()
-        //public var messageActionInlineReply: UIImage = loadImageSafely(with: "reply") //icn_inline_reply
         public var messageActionThreadReply: UIImage = loadImageSafely(with: "icn_thread_reply")
         public var messageActionEdit: UIImage = loadImageSafely(with: "icn_edit")
-        //public var messageActionCopy: UIImage = loadImageSafely(with: "copy") //icn_copy
         public var messageActionCopy: UIImage? = {
             if #available(iOS 13.0, *) {
                 return UIImage(systemName: "doc.on.doc")?.withRenderingMode(.alwaysTemplate)
