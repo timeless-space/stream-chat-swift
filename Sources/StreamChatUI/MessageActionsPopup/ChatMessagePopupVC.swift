@@ -84,23 +84,18 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             
             if message.isSentByCurrentUser {
                 constraints += [
-                    // Keeping it for future reference
-//                    reactionsController.view.leadingAnchor
-//                        .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
-//                    reactionsController.reactionsBubble.tailTrailingAnchor
-//                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left)
-                    reactionsController.view.trailingAnchor
-                        .pin(equalTo: view.trailingAnchor, constant: -messageBubbleViewInsets.right),
+                    reactionsController.view.leadingAnchor
+                        .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
                     reactionsController.reactionsBubble.tailTrailingAnchor
-                        .pin(greaterThanOrEqualTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left),
+                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left)
                 ]
             } else {
                 constraints += [
                     // added leadingAnchor
-                    reactionsController.view.leadingAnchor
-                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left),
+                    reactionsController.view.trailingAnchor
+                        .pin(greaterThanOrEqualTo: reactionsController.reactionsBubble.tailTrailingAnchor),
                     reactionsController.reactionsBubble.tailLeadingAnchor
-                        .pin(lessThanOrEqualTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right),
+                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right),
                 ]
             }
         }
