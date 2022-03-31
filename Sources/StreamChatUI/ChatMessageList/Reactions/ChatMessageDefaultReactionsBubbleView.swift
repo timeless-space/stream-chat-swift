@@ -58,8 +58,8 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
         guard let content = content else { return .zero }
 
         return content.style.isBig ?
-            .init(top: 8, leading: 16, bottom: 8, trailing: 16) :
-            .init(top: 4, leading: 4, bottom: 4, trailing: 4)
+            .init(top: 12, leading: 16, bottom: 12, trailing: 16) :
+            .init(top: 8, leading: 8, bottom: 8, trailing: 8)
     }
     
     open var contentBackgroundColor: UIColor {

@@ -66,7 +66,22 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
                 reaction: reaction,
                 onTap: content.didTapOnReaction
             )
-            stackView.addArrangedSubview(itemView)
+            itemView.alpha = 0
+            self.stackView.addArrangedSubview(itemView)
+        }
+        // Adding animation for reaction items
+        for (i,view) in stackView.subviews.enumerated() {
+            let duration = TimeInterval(i+1)/15
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+                UIView.animate(withDuration: duration, delay: 0, options: .showHideTransitionViews, animations: { [weak self] in
+                    view.alpha = 1
+                    view.transform = CGAffineTransform.identity.scaledBy(x: 2, y: 2)
+                }, completion: { [weak self] _ in
+                    UIView.animate(withDuration: duration, animations: {
+                        view.transform = CGAffineTransform.identity
+                    })
+                })
+            }
         }
     }
 }
