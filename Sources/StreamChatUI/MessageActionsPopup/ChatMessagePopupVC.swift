@@ -118,11 +118,26 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             paddingView.heightAnchor.constraint(equalToConstant: 12)
         )
         messageContainerStackView.addArrangedSubview(messageContentContainerView)
+        messageContainerStackView.addArrangedSubview(paddingView)
+        // Changing content view frame if message content view having attachment
+        messageContentView.backgroundColor = .clear
+
+        // TODO: -
+        let galleryViewFrame = messageContentView.bubbleView?.subviews.first?.subviews.filter({ $0 is ChatMessageGalleryView }).first?.frame ?? .zero
+        var contentHeight = galleryViewFrame == .zero ? messageViewFrame.height : galleryViewFrame.height
+        if let timeStampLabel = messageContentView.timestampLabel {
+            constraints.append(
+                paddingView.heightAnchor.constraint(equalToConstant: 5)
+            )
+        } else {
+            constraints.append(
+                paddingView.heightAnchor.constraint(equalToConstant: 12)
+            )
+        }
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
             messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
         ]
-        messageContainerStackView.addArrangedSubview(paddingView)
         let actionsContainerStackView = ContainerStackView()
         actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
         messageContainerStackView.addArrangedSubview(actionsContainerStackView)
@@ -181,7 +196,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 .with(priority: .streamLow)
             ]
         }
-
         NSLayoutConstraint.activate(constraints)
     }
 
