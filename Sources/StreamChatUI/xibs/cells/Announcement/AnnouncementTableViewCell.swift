@@ -29,8 +29,8 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
 
     // MARK: - Variables
     var content: ChatMessage?
-    var streamVideoLoader: StreamVideoLoader?
     var message: ChatMessage?
+    var cacheVideoThumbnail: Cache<URL, UIImage>?
     weak var delegate: AnnouncementAction?
     
     override func awakeFromNib() {
@@ -95,18 +95,25 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             playerView.isHidden = false
             imgView.image = nil
             lblTitle.text = videoAttachment.title
-            streamVideoLoader?.loadPreviewForVideo(at: videoAttachment.videoURL, completion: { [weak self] result in
-                guard let `self` = self else { return }
-                switch result {
-                case .success(let image):
-                    self.imgView.image = image
-                    self.imgPlay.isHidden = true
-                case .failure(_):
-                    self.imgView.image = nil
-                    self.imgPlay.isHidden = false
-                    break
-                }
-            })
+            if let img = cacheVideoThumbnail?[videoAttachment.videoURL] {
+                self.imgView.image = img
+                self.imgPlay.isHidden = true
+                print("videoAttachment", videoAttachment.videoURL)
+            } else {
+                Components.default.videoLoader.loadPreviewForVideo(with: videoAttachment.videoURL, completion: { [weak self] result in
+                    guard let `self` = self else { return }
+                    switch result {
+                    case .success(let image, let url):
+                        self.imgView.image = image
+                        self.cacheVideoThumbnail?[url] = image
+                        self.imgPlay.isHidden = true
+                    case .failure(_):
+                        self.imgView.image = nil
+                        self.imgPlay.isHidden = false
+                        break
+                    }
+                })
+            }
         } else {
             videoURL = nil
             imgView.image = nil

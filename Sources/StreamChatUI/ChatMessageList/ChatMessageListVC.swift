@@ -73,7 +73,7 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
-    var streamVideoLoader = StreamVideoLoader()
+    private var cacheVideoThumbnail: Cache<URL, UIImage>?
     
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -88,10 +88,7 @@ open class ChatMessageListVC:
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
-        //setupEmptyState()
-//        if let numberMessage = dataSource?.numberOfMessages(in: self) {
-//            viewEmptyState.isHidden = numberMessage != 0
-//        }
+        cacheVideoThumbnail = .init()
     }
 
     override open func setUp() {
@@ -297,7 +294,7 @@ open class ChatMessageListVC:
                     return UITableViewCell()
                 }
             cell.delegate = self
-            cell.streamVideoLoader = streamVideoLoader
+            cell.cacheVideoThumbnail = cacheVideoThumbnail
             cell.message = message
             cell.configureCell(message)
             cell.transform = .mirrorY

@@ -13,7 +13,9 @@ public protocol VideoLoading: AnyObject {
     ///   - url: A video URL.
     ///   - completion: A completion that is called when a preview is loaded. Must be invoked on main queue.
     func loadPreviewForVideo(at url: URL, completion: @escaping (Result<UIImage, Error>) -> Void)
-    
+
+    func loadPreviewForVideo(with url: URL, completion: @escaping (Result<(UIImage, URL), Error>) -> Void)
+
     /// Returns a video asset with the given URL.
     ///
     /// - Returns: The video asset.
@@ -72,12 +74,50 @@ open class StreamVideoLoader: VideoLoading {
             self.call(completion, with: result)
         }
     }
-    
+
+    open func loadPreviewForVideo(with url: URL, completion: @escaping (Result<(UIImage, URL), Error>) -> Void) {
+        if let cached = cache[url] {
+            return call(completion, with: .success((cached, url)))
+        }
+
+        let asset = videoAsset(at: url)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        let frameTime = CMTime(seconds: 0.1, preferredTimescale: 600)
+
+        imageGenerator.appliesPreferredTrackTransform = true
+        imageGenerator.generateCGImagesAsynchronously(forTimes: [.init(time: frameTime)]) { [weak self] _, image, _, _, error in
+            guard let self = self else { return }
+
+            let result: Result<(UIImage, URL), Error>
+            if let thumbnail = image {
+                result = .success((UIImage.init(cgImage: thumbnail), url))
+            } else if let error = error {
+                result = .failure(error)
+            } else {
+                log.error("Both error and image are `nil`.")
+                return
+            }
+
+            self.cache[url] = try? result.get().0
+            self.call(completion, with: result)
+        }
+    }
+
     open func videoAsset(at url: URL) -> AVURLAsset {
         .init(url: url)
     }
     
     private func call(_ completion: @escaping (Result<UIImage, Error>) -> Void, with result: Result<UIImage, Error>) {
+        if Thread.current.isMainThread {
+            completion(result)
+        } else {
+            DispatchQueue.main.async {
+                completion(result)
+            }
+        }
+    }
+
+    private func call(_ completion: @escaping (Result<(UIImage, URL), Error>) -> Void, with result: Result<(UIImage, URL), Error>) {
         if Thread.current.isMainThread {
             completion(result)
         } else {
