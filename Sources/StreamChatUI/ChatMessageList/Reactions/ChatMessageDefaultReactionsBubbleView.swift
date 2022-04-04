@@ -25,7 +25,7 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
 
     override open func setUpAppearance() {
         super.setUpAppearance()
-        contentViewBackground.layer.borderWidth = 1
+        contentViewBackground.layer.borderWidth = 0
     }
     
     override open func setUpLayout() {
@@ -50,7 +50,7 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
         tailBehind.image = tailBackImage
         tailInFront.image = tailFrontImage
         contentViewBackground.backgroundColor = contentBackgroundColor
-        contentViewBackground.layer.borderColor = contentBorderColor.cgColor
+        contentViewBackground.layer.borderColor = UIColor.clear.cgColor//contentBorderColor.cgColor
         contentViewBackground.directionalLayoutMargins = contentLayoutMargins
     }
 
@@ -58,8 +58,8 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
         guard let content = content else { return .zero }
 
         return content.style.isBig ?
-            .init(top: 12, leading: 16, bottom: 12, trailing: 16) :
-            .init(top: 8, leading: 8, bottom: 8, trailing: 8)
+            .init(top: 10, leading: 16, bottom: 10, trailing: 16) :
+            .init(top: 8, leading: 16, bottom: 8, trailing: 16)
     }
     
     open var contentBackgroundColor: UIColor {
@@ -67,9 +67,9 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
 
         switch content.style {
         case .bigIncoming, .bigOutgoing, .smallOutgoing:
-            return Appearance.default.colorPalette.chatViewBackground
+            return Appearance.default.colorPalette.messageActionMenuBackground
         case .smallIncoming:
-            return Appearance.default.colorPalette.chatViewBackground
+            return Appearance.default.colorPalette.messageActionMenuBackground
         }
     }
 

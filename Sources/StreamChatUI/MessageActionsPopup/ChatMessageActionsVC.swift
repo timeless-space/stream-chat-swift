@@ -55,7 +55,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         super.setUpAppearance()
         messageActionsContainerStackView.layer.cornerRadius = 16
         messageActionsContainerStackView.layer.masksToBounds = true
-        messageActionsContainerStackView.backgroundColor = appearance.colorPalette.border
+        messageActionsContainerStackView.backgroundColor = Appearance.default.colorPalette.messageActionMenuSeparator
     }
 
     override open func updateContent() {
@@ -65,9 +65,9 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
 
         messageActions.forEach {
             let actionView = actionButtonClass.init()
-            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
+            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
             actionView.content = $0
-            actionView.containerStackView.backgroundColor = Appearance.default.colorPalette.chatViewBackground
+            actionView.containerStackView.backgroundColor = Appearance.default.colorPalette.messageActionMenuBackground
             messageActionsContainerStackView.addArrangedSubview(actionView)
         }
     }
@@ -82,14 +82,12 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         var actions: [ChatMessageActionItem] = []
         actions.append(inlineReplyActionItem())
         actions.append(copyActionItem())
-        actions.append(translateMessageItem())
-        actions.append(moreItem())
-        return [
-            inlineReplyActionItem(),
-            copyActionItem(),
-            translateMessageItem(),
-            moreItem()
-        ]
+        if message.isSentByCurrentUser {
+            actions.append(editActionItem())
+        }
+        actions.append(pinMessageActionItem())
+        actions.append(forwardActionItem())
+        return actions
     }
     
     /// Returns `ChatMessageActionItem` for edit action
@@ -99,7 +97,23 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             appearance: appearance
         )
     }
-    
+
+    /// Returns `ChatMessageActionItem` for edit action
+    open func pinMessageActionItem() -> ChatMessageActionItem {
+        PinMessageActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
+    /// Returns `ChatMessageActionItem` for edit action
+    open func forwardActionItem() -> ChatMessageActionItem {
+        ForwardMessageActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
     /// Returns `ChatMessageActionItem` for delete action
     open func deleteActionItem() -> ChatMessageActionItem {
         DeleteActionItem(

@@ -11,9 +11,11 @@
 
 "message.actions.inline-reply" = "Reply";
 "message.actions.thread-reply" = "Thread Reply";
-"message.actions.edit" = "Edit Message";
+"message.actions.edit" = "Edit";
 "message.actions.copy" = "Copy";
 "message.actions.translate" = "Translate";
+"message.actions.pin" = "Pin";
+"message.actions.forward" = "Forward";
 "message.actions.more" = "More...";
 "message.actions.delete" = "Delete Message";
 "message.actions.delete.confirmation-title" = "Delete Message";

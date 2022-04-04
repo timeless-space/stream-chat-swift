@@ -151,13 +151,23 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
         messageContentView.translatesAutoresizingMaskIntoConstraints = true
         
         messageContentViewSnapshot?.removeFromSuperview()
-        
+
         let duration = transitionDuration(using: transitionContext)
+
+        var textContainerView: UIView?
+        var textContainerStackView: ContainerStackView?
+
+        if let galleryView = messageContentView.bubbleView?.subviews.first?.subviews.filter({ $0 is ChatMessageGalleryView }).first {
+            textContainerView = messageContentView.bubbleView?.subviews.first?.subviews.last
+            textContainerStackView = messageContentView.bubbleView?.subviews.first as? ContainerStackView
+        }
         UIView.animate(
             withDuration: 0.2 * duration,
             delay: 0,
             options: [.curveEaseOut],
             animations: {
+                textContainerView?.isHidden = true
+                textContainerStackView?.spacing = -8
                 //messageContentView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
             },
             completion: { [self] _ in
@@ -171,6 +181,8 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
 //            initialSpringVelocity: 4,
             options: [.curveEaseInOut],
             animations: {
+                textContainerView?.isHidden = true
+                textContainerStackView?.spacing = -8
                 actionsSnapshot?.transform = .identity
                 actionsSnapshot?.alpha = 1.0
                 reactionsSnapshot?.transform = .identity
@@ -268,12 +280,22 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
         messageContentViewSnapshot?.removeFromSuperview()
         
         fromVC.view.isHidden = true
-        
+        // updating ContainerStackView view spacing
+        var textContainerView: UIView?
+        var textContainerStackView: ContainerStackView?
+
+        if let galleryView = messageContentView.bubbleView?.subviews.first?.subviews.filter({ $0 is ChatMessageGalleryView }).first {
+            textContainerView = messageContentView.bubbleView?.subviews.first?.subviews.last
+            textContainerStackView = messageContentView.bubbleView?.subviews.first as? ContainerStackView
+        }
+
         let duration = transitionDuration(using: transitionContext)
         UIView.animate(
             withDuration: duration,
             delay: 0,
             animations: { [self] in
+                textContainerView?.isHidden = false
+                textContainerStackView?.spacing = .auto
                 actionsSnapshot?.transform = CGAffineTransform(scaleX: 0.01, y: 0.01)
                 reactionsSnapshot?.transform = CGAffineTransform(scaleX: 0.01, y: 0.01)
                 actionsSnapshot?.alpha = 0.0

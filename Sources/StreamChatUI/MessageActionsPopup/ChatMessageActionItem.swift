@@ -83,7 +83,7 @@ public struct EditActionItem: ChatMessageActionItem {
         appearance: Appearance = .default
     ) {
         self.action = action
-        icon = appearance.images.messageActionEdit
+        icon = appearance.images.messageActionEdit ?? UIImage()
     }
 }
 
@@ -257,5 +257,33 @@ public struct ResendActionItem: ChatMessageActionItem {
     ) {
         self.action = action
         icon = appearance.images.messageActionResend
+    }
+}
+
+/// Instance of `ChatMessageActionItem` for pin message action.
+public struct PinMessageActionItem: ChatMessageActionItem {
+    public var title: String { L10n.Message.Actions.pin }
+    public let icon: UIImage
+    public let action: (ChatMessageActionItem) -> Void
+    public init(
+        action: @escaping (ChatMessageActionItem) -> Void,
+        appearance: Appearance = .default
+    ) {
+        self.action = action
+        icon = appearance.images.messageActionPin ?? UIImage()
+    }
+}
+
+/// Instance of `ChatMessageActionItem` for pin message action.
+public struct ForwardMessageActionItem: ChatMessageActionItem {
+    public var title: String { L10n.Message.Actions.forward }
+    public let icon: UIImage
+    public let action: (ChatMessageActionItem) -> Void
+    public init(
+        action: @escaping (ChatMessageActionItem) -> Void,
+        appearance: Appearance = .default
+    ) {
+        self.action = action
+        icon = appearance.images.messageActionForward ?? UIImage()
     }
 }

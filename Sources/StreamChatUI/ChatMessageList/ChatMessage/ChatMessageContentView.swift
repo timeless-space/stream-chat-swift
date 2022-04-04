@@ -700,6 +700,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 .messageReactionsView
                 .init()
                 .withoutAutoresizingMaskConstraints
+            reactionsView?.isThreadInReaction = true
         }
         return reactionsView!
     }

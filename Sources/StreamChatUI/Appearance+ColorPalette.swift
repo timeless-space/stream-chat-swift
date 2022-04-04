@@ -82,6 +82,8 @@ public extension Appearance {
         public var placeHolderBalanceBG: UIColor = .placeHolderBalanceBG
 
         public var showMoreButtonBg: UIColor = .init(rgb: 0x38383A)
+        public var messageActionMenuBackground: UIColor = .init(rgb: 0x242426)
+        public var messageActionMenuSeparator: UIColor = .init(rgb: 0x383638)
     }
 }
 

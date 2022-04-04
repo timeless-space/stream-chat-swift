@@ -329,10 +329,30 @@ public extension Appearance {
             }
         }()
         public var messageActionThreadReply: UIImage = loadImageSafely(with: "icn_thread_reply")
-        public var messageActionEdit: UIImage = loadImageSafely(with: "icn_edit")
+        public var messageActionEdit: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "pencil.circle")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
         public var messageActionCopy: UIImage? = {
             if #available(iOS 13.0, *) {
                 return UIImage(systemName: "doc.on.doc")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionPin: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "pin")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionForward: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "arrowshape.turn.up.right")?.withRenderingMode(.alwaysTemplate)
             } else {
                 return nil
             }
