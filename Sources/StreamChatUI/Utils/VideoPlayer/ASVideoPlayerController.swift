@@ -29,6 +29,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
     static public let sharedVideoPlayer = ASVideoPlayerController()
     //video url for currently playing video
     private var videoURL: String?
+    private var currentCell: ASVideoTableViewCell?
     /**
      Stores video url as key and true as value when player item associated to the url
      is being observed for its status change.
@@ -132,6 +133,14 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
         }
     }
 
+    open func stopVideoPlayOnScroll() {
+        guard let currentCell = currentCell else {
+            return
+        }
+        currentCell.videoLayer.isHidden = true
+        removeLayerFor(cell: currentCell)
+    }
+
     private func removeFromSuperLayer(layer: AVPlayerLayer, url: String) {
         videoURL = nil
         currentLayer = nil
@@ -165,6 +174,10 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
             }
         }
         return nil
+    }
+
+    func currentVideoCell() -> ASVideoTableViewCell? {
+        currentCell
     }
 
     private func addObservers(url: String, videoContainer: ASVideoContainer) {
@@ -234,6 +247,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
             containerCell.isVideoPlaying = false
             if let cell = containerCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
+                currentCell = cell
                 // Disable gif support for now
                 //                cell.imgView.stopAnimatingGif()
             }
@@ -260,6 +274,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
             videoCell.isVideoPlaying = true
             if let cell = videoCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
+                currentCell = cell
                 // Disable gif support for now
                 // cell.imgView.startAnimatingGif()
             }

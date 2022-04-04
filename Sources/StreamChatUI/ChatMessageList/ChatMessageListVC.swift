@@ -743,6 +743,10 @@ extension ChatMessageListVC: UIScrollViewDelegate {
         }
     }
 
+    public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        ASVideoPlayerController.sharedVideoPlayer.stopVideoPlayOnScroll()
+    }
+
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         pausePlayVideos()
     }
@@ -761,5 +765,14 @@ extension ChatMessageListVC: AnnouncementAction {
 
     func didSelectAnnouncementAction(_ message: ChatMessage?) {
         debugPrint(message?.text)
+    }
+
+    func didRefreshCell(_ cell: AnnouncementTableViewCell, _ img: UIImage) {
+        guard let indexPath = listView.indexPath(for: cell),
+            let visibleRows = listView.indexPathsForVisibleRows,
+            visibleRows.contains(indexPath)
+        else { return }
+        let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
+        cell.configureCell(message)
     }
 }

@@ -31,6 +31,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     var content: ChatMessage?
     var message: ChatMessage?
     var cacheVideoThumbnail: Cache<URL, UIImage>?
+    var refreshCell: (() -> Void)?
     weak var delegate: AnnouncementAction?
     
     override func awakeFromNib() {
@@ -79,6 +80,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
         if let imageAttachments = message?.imageAttachments.first {
             imgHeightConst.constant = 250
             imgView.image = nil
+            imgView.isHidden = false
             btnShowMore.setTitle(getActionTitle(), for: .normal)
             imageUrl = imageAttachments.imageURL.absoluteString
             lblTitle.text = imageAttachments.title
@@ -96,20 +98,17 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             imgView.image = nil
             lblTitle.text = videoAttachment.title
             if let img = cacheVideoThumbnail?[videoAttachment.videoURL] {
-                self.imgView.image = img
-                self.imgPlay.isHidden = true
-                print("videoAttachment", videoAttachment.videoURL)
+                imageView.setImage(img)
+                imgPlay.isHidden = true
+                imgView.isHidden = false
             } else {
                 Components.default.videoLoader.loadPreviewForVideo(with: videoAttachment.videoURL, completion: { [weak self] result in
                     guard let `self` = self else { return }
                     switch result {
                     case .success(let image, let url):
-                        self.imgView.image = image
                         self.cacheVideoThumbnail?[url] = image
-                        self.imgPlay.isHidden = true
+                        self.delegate?.didRefreshCell(self, image)
                     case .failure(_):
-                        self.imgView.image = nil
-                        self.imgPlay.isHidden = false
                         break
                     }
                 })
@@ -158,4 +157,5 @@ extension AnnouncementTableViewCell: GalleryItemPreview {
 protocol AnnouncementAction: class  {
     func didSelectAnnouncement(_ message: ChatMessage?, view: AnnouncementTableViewCell)
     func didSelectAnnouncementAction(_ message: ChatMessage?)
+    func didRefreshCell(_ cell: AnnouncementTableViewCell, _ img: UIImage)
 }
