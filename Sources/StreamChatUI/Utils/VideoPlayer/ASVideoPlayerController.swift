@@ -205,8 +205,8 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
         var maxHeight: CGFloat = 0.0
         for cellView in visibleCells {
             guard var containerCell = cellView as? ASAutoPlayVideoLayerContainer else {
-                      continue
-                  }
+                continue
+            }
             let height = cellView.bounds.height
             if visibleCells.count <= 2 {
                 tableView.indexPathsForVisibleRows?.forEach({ index in
@@ -222,14 +222,20 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
                     videoCellContainer = containerCell
                 }
             } else if cellView == visibleCells.middle {
-                maxHeight = height
-                videoCellContainer = containerCell
+                // last cell
+                if tableView.contentOffset.y == 0 {
+                    maxHeight = height
+                    videoCellContainer = visibleCells.first as? ASAutoPlayVideoLayerContainer
+                } else {
+                    maxHeight = height
+                    videoCellContainer = containerCell
+                }
             }
             containerCell.isVideoPlaying = false
             if let cell = containerCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
                 // Disable gif support for now
-//                cell.imgView.stopAnimatingGif()
+                //                cell.imgView.stopAnimatingGif()
             }
             if let videoCellURL = videoURL {
                 pauseRemoveLayer(layer: containerCell.videoLayer, url: videoCellURL, layerHeight: height)
@@ -270,9 +276,9 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
     // Play video only when current videourl's player is ready to play
     //swiftlint:disable block_based_kvo
     open override func observeValue(forKeyPath keyPath: String?,
-                               of object: Any?,
-                               change: [NSKeyValueChangeKey: Any]?,
-                               context: UnsafeMutableRawPointer?) {
+                                    of object: Any?,
+                                    change: [NSKeyValueChangeKey: Any]?,
+                                    context: UnsafeMutableRawPointer?) {
         // Make sure the this KVO callback was intended for this view controller.
         guard context == &ASVideoPlayerController.playerViewControllerKVOContext else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)

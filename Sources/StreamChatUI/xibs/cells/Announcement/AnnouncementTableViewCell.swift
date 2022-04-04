@@ -121,6 +121,8 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
         videoLayer.backgroundColor = UIColor.clear.cgColor
         videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         playerView.layer.addSublayer(videoLayer)
+        videoLayer.frame = playerView.frame
+        playerView.layoutSubviews()
     }
     
     private func getActionTitle() -> String {
