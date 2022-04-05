@@ -89,6 +89,10 @@ open class ChatMessageListVC:
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         cacheVideoThumbnail = .init()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            guard let `self` = self else { return }
+            self.pausePlayVideos()
+        }
     }
 
     override open func setUp() {

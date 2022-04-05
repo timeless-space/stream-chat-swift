@@ -31,7 +31,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     var content: ChatMessage?
     var message: ChatMessage?
     var cacheVideoThumbnail: Cache<URL, UIImage>?
-    var refreshCell: (() -> Void)?
+    private let containerPadding = 65
     weak var delegate: AnnouncementAction?
     
     override func awakeFromNib() {
@@ -41,7 +41,9 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        videoLayer.frame = playerView.frame
+        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: self.frame.width - CGFloat(containerPadding), height: playerView.frame.height)
+        print("bound", videoLayer.frame)
+
     }
 
     func configureCell(_ message: ChatMessage?) {
@@ -127,8 +129,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
         videoLayer.backgroundColor = UIColor.clear.cgColor
         videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         playerView.layer.addSublayer(videoLayer)
-        videoLayer.frame = playerView.frame
-        playerView.layoutSubviews()
+        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: self.frame.width - CGFloat(containerPadding), height: playerView.frame.height)
     }
     
     private func getActionTitle() -> String {
