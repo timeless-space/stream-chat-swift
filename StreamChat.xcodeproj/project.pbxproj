@@ -189,6 +189,16 @@
 		6EDDA65C27F1923300E5355B /* TableViewCellRedPacketDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EDDA65927F1923300E5355B /* TableViewCellRedPacketDrop.swift */; };
 		6EDDA65D27F1923300E5355B /* TableViewCellRedPacketDrop.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6EDDA65A27F1923300E5355B /* TableViewCellRedPacketDrop.xib */; };
 		6EDDA65E27F1923300E5355B /* TableViewCellRedPacketDrop.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6EDDA65A27F1923300E5355B /* TableViewCellRedPacketDrop.xib */; };
+		6EE7C57927FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */; };
+		6EE7C57A27FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */; };
+		6EE7C57B27FC81D6003DD063 /* grinning-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */; };
+		6EE7C57C27FC81D6003DD063 /* grinning-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */; };
+		6EE7C57D27FC81D6003DD063 /* smiling-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */; };
+		6EE7C57E27FC81D6003DD063 /* smiling-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */; };
+		6EE7C57F27FC81D6003DD063 /* sad-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */; };
+		6EE7C58027FC81D6003DD063 /* sad-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */; };
+		6EE7C58127FC81D6003DD063 /* angry-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57827FC81D5003DD063 /* angry-emoji.json */; };
+		6EE7C58227FC81D6003DD063 /* angry-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57827FC81D5003DD063 /* angry-emoji.json */; };
 		6EEFB78327BB83AD007224C2 /* PanModalPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFB77127BB83AB007224C2 /* PanModalPresentationController.swift */; };
 		6EEFB78427BB83AD007224C2 /* PanModalPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFB77127BB83AB007224C2 /* PanModalPresentationController.swift */; };
 		6EEFB78527BB83AD007224C2 /* UIViewController+PanModalPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFB77327BB83AB007224C2 /* UIViewController+PanModalPresenter.swift */; };
@@ -1757,6 +1767,11 @@
 		6ED3E45327B53D3400A05C0A /* AttachmentListContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentListContainerView.swift; sourceTree = "<group>"; };
 		6EDDA65927F1923300E5355B /* TableViewCellRedPacketDrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellRedPacketDrop.swift; sourceTree = "<group>"; };
 		6EDDA65A27F1923300E5355B /* TableViewCellRedPacketDrop.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellRedPacketDrop.xib; sourceTree = "<group>"; };
+		6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "rolling-eyes-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "grinning-face-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "smiling-face-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "sad-face-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57827FC81D5003DD063 /* angry-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "angry-emoji.json"; sourceTree = "<group>"; };
 		6EEFB77127BB83AB007224C2 /* PanModalPresentationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PanModalPresentationController.swift; sourceTree = "<group>"; };
 		6EEFB77327BB83AB007224C2 /* UIViewController+PanModalPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+PanModalPresenter.swift"; sourceTree = "<group>"; };
 		6EEFB77427BB83AB007224C2 /* PanModalPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PanModalPresenter.swift; sourceTree = "<group>"; };
@@ -3177,6 +3192,18 @@
 				6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */,
 			);
 			path = CustomView;
+			sourceTree = "<group>";
+		};
+		6EE7C57327FC81C0003DD063 /* ReactionMenu */ = {
+			isa = PBXGroup;
+			children = (
+				6EE7C57827FC81D5003DD063 /* angry-emoji.json */,
+				6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */,
+				6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */,
+				6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */,
+				6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */,
+			);
+			path = ReactionMenu;
 			sourceTree = "<group>";
 		};
 		6EEFB76F27BB837F007224C2 /* PanModel */ = {
@@ -5576,6 +5603,7 @@
 		CDA1FB0927884FC500C2F4BD /* xibs */ = {
 			isa = PBXGroup;
 			children = (
+				6EE7C57327FC81C0003DD063 /* ReactionMenu */,
 				FC4F2EF527F4139700A6D729 /* Views */,
 				CDA1FB032788420A00C2F4BD /* cells */,
 				CD24C70A27844B9F00F6378D /* Storyboard */,
@@ -6483,7 +6511,9 @@
 				6ED3E45227B53AE200A05C0A /* AttachmentListCollectionViewCell.xib in Resources */,
 				6EC116A727EB509E00DD49F9 /* TableViewHeaderAlphabetSection.xib in Resources */,
 				FC4F2EF927F413D300A6D729 /* ChannelDetailDescView.xib in Resources */,
+				6EE7C57A27FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */,
 				6E0D12EC27B3CF85003DD1AA /* TableViewCellChatUser.xib in Resources */,
+				6EE7C58227FC81D6003DD063 /* angry-emoji.json in Resources */,
 				88F0D74B257E50B200F4B050 /* Assets.xcassets in Resources */,
 				FCAC7B3627E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib in Resources */,
 				CD7897A327B29FA3005EB481 /* AdminMessageTVCell.xib in Resources */,
@@ -6491,12 +6521,15 @@
 				CDA1FB08278843AF00C2F4BD /* PrivateGroupUsersCVCell.xib in Resources */,
 				6E41867E27C3CD630061E03F /* SFProText-Semibold.ttf in Resources */,
 				6E41868427C3CD630061E03F /* SFProDisplay-Bold.ttf in Resources */,
+				6EE7C57E27FC81D6003DD063 /* smiling-face-emoji.json in Resources */,
 				6E6A40D927EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */,
 				ED5DD0CC27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */,
 				CD24C70E27844C3500F6378D /* Wallet.storyboard in Resources */,
 				88F0D743257E50B000F4B050 /* Localizable.strings in Resources */,
 				CD24C70C27844BC500F6378D /* PrivateGroup.storyboard in Resources */,
 				6ECB403C27ECA95400044B90 /* TableViewCellEmptyChatListData.xib in Resources */,
+				6EE7C57C27FC81D6003DD063 /* grinning-face-emoji.json in Resources */,
+				6EE7C58027FC81D6003DD063 /* sad-face-emoji.json in Resources */,
 				6E41867C27C3CD630061E03F /* SFCompactText-Regular.ttf in Resources */,
 				6ED0BE5527C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib in Resources */,
 				6E41868627C3CD630061E03F /* SFProDisplay-Heavy.ttf in Resources */,
@@ -6572,13 +6605,18 @@
 				6ED3E45127B53AE200A05C0A /* AttachmentListCollectionViewCell.xib in Resources */,
 				6E0D12EB27B3CF85003DD1AA /* TableViewCellChatUser.xib in Resources */,
 				6EC85CDD27D5EB9400063EB8 /* CollectionViewCellGroupUsers.xib in Resources */,
+				6EE7C57B27FC81D6003DD063 /* grinning-face-emoji.json in Resources */,
+				6EE7C57D27FC81D6003DD063 /* smiling-face-emoji.json in Resources */,
 				6E41867D27C3CD630061E03F /* SFProText-Semibold.ttf in Resources */,
 				6EC116A627EB509E00DD49F9 /* TableViewHeaderAlphabetSection.xib in Resources */,
 				6ECB403B27ECA95400044B90 /* TableViewCellEmptyChatListData.xib in Resources */,
+				6EE7C58127FC81D6003DD063 /* angry-emoji.json in Resources */,
 				ED5DD0CB27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */,
 				6ED0BE5427C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib in Resources */,
+				6EE7C57F27FC81D6003DD063 /* sad-face-emoji.json in Resources */,
 				6E92FD3C27BCEEAD00DA89B6 /* Assets.xcassets in Resources */,
 				6E6A40D827EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */,
+				6EE7C57927FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */,
 				6EDDA65D27F1923300E5355B /* TableViewCellRedPacketDrop.xib in Resources */,
 				6E41868327C3CD630061E03F /* SFProDisplay-Bold.ttf in Resources */,
 				6E41868527C3CD630061E03F /* SFProDisplay-Heavy.ttf in Resources */,

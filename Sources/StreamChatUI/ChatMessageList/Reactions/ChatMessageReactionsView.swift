@@ -4,6 +4,7 @@
 
 import StreamChat
 import UIKit
+import Lottie
 
 open class ChatMessageReactionsView: _View, ThemeProvider {
     public var content: Content? {
@@ -51,23 +52,38 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         }
 
         guard let content = content else { return }
-
-        content.reactions.forEach { reaction in
-            if appearance.images.availableReactions[reaction.type] == nil {
-                log
-                    .warning(
-                        "reaction with type \(reaction.type) is not registered in appearance.images.availableReactions, skipping"
-                    )
-                return
-            }
-            let itemView = reactionItemView.init()
-            itemView.content = .init(
-                useBigIcon: content.useBigIcons,
-                reaction: reaction,
-                onTap: content.didTapOnReaction
-            )
+        let arrayOfEmoji = ["angry-emoji",
+                        "grinning-face-emoji",
+                        "rolling-eyes-emoji",
+                        "sad-face-emoji",
+                        "smiling-face-emoji"
+        ]
+        arrayOfEmoji.forEach { emoji in
+            let itemView = AnimationView()
+            itemView.animation = Animation.named(emoji)
+            itemView.loopMode = .loop
+            itemView.play()
+            itemView.translatesAutoresizingMaskIntoConstraints = false
+            itemView.widthAnchor.constraint(equalToConstant: 45).isActive = true
+            itemView.heightAnchor.constraint(equalToConstant: 45).isActive = true
             stackView.addArrangedSubview(itemView)
         }
+//        content.reactions.forEach { reaction in
+//            if appearance.images.availableReactions[reaction.type] == nil {
+//                log
+//                    .warning(
+//                        "reaction with type \(reaction.type) is not registered in appearance.images.availableReactions, skipping"
+//                    )
+//                return
+//            }
+//            let itemView = reactionItemView.init()
+//            itemView.content = .init(
+//                useBigIcon: content.useBigIcons,
+//                reaction: reaction,
+//                onTap: content.didTapOnReaction
+//            )
+//            stackView.addArrangedSubview(itemView)
+//        }
     }
 }
 
