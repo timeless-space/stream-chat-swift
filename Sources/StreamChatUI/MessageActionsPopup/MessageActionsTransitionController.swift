@@ -168,7 +168,6 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
             animations: {
                 textContainerView?.isHidden = true
                 textContainerStackView?.spacing = -8
-                //messageContentView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
             },
             completion: { [self] _ in
                 impactFeedbackGenerator.impactOccurred()
@@ -177,8 +176,6 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
         UIView.animate(
             withDuration: 0.8 * duration,
             delay: 0.2 * duration,
-//            usingSpringWithDamping: 0.7,
-//            initialSpringVelocity: 4,
             options: [.curveEaseInOut],
             animations: {
                 textContainerView?.isHidden = true

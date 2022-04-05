@@ -55,7 +55,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         super.setUpAppearance()
         messageActionsContainerStackView.layer.cornerRadius = 16
         messageActionsContainerStackView.layer.masksToBounds = true
-        messageActionsContainerStackView.backgroundColor = Appearance.default.colorPalette.messageActionMenuSeparator
+        messageActionsContainerStackView.backgroundColor = appearance.colorPalette.messageActionMenuSeparator
     }
 
     override open func updateContent() {
@@ -67,7 +67,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             let actionView = actionButtonClass.init()
             actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
             actionView.content = $0
-            actionView.containerStackView.backgroundColor = Appearance.default.colorPalette.messageActionMenuBackground
+            actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
             messageActionsContainerStackView.addArrangedSubview(actionView)
         }
     }
@@ -98,7 +98,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         )
     }
 
-    /// Returns `ChatMessageActionItem` for edit action
+    /// Returns `ChatMessageActionItem` for pin Message action
     open func pinMessageActionItem() -> ChatMessageActionItem {
         PinMessageActionItem(
             action: { [weak self] in self?.handleAction($0) },
@@ -106,7 +106,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         )
     }
 
-    /// Returns `ChatMessageActionItem` for edit action
+    /// Returns `ChatMessageActionItem` for forward action
     open func forwardActionItem() -> ChatMessageActionItem {
         ForwardMessageActionItem(
             action: { [weak self] in self?.handleAction($0) },

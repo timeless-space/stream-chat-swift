@@ -50,7 +50,7 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
         tailBehind.image = tailBackImage
         tailInFront.image = tailFrontImage
         contentViewBackground.backgroundColor = contentBackgroundColor
-        contentViewBackground.layer.borderColor = UIColor.clear.cgColor//contentBorderColor.cgColor
+        contentViewBackground.layer.borderColor = UIColor.clear.cgColor
         contentViewBackground.directionalLayoutMargins = contentLayoutMargins
     }
 
@@ -67,9 +67,9 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
 
         switch content.style {
         case .bigIncoming, .bigOutgoing, .smallOutgoing:
-            return Appearance.default.colorPalette.messageActionMenuBackground
+            return appearance.colorPalette.messageActionMenuBackground
         case .smallIncoming:
-            return Appearance.default.colorPalette.messageActionMenuBackground
+            return appearance.colorPalette.messageActionMenuBackground
         }
     }
 

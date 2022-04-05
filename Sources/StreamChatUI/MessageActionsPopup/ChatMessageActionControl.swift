@@ -71,13 +71,13 @@ open class ChatMessageActionControl: _Control, AppearanceProvider {
         if isHighlighted {
             titleLabel.textColor = .white
             imageView.image = content?.icon
-                .tinted(with: .white/*appearance.colorPalette.highlightedColorForColor(imageTintСolor)*/)
-            backgroundColor = Appearance.default.colorPalette.chatViewBackground
+                .tinted(with: .white)
+            backgroundColor = appearance.colorPalette.messageActionMenuBackground
         } else {
             titleLabel.textColor = .white
             imageView.image = content?.icon
-                .tinted(with: .white/*imageTintСolor*/)
-            backgroundColor = Appearance.default.colorPalette.chatViewBackground//appearance.colorPalette.background
+                .tinted(with: .white)
+            backgroundColor = appearance.colorPalette.messageActionMenuBackground
         }
     }
     

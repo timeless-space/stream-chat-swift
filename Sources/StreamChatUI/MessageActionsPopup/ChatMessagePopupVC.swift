@@ -70,9 +70,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             messageContainerStackView.topAnchor.pin(greaterThanOrEqualTo: view.topAnchor),
             messageContainerStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             messageContainerStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            // Keeping old constraint for future reference
-//            messageContainerStackView.leadingAnchor.pin(greaterThanOrEqualTo: view.leadingAnchor),
-//            messageContainerStackView.trailingAnchor.pin(lessThanOrEqualTo: view.trailingAnchor),
         ]
 
         if let reactionsController = reactionsController {
@@ -87,9 +84,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             
             if message.isSentByCurrentUser {
                 constraints += [
-                    // Keeping old constraint for future reference
-                    //                    reactionsController.view.leadingAnchor
-                    //                        .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
                     reactionsController.view.trailingAnchor
                         .pin(lessThanOrEqualTo: actionsController.view.trailingAnchor),
                     reactionsController.reactionsBubble.tailTrailingAnchor
@@ -122,15 +116,11 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         messageContainerStackView.addArrangedSubview(paddingView)
         // Changing content view frame if message content view having attachment
         messageContentView.backgroundColor = .clear
-
          //getting ChatMessageGalleryView frame if bubble view having any attachment view
         let galleryViewFrame = messageContentView.bubbleView?.subviews.first?.subviews.filter({ $0 is ChatMessageGalleryView }).first?.frame ?? .zero
         var contentHeight = galleryViewFrame == .zero ? messageViewFrame.height : galleryViewFrame.height
         messageViewFrame.size = CGSize.init(width: messageViewFrame.width, height: contentHeight)
-         //removing ContainerStackView extra spacing
-//        if let containerStackView = messageContentView.bubbleView?.subviews.first as? ContainerStackView {
-//            containerStackView.spacing = -8
-//        }
+        // Updating padding if timestamp visible
         if let timeStampLabel = messageContentView.timestampLabel {
             constraints.append(
                 paddingView.heightAnchor.constraint(equalToConstant: 5)
@@ -153,8 +143,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
 
         if message.isSentByCurrentUser {
             constraints.append(
-                // Keeping it for future reference
-//                actionsController.view.trailingAnchor.pin(equalTo: messageContentContainerView.trailingAnchor)
                 actionsController.view.trailingAnchor.constraint(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
             )
         } else {
@@ -168,22 +156,8 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         
         if message.isSentByCurrentUser {
             messageContainerStackView.alignment = .trailing
-            // Keeping it for future reference
-//            constraints.append(
-//                messageContainerStackView.trailingAnchor.pin(
-//                    equalTo: view.leadingAnchor,
-//                    constant: messageViewFrame.maxX
-//                )
-//            )
         } else {
             messageContainerStackView.alignment = .leading
-            // Keeping it for future reference
-//            constraints.append(
-//                messageContainerStackView.leadingAnchor.pin(
-//                    equalTo: view.leadingAnchor,
-//                    constant: messageViewFrame.minX
-//                )
-//            )
         }
 
         if messageViewFrame.minY <= 0 {
@@ -202,12 +176,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 .with(priority: .streamLow)
             ]
         }
-        //view.layoutIfNeeded()
-        UIView.animate(withDuration: 0.2) {
-            NSLayoutConstraint.activate(constraints)
-            self.view.layoutIfNeeded()
-            self.view.layoutSubviews()
-        }
+        NSLayoutConstraint.activate(constraints)
     }
 
     /// Triggered when `view` is tapped.
