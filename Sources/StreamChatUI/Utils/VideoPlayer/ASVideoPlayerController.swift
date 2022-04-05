@@ -29,7 +29,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
     static public let sharedVideoPlayer = ASVideoPlayerController()
     //video url for currently playing video
     private var videoURL: String?
-    private var currentCell: ASVideoTableViewCell?
+    var currentCell: ASVideoTableViewCell?
     /**
      Stores video url as key and true as value when player item associated to the url
      is being observed for its status change.
@@ -131,14 +131,6 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
         if let url = cell.videoURL {
             removeFromSuperLayer(layer: cell.videoLayer, url: url)
         }
-    }
-
-    open func stopVideoPlayOnScroll() {
-        guard let currentCell = currentCell else {
-            return
-        }
-        currentCell.videoLayer.isHidden = true
-        removeLayerFor(cell: currentCell)
     }
 
     private func removeFromSuperLayer(layer: AVPlayerLayer, url: String) {

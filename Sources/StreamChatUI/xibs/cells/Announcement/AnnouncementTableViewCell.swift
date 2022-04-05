@@ -42,7 +42,6 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: self.frame.width - CGFloat(containerPadding), height: playerView.frame.height)
-        print("bound", videoLayer.frame)
 
     }
 
@@ -100,7 +99,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             imgView.image = nil
             lblTitle.text = videoAttachment.title
             if let img = cacheVideoThumbnail?[videoAttachment.videoURL] {
-                imageView.setImage(img)
+                imageView.image = img
                 imgPlay.isHidden = true
                 imgView.isHidden = false
             } else {
