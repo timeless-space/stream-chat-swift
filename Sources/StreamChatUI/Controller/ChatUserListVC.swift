@@ -18,7 +18,7 @@ public struct ChatUserListData {
 public protocol ChatUserListDelegate: AnyObject {
     func chatUserDidSelect()
 }
-public class ChatUserListVC: UIViewController {
+public class ChatUserListVC: _ViewController, ThemeProvider {
     public enum ChatUserSelectionType {
         case singleUser, group, privateGroup, addFriend
     }
@@ -343,6 +343,7 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
                     return UITableViewCell()
                 }
             cell.hideShimmer()
+            cell.imageLoader = components.imageLoader
             var user: ChatUser? = sectionWiseList[indexPath.section].users[indexPath.row]
             if user == nil {
                 return UITableViewCell.init(frame: .zero)

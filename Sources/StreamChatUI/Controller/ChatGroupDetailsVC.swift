@@ -12,7 +12,7 @@ extension Notification.Name {
     public static let showWalletQRCode = Notification.Name("kStreamChatShowWalletQRCode")
 }
 
-public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
+public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider, ThemeProvider {
     
     // MARK: - Variables
     var viewModel: ChatGroupDetailViewModel!
@@ -288,6 +288,7 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
                     return UITableViewCell()
                 }
             let user: ChatChannelMember = viewModel.channelMembers[indexPath.row]
+            cell.imageLoader = components.imageLoader
             cell.configGroupDetails(channelMember: user, selectedImage: nil)
             cell.backgroundColor = .clear
             cell.selectionStyle = .none

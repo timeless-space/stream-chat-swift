@@ -39,15 +39,6 @@ class CoreDataLazy<T> {
             }
             
             if let context = context {
-                guard persistentStoreIdentifier == context.persistentStoreCoordinator?.persistentStores.first?.identifier else {
-                    let message = """
-                    Persistent store identifier changed. This means the persistent store was reloaded, but a reference to a model was kept in memory.
-                    This can happen if a snapshot of data (ChatMessage, ChatUser, ChatChannel) was kept in memory after Database is wiped (for example, in the event of logging in with a new user).
-                    If you're sure there are no references to models from another session, please report this stack trace to Stream iOS Team.
-                    """
-                    log.error(message)
-                    fatalError(String(describing: message))
-                }
                 context.performAndWait { perform() }
             } else {
                 // This is a fallback for cases like tests, mocks, and other cases where it's known `computeValue` doesn't need to
