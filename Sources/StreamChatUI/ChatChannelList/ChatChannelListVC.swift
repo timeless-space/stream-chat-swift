@@ -44,6 +44,7 @@ open class ChatChannelListVC: _ViewController,
     open private(set) lazy var collectionView: UICollectionView =
         UICollectionView(frame: .zero, collectionViewLayout: collectionViewLayout)
             .withoutAutoresizingMaskConstraints
+            .withAccessibilityIdentifier(identifier: "collectionView")
 
     open private(set) lazy var headerSafeAreaView: UIView = UIView(frame: .zero).withoutAutoresizingMaskConstraints
 

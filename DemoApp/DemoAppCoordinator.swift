@@ -197,7 +197,7 @@ class CustomChannelVC: ChatChannelVC {
     }
 }
 
-class DemoChannelListVC: ChatChannelListVC {
+class DemoChannelListVC: ChatChannelListVC, EventsControllerDelegate {
     /// The `UIButton` instance used for navigating to new channel screen creation.
     lazy var createChannelButton: UIButton = {
         let button = UIButton()
@@ -211,8 +211,12 @@ class DemoChannelListVC: ChatChannelListVC {
         return button
     }()
 
+    let eventsController = ChatClient.shared.eventsController()
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        eventsController.delegate = self
 
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(customView: hiddenChannelsButton),
@@ -290,6 +294,14 @@ class DemoChannelListVC: ChatChannelListVC {
             scrollPosition: .centeredHorizontally
         )
     }
+
+    func eventsController(_ controller: EventsController, didReceiveEvent event: Event) {
+        if let newMessageEvent = event as? MessageNewEvent {
+            // This is a DemoApp integration test to make sure there are no deadlocks when
+            // accessing CoreDataLazy properties from the EventsController.delegate
+            _ = newMessageEvent.message.author
+        }
+    }
 }
 
 class HiddenChannelListVC: ChatChannelListVC {
@@ -308,6 +320,7 @@ class CustomChatMessageActionsVC: ChatMessageActionsVC {
         if message?.isSentByCurrentUser == true && AppConfig.shared.demoAppConfig.isHardDeleteEnabled {
             actions.append(hardDeleteActionItem())
         }
+        actions.append(translateActionItem())
         return actions
     }
 
@@ -326,6 +339,19 @@ class CustomChatMessageActionsVC: ChatMessageActionsVC {
             appearance: appearance
         )
     }
+    
+    open func translateActionItem() -> ChatMessageActionItem {
+        TranslateActionitem(
+            action: { [weak self] _ in
+                guard let self = self else { return }
+                self.messageController.translate(to: .turkish) { _ in
+                    self.delegate?.chatMessageActionsVCDidFinish(self)
+                }
+                
+            },
+            appearance: appearance
+        )
+    }
 
     public struct HardDeleteActionItem: ChatMessageActionItem {
         public var title: String { "Hard Delete Message" }
@@ -339,6 +365,21 @@ class CustomChatMessageActionsVC: ChatMessageActionsVC {
         ) {
             self.action = action
             icon = appearance.images.messageActionDelete
+        }
+    }
+    
+    public struct TranslateActionitem: ChatMessageActionItem {
+        public var title: String { "Translate to Turkish" }
+        public var isDestructive: Bool { false }
+        public let icon: UIImage
+        public let action: (ChatMessageActionItem) -> Void
+        
+        public init(
+            action: @escaping (ChatMessageActionItem) -> Void,
+            appearance: Appearance = .default
+        ) {
+            self.action = action
+            icon = UIImage(systemName: "flag.fill")!
         }
     }
 }
