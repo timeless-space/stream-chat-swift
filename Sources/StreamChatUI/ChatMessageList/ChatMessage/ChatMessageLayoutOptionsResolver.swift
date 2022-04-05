@@ -60,7 +60,7 @@ open class ChatMessageLayoutOptionsResolver {
         if !isLastInSequence {
             options.insert(.continuousBubble)
         }
-        if !isLastInSequence && !message.isSentByCurrentUser {
+        if !isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.avatarSizePadding)
         }
         if isLastInSequence {
@@ -77,7 +77,7 @@ open class ChatMessageLayoutOptionsResolver {
             return options
         }
 
-        if isLastInSequence && !message.isSentByCurrentUser {
+        if isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.avatar)
         }
         if isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
@@ -91,6 +91,16 @@ open class ChatMessageLayoutOptionsResolver {
             // The bubbles with thread look like continuous bubbles
             options.insert(.continuousBubble)
         }
+        if isRedPacketAmountCell(message) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+            options.insert(.avatar)
+            options.insert(.authorName)
+            options.insert(.timestamp)
+        }
+        if isWalletRequestPayCell(message) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+            options.insert(.avatar)
+            options.insert(.authorName)
+            options.insert(.timestamp)
+        }
         if hasReactions(channel, message, appearance) {
             options.insert(.reactions)
         }
@@ -100,7 +110,18 @@ open class ChatMessageLayoutOptionsResolver {
 
         return options
     }
-
+    
+    private func isRedPacketAmountCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("RedPacketOtherAmountReceived") ?? false
+    }
+    
+    private func isWalletRequestPayCell(_ message: ChatMessage?) -> Bool {
+        if let wallet = message?.attachments(payloadType: WalletAttachmentPayload.self).first {
+            return true
+        }
+        return false
+    }
+    
     func hasQuotedMessage(_ message: ChatMessage) -> Bool {
         message.quotedMessage?.id != nil
     }

@@ -79,20 +79,6 @@ open class ChatMessageListVC:
         return overlay
     }()
 
-    /// A View which displays information about current users who are typing.
-    open private(set) lazy var typingIndicatorView: TypingIndicatorView = components
-        .typingIndicatorView
-        .init()
-        .withoutAutoresizingMaskConstraints
-
-    /// The height of the typing indicator view
-    open private(set) var typingIndicatorViewHeight: CGFloat = 28
-
-    /// A Boolean value indicating whether the typing events are enabled.
-    open var isTypingEventsEnabled: Bool {
-        dataSource?.channel(for: self)?.config.typingEventsEnabled == true
-    }
-
     /// A button to scroll the collection view to the bottom.
     /// Visible when there is unread message and the collection view is not at the bottom already.
     open private(set) lazy var scrollToLatestMessageButton: ScrollToLatestMessageButton = components
@@ -120,6 +106,8 @@ open class ChatMessageListVC:
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
+        listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
+        listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         //setupEmptyState()
 //        if let numberMessage = dataSource?.numberOfMessages(in: self) {
@@ -165,15 +153,9 @@ open class ChatMessageListVC:
         // Note: we use "bottom" because the table view is inverted.
         listView.contentInset = .init(top: 0, left: 0, bottom: 8, right: 0)
 
-        view.addSubview(typingIndicatorView)
-        typingIndicatorView.isHidden = true
-        typingIndicatorView.heightAnchor.pin(equalToConstant: typingIndicatorViewHeight).isActive = true
-        typingIndicatorView.pin(anchors: [.leading, .trailing], to: view)
-        typingIndicatorView.bottomAnchor.pin(equalTo: listView.bottomAnchor).isActive = true
-        
         view.addSubview(scrollToLatestMessageButton)
         listView.bottomAnchor.pin(equalToSystemSpacingBelow: scrollToLatestMessageButton.bottomAnchor).isActive = true
-        scrollToLatestMessageButton.trailingAnchor.pin(equalTo: view.layoutMarginsGuide.trailingAnchor).isActive = true
+        scrollToLatestMessageButton.trailingAnchor.pin(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -6).isActive = true
         scrollToLatestMessageButton.widthAnchor.pin(equalTo: scrollToLatestMessageButton.heightAnchor).isActive = true
         scrollToLatestMessageButton.heightAnchor.pin(equalToConstant: 40).isActive = true
         setScrollToLatestMessageButton(visible: false, animated: false)
@@ -354,28 +336,6 @@ open class ChatMessageListVC:
             client: client
         )
     }
-    
-    /// Shows typing Indicator.
-    /// - Parameter typingUsers: typing users gotten from `channelController`
-    open func showTypingIndicator(typingUsers: [ChatUser]) {
-        guard isTypingEventsEnabled else { return }
-
-        if let user = typingUsers.first(where: { user in user.name != nil }), let name = user.name {
-            typingIndicatorView.content = L10n.MessageList.TypingIndicator.users(name, typingUsers.count - 1)
-        } else {
-            // If we somehow cannot fetch any user name, we simply show that `Someone is typing`
-            typingIndicatorView.content = L10n.MessageList.TypingIndicator.typingUnknown
-        }
-
-        typingIndicatorView.isHidden = false
-    }
-    
-    /// Hides typing Indicator.
-    open func hideTypingIndicator() {
-        guard isTypingEventsEnabled, typingIndicatorView.isVisible else { return }
-
-        typingIndicatorView.isHidden = true
-    }
 
     /// Check if the current message being displayed should show the date separator.
     /// - Parameters:
@@ -455,7 +415,7 @@ open class ChatMessageListVC:
                             return UITableViewCell()
                         }
                     cell.imageLoader = components.imageLoader
-                    cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
                     cell.client = client
                     cell.configData()
@@ -468,18 +428,28 @@ open class ChatMessageListVC:
                     return cell
                 }
             } else if isRedPacketCell(message) {
-                //if isMessageFromCurrentUser {
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "RedPacketSentBubble",
+                        for: indexPath) as? RedPacketSentBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.content = message
+                    cell.configureCell(isSender: isMessageFromCurrentUser)
+                    cell.configData()
+                    return cell
+                }
                 guard let cell = tableView.dequeueReusableCell(
-                    withIdentifier: "RedPacketSentBubble",
-                    for: indexPath) as? RedPacketSentBubble else {
+                    withIdentifier: TableViewCellRedPacketDrop.identifier,
+                    for: indexPath) as? TableViewCellRedPacketDrop else {
                         return UITableViewCell()
                     }
-                cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
                 return cell
-                //}
             }
             else if isRedPacketNoPickUpCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
@@ -491,7 +461,7 @@ open class ChatMessageListVC:
                     cell.channel = channel
                 }
                 cell.client = client
-                cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
@@ -507,7 +477,7 @@ open class ChatMessageListVC:
                     cell.channel = channel
                 }
                 cell.chatClient = client
-                cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser, with: .EXPIRED)
                 cell.configData()
@@ -521,20 +491,19 @@ open class ChatMessageListVC:
                 if let channel = dataSource?.channel(for: self) {
                     cell.channel = channel
                 }
-                cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser, with: .RECEIVED)
                 cell.configData()
                 return cell
             } else if isRedPacketAmountCell(message) {
-
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "RedPacketAmountBubble",
                     for: indexPath) as? RedPacketAmountBubble else {
                         return UITableViewCell()
                     }
                 cell.client = client
-                cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
@@ -546,14 +515,27 @@ open class ChatMessageListVC:
                 }
                 return cell
             } else if isWalletRequestPayCell(message) {
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "RequestBubble",
+                        for: indexPath) as? WalletRequestPayBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.isSender = isMessageFromCurrentUser
+                    cell.client = client
+                    cell.content = message
+                    cell.configureCell(isSender: isMessageFromCurrentUser)
+                    cell.configData()
+                    return cell
+                }
                 guard let cell = tableView.dequeueReusableCell(
-                    withIdentifier: "RequestBubble",
-                    for: indexPath) as? WalletRequestPayBubble else {
+                    withIdentifier: TableViewCellWallePayBubbleIncoming.identifier,
+                    for: indexPath) as? TableViewCellWallePayBubbleIncoming else {
                         return UITableViewCell()
                     }
                 cell.imageLoader = components.imageLoader
                 cell.client = client
-                cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()

@@ -219,19 +219,6 @@ extension ChatMessageListScrollOverlayView {
     }
 }
 
-// MARK: - Formatters
-
-extension DateFormatter {
-    @available(
-        *,
-        deprecated,
-        message: "Please use `Appearance.default.formatters.messageDateSeparator` instead"
-    )
-    public static var messageListDateOverlay: DateFormatter {
-        DefaultMessageDateSeparatorFormatter().dateFormatter
-    }
-}
-
 // MARK: AttachmentsPreviewVC - Mixed Attachments Support
 
 extension AttachmentsPreviewVC {

@@ -23,7 +23,6 @@ class WalletRequestPayBubble: UITableViewCell {
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
     var imageLoader: ImageLoading?
-    var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     var isSender = false
@@ -31,7 +30,7 @@ class WalletRequestPayBubble: UITableViewCell {
     var chatClient: ChatClient?
     var client: ChatClient?
     var walletPaymentType: WalletAttachmentPayload.PaymentType = .pay
-
+        
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.selectionStyle = .none
@@ -47,20 +46,21 @@ class WalletRequestPayBubble: UITableViewCell {
     }
 
     func configureCell(isSender: Bool) {
+        self.isSender = isSender
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
         viewContainer.clipsToBounds = true
         contentView.addSubview(viewContainer)
         NSLayoutConstraint.activate([
-            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 4),
-            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -4)
+            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
+            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
         if isSender {
             viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
+            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding).isActive = true
         } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
+            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding).isActive = true
             viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
         }
 
@@ -96,7 +96,7 @@ class WalletRequestPayBubble: UITableViewCell {
         NSLayoutConstraint.activate([
             descriptionLabel.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 10),
             descriptionLabel.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -4),
-            descriptionLabel.bottomAnchor.constraint(equalTo: sentThumbImageView.topAnchor, constant: -8),
+            descriptionLabel.bottomAnchor.constraint(equalTo: sentThumbImageView.topAnchor, constant: -11),
         ])
         descriptionLabel.transform = .mirrorY
         descriptionLabel.textAlignment = .center
@@ -106,11 +106,7 @@ class WalletRequestPayBubble: UITableViewCell {
         lblDetails = createDetailsLabel()
         if walletPaymentType == .request {
             let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first
-            if isSender  {
-                descriptionLabel.text = "Payment Requested"
-            } else {
-                descriptionLabel.text = "\(requestedUserName(raw: payload?.extraData) ?? "-") Requests Payment"
-            }
+            descriptionLabel.text = "Payment Requested"
             if let themeURL = requestedThemeURL(raw: payload?.extraData), let imageUrl = URL(string: themeURL) {
                 if imageUrl.pathExtension == "gif" {
                     sentThumbImageView.setGifFromURL(imageUrl)
@@ -122,7 +118,7 @@ class WalletRequestPayBubble: UITableViewCell {
                         placeholder: nil)
                 }
             }
-            lblDetails.text = "REQUEST: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"
+            lblDetails.text = "AMOUNT: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"
         }
         detailsStack = UIStackView(arrangedSubviews: [lblDetails])
         detailsStack.axis = .vertical
@@ -135,7 +131,7 @@ class WalletRequestPayBubble: UITableViewCell {
         NSLayoutConstraint.activate([
             detailsStack.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 10),
             detailsStack.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -10),
-            detailsStack.bottomAnchor.constraint(equalTo: descriptionLabel.topAnchor, constant: -10)
+            detailsStack.bottomAnchor.constraint(equalTo: descriptionLabel.topAnchor, constant: -6)
         ])
 
         pickUpButton = UIButton()
@@ -146,13 +142,13 @@ class WalletRequestPayBubble: UITableViewCell {
         pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         pickUpButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
         pickUpButton.clipsToBounds = true
-        pickUpButton.layer.cornerRadius = 20
+        pickUpButton.layer.cornerRadius = 16
         subContainer.addSubview(pickUpButton)
         NSLayoutConstraint.activate([
             pickUpButton.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 12),
             pickUpButton.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -12),
-            pickUpButton.heightAnchor.constraint(equalToConstant: 40),
-            pickUpButton.bottomAnchor.constraint(equalTo: detailsStack.topAnchor, constant: -20),
+            pickUpButton.heightAnchor.constraint(equalToConstant: 32),
+            pickUpButton.bottomAnchor.constraint(equalTo: detailsStack.topAnchor, constant: -15),
             pickUpButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 20)
         ])
         pickUpButton.transform = .mirrorY
@@ -171,7 +167,6 @@ class WalletRequestPayBubble: UITableViewCell {
         ])
         timestampLabel.transform = .mirrorY
     }
-
     private func createTimestampLabel() -> UILabel {
         if timestampLabel == nil {
             timestampLabel = UILabel()
@@ -373,8 +368,7 @@ class WalletRequestPayBubble: UITableViewCell {
             guard let channelId = channel?.cid else { return }
             var userInfo = [String: Any]()
             userInfo["channelId"] = channelId
-            NotificationCenter.default.post(name: .sendRedPacketTapAction, object: nil, userInfo: userInfo)
+            NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
         }
-
     }
 }

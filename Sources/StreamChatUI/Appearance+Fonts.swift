@@ -19,5 +19,9 @@ public extension Appearance {
         public var title = UIFont.preferredFont(forTextStyle: .title1)
         public var title3 = UIFont.preferredFont(forTextStyle: .title3).bold
         public var emoji = UIFont.systemFont(ofSize: 50)
+
+        public enum Name {
+            public static let sfProText = "SFProText-Regular"
+        }
     }
 }

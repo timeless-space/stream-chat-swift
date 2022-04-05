@@ -228,7 +228,8 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
             containerCell.isVideoPlaying = false
             if let cell = containerCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
-                cell.imgView.stopAnimatingGif()
+                // Disable gif support for now
+//                cell.imgView.stopAnimatingGif()
             }
             if let videoCellURL = videoURL {
                 pauseRemoveLayer(layer: containerCell.videoLayer, url: videoCellURL, layerHeight: height)
@@ -253,7 +254,8 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
             videoCell.isVideoPlaying = true
             if let cell = videoCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
-                cell.imgView.startAnimatingGif()
+                // Disable gif support for now
+                // cell.imgView.startAnimatingGif()
             }
         }
     }
