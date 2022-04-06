@@ -55,7 +55,7 @@ class SendEmojiViewController: UIViewController {
                         attachments: [],
                         extraData: ["sendStickerGift": .dictionary(sendStickerParam)],
                         completion: nil)
-                    self.dismiss(animated: true, completion: nil)
+                    self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
                 }
             }
         })

@@ -17,6 +17,12 @@ public enum StickerApi {
 }
 
 @available(iOS 13.0, *)
+public enum ResultType: String {
+    case success
+    case warning
+}
+
+@available(iOS 13.0, *)
 public struct Agent {
     struct Response<T> {
         let value: T
@@ -47,9 +53,9 @@ public class StickerApiClient {
             .store(in: &stickerCalls)
     }
 
-    public static func downloadGiftPackage(packageId: Int, receiverUserId: String, _ completion: @escaping (() -> Void)) {
+    public static func downloadGiftPackage(packageId: Int, receiverUserId: String, _ completion: @escaping ((ResponseBody<EmptyStipopResponse>) -> Void)) {
         StickerApi.downloadGiftPackage(packageId: packageId, receiverUserId: receiverUserId)
-            .sink { _  in } receiveValue: { result in completion() }
+            .sink { _  in } receiveValue: { result in completion(result) }
             .store(in: &stickerCalls)
     }
 

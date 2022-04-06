@@ -196,8 +196,11 @@ class StickerGiftBubble: UITableViewCell {
                     receiveUserId: content?.extraData.giftReceiverId ?? ""
                 ) { result in
                     // download gift package
-                    StickerApiClient.downloadGiftPackage(packageId: Int(self.content?.extraData.giftPackageId ?? "0") ?? 0, receiverUserId: self.content?.extraData.giftReceiverId ?? "") {
-                        debugPrint("Package download")
+                    StickerApiClient.downloadGiftPackage(packageId: Int(self.content?.extraData.giftPackageId ?? "0") ?? 0, receiverUserId: self.content?.extraData.giftReceiverId ?? "") { [weak self] result in
+                        guard let `self` = self else { return }
+                        if result.header?.status == ResultType.warning.rawValue {
+                            Snackbar.show(text: "duplicate Purchase Sticker!", messageType: nil)
+                        }
                     }
                 }
             } else {
