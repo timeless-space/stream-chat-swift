@@ -35,7 +35,7 @@ open class ChatMessageLayoutOptionsResolver {
             messageIndexPath: indexPath,
             messages: messages
         )
-        
+
         var options: ChatMessageLayoutOptions = []
 
         // The text should be centered without a bubble for system messages
@@ -104,7 +104,7 @@ open class ChatMessageLayoutOptionsResolver {
 
         return options
     }
-    
+
     private func isRedPacketAmountCell(_ message: ChatMessage?) -> Bool {
         message?.extraData.keys.contains("RedPacketOtherAmountReceived") ?? false
     }

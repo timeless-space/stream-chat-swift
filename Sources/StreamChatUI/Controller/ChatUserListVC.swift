@@ -144,7 +144,12 @@ extension ChatUserListVC {
             tableView?.reloadData()
             break
         case .loadMoreData:
-            addPaginationSection()
+            DispatchQueue.main.async { [weak self] in
+                guard let weakSelf = self else { return }
+                UIView.performWithoutAnimation {
+                    weakSelf.addPaginationSection()
+                }
+            }
             break
         case .completed:
             DispatchQueue.main.async { [weak self] in
@@ -206,9 +211,9 @@ extension ChatUserListVC {
     private func addPaginationSection() {
         if sectionWiseList.firstIndex(where: { $0.sectionType == .pagination}) == nil {
             sectionWiseList.append(ChatUserListData.init(letter: "", sectionType: .pagination))
-            tableView?.beginUpdates()
-            tableView?.insertSections(IndexSet.init(integer: sectionWiseList.count - 1), with: .none)
-            tableView?.endUpdates()
+            tableView?.performBatchUpdates({
+                tableView?.insertSections(IndexSet.init(integer: sectionWiseList.count - 1), with: .none)
+            }, completion: nil)
         }
     }
     
@@ -229,17 +234,17 @@ public extension ChatUserListVC {
         switch sortType {
         case .sortByName:
             let data = viewModel.shortByName(filteredUsers: filteredUsers)
-            for item in data {
-                updateUserList(newData: item)
-            }
+            sectionWiseList.removeAll()
+            sectionWiseList = data
+            addCreateChatHeader()
+            tableView?.reloadData()
         case .sortByAtoZ:
-            let data = self.viewModel.sortAtoZ(filteredUsers: filteredUsers)
+            let data = viewModel.sortAtoZ(filteredUsers: filteredUsers)
             updateUserList(newData: data)
         case .sortByLastSeen:
-            let data = self.viewModel.sortLastSeen(filteredUsers: filteredUsers)
+            let data = viewModel.sortLastSeen(filteredUsers: filteredUsers)
             updateUserList(newData: data)
         }
-        removePaginationSection()
     }
 
     private func updateUserList(newData: ChatUserListData) {
@@ -269,10 +274,12 @@ public extension ChatUserListVC {
                     indexPathToAdd.append(IndexPath.init(row: newUserIndex, section: sectionIndex))
                 }
                 weakSelf.tableView?.insertRows(at: indexPathToAdd, with: .automatic)
-                
             } else {
                 weakSelf.sectionWiseList.append(newData)
                 weakSelf.tableView?.insertSections(IndexSet.init(integer: weakSelf.sectionWiseList.count-1), with: .none)
+            }
+            if let index = weakSelf.sectionWiseList.firstIndex(where: { $0.sectionType == .createChatHeader}) {
+                weakSelf.tableView?.reloadRows(at: [IndexPath.init(row: 0, section: index)], with: .none)
             }
         }, completion: nil)
     }
@@ -336,6 +343,7 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             header.bCallbackGroupWeHere = bCallbackGroupWeHere
             header.bCallbackGroupJoinViaQR = bCallbackGroupJoinViaQR
             header.selectionStyle = .none
+            header.sortingContainerView.isHidden = viewModel.filteredUsers.count == 0
             return header
         case .noHeader,.alphabetHeader:
             let reuseID = TableViewCellChatUser.reuseId
