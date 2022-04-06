@@ -47,6 +47,12 @@ public class StickerApiClient {
             .store(in: &stickerCalls)
     }
 
+    public static func downloadGiftPackage(packageId: Int, receiverUserId: String, _ completion: @escaping (() -> Void)) {
+        StickerApi.downloadGiftPackage(packageId: packageId, receiverUserId: receiverUserId)
+            .sink { _  in } receiveValue: { result in completion() }
+            .store(in: &stickerCalls)
+    }
+
     public static func mySticker(_ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)) {
         StickerApi.mySticker()
             .sink { _  in } receiveValue: { result in completion(result) }
@@ -82,5 +88,18 @@ public class StickerApiClient {
             .sink { _  in } receiveValue: { result in completion?(result) }
             .store(in: &stickerCalls)
     }
+
+    public static func sendGiftSticker(packageId: Int, sendUserId: String, receiveUserId: String, _ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?) {
+        StickerApi.sendGiftSticker(packageId: packageId, sendUserId: sendUserId, receiveUserId: receiveUserId)
+            .sink { _  in } receiveValue: { result in completion?(result) }
+            .store(in: &stickerCalls)
+    }
+
+    public static func confirmGiftSticker(packageId: Int, sendUserId: String, receiveUserId: String, _ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?) {
+        StickerApi.confirmGiftSticker(packageId: packageId, sendUserId: sendUserId, receiveUserId: receiveUserId)
+            .sink { _  in } receiveValue: { result in completion?(result) }
+            .store(in: &stickerCalls)
+    }
+
 
 }

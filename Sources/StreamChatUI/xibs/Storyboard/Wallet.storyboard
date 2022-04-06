@@ -1256,7 +1256,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UFa-s8-sWZ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2986.9565217391305" y="28.794642857142854"/>
+            <point key="canvasLocation" x="3023" y="41"/>
         </scene>
         <!--Emoji Container View Controller-->
         <scene sceneID="rTA-tl-TRp">
@@ -1330,6 +1330,118 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="uE8-bi-W6R" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2365" y="41"/>
+        </scene>
+        <!--Send Emoji View Controller-->
+        <scene sceneID="rYS-nc-lHO">
+            <objects>
+                <viewController storyboardIdentifier="SendEmojiViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="htc-WC-jfN" customClass="SendEmojiViewController" customModule="StreamChatUI" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="6MT-x9-cef">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R8s-vW-A0W">
+                                <rect key="frame" x="0.0" y="44" width="414" height="447"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="447" id="xAg-3T-4t0"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iGk-Sw-nfz">
+                                <rect key="frame" x="0.0" y="-50" width="414" height="996"/>
+                                <color key="backgroundColor" red="0.1176470588" green="0.1176470588" blue="0.1215686275" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rga-We-Tvt" customClass="StreamChatBackButton" customModule="StreamChatUI" customModuleProvider="target">
+                                <rect key="frame" x="364" y="20" width="30" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="rga-We-Tvt" secondAttribute="height" multiplier="1:1" id="Lsd-fT-Nhc"/>
+                                    <constraint firstAttribute="width" constant="30" id="Pmr-pV-qw4"/>
+                                </constraints>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <connections>
+                                    <action selector="btnCloseAction:" destination="htc-WC-jfN" eventType="touchUpInside" id="HaA-ib-6Ed"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Send Gift" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YgJ-U5-L4E">
+                                <rect key="frame" x="10" y="30" width="394" height="29"/>
+                                <fontDescription key="fontDescription" name="SFProDisplay-Bold" family="SF Pro Display" pointSize="24"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UC8-hl-vE5">
+                                <rect key="frame" x="163" y="89" width="88" height="88"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tMv-A2-56Q">
+                                        <rect key="frame" x="0.0" y="0.0" width="88" height="88"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="88" id="dSE-6q-bgf"/>
+                                    <constraint firstAttribute="width" secondItem="UC8-hl-vE5" secondAttribute="height" multiplier="1:1" id="j56-cS-1xU"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="egn-K7-Wgx">
+                                <rect key="frame" x="20" y="247" width="374" height="48"/>
+                                <color key="backgroundColor" red="0.54901960780000003" green="0.69803921570000005" blue="0.97254901959999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="48" id="Nbx-sc-PkM"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="SFProText-Regular" family="SF Pro Text" pointSize="18"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Send Sticker">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="24"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="btnSendSticker:" destination="htc-WC-jfN" eventType="touchUpInside" id="KYA-8z-Vtc"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000001192092896" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sticker Name" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="25D-0S-oCU">
+                                <rect key="frame" x="15" y="197" width="384" height="20"/>
+                                <fontDescription key="fontDescription" name="SFProText-Semibold" family="SF Pro Text" pointSize="16"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="PHD-2v-6mG"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="UC8-hl-vE5" firstAttribute="top" secondItem="YgJ-U5-L4E" secondAttribute="bottom" constant="30" id="1b2-in-coZ"/>
+                            <constraint firstItem="UC8-hl-vE5" firstAttribute="centerX" secondItem="6MT-x9-cef" secondAttribute="centerX" id="1jO-UM-c5Z"/>
+                            <constraint firstItem="25D-0S-oCU" firstAttribute="centerX" secondItem="6MT-x9-cef" secondAttribute="centerX" id="2V3-nM-6fh"/>
+                            <constraint firstItem="R8s-vW-A0W" firstAttribute="top" secondItem="PHD-2v-6mG" secondAttribute="top" id="4S9-S2-BJC"/>
+                            <constraint firstItem="iGk-Sw-nfz" firstAttribute="leading" secondItem="PHD-2v-6mG" secondAttribute="leading" id="5GW-Dq-Vz8"/>
+                            <constraint firstItem="iGk-Sw-nfz" firstAttribute="top" secondItem="6MT-x9-cef" secondAttribute="top" constant="-50" id="5zm-tC-4Fc"/>
+                            <constraint firstItem="PHD-2v-6mG" firstAttribute="trailing" secondItem="egn-K7-Wgx" secondAttribute="trailing" constant="20" id="6Ya-cU-tWk"/>
+                            <constraint firstItem="YgJ-U5-L4E" firstAttribute="leading" secondItem="PHD-2v-6mG" secondAttribute="leading" constant="10" id="ETr-gP-vZr"/>
+                            <constraint firstItem="R8s-vW-A0W" firstAttribute="trailing" secondItem="PHD-2v-6mG" secondAttribute="trailing" id="EmS-jN-pwz"/>
+                            <constraint firstItem="25D-0S-oCU" firstAttribute="leading" secondItem="PHD-2v-6mG" secondAttribute="leading" constant="15" id="FDi-cl-Zew"/>
+                            <constraint firstItem="PHD-2v-6mG" firstAttribute="trailing" secondItem="rga-We-Tvt" secondAttribute="trailing" constant="20" id="IgF-gT-4l1"/>
+                            <constraint firstItem="egn-K7-Wgx" firstAttribute="leading" secondItem="PHD-2v-6mG" secondAttribute="leading" constant="20" id="OHm-vG-qFb"/>
+                            <constraint firstItem="R8s-vW-A0W" firstAttribute="leading" secondItem="PHD-2v-6mG" secondAttribute="leading" id="OLx-yx-MS3"/>
+                            <constraint firstItem="PHD-2v-6mG" firstAttribute="trailing" secondItem="25D-0S-oCU" secondAttribute="trailing" constant="15" id="QPg-LI-BbB"/>
+                            <constraint firstItem="YgJ-U5-L4E" firstAttribute="top" secondItem="6MT-x9-cef" secondAttribute="top" constant="30" id="cVA-Wh-Bjq"/>
+                            <constraint firstItem="egn-K7-Wgx" firstAttribute="top" secondItem="25D-0S-oCU" secondAttribute="bottom" constant="30" id="iTF-Ga-PqR"/>
+                            <constraint firstItem="PHD-2v-6mG" firstAttribute="trailing" secondItem="YgJ-U5-L4E" secondAttribute="trailing" constant="10" id="oUj-md-BsN"/>
+                            <constraint firstItem="PHD-2v-6mG" firstAttribute="trailing" secondItem="iGk-Sw-nfz" secondAttribute="trailing" id="pJG-UW-pX6"/>
+                            <constraint firstItem="rga-We-Tvt" firstAttribute="top" secondItem="6MT-x9-cef" secondAttribute="top" constant="20" id="qen-e4-klq"/>
+                            <constraint firstAttribute="bottom" secondItem="iGk-Sw-nfz" secondAttribute="bottom" constant="-50" id="v0Z-Pq-E8u"/>
+                            <constraint firstItem="25D-0S-oCU" firstAttribute="top" secondItem="UC8-hl-vE5" secondAttribute="bottom" constant="20" id="zSn-dA-Ntz"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="imgSticker" destination="tMv-A2-56Q" id="Sgu-dS-WLb"/>
+                        <outlet property="lblStickerName" destination="25D-0S-oCU" id="Jhe-Zj-ECu"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Zdz-wl-ccY" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3675" y="41"/>
         </scene>
     </scenes>
     <resources>

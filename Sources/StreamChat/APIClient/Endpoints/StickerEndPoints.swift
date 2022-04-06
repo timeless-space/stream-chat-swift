@@ -46,6 +46,15 @@ extension StickerApi {
             .eraseToAnyPublisher()
     }
 
+    public static func downloadGiftPackage(packageId: Int, receiverUserId: String) -> AnyPublisher<ResponseBody<EmptyStipopResponse>, Error> {
+        let url = base.absoluteString + "download/\(packageId)?userId=\(receiverUserId)&isPurchase=N"
+        var request = (URLRequest(url: URL(string: url)!))
+        request.httpMethod = "POST"
+        return agent.run(request)
+            .map(\.value)
+            .eraseToAnyPublisher()
+    }
+
     public static func stickerSend(stickerId: Int) -> AnyPublisher<ResponseBody<EmptyStipopResponse>, Error> {
         let url = base.absoluteString + "analytics/send/\(stickerId)?userId=\(userId)"
         var request = (URLRequest(url: URL(string: url)!))
@@ -72,4 +81,23 @@ extension StickerApi {
             .map(\.value)
             .eraseToAnyPublisher()
     }
+
+    public static func sendGiftSticker(packageId: Int, sendUserId: String, receiveUserId: String) -> AnyPublisher<ResponseBody<EmptyStipopResponse>, Error> {
+        let url = base.absoluteString + "gift/\(packageId)/\(sendUserId)/\(receiveUserId)"
+        var request = (URLRequest(url: URL(string: url)!))
+        request.httpMethod = "POST"
+        return agent.run(request)
+            .map(\.value)
+            .eraseToAnyPublisher()
+    }
+
+    public static func confirmGiftSticker(packageId: Int, sendUserId: String, receiveUserId: String) -> AnyPublisher<ResponseBody<EmptyStipopResponse>, Error> {
+        let url = base.absoluteString + "gift/\(packageId)/\(sendUserId)/\(receiveUserId)"
+        var request = (URLRequest(url: URL(string: url)!))
+        request.httpMethod = "PUT"
+        return agent.run(request)
+            .map(\.value)
+            .eraseToAnyPublisher()
+    }
+
 }

@@ -622,6 +622,7 @@ open class ComposerVC: _ViewController,
                         self.emojiPickerView = EmojiPickerViewController.instantiateController(storyboard: .wallet)
                         if let emojiPickerView = self.emojiPickerView as? EmojiPickerViewController {
                             emojiPickerView.downloadedPackage = downloadedSticker
+                            emojiPickerView.chatChannelController = self.channelController
                         }
                         self.forceKeyboardClose = true
                         UIApplication.shared.keyWindow?.rootViewController?.present(self.emojiPickerView, animated: true, completion: nil)

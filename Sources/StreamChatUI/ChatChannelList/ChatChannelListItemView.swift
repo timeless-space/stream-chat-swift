@@ -94,6 +94,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             } else {
                 return "Received ONE"
             }
+        } else if lastMessage.extraData.keys.contains("sendStickerGift") {
+            return "Sticker Pack"
         } else if !lastMessage.imageAttachments.isEmpty {
             return content.channel.isDirectMessageChannel ? "Photo" : "\(authorName) Photo"
         } else if !lastMessage.fileAttachments.isEmpty {

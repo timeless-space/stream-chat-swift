@@ -89,6 +89,7 @@ open class ChatMessageListVC:
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
+        listView.register(StickerGiftBubble.self, forCellReuseIdentifier: "StickerGiftBubble")
         //setupEmptyState()
 //        if let numberMessage = dataSource?.numberOfMessages(in: self) {
 //            viewEmptyState.isHidden = numberMessage != 0
@@ -474,6 +475,17 @@ open class ChatMessageListVC:
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
+            } else if isStickerGiftCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "StickerGiftBubble",
+                    for: indexPath) as? StickerGiftBubble else {
+                        return UITableViewCell()
+                    }
+                cell.isSender = isMessageFromCurrentUser
+                cell.content = message
+                cell.isSender = isMessageFromCurrentUser
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -522,6 +534,10 @@ open class ChatMessageListVC:
 
     private func isRedPacketCell(_ message: ChatMessage?) -> Bool {
         message?.extraData.keys.contains("redPacketPickup") ?? false
+    }
+
+    private func isStickerGiftCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("sendStickerGift") ?? false
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {

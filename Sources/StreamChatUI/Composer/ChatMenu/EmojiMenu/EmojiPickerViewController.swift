@@ -24,6 +24,7 @@ class EmojiPickerViewController: UIViewController {
     private var pageMap: [String: Int]?
     private var isMyPackage = false
     var downloadedPackage = [Int]()
+    var chatChannelController: ChatChannelController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,6 +90,14 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if segmentController.selectedSegmentIndex == 2 {
+            if let sendEmojiVc: SendEmojiViewController = SendEmojiViewController.instantiateController(storyboard: .wallet) {
+                sendEmojiVc.packageInfo = packages[indexPath.row]
+                sendEmojiVc.chatChannelController = chatChannelController
+                self.presentPanModal(sendEmojiVc)
+            }
+            return
+        }
         defer {
             tableView.deselectRow(at: indexPath, animated: true)
         }
