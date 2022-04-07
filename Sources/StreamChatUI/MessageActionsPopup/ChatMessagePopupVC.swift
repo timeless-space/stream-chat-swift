@@ -114,13 +114,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         )
         messageContainerStackView.addArrangedSubview(messageContentContainerView)
         messageContainerStackView.addArrangedSubview(paddingView)
-        // Changing content view frame if message content view having attachment
-        messageContentView.backgroundColor = .clear
-         //getting ChatMessageGalleryView frame if bubble view having any attachment view
-        let galleryViewFrame = messageContentView.bubbleView?.subviews.first?.subviews.filter({ $0 is ChatMessageGalleryView }).first?.frame ?? .zero
-        var contentHeight = galleryViewFrame == .zero ? messageViewFrame.height : galleryViewFrame.height
-        messageViewFrame.size = CGSize.init(width: messageViewFrame.width, height: contentHeight)
-        // Updating padding if timestamp visible
+
         if let timeStampLabel = messageContentView.timestampLabel {
             constraints.append(
                 paddingView.heightAnchor.constraint(equalToConstant: 5)
@@ -130,6 +124,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 paddingView.heightAnchor.constraint(equalToConstant: 12)
             )
         }
+
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
             messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)

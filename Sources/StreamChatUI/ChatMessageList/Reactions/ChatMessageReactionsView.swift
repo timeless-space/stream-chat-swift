@@ -69,7 +69,7 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
                 reaction: reaction,
                 onTap: content.didTapOnReaction
             )
-            let itemViewSize: CGFloat = isThreadInReaction ? 20 : 35
+            let itemViewSize: CGFloat = isThreadInReaction ? 20 : 30
             itemView.widthAnchor.constraint(equalToConstant: itemViewSize).isActive = true
             itemView.heightAnchor.constraint(equalToConstant: itemViewSize).isActive = true
             itemView.alpha = isThreadInReaction ? 1 : 0
