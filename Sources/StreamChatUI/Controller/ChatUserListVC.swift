@@ -54,7 +54,7 @@ public class ChatUserListVC: UIViewController {
     public var bCallbackGroupWeHere: (() -> Void)?
     public var bCallbackGroupJoinViaQR: (() -> Void)?
     public var bCallbackAddFriend: ((ChatUser?) -> Void)?
-
+    public var bCallbackDataLoadingStateUpdated: ((UserListViewModel.ChatUserLoadingState) -> Void)?
     // MARK: - VIEW CYCLE
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -72,6 +72,7 @@ extension ChatUserListVC {
             guard let weakSelf = self else { return }
             weakSelf.safeDataLoadQueue.async { [weak self] in
                 DispatchQueue.main.async {
+                    weakSelf.bCallbackDataLoadingStateUpdated?(loadingState)
                     weakSelf.updateUI()
                 }
             }
