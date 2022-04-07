@@ -6,7 +6,7 @@ import CoreData
 import Foundation
 
 /// Convenience subclass of `NSPersistentContainer` allowing easier setup of the database stack.
-class DatabaseContainer: NSPersistentContainer {
+public class DatabaseContainer: NSPersistentContainer {
     enum Kind: Equatable {
         /// The database lives only in memory. This option is used typically for anonymous users, when the local
         /// persistence is not enabled, or in tests.
@@ -22,7 +22,7 @@ class DatabaseContainer: NSPersistentContainer {
     /// All observers of the context should listen to this notification, and generate a deletion callback when the notification
     /// is received.
     ///
-    static let WillRemoveAllDataNotification =
+    public static let WillRemoveAllDataNotification =
         Notification.Name(rawValue: "co.getStream.iOSChatSDK.DabaseContainer.WillRemoveAllDataNotification")
 
     /// A notification with this name is posted by every `NSManagedObjectContext` after all its data is flushed.
@@ -31,7 +31,7 @@ class DatabaseContainer: NSPersistentContainer {
     /// All observers of the context should listen to this notification, and reset all NSFetchedResultControllers observing
     /// the contexts.
     ///
-    static let DidRemoveAllDataNotification =
+    public static let DidRemoveAllDataNotification =
         Notification.Name(rawValue: "co.getStream.iOSChatSDK.DabaseContainer.DidRemoveAllDataNotification")
 
     /// We use `writableContext` for having just one place to save changes
@@ -219,7 +219,7 @@ class DatabaseContainer: NSPersistentContainer {
     /// messages pedning sent. You can use this option to warn a user about potential data loss.
     ///   - completion: Called when the operation is completed. If the error is present, the operation failed.
     ///
-    func removeAllData(force: Bool = true) throws {
+    public func removeAllData(force: Bool = true, completion: (() -> Void)? = nil) throws {
         if !force {
             fatalError("Non-force flush is not implemented yet.")
         }
@@ -227,7 +227,7 @@ class DatabaseContainer: NSPersistentContainer {
         sendNotificationForAllContexts(name: Self.WillRemoveAllDataNotification)
 
         // If the current persistent store is a SQLite store, this method will reset and recreate it.
-        try recreatePersistentStore()
+        try recreatePersistentStore(completion: completion)
 
         sendNotificationForAllContexts(name: Self.DidRemoveAllDataNotification)
     }
@@ -270,7 +270,7 @@ class DatabaseContainer: NSPersistentContainer {
     }
     
     /// Removes the loaded persistent store and tries to recreate it.
-    func recreatePersistentStore() throws {
+    func recreatePersistentStore(completion: (() -> Void)? = nil) throws {
         log.assert(
             persistentStoreDescriptions.count == 1,
             "DatabaseContainer always assumes 1 persistent store description. Existing descriptions: \(persistentStoreDescriptions)",
@@ -298,6 +298,7 @@ class DatabaseContainer: NSPersistentContainer {
         
         loadPersistentStores { _, error in
             storeLoadingError = error
+            completion?()
         }
         
         if let error = storeLoadingError {

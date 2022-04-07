@@ -145,7 +145,7 @@ public class ChatClient {
     }()
     
     /// The `DatabaseContainer` instance `Client` uses to store and cache data.
-    private(set) lazy var databaseContainer: DatabaseContainer = {
+    public lazy var databaseContainer: DatabaseContainer = {
         do {
             if config.isLocalStorageEnabled {
                 guard let storeURL = config.localStorageFolderURL else {
