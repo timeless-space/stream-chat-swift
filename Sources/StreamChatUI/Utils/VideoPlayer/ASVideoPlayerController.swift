@@ -217,9 +217,16 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
                 tableView.indexPathsForVisibleRows?.forEach({ index in
                     let cellRect = tableView.rectForRow(at: index)
                     let completelyVisible = tableView.bounds.contains(cellRect)
-                    if cellView == tableView.cellForRow(at: index) && completelyVisible {
+                    // First cell
+                    let lastCellIndex = (tableView.numberOfRows(inSection: 0) - 1)
+                    if ((Int(cellRect.maxY) - Int(tableView.contentSize.height)) < 5) && index.row == lastCellIndex {
                         maxHeight = height
-                        videoCellContainer = containerCell
+                        videoCellContainer = visibleCells.last as? ASAutoPlayVideoLayerContainer
+                    } else {
+                        if cellView == tableView.cellForRow(at: index) && completelyVisible {
+                            maxHeight = height
+                            videoCellContainer = containerCell
+                        }
                     }
                 })
                 if visibleCells.count == 1 {

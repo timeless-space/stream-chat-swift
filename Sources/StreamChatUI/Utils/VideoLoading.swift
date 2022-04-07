@@ -77,7 +77,7 @@ open class StreamVideoLoader: VideoLoading {
 
     open func loadPreviewForVideo(with url: URL, completion: @escaping (Result<(UIImage, URL), Error>) -> Void) {
         if let cached = cache[url] {
-            return call(completion, with: .success((cached, url)))
+            return callback(completion, with: .success((cached, url)))
         }
 
         let asset = videoAsset(at: url)
@@ -99,7 +99,7 @@ open class StreamVideoLoader: VideoLoading {
             }
 
             self.cache[url] = try? result.get().0
-            self.call(completion, with: result)
+            self.callback(completion, with: result)
         }
     }
 
@@ -107,7 +107,10 @@ open class StreamVideoLoader: VideoLoading {
         .init(url: url)
     }
     
-    private func call(_ completion: @escaping (Result<UIImage, Error>) -> Void, with result: Result<UIImage, Error>) {
+    private func call(
+        _ completion: @escaping (Result<UIImage, Error>) -> Void,
+        with result: Result<UIImage, Error>
+    ) {
         if Thread.current.isMainThread {
             completion(result)
         } else {
@@ -117,7 +120,10 @@ open class StreamVideoLoader: VideoLoading {
         }
     }
 
-    private func call(_ completion: @escaping (Result<(UIImage, URL), Error>) -> Void, with result: Result<(UIImage, URL), Error>) {
+    private func callback(
+        _ completion: @escaping (Result<(UIImage, URL), Error>) -> Void,
+        with result: Result<(UIImage, URL), Error>
+    ) {
         if Thread.current.isMainThread {
             completion(result)
         } else {

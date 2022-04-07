@@ -26,6 +26,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     @IBOutlet weak var lblTitle: UILabel!
     @IBOutlet weak var viewAction: UIView!
     @IBOutlet weak var btnShowMore: UIButton!
+    @IBOutlet weak var imgAspectConst: NSLayoutConstraint!
 
     // MARK: - Variables
     var content: ChatMessage?
@@ -79,9 +80,10 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             lblHashTag.text = nil
         }
         if let imageAttachments = message?.imageAttachments.first {
-            imgHeightConst.constant = 250
             imgView.image = nil
             imgView.isHidden = false
+            imgHeightConst.priority = .defaultLow
+            imgAspectConst.priority = .defaultHigh
             btnShowMore.setTitle(getActionTitle(), for: .normal)
             imageUrl = imageAttachments.imageURL.absoluteString
             lblTitle.text = imageAttachments.title
@@ -94,7 +96,8 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             videoURL = nil
         } else if let videoAttachment = message?.videoAttachments.first {
             videoURL = videoAttachment.videoURL.absoluteString
-            imgHeightConst.constant = 250
+            imgHeightConst.priority = .defaultLow
+            imgAspectConst.priority = .defaultHigh
             playerView.isHidden = false
             imgView.image = nil
             lblTitle.text = videoAttachment.title
@@ -119,6 +122,9 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             imgView.image = nil
             playerView.isHidden = true
             imgHeightConst.constant = 0
+            imgHeightConst.priority = .defaultHigh
+            imgAspectConst.priority = .defaultLow
+            imgHeightConst.isActive = true
             lblTitle.text = nil
         }
         layoutIfNeeded()

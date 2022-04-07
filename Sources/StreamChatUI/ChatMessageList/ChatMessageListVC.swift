@@ -93,10 +93,6 @@ open class ChatMessageListVC:
         }
     }
 
-    deinit {
-        print("deinit")
-    }
-
     override open func setUp() {
         super.setUp()
         
@@ -770,9 +766,7 @@ extension ChatMessageListVC: AnnouncementAction {
         )
     }
 
-    func didSelectAnnouncementAction(_ message: ChatMessage?) {
-        debugPrint(message?.text)
-    }
+    func didSelectAnnouncementAction(_ message: ChatMessage?) { }
 
     func didRefreshCell(_ cell: AnnouncementTableViewCell, _ img: UIImage) {
         guard let indexPath = listView.indexPath(for: cell),
