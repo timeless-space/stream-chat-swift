@@ -22,7 +22,7 @@ public class DatabaseContainer: NSPersistentContainer {
     /// All observers of the context should listen to this notification, and generate a deletion callback when the notification
     /// is received.
     ///
-    public static let WillRemoveAllDataNotification =
+    static let WillRemoveAllDataNotification =
         Notification.Name(rawValue: "co.getStream.iOSChatSDK.DabaseContainer.WillRemoveAllDataNotification")
 
     /// A notification with this name is posted by every `NSManagedObjectContext` after all its data is flushed.
@@ -31,7 +31,7 @@ public class DatabaseContainer: NSPersistentContainer {
     /// All observers of the context should listen to this notification, and reset all NSFetchedResultControllers observing
     /// the contexts.
     ///
-    public static let DidRemoveAllDataNotification =
+    static let DidRemoveAllDataNotification =
         Notification.Name(rawValue: "co.getStream.iOSChatSDK.DabaseContainer.DidRemoveAllDataNotification")
 
     /// We use `writableContext` for having just one place to save changes
