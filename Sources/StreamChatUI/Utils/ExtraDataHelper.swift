@@ -368,7 +368,7 @@ public extension Dictionary where Key == String, Value == RawJSON {
 
 // MARK: Sticker
 public extension Dictionary where Key == String, Value == RawJSON {
-    private var sendStickerGiftExtraData: [String: RawJSON] {
+    var sendStickerGiftExtraData: [String: RawJSON] {
         if let extraData = self["sendStickerGift"] {
             switch extraData {
             case .dictionary(let dictionary):
@@ -450,6 +450,22 @@ public extension Dictionary where Key == String, Value == RawJSON {
             return fetchRawData(raw: giftReceiverName) as? String
         } else {
             return nil
+        }
+    }
+
+    var channelId: String? {
+        if let channelIdName = sendStickerGiftExtraData["channelId"] {
+            return fetchRawData(raw: channelIdName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var isDownloaded: Bool {
+        if let isDownloadedName = sendStickerGiftExtraData["isDownloaded"] {
+            return fetchRawData(raw: isDownloadedName) as? Bool ?? false
+        } else {
+            return false
         }
     }
 

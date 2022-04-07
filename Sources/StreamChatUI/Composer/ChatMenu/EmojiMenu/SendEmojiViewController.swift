@@ -46,6 +46,7 @@ class SendEmojiViewController: UIViewController {
                     sendStickerParam["giftPackageImage"] = .string(self.packageInfo?.packageImg ?? "")
                     sendStickerParam["giftSenderId"] = .string(ChatClient.shared.currentUserId?.string ?? "")
                     sendStickerParam["giftSenderName"] = .string(ChatClient.shared.currentUserController().currentUser?.name ?? "")
+                    sendStickerParam["channelId"] = .string(cid.description)
                     sendStickerParam["giftReceiverId"] = .string(chatMembers?.first?.id ?? "")
                     sendStickerParam["giftReceiverName"] = .string(chatMembers?.first?.name ?? "")
                     ChatClient.shared.channelController(for: cid)

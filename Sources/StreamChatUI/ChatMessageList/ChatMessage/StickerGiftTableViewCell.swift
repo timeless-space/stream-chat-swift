@@ -94,8 +94,6 @@ class StickerGiftBubble: UITableViewCell {
         descriptionLabel.transform = .mirrorY
         descriptionLabel.textAlignment = .center
         lblDetails = createDetailsLabel()
-
-        descriptionLabel.text = "\(content?.extraData.giftSenderName ?? "") has sent you sticker gift."
         Nuke.loadImage(with: content?.extraData.giftPackageImage, into: imgStickerPreview)
         lblDetails.text = content?.extraData.giftPackageName
 
@@ -126,7 +124,7 @@ class StickerGiftBubble: UITableViewCell {
         NSLayoutConstraint.activate([
             pickUpButton.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 12),
             pickUpButton.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -12),
-            pickUpButton.heightAnchor.constraint(equalToConstant: 32),
+            pickUpButton.heightAnchor.constraint(equalToConstant: (content?.extraData.isDownloaded ?? false) ? 0 : 32),
             pickUpButton.bottomAnchor.constraint(equalTo: detailsStack.topAnchor, constant: -15),
             pickUpButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 20)
         ])
@@ -143,6 +141,19 @@ class StickerGiftBubble: UITableViewCell {
             timestampLabel.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0),
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
+        if content?.extraData.isDownloaded ?? false {
+            if isSender {
+                descriptionLabel.text = "You have downloaded \(content?.extraData.giftPackageName ?? "")."
+            } else {
+                descriptionLabel.text = "\(content?.extraData.giftReceiverName?.firstUppercased ?? "") has downloaded \(content?.extraData.giftPackageName ?? "") sticker."
+            }
+        } else {
+            if isSender {
+                descriptionLabel.text = "You sent sticker to \(content?.extraData.giftSenderName ?? "")"
+            } else {
+                descriptionLabel.text = "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent you sticker gift."
+            }
+        }
         timestampLabel.transform = .mirrorY
     }
 
@@ -200,13 +211,31 @@ class StickerGiftBubble: UITableViewCell {
                         guard let `self` = self else { return }
                         if result.header?.status == ResultType.warning.rawValue {
                             Snackbar.show(text: "duplicate Purchase Sticker!", messageType: nil)
+                        } else {
+                            self.sendDownloadSticker()
                         }
+                        
                     }
                 }
             } else {
                 // Fallback on earlier versions
             }
         }
+    }
+
+    private func sendDownloadSticker() {
+        guard let cidDescription = content?.extraData.channelId,
+              var extraData = content?.extraData.sendStickerGiftExtraData as? [String: RawJSON],
+              let cid = try? ChannelId(cid: cidDescription) else { return }
+        var downloadExtraData = extraData
+        downloadExtraData["isDownloaded"] = RawJSON.bool(true)
+        ChatClient.shared.channelController(for: cid)
+            .createNewMessage(
+            text: "",
+            pinning: nil,
+            attachments: [],
+            extraData: ["sendStickerGift": .dictionary(downloadExtraData)],
+            completion: nil)
     }
 
 }
