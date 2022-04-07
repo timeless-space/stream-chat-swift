@@ -57,6 +57,20 @@ class EmojiPickerViewController: UIViewController {
         StickerApiClient.hideStickers(packageId: packageId, nil)
     }
 
+    @objc private func btnDownloadAction(_ sender: UIButton) {
+        guard let cell = sender.superview?.superview as? PickerTableViewCell,
+              let indexPath = tblPicker.indexPath(for: cell),
+              let packageId = packages[indexPath.row].packageID
+        else { return }
+        downloadedPackage.append(packageId)
+        tblPicker.reloadRows(at: [indexPath], with: .automatic)
+        if packages[indexPath.row].isDownload != "Y" {
+            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { }
+        } else {
+            StickerApiClient.hideStickers(packageId: packages[indexPath.row].packageID ?? 0, nil)
+        }
+    }
+
     @IBAction func segmentDidChange(_ sender: UISegmentedControl) {
         packages.removeAll()
         tblPicker.reloadData()
@@ -81,6 +95,7 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "PickerTableViewCell") as? PickerTableViewCell else {
             return UITableViewCell()
         }
+        cell.btnDownload.addTarget(self, action: #selector(btnDownloadAction(_:)), for: .touchUpInside)
         cell.configure(with: packages[indexPath.row], downloadedPackage: downloadedPackage)
         return cell
     }
@@ -90,24 +105,13 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if segmentController.selectedSegmentIndex == 2 {
-            if let sendEmojiVc: SendEmojiViewController = SendEmojiViewController.instantiateController(storyboard: .wallet) {
-                sendEmojiVc.packageInfo = packages[indexPath.row]
-                sendEmojiVc.chatChannelController = chatChannelController
-                self.presentPanModal(sendEmojiVc)
-            }
-            return
-        }
         defer {
             tableView.deselectRow(at: indexPath, animated: true)
         }
-        guard let packageId = packages[indexPath.row].packageID else { return }
-        downloadedPackage.append(packageId)
-        tableView.reloadRows(at: [indexPath], with: .automatic)
-        if packages[indexPath.row].isDownload != "Y" {
-            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { }
-        } else {
-            StickerApiClient.hideStickers(packageId: packages[indexPath.row].packageID ?? 0, nil)
+        if let sendEmojiVc: SendEmojiViewController = SendEmojiViewController.instantiateController(storyboard: .wallet) {
+            sendEmojiVc.packageInfo = packages[indexPath.row]
+            sendEmojiVc.chatChannelController = chatChannelController
+            self.presentPanModal(sendEmojiVc)
         }
     }
 
