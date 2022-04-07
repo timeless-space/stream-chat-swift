@@ -42,7 +42,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: self.frame.width - CGFloat(containerPadding), height: playerView.frame.height)
+        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: self.frame.width - CGFloat(containerPadding), height: self.frame.width - CGFloat(containerPadding))
 
     }
 
