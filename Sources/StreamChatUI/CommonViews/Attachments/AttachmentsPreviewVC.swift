@@ -47,6 +47,7 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
 
     /// The current scroll view height used to activate the scrolling on the vertical stack.
     public var verticalScrollViewHeightConstraint: NSLayoutConstraint?
+    public var verticalScrollViewFixConstraint: NSLayoutConstraint?
 
     /// The attachment views for each attachment preview.
     ///
@@ -102,8 +103,9 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
         
         horizontalScrollView.heightAnchor.pin(equalTo: horizontalStackView.heightAnchor).isActive = true
         horizontalScrollView.widthAnchor.pin(equalTo: verticalStackView.widthAnchor).isActive = true
-        
-        verticalScrollView.heightAnchor.pin(equalTo: verticalStackView.heightAnchor).isActive = true
+
+        verticalScrollViewFixConstraint = verticalScrollView.heightAnchor.pin(equalTo: verticalStackView.heightAnchor)
+        verticalScrollViewFixConstraint?.isActive = true
         verticalScrollView.widthAnchor.pin(equalTo: verticalStackView.widthAnchor).isActive = true
     }
     
@@ -151,10 +153,9 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
                 let spacingSize = CGFloat(verticalAttachmentPreviews.count + 1) * verticalStackView.spacing.rawValue
                 let maxScrollViewHeight: CGFloat = CGFloat(maxNumberOfVerticalItems) * attachmentHeight + spacingSize
 
-                verticalScrollViewHeightConstraint = verticalScrollView.heightAnchor.pin(
-                    lessThanOrEqualToConstant: maxScrollViewHeight
-                )
+                verticalScrollViewHeightConstraint = verticalScrollView.heightAnchor.pin(equalToConstant: maxScrollViewHeight)
                 verticalScrollViewHeightConstraint?.isActive = true
+                verticalScrollViewFixConstraint?.isActive = false
             }
 
             // When adding a vertical attachment, make sure the last item is visible
@@ -163,6 +164,7 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
             // If the content is lower than the max vertical items,
             // reset the scroll view height constraint.
             verticalScrollViewHeightConstraint?.isActive = false
+            verticalScrollViewFixConstraint?.isActive = true
             verticalScrollViewHeightConstraint = nil
         }
     }
