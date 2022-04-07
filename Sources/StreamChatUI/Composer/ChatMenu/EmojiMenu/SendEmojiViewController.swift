@@ -74,11 +74,11 @@ extension SendEmojiViewController: PanModalPresentable {
     }
 
     public var shortFormHeight: PanModalHeight {
-        return .contentHeightIgnoringSafeArea(360)
+        return .contentHeightIgnoringSafeArea(450)
     }
 
     public var longFormHeight: PanModalHeight {
-        return .contentHeightIgnoringSafeArea(360)
+        return .contentHeightIgnoringSafeArea(450)
     }
 
     public var anchorModalToLongForm: Bool {
