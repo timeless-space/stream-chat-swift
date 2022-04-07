@@ -72,7 +72,7 @@ class StickerGiftBubble: UITableViewCell {
         imgStickerPreview = UIImageView()
         imgStickerPreview.backgroundColor = Appearance.default.colorPalette.background6
         imgStickerPreview.transform = .mirrorY
-        imgStickerPreview.contentMode = .scaleAspectFill
+        imgStickerPreview.contentMode = .scaleAspectFit
         imgStickerPreview.translatesAutoresizingMaskIntoConstraints = false
         imgStickerPreview.clipsToBounds = true
         subContainer.addSubview(imgStickerPreview)
@@ -143,7 +143,7 @@ class StickerGiftBubble: UITableViewCell {
         ])
         if content?.extraData.isDownloaded ?? false {
             if isSender {
-                descriptionLabel.text = "You have downloaded \(content?.extraData.giftPackageName ?? "")."
+                descriptionLabel.text = "You have downloaded \(content?.extraData.giftPackageName ?? "") sticker."
             } else {
                 descriptionLabel.text = "\(content?.extraData.giftReceiverName?.firstUppercased ?? "") has downloaded \(content?.extraData.giftPackageName ?? "") sticker."
             }
