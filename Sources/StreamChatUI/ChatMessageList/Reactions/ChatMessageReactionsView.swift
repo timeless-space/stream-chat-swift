@@ -52,38 +52,41 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         }
 
         guard let content = content else { return }
-        let arrayOfEmoji = ["angry-emoji",
-                        "grinning-face-emoji",
-                        "rolling-eyes-emoji",
-                        "sad-face-emoji",
-                        "smiling-face-emoji"
-        ]
-        arrayOfEmoji.forEach { emoji in
-            let itemView = AnimationView()
-            itemView.animation = Animation.named(emoji)
-            itemView.loopMode = .loop
-            itemView.play()
-            itemView.translatesAutoresizingMaskIntoConstraints = false
-            itemView.widthAnchor.constraint(equalToConstant: 45).isActive = true
-            itemView.heightAnchor.constraint(equalToConstant: 45).isActive = true
-            stackView.addArrangedSubview(itemView)
-        }
-//        content.reactions.forEach { reaction in
-//            if appearance.images.availableReactions[reaction.type] == nil {
-//                log
-//                    .warning(
-//                        "reaction with type \(reaction.type) is not registered in appearance.images.availableReactions, skipping"
-//                    )
-//                return
-//            }
-//            let itemView = reactionItemView.init()
-//            itemView.content = .init(
-//                useBigIcon: content.useBigIcons,
-//                reaction: reaction,
-//                onTap: content.didTapOnReaction
-//            )
+//        let arrayOfEmoji = ["angry-emoji",
+//                        "grinning-face-emoji",
+//                        "rolling-eyes-emoji",
+//                        "sad-face-emoji",
+//                        "smiling-face-emoji"
+//        ]
+//        arrayOfEmoji.forEach { emoji in
+//            let itemView = AnimationView()
+//            itemView.animation = Animation.named(emoji)
+//            itemView.loopMode = .loop
+//            itemView.play()
+//            itemView.translatesAutoresizingMaskIntoConstraints = false
+//            itemView.widthAnchor.constraint(equalToConstant: 45).isActive = true
+//            itemView.heightAnchor.constraint(equalToConstant: 45).isActive = true
 //            stackView.addArrangedSubview(itemView)
 //        }
+        content.reactions.forEach { reaction in
+            if appearance.images.availableReactions[reaction.type] == nil {
+                log
+                    .warning(
+                        "reaction with type \(reaction.type) is not registered in appearance.images.availableReactions, skipping"
+                    )
+                return
+            }
+            let itemView = reactionItemView.init()
+            itemView.content = .init(
+                useAnimatedIcon: content.useAnimatedIcons,
+                reaction: reaction,
+                onTap: content.didTapOnReaction
+            )
+            itemView.translatesAutoresizingMaskIntoConstraints = false
+            itemView.widthAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+            itemView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+            stackView.addArrangedSubview(itemView)
+        }
     }
 }
 
@@ -91,16 +94,16 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
 
 extension ChatMessageReactionsView {
     public struct Content {
-        public let useBigIcons: Bool
+        public let useAnimatedIcons: Bool
         public let reactions: [ChatMessageReactionData]
         public let didTapOnReaction: ((MessageReactionType) -> Void)?
 
         public init(
-            useBigIcons: Bool,
+            useAnimatedIcons: Bool,
             reactions: [ChatMessageReactionData],
             didTapOnReaction: ((MessageReactionType) -> Void)?
         ) {
-            self.useBigIcons = useBigIcons
+            self.useAnimatedIcons = useAnimatedIcons
             self.reactions = reactions
             self.didTapOnReaction = didTapOnReaction
         }
