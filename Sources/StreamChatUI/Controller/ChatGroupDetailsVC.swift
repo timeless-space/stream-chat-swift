@@ -441,7 +441,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
                             if error == nil {
                                 self.popBack()
                             } else {
-                                Snackbar.show(text: "Error while removing member")
+                                Snackbar.show(text: "Error while leaving channel")
                             }
                         }
                     }
