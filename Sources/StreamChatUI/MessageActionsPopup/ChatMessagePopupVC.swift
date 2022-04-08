@@ -124,10 +124,13 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 paddingView.heightAnchor.constraint(equalToConstant: 12)
             )
         }
-
+        var contentHeight = messageViewFrame.height
+        if contentHeight > UIScreen.main.bounds.midY {
+            contentHeight = UIScreen.main.bounds.midY
+        }
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
-            messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
+            messageContentContainerView.heightAnchor.pin(equalToConstant: contentHeight)
         ]
         let actionsContainerStackView = ContainerStackView()
         actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
