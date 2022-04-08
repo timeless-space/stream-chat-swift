@@ -91,6 +91,12 @@ open class ChatMessageListVC:
             guard let `self` = self else { return }
             self.pausePlayVideos()
         }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
 
     override open func setUp() {
@@ -740,6 +746,11 @@ open class ChatMessageListVC:
     func pausePlayVideos() {
         guard channelType == .announcement else { return }
         ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView)
+    }
+
+    @objc private func handleAppDidBecomeActive() {
+        guard channelType == .announcement else { return }
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true)
     }
 }
 
