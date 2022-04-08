@@ -405,7 +405,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
         var actionTitle = ""
         if isDirectMessageChannel() {
             alertTitle = "Would you like to delete this conversation?"
-            actionTitle = "Delete"
+            actionTitle = "Delete Conversation"
         } else {
             if isUserAdmin() {
                 alertTitle = "Would you like to delete this channel?\nIt'll be permanently deleted."
