@@ -16,7 +16,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     open private(set) lazy var blurView: UIView = {
         let blur: UIBlurEffect
         if #available(iOS 13.0, *) {
-            blur = UIBlurEffect(style: .systemUltraThinMaterial)
+            blur = UIBlurEffect(style: .systemMaterial)
         } else {
             blur = UIBlurEffect(style: .regular)
         }
