@@ -26,9 +26,32 @@ class SendEmojiViewController: UIViewController {
         lblStickerName.text = packageInfo?.packageName ?? ""
     }
 
+    private func sendStickerGift(chatMembers: ChatChannelMember, cid: ChannelId) {
+        StickerApiClient.sendGiftSticker(packageId: self.packageInfo?.packageID ?? 0, sendUserId: ChatClient.shared.currentUserId?.string ?? "", receiveUserId: chatMembers.id ?? "") { result in
+            var sendStickerParam = [String: RawJSON]()
+            sendStickerParam["giftPackageId"] = .string(self.packageInfo?.packageID?.string ?? "")
+            sendStickerParam["giftPackageName"] = .string(self.packageInfo?.packageName ?? "")
+            sendStickerParam["giftPackageImage"] = .string(self.packageInfo?.packageImg ?? "")
+            sendStickerParam["giftSenderId"] = .string(ChatClient.shared.currentUserId?.string ?? "")
+            sendStickerParam["giftSenderName"] = .string(ChatClient.shared.currentUserController().currentUser?.name ?? "")
+            sendStickerParam["channelId"] = .string(cid.description)
+            sendStickerParam["giftReceiverId"] = .string(chatMembers.id ?? "")
+            sendStickerParam["giftReceiverName"] = .string(chatMembers.name ?? "")
+            ChatClient.shared.channelController(for: cid)
+                .createNewMessage(
+                    text: "",
+                    pinning: nil,
+                    attachments: [],
+                    extraData: ["sendStickerGift": .dictionary(sendStickerParam)],
+                    completion: nil)
+            self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
+        }
+    }
+
     @IBAction func btnSendSticker(_ sender: Any) {
         //TODO: handle send flow
         guard let cid = chatChannelController?.channel?.cid else { return }
+
         let channelMember = chatChannelController?.client.memberListController(query: .init(cid: cid))
         channelMember?.synchronize({ [weak self] error in
             guard error == nil, let self = self else { return }
@@ -36,28 +59,17 @@ class SendEmojiViewController: UIViewController {
                 return member.id != self.chatChannelController?.client.currentUserId
             })
             if chatMembers?.count ?? 0 > 1 {
-                // TODO: - Need to handle flow for group chat
-
-            } else {
-                StickerApiClient.sendGiftSticker(packageId: self.packageInfo?.packageID ?? 0, sendUserId: ChatClient.shared.currentUserId?.string ?? "", receiveUserId: chatMembers?.first?.id ?? "") { result in
-                    var sendStickerParam = [String: RawJSON]()
-                    sendStickerParam["giftPackageId"] = .string(self.packageInfo?.packageID?.string ?? "")
-                    sendStickerParam["giftPackageName"] = .string(self.packageInfo?.packageName ?? "")
-                    sendStickerParam["giftPackageImage"] = .string(self.packageInfo?.packageImg ?? "")
-                    sendStickerParam["giftSenderId"] = .string(ChatClient.shared.currentUserId?.string ?? "")
-                    sendStickerParam["giftSenderName"] = .string(ChatClient.shared.currentUserController().currentUser?.name ?? "")
-                    sendStickerParam["channelId"] = .string(cid.description)
-                    sendStickerParam["giftReceiverId"] = .string(chatMembers?.first?.id ?? "")
-                    sendStickerParam["giftReceiverName"] = .string(chatMembers?.first?.name ?? "")
-                    ChatClient.shared.channelController(for: cid)
-                        .createNewMessage(
-                        text: "",
-                        pinning: nil,
-                        attachments: [],
-                        extraData: ["sendStickerGift": .dictionary(sendStickerParam)],
-                        completion: nil)
-                    self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
+                if let groupPicker = GroupListPickerViewController.instantiateController(storyboard: .wallet) as? GroupListPickerViewController {
+                    groupPicker.controller = self.chatChannelController
+                    groupPicker.didSelectMember = { [weak self] member in
+                        guard let `self` = self else { return }
+                        self.sendStickerGift(chatMembers: member, cid: cid)
+                    }
+                    self.presentPanModal(groupPicker)
                 }
+            } else {
+                guard let member = chatMembers?.first else { return }
+                self.sendStickerGift(chatMembers: member, cid: cid)
             }
         })
     }
