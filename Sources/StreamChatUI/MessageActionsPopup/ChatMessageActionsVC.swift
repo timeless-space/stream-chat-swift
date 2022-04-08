@@ -200,7 +200,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             action: { [weak self] _ in
                 guard let self = self else { return }
                 UIPasteboard.general.string = self.message?.text
-
+                Snackbar.show(text: "", messageType: StreamChatMessageType.MessageCopied)
                 self.delegate?.chatMessageActionsVCDidFinish(self)
             },
             appearance: appearance
@@ -210,7 +210,6 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     open func translateMessageItem() -> ChatMessageActionItem {
         TranslateMessageActionItem(action: { [weak self] _ in
             guard let self = self else { return }
-            print("------------>>>>>>>>")
             self.delegate?.chatMessageActionsVCDidFinish(self)
             // ToDo:
         }, appearance: appearance)
@@ -220,7 +219,6 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     open func moreItem() -> ChatMessageActionItem {
         MoreActionItem(action: { [weak self] _ in
             guard let self = self else { return }
-            print("------------>>>>>>>> more tapped")
             self.delegate?.chatMessageActionsVCDidFinish(self)
         }, appearance: appearance)
     }
