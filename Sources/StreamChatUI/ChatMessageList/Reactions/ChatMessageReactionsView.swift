@@ -36,10 +36,11 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.distribution = .fillEqually
-        stack.spacing = UIStackView.spacingUseSystem
+        stack.spacing = 15
         return stack.withoutAutoresizingMaskConstraints
     }()
 
+    public var isThreadInReaction = false
     // MARK: - Overrides
 
     override open func setUpLayout() {
@@ -49,6 +50,9 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
     override open func updateContent() {
         stackView.arrangedSubviews.forEach {
             $0.removeFromSuperview()
+        }
+        if isThreadInReaction {
+            stackView.spacing = UIStackView.spacingUseSystem
         }
         guard let content = content else { return }
         content.reactions.forEach { reaction in
@@ -68,7 +72,30 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
             itemView.translatesAutoresizingMaskIntoConstraints = false
             itemView.widthAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
             itemView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+            itemView.alpha = isThreadInReaction ? 1 : 0
             stackView.addArrangedSubview(itemView)
+//            let itemViewSize: CGFloat = isThreadInReaction ? 20 : 30
+//            itemView.widthAnchor.constraint(equalToConstant: itemViewSize).isActive = true
+//            itemView.heightAnchor.constraint(equalToConstant: itemViewSize).isActive = true
+
+            self.stackView.addArrangedSubview(itemView)
+        }
+        guard !isThreadInReaction else {
+            return
+        }
+        // Adding animation for reaction items
+        for (i,view) in stackView.subviews.enumerated() {
+            let duration = TimeInterval(i+1)/15
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+                UIView.animate(withDuration: duration, delay: 0, options: .showHideTransitionViews, animations: { [weak self] in
+                    view.alpha = 1
+                    view.transform = CGAffineTransform.identity.scaledBy(x: 1.5, y: 1.5)
+                }, completion: { [weak self] _ in
+                    UIView.animate(withDuration: duration, animations: {
+                        view.transform = CGAffineTransform.identity
+                    })
+                })
+            }
         }
     }
 }

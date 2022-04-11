@@ -106,7 +106,10 @@ open class GalleryVC:
         .videoPlaybackControlView.init()
         .withoutAutoresizingMaskConstraints
 
-    open private(set) lazy var lblMessage: UILabel = UILabel()
+    open private(set) lazy var textViewMessageContainerView: UIView = UIView()
+        .withoutAutoresizingMaskConstraints
+
+    open private(set) lazy var textViewMessage: UITextView = UITextView()
         .withoutAutoresizingMaskConstraints
     
     /// Button for sharing content.
@@ -119,6 +122,13 @@ open class GalleryVC:
     
     /// A constaint between `bottomBarView.bottomAnchor` and `view.bottomAnchor`.
     open private(set) var bottomBarBottomConstraint: NSLayoutConstraint?
+
+    /// A constaint videoPlayerHeightConstraint
+    open private(set) var videoPlayerHeightConstraint: NSLayoutConstraint?
+
+    /// A constaint videoPlayerHeightConstraint
+    open private(set) var textMessageHeightConstraint: NSLayoutConstraint?
+    private let inputLinesScrollThreshold = 8
 
     override open func setUpAppearance() {
         super.setUpAppearance()
@@ -216,13 +226,13 @@ open class GalleryVC:
         bottomBarView.pin(anchors: [.leading, .trailing], to: view)
         bottomBarBottomConstraint = bottomBarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         bottomBarBottomConstraint?.isActive = true
-        
+
         let bottomBarContainerStackView = ContainerStackView()
             .withoutAutoresizingMaskConstraints
         bottomBarContainerStackView.preservesSuperviewLayoutMargins = true
         bottomBarContainerStackView.isLayoutMarginsRelativeArrangement = true
         bottomBarView.embed(bottomBarContainerStackView)
-        
+
         shareButton.setContentHuggingPriority(.streamRequire, for: .horizontal)
         bottomBarContainerStackView.addArrangedSubview(shareButton)
 
@@ -235,16 +245,29 @@ open class GalleryVC:
         view.addSubview(videoPlaybackBar)
         videoPlaybackBar.pin(anchors: [.leading, .trailing], to: view)
         videoPlaybackBar.bottomAnchor.constraint(equalTo: bottomBarView.topAnchor).isActive = true
+        videoPlayerHeightConstraint = videoPlaybackBar.heightAnchor.constraint(equalToConstant: 0)
 
-        view.addSubview(lblMessage)
+        view.addSubview(textViewMessageContainerView)
+        textViewMessageContainerView.pin(anchors: [.leading, .trailing], to: view)
+        textViewMessageContainerView.bottomAnchor.constraint(equalTo: videoPlaybackBar.topAnchor).isActive = true
+
+        textViewMessageContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+
+        textViewMessageContainerView.addSubview(textViewMessage)
         NSLayoutConstraint.activate([
-            lblMessage.leadingAnchor.constraint(equalTo: videoPlaybackBar.leadingAnchor, constant: 10),
-            lblMessage.trailingAnchor.constraint(equalTo: videoPlaybackBar.trailingAnchor, constant: -10),
-            lblMessage.bottomAnchor.constraint(equalTo: videoPlaybackBar.topAnchor)
+            textViewMessage.leadingAnchor.constraint(equalTo: textViewMessageContainerView.leadingAnchor, constant: 10),
+            textViewMessage.trailingAnchor.constraint(equalTo: textViewMessageContainerView.trailingAnchor, constant: -10),
+            textViewMessage.bottomAnchor.constraint(equalTo: textViewMessageContainerView.bottomAnchor, constant: -5),
+            textViewMessage.topAnchor.constraint(equalTo: textViewMessageContainerView.topAnchor, constant: 5)
         ])
-        lblMessage.numberOfLines = 3
-        lblMessage.text = content.message.text
-        lblMessage.textColor = .white
+        textViewMessageContainerView.isHidden = content.message.text.count == 0
+        textViewMessage.isHidden = content.message.text.count == 0
+        textViewMessage.backgroundColor = .clear
+        textViewMessage.text = content.message.text
+        textViewMessage.textColor = .white
+        textViewMessage.font = UIFont.systemFont(ofSize: 16)
+        textViewMessage.isEditable = false
+        textViewMessage.showsVerticalScrollIndicator = false
     }
     
     override open func viewDidLoad() {
@@ -294,6 +317,22 @@ open class GalleryVC:
         
         videoPlaybackBar.player = videoCell?.player
         videoPlaybackBar.isHidden = videoPlaybackBar.player == nil
+        videoPlayerHeightConstraint?.isActive = videoPlaybackBar.player == nil ? true : false
+
+        let isConstraintActive = textMessageHeightConstraint.flatMap { $0.isActive } ?? false
+
+        let lineHeight = textViewMessage.font?.lineHeight ?? 1
+        let linesCount = Int(textViewMessage.contentSize.height / lineHeight)
+
+        if isConstraintActive == false {
+            textMessageHeightConstraint = textViewMessage.heightAnchor.constraint(equalToConstant: textViewMessage.frame.height)
+            textMessageHeightConstraint?.isActive = true
+            textViewMessage.isScrollEnabled = true
+        } else {
+            textMessageHeightConstraint?.constant = linesCount > inputLinesScrollThreshold ?
+            lineHeight * CGFloat(inputLinesScrollThreshold) : textViewMessage.contentSize.height
+        }
+        textViewMessage.layoutIfNeeded()
     }
     
     /// Called whenever user pans with a given `gestureRecognizer`.
@@ -445,6 +484,7 @@ open class GalleryVC:
         bottomBarBottomConstraint?.constant = areBarsHidden ? 0 : bottomBarView.frame.height
 
         Animate {
+            self.textViewMessageContainerView.alpha = areBarsHidden ? 1 : 0
             self.topBarView.alpha = areBarsHidden ? 1 : 0
             self.bottomBarView.alpha = areBarsHidden ? 1 : 0
             self.videoPlaybackBar.backgroundColor = areBarsHidden ? self.bottomBarView.backgroundColor : .clear
