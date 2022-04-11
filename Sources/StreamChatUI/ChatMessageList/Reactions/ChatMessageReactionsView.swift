@@ -50,24 +50,7 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         stackView.arrangedSubviews.forEach {
             $0.removeFromSuperview()
         }
-
         guard let content = content else { return }
-//        let arrayOfEmoji = ["angry-emoji",
-//                        "grinning-face-emoji",
-//                        "rolling-eyes-emoji",
-//                        "sad-face-emoji",
-//                        "smiling-face-emoji"
-//        ]
-//        arrayOfEmoji.forEach { emoji in
-//            let itemView = AnimationView()
-//            itemView.animation = Animation.named(emoji)
-//            itemView.loopMode = .loop
-//            itemView.play()
-//            itemView.translatesAutoresizingMaskIntoConstraints = false
-//            itemView.widthAnchor.constraint(equalToConstant: 45).isActive = true
-//            itemView.heightAnchor.constraint(equalToConstant: 45).isActive = true
-//            stackView.addArrangedSubview(itemView)
-//        }
         content.reactions.forEach { reaction in
             if appearance.images.availableReactions[reaction.type] == nil {
                 log

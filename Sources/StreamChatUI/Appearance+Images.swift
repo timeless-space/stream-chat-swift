@@ -276,24 +276,11 @@ public extension Appearance {
         public var rollingEyesEmojiWithAnimation = "rolling-eyes-emoji"
         public var sadFaceEmojiWithAnimation = "sad-face-emoji"
         public var smilingFaceEmojiWithAnimation = "smiling-face-emoji"
-
         public var angryEmoji = "🤬"
         public var grinningFaceEmoji = "😄"
         public var rollingEyesEmoji = "🙄"
         public var sadFaceEmoji = "😞"
         public var smilingFaceEmoji = "😍"
-
-//        public var reactionLoveSmall: UIImage = loadImageSafely(with: "reaction_love_small")
-//        public var reactionLoveBig: UIImage = loadImageSafely(with: "reaction_love_big")
-//        public var reactionLolSmall: UIImage = loadImageSafely(with: "reaction_lol_small")
-//        public var reactionLolBig: UIImage = loadImageSafely(with: "reaction_lol_big")
-//        public var reactionThumgsUpSmall: UIImage = loadImageSafely(with: "reaction_thumbsup_small")
-//        public var reactionThumgsUpBig: UIImage = loadImageSafely(with: "reaction_thumbsup_big")
-//        public var reactionThumgsDownSmall: UIImage = loadImageSafely(with: "reaction_thumbsdown_small")
-//        public var reactionThumgsDownBig: UIImage = loadImageSafely(with: "reaction_thumbsdown_big")
-//        public var reactionWutSmall: UIImage = loadImageSafely(with: "reaction_wut_small")
-//        public var reactionWutBig: UIImage = loadImageSafely(with: "reaction_wut_big")
-
         private var _availableReactions: [MessageReactionType: ChatMessageReactionAppearanceType]?
         public var availableReactions: [MessageReactionType: ChatMessageReactionAppearanceType] {
             get {

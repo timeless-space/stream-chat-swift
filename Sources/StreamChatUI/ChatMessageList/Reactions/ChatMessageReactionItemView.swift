@@ -10,14 +10,10 @@ open class ChatMessageReactionItemView: _View, AppearanceProvider {
     public var content: Content? {
         didSet { updateContentIfNeeded() }
     }
-
-//    override open var intrinsicContentSize: CGSize {
-//        image(for: .normal)?.size ?? super.intrinsicContentSize
-//    }
     var animatedEmojiView: AnimationView?
     var messageReactionButton: UILabel?
-    // MARK: - Overrides
 
+    // MARK: - Overrides
     override open func setUp() {
         super.setUp()
         let tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(handleTap))
@@ -30,14 +26,9 @@ open class ChatMessageReactionItemView: _View, AppearanceProvider {
         messageReactionButton?.removeFromSuperview()
         messageReactionButton = UILabel()
         addSubview(messageReactionButton!)
-
         animatedEmojiView?.removeFromSuperview()
         animatedEmojiView = AnimationView()
         addSubview(animatedEmojiView!)
-
-
-//        setContentCompressionResistancePriority(.streamRequire, for: .vertical)
-//        setContentCompressionResistancePriority(.streamRequire, for: .horizontal)
     }
 
     override open func updateContent() {
@@ -54,9 +45,6 @@ open class ChatMessageReactionItemView: _View, AppearanceProvider {
         } else {
             addReactionView(titleString: reactions.emojiString)
         }
-//        setImage(reactionImage, for: .normal)
-//        imageView?.tintColor = reactionImageTint
-
         isUserInteractionEnabled = content.onTap != nil
     }
 
@@ -67,10 +55,9 @@ open class ChatMessageReactionItemView: _View, AppearanceProvider {
     }
 
     // MARK: - Actions
-
     func addAnimatedView(animationName: String) {
         backgroundColor = reactionImageTint
-        layer.cornerRadius = 22.5
+        layer.cornerRadius = 20
         animatedEmojiView?.animation = Animation.named(animationName)
         animatedEmojiView?.loopMode = .loop
         animatedEmojiView?.play()
@@ -79,8 +66,8 @@ open class ChatMessageReactionItemView: _View, AppearanceProvider {
         animatedEmojiView?.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 0).isActive = true
         animatedEmojiView?.topAnchor.constraint(equalTo: topAnchor, constant: 0).isActive = true
         animatedEmojiView?.bottomAnchor.constraint(equalTo: bottomAnchor, constant: 0).isActive = true
-        animatedEmojiView?.widthAnchor.constraint(equalToConstant: 45).isActive = true
-        animatedEmojiView?.heightAnchor.constraint(equalToConstant: 45).isActive = true
+        animatedEmojiView?.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        animatedEmojiView?.heightAnchor.constraint(equalToConstant: 40).isActive = true
     }
 
     func addReactionView(titleString: String) {
@@ -97,7 +84,6 @@ open class ChatMessageReactionItemView: _View, AppearanceProvider {
 
     @objc open func handleTap() {
         guard let content = self.content else { return }
-
         content.onTap?(content.reaction.type)
     }
 }
@@ -127,9 +113,7 @@ extension ChatMessageReactionItemView {
 private extension ChatMessageReactionItemView {
     var reactionImage: String? {
         guard let content = content else { return nil }
-
         let reactions = appearance.images.availableReactions[content.reaction.type]
-        
         return content.useAnimatedIcon ?
             reactions?.emojiAnimated :
             reactions?.emojiString
@@ -137,11 +121,9 @@ private extension ChatMessageReactionItemView {
 
     var reactionImageTint: UIColor? {
         guard let content = content else { return nil }
-
         return content.reaction.isChosenByCurrentUser ?
-        appearance.colorPalette.themeBlue :
+            .clear:
             .clear
-            //appearance.colorPalette.inactiveTint
     }
     
 }
