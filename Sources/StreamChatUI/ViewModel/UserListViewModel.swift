@@ -11,6 +11,7 @@ import StreamChat
 import StreamChatUI
 
 public class UserListViewModel: NSObject {
+    
     // MARK: - VARIABLE
     public enum ChatUserLoadingState {
         case searching,searchingError, loading, loadMoreData, error, completed , none
@@ -36,11 +37,13 @@ public class UserListViewModel: NSObject {
     private var userFetchLimit: Int = 99
     private var retryApiCount: Int = 0
     public lazy var sectionWiseUserList = [ChatUserListData]()
+
     // MARK: - INIT
     init(sortType: Em_ChatUserListFilterTypes) {
         self.sortType = sortType
         super.init()
     }
+
     // MARK: - METHOD
     public func isUserSelected(chatUser: ChatUser) -> Int? {
         return self.selectedUsers.firstIndex(where: { $0.id.lowercased() == chatUser.id.lowercased()})
@@ -92,6 +95,7 @@ extension UserListViewModel {
 // MARK: - GET STREAM API
 extension UserListViewModel {
     public func searchDataUsing(searchString: String?) {
+        self.searchText = searchString
         if self.dataLoadingState != .searching {
             self.dataLoadingState = .searching
         }
@@ -104,7 +108,6 @@ extension UserListViewModel {
     }
     
     private func searchUser(with name: String?) {
-        self.searchText = name
         if let strName = name, strName.isEmpty == false {
             if strName.containsEmoji  || strName.isBlank {
                 Snackbar.show(text: "Please enter valid name")
@@ -202,6 +205,7 @@ extension UserListViewModel {
 
     private func processUserList() {
         let filterData = getFilteredData(users: userListController?.users ?? [])
+        // checking sorting type , if it sortByAtoZ , then we will skip no alphabetUsers users
         guard sortType == .sortByAtoZ else {
             bCallbackDataUserList?(filterData)
             dataLoadingState = .completed
@@ -222,15 +226,12 @@ extension UserListViewModel {
         callStreamChatUserListApi(true)
     }
 
-    open func sortUserList() {
+    open func getUsers() -> [ChatUser] {
         if let strName = searchText, strName.isBlank == false {
-            let filterData = self.getFilteredData(users: searchListController.users)
-            bCallbackDataUserList?(filterData)
+            return getFilteredData(users: searchListController.users)
         } else  {
-            let filterData = self.getFilteredData(users: userListController?.users ?? [])
-            bCallbackDataUserList?(filterData)
+            return getFilteredData(users: userListController?.users ?? [])
         }
-        dataLoadingState = .completed
     }
     
     private func getFilteredData(users: LazyCachedMapCollection<ChatUser>) -> [ChatUser] {
