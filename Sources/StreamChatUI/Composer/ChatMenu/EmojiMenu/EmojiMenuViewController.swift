@@ -40,10 +40,6 @@ class EmojiMenuViewController: UIViewController {
         loadMenu(result: menus)
     }
 
-    deinit {
-        debugPrint("EmojiMenuViewController", #function)
-    }
-
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchSticker()
@@ -72,25 +68,36 @@ class EmojiMenuViewController: UIViewController {
     }
 
     private func loadMenu(result: [StickerMenu]) {
-        self.menus.removeAll()
+        menus.removeAll()
         var updatedResult = result
         updatedResult.removeAll(where: { $0.menuId == -1 })
-        self.menus.append(.init(image: "", menuId: -1, name: ""))
-        self.menus.append(contentsOf: updatedResult)
-        self.checkAndAddDefaultSticker()
-        self.setupPageController()
-        self.collectionMenu.reloadData()
+        menus.append(.init(image: "", menuId: -1, name: ""))
+        menus.append(contentsOf: updatedResult)
+        checkAndAddDefaultSticker()
+        setupPageController()
+        collectionMenu.reloadData()
     }
 
     private func checkAndAddDefaultSticker() {
         var defaultStickers = StickerMenu.getDefaultSticker()
         var defaultStickerIds = defaultStickers.compactMap { $0.menuId }
-        menus.removeAll(where:  { defaultStickerIds.contains($0.menuId) })
+        menus.removeAll(where:  { defaultStickerIds.contains($0.menuId ?? 0) })
         menus.append(contentsOf: defaultStickers)
 
         //Store Menu in local
         UserDefaults.standard.save(customObject: menus, inKey: UserdefaultKey.downloadedSticker)
         UserDefaults.standard.synchronize()
+    }
+
+    private func setMenu(menu: StickerMenu, index: Int) {
+        let emojiContainer = EmojiContainerViewController(with: menu)
+        guard selectedPack != menu.menuId else { return }
+        emojiContainer.view.tag = index
+        selectedPack = menu.menuId ?? 0
+        currentIndex = menus.firstIndex(where: { $0.menuId == selectedPack}) ?? 0
+        collectionMenu.reloadData()
+        pageController?.setViewControllers([emojiContainer], direction: .forward, animated: false, completion: nil)
+        HapticFeedbackGenerator.selectionHaptic()
     }
 
     private func setupPageController() {
@@ -111,6 +118,11 @@ class EmojiMenuViewController: UIViewController {
         } else {
             pageController?.dataSource = nil
             pageController?.dataSource = self
+            guard selectedPack > 0 else { return }
+            if !package.contains(where: { $0.packageID ?? 0 == selectedPack}) {
+                guard let firstMenu = menus.first(where: { $0.menuId != -1 && $0.menuId != -2}) else { return }
+                setMenu(menu: firstMenu, index: 0)
+            }
         }
     }
 }
@@ -156,7 +168,7 @@ extension EmojiMenuViewController: UIPageViewControllerDataSource, UIPageViewCon
         let index = pageViewController.viewControllers!.first!.view.tag
         currentIndex = index
         guard menus.count > currentIndex else { return }
-        selectedPack = menus[currentIndex].menuId
+        selectedPack = menus[currentIndex].menuId ?? 0
         collectionMenu.reloadData()
         collectionMenu.scrollToItem(at: .init(row: currentIndex, section: 0), at: .right, animated: true)
         HapticFeedbackGenerator.selectionHaptic()
@@ -182,14 +194,7 @@ extension EmojiMenuViewController: UICollectionViewDelegate, UICollectionViewDat
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let emojiContainer = EmojiContainerViewController(with: menus[indexPath.row])
-        guard selectedPack != menus[indexPath.row].menuId else { return }
-        emojiContainer.view.tag = indexPath.row
-        selectedPack = menus[indexPath.row].menuId
-        currentIndex = menus.firstIndex(where: { $0.menuId == selectedPack}) ?? 0
-        collectionView.reloadData()
-        pageController?.setViewControllers([emojiContainer], direction: .forward, animated: false, completion: nil)
-        HapticFeedbackGenerator.selectionHaptic()
+        setMenu(menu: menus[indexPath.row], index: indexPath.row)
     }
 
 }

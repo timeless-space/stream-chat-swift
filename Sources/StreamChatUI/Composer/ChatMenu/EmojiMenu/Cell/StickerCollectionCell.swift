@@ -5,7 +5,6 @@
 //  Created by Parth Kshatriya on 01/04/22.
 //
 
-import Foundation
 import Stipop
 import StreamChat
 
@@ -18,7 +17,7 @@ class StickerCollectionCell: UICollectionViewCell {
         super.init(frame: frame)
         imgSticker = SPUIStickerView()
         imgSticker.translatesAutoresizingMaskIntoConstraints = false
-        embed(imgSticker,insets: .init(top: 10, leading: 10, bottom: 10, trailing: 10))
+        embed(imgSticker,insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
     }
 
     required init?(coder: NSCoder) {
@@ -26,7 +25,8 @@ class StickerCollectionCell: UICollectionViewCell {
     }
 
     func configureSticker(sticker: Sticker) {
-        imgSticker.setSticker(((sticker.stickerImg ?? "").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""), sizeOptimized: true)
+        let stickerImgUrl = (sticker.stickerImg ?? "").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        imgSticker.setSticker(stickerImgUrl ?? "", sizeOptimized: true)
         imgSticker.backgroundColor = .clear
     }
 }

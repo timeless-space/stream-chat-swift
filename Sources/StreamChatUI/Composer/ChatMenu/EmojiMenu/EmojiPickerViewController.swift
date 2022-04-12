@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Stipop
 import StreamChat
 import Combine
 import Nuke
@@ -39,6 +38,8 @@ class EmojiPickerViewController: UIViewController {
             guard let `self` = self else { return }
             let packages = result.body?.packageList ?? []
             self.packages.append(contentsOf: packages)
+            self.packages.removeAll(where: { $0.price != "free" })
+            self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
             self.pageMap = result.body?.pageMap
             self.tblPicker.reloadData()
         }
@@ -48,7 +49,7 @@ class EmojiPickerViewController: UIViewController {
         StickerApiClient.mySticker { [weak self] result in
             guard let `self` = self else { return }
             self.packages = result.body?.packageList ?? []
-            self.downloadedPackage = self.packages.compactMap { $0.packageID ?? 0}
+            self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
             self.tblPicker.reloadData()
         }
     }
@@ -63,9 +64,8 @@ class EmojiPickerViewController: UIViewController {
               let packageId = packages[indexPath.row].packageID
         else { return }
         downloadedPackage.append(packageId)
-        tblPicker.reloadRows(at: [indexPath], with: .automatic)
         if packages[indexPath.row].isDownload != "Y" {
-            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { }
+            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { _ in }
         } else {
             StickerApiClient.hideStickers(packageId: packages[indexPath.row].packageID ?? 0, nil)
         }
@@ -122,6 +122,7 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let delete = UIContextualAction(style: .destructive, title: "Delete") { (action, sourceView, completionHandler) in
             self.deletePackage(self.packages[indexPath.row].packageID ?? 0)
+            self.downloadedPackage.removeAll(where: { $0 == self.packages[indexPath.row].packageID ?? 0 })
             self.packages.remove(at: indexPath.row)
             self.tblPicker.deleteRows(at: [indexPath], with: .automatic)
             completionHandler(true)

@@ -6,7 +6,6 @@ import Foundation
 import StreamChat
 import UIKit
 import SwiftUI
-import Stipop
 import GiphyUISDK
 
 extension Notification.Name {
@@ -275,7 +274,7 @@ open class ComposerVC: _ViewController,
     private var walletInputView: WalletQuickInputViewController?
     private var menuController: ChatMenuViewController?
     private var emoji: UIViewController?
-    private var emojiPickerView: UIViewController!
+    private var emojiPickerView: UIViewController?
     private var isMenuShowing = false
     private var forceKeyboardClose = false {
         didSet {
@@ -398,7 +397,6 @@ open class ComposerVC: _ViewController,
 
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
         dismissSuggestions()
     }
 
@@ -625,7 +623,10 @@ open class ComposerVC: _ViewController,
                             emojiPickerView.chatChannelController = self.channelController
                         }
                         self.forceKeyboardClose = true
-                        UIApplication.shared.keyWindow?.rootViewController?.present(self.emojiPickerView, animated: true, completion: nil)
+                        guard let emojiPickerView = self.emojiPickerView else {
+                            return
+                        }
+                        UIApplication.shared.keyWindow?.rootViewController?.present(emojiPickerView, animated: true, completion: nil)
                     }
                 }
                 showInputViewController(emoji)
@@ -803,7 +804,7 @@ open class ComposerVC: _ViewController,
         if let giphyImage = notification.userInfo?["giphyUrl"] as? String {
             var stickerData = [String: RawJSON]()
             stickerData["giphyUrl"] = .string(giphyImage)
-            self.channelController?
+            channelController?
                 .createNewMessage(
                     text: "GIF",
                     extraData: stickerData,
@@ -817,7 +818,7 @@ open class ComposerVC: _ViewController,
         }
         var stickerData = [String: RawJSON]()
         stickerData["stickerUrl"] = .string(stickerImg)
-        self.channelController?
+        channelController?
             .createNewMessage(
                 text: "Sticker",
                 extraData: stickerData,
