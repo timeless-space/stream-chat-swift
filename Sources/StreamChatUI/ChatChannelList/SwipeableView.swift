@@ -152,7 +152,9 @@ open class SwipeableView: _View, ComponentsProvider, UIGestureRecognizerDelegate
         //
         // *This practically means on panning the cell we don't accidentally scroll the list
         let translation = recognizer.translation(in: self)
-
+        if translation.x > 0 && !isOpen {
+            return false
+        }
         return abs(translation.x) > abs(translation.y)
     }
 

@@ -215,6 +215,13 @@ public extension Appearance {
                 return nil
             }
         }()
+        public var groupChatAvatarPlaceholder: UIImage? {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "person.2.fill")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }
         public var commands: UIImage = loadImageSafely(with: "bolt")
         public var smallBolt: UIImage = loadImageSafely(with: "bolt_small")
         public var openAttachments: UIImage = loadImageSafely(with: "clip")

@@ -42,6 +42,8 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     }
     
     open func loadAvatar(for channel: ChatChannel) {
+        presenceAvatarView.avatarView.imageView.contentMode = .scaleAspectFill
+        presenceAvatarView.avatarView.imageView.backgroundColor = appearance.colorPalette.searchBarBackground
         // If the channel has an avatar set, load that avatar
         if let channelAvatarUrl = channel.imageURL {
             loadChannelAvatar(from: channelAvatarUrl)
@@ -52,7 +54,10 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         if channel.isDirectMessageChannel {
             loadDirectMessageChannelAvatar(channel: channel)
         } else {
-            loadMergedAvatars(channel: channel)
+            presenceAvatarView.avatarView.imageView.contentMode = .center
+            presenceAvatarView.avatarView.imageView.tintColor = .white
+            loadIntoAvatarImageView(from: channel.imageURL, placeholder: appearance.images.groupChatAvatarPlaceholder)
+            //loadMergedAvatars(channel: channel)
         }
     }
     
