@@ -57,7 +57,6 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
             presenceAvatarView.avatarView.imageView.contentMode = .center
             presenceAvatarView.avatarView.imageView.tintColor = .white
             loadIntoAvatarImageView(from: channel.imageURL, placeholder: appearance.images.groupChatAvatarPlaceholder)
-            //loadMergedAvatars(channel: channel)
         }
     }
     
