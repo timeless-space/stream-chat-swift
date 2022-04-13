@@ -721,9 +721,10 @@ open class ComposerVC: _ViewController,
     }
 
     @objc open func sendONEAction() {
-        composerView.inputMessageView.textView.text = nil
-        composerView.inputMessageView.textView.resignFirstResponder()
+        composerView.inputMessageView.textView.text = ""
+        //composerView.inputMessageView.textView.resignFirstResponder()
         showPayment()
+        animateMenuButton()
 //        guard let channelId = channelController?.channel?.cid else { return }
 //        var userInfo = [String: Any]()
 //        userInfo["channelId"] = channelId
