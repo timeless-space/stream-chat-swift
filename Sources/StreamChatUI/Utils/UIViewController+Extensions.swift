@@ -175,7 +175,11 @@ public class pushTransition: CATransition {}
 
 extension UIViewController {
     public func pushWithAnimation(controller: UIViewController) {
-        self.navigationController?.pushViewController(controller, animated: true)
+        NotificationCenter.default.post(name: .hideTabbar, object: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let `self` = self else { return }
+            self.navigationController?.pushViewController(controller, animated: true)
+        }
     }
     public func popWithAnimation() {
         self.navigationController?.popViewController(animated: true)
