@@ -4,7 +4,6 @@
 
 import StreamChat
 import UIKit
-import Lottie
 
 open class ChatMessageReactionsView: _View, ThemeProvider {
     public var content: Content? {
@@ -36,7 +35,7 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.distribution = .fillEqually
-        stack.spacing = 8
+        stack.spacing = 15
         return stack.withoutAutoresizingMaskConstraints
     }()
 
@@ -51,7 +50,11 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         stackView.arrangedSubviews.forEach {
             $0.removeFromSuperview()
         }
+        if isThreadInReaction {
+            stackView.spacing = UIStackView.spacingUseSystem
+        }
         guard let content = content else { return }
+
         content.reactions.forEach { reaction in
             if appearance.images.availableReactions[reaction.type] == nil {
                 log
@@ -62,15 +65,15 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
             }
             let itemView = reactionItemView.init()
             itemView.content = .init(
-                useAnimatedIcon: content.useAnimatedIcons,
+                useBigIcon: content.useBigIcons,
                 reaction: reaction,
                 onTap: content.didTapOnReaction
             )
-            itemView.translatesAutoresizingMaskIntoConstraints = false
-            itemView.widthAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
-            itemView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+            let itemViewSize: CGFloat = isThreadInReaction ? 20 : 30
+            itemView.widthAnchor.constraint(equalToConstant: itemViewSize).isActive = true
+            itemView.heightAnchor.constraint(equalToConstant: itemViewSize).isActive = true
             itemView.alpha = isThreadInReaction ? 1 : 0
-            stackView.addArrangedSubview(itemView)
+            self.stackView.addArrangedSubview(itemView)
         }
         guard !isThreadInReaction else {
             return
@@ -79,7 +82,7 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         for (i,view) in stackView.subviews.enumerated() {
             let duration = TimeInterval(i+1)/15
             DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
-                UIView.animate(withDuration: duration, delay: 0.1, options: .showHideTransitionViews, animations: { [weak self] in
+                UIView.animate(withDuration: duration, delay: 0, options: .showHideTransitionViews, animations: { [weak self] in
                     view.alpha = 1
                     view.transform = CGAffineTransform.identity.scaledBy(x: 1.5, y: 1.5)
                 }, completion: { [weak self] _ in
@@ -96,16 +99,16 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
 
 extension ChatMessageReactionsView {
     public struct Content {
-        public let useAnimatedIcons: Bool
+        public let useBigIcons: Bool
         public let reactions: [ChatMessageReactionData]
         public let didTapOnReaction: ((MessageReactionType) -> Void)?
 
         public init(
-            useAnimatedIcons: Bool,
+            useBigIcons: Bool,
             reactions: [ChatMessageReactionData],
             didTapOnReaction: ((MessageReactionType) -> Void)?
         ) {
-            self.useAnimatedIcons = useAnimatedIcons
+            self.useBigIcons = useBigIcons
             self.reactions = reactions
             self.didTapOnReaction = didTapOnReaction
         }

@@ -86,7 +86,6 @@ target 'StreamChatUI' do
   use_frameworks!
   pod 'swiftScan', :git => 'https://github.com/MxABC/swiftScan.git'
   pod 'SkeletonView', '1.29.2'
-  pod 'lottie-ios', '3.2.3'
   # Pods for StreamChatUI
   
   target 'StreamChatUITests' do

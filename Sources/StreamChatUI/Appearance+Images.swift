@@ -313,36 +313,43 @@ public extension Appearance {
         }()
 
         // MARK: - Reactions
-        public var angryEmojiWithAnimation = "angry-emoji"
-        public var grinningFaceEmojiWithAnimation = "grinning-face-emoji"
-        public var rollingEyesEmojiWithAnimation = "rolling-eyes-emoji"
-        public var sadFaceEmojiWithAnimation = "sad-face-emoji"
-        public var smilingFaceEmojiWithAnimation = "smiling-face-emoji"
-        public var angryEmoji = "🤬"
-        public var grinningFaceEmoji = "😄"
-        public var rollingEyesEmoji = "🙄"
-        public var sadFaceEmoji = "😞"
-        public var smilingFaceEmoji = "😍"
+
+        public var reactionLoveSmall: UIImage = loadImageSafely(with: "reaction_love_small")
+        public var reactionLoveBig: UIImage = loadImageSafely(with: "reaction_love_big")
+        public var reactionLolSmall: UIImage = loadImageSafely(with: "reaction_lol_small")
+        public var reactionLolBig: UIImage = loadImageSafely(with: "reaction_lol_big")
+        public var reactionThumgsUpSmall: UIImage = loadImageSafely(with: "reaction_thumbsup_small")
+        public var reactionThumgsUpBig: UIImage = loadImageSafely(with: "reaction_thumbsup_big")
+        public var reactionThumgsDownSmall: UIImage = loadImageSafely(with: "reaction_thumbsdown_small")
+        public var reactionThumgsDownBig: UIImage = loadImageSafely(with: "reaction_thumbsdown_big")
+        public var reactionWutSmall: UIImage = loadImageSafely(with: "reaction_wut_small")
+        public var reactionWutBig: UIImage = loadImageSafely(with: "reaction_wut_big")
+
         private var _availableReactions: [MessageReactionType: ChatMessageReactionAppearanceType]?
         public var availableReactions: [MessageReactionType: ChatMessageReactionAppearanceType] {
             get {
                 _availableReactions ??
                     [
-                        .init(rawValue: "angryEmoji"): ChatMessageReactionAppearance(
-                            emojiAnimated: angryEmojiWithAnimation,
-                            emojiString: angryEmoji),
-                        .init(rawValue: "grinningFaceEmoji"): ChatMessageReactionAppearance(
-                            emojiAnimated: grinningFaceEmojiWithAnimation,
-                            emojiString: grinningFaceEmoji),
-                        .init(rawValue: "rollingEyesEmoji"): ChatMessageReactionAppearance(
-                            emojiAnimated: rollingEyesEmojiWithAnimation,
-                            emojiString: rollingEyesEmoji),
-                        .init(rawValue: "sadFaceEmoji"): ChatMessageReactionAppearance(
-                            emojiAnimated: sadFaceEmojiWithAnimation,
-                            emojiString: sadFaceEmoji),
-                        .init(rawValue: "smilingFaceEmoji"): ChatMessageReactionAppearance(
-                            emojiAnimated: smilingFaceEmojiWithAnimation,
-                            emojiString: smilingFaceEmoji),
+                        .init(rawValue: "love"): ChatMessageReactionAppearance(
+                            smallIcon: reactionLoveSmall,
+                            largeIcon: reactionLoveBig
+                        ),
+                        .init(rawValue: "haha"): ChatMessageReactionAppearance(
+                            smallIcon: reactionLolSmall,
+                            largeIcon: reactionLolBig
+                        ),
+                        .init(rawValue: "like"): ChatMessageReactionAppearance(
+                            smallIcon: reactionThumgsUpSmall,
+                            largeIcon: reactionThumgsUpBig
+                        ),
+                        .init(rawValue: "sad"): ChatMessageReactionAppearance(
+                            smallIcon: reactionThumgsDownSmall,
+                            largeIcon: reactionThumgsDownBig
+                        ),
+                        .init(rawValue: "wow"): ChatMessageReactionAppearance(
+                            smallIcon: reactionWutSmall,
+                            largeIcon: reactionWutBig
+                        )
                     ]
             }
             set { _availableReactions = newValue }

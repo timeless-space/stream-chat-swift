@@ -43,7 +43,7 @@ open class ChatMessageReactionsBubbleView: _View, ThemeProvider {
         isHidden = false
         contentView.content = content.flatMap {
             .init(
-                useAnimatedIcons: $0.style.isBig,
+                useBigIcons: $0.style.isBig,
                 reactions: $0.reactions,
                 didTapOnReaction: $0.didTapOnReaction
             )

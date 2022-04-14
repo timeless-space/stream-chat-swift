@@ -7,21 +7,21 @@ import UIKit
 
 /// The type describing message reaction appearance.
 public protocol ChatMessageReactionAppearanceType {
-    var emojiAnimated: String { get }
-    var emojiString: String { get }
+    var smallIcon: UIImage { get }
+    var largeIcon: UIImage { get }
 }
 
 /// The default `ReactionAppearanceType` implementation without any additional data
 /// which can be used to provide custom icons for message reaction.
 public struct ChatMessageReactionAppearance: ChatMessageReactionAppearanceType {
-    public let emojiAnimated: String
-    public let emojiString: String
+    public let smallIcon: UIImage
+    public let largeIcon: UIImage
     
     public init(
-        emojiAnimated: String,
-        emojiString: String
+        smallIcon: UIImage,
+        largeIcon: UIImage
     ) {
-        self.emojiAnimated = emojiAnimated
-        self.emojiString = emojiString
+        self.smallIcon = smallIcon
+        self.largeIcon = largeIcon
     }
 }

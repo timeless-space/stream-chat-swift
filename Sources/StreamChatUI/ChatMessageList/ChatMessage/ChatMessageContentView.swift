@@ -542,7 +542,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
             .map { $0.isSentByCurrentUser ? .toTrailing : .toLeading }
         reactionsView?.content = content.map {
             .init(
-                useAnimatedIcons: false,
+                useBigIcons: false,
                 reactions: $0.reactions,
                 didTapOnReaction: nil
             )
