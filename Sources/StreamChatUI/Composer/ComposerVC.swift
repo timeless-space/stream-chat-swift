@@ -419,7 +419,7 @@ open class ComposerVC: _ViewController,
             quotingMessage: content.quotingMessage,
             command: content.command
         )
-        
+
         attachmentsVC.content = content.attachments.map {
             if let provider = $0.payload as? AttachmentPreviewProvider {
                 return provider
@@ -431,8 +431,7 @@ open class ComposerVC: _ViewController,
                 return DefaultAttachmentPreviewProvider()
             }
         }
-        composerView.inputMessageView.attachmentsViewContainer.isHidden = content.attachments.isEmpty
-
+        
         if content.isInsideThread {
             if channelController?.channel?.isDirectMessageChannel == true {
                 composerView.checkboxControl.label.text = L10n.Composer.Checkmark.directMessageReply
