@@ -428,7 +428,7 @@ open class ComposerVC: _ViewController,
         case .edit:
             composerView.titleLabel.text = L10n.Composer.Title.edit
             Animate {
-                self.composerView.confirmButton.isHidden = false
+                //self.composerView.confirmButton.isHidden = false
                 self.composerView.inputMessageView.sendButton.isHidden = true
                 self.composerView.headerView.isHidden = false
             }

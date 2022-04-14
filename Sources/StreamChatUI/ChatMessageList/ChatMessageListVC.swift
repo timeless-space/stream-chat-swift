@@ -259,7 +259,6 @@ open class ChatMessageListVC:
             controller.messageController = messageController
             return controller
         }()
-
         router.showMessageActionsPopUp(
             messageContentView: messageContentView,
             messageActionsController: actionsController,

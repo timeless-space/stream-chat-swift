@@ -423,11 +423,42 @@ public extension Appearance {
         }
 
         // MARK: - Message Actions
-
-        public var messageActionInlineReply: UIImage = loadImageSafely(with: "reply") //icn_inline_reply
+        public var messageActionInlineReply: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "arrowshape.turn.up.left")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
         public var messageActionThreadReply: UIImage = loadImageSafely(with: "icn_thread_reply")
-        public var messageActionEdit: UIImage = loadImageSafely(with: "icn_edit")
-        public var messageActionCopy: UIImage = loadImageSafely(with: "copy") //icn_copy
+        public var messageActionEdit: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "pencil.circle")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionCopy: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "doc.on.doc")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionPin: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "pin")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionForward: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "arrowshape.turn.up.right")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
         public var messageActionTranslate: UIImage = loadImageSafely(with: "icn_translate")
         public var moreAction: UIImage = loadImageSafely(with: "icn_more")
         public var messageActionBlockUser: UIImage = loadImageSafely(with: "icn_block_user")
