@@ -791,12 +791,9 @@ open class ComposerVC: _ViewController,
     }
 
     @objc open func sendONEAction() {
-        composerView.inputMessageView.textView.text = nil
-        composerView.inputMessageView.textView.resignFirstResponder()
-        guard let channelId = channelController?.channel?.cid else { return }
-        var userInfo = [String: Any]()
-        userInfo["channelId"] = channelId
-        NotificationCenter.default.post(name: .sendOneWalletTapAction, object: nil, userInfo: userInfo)
+        composerView.inputMessageView.textView.text = ""
+        showPayment()
+        animateMenuButton()
     }
 
     @objc func btnSendSticker(_ notification: Notification) {
