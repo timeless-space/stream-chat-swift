@@ -170,9 +170,6 @@ public extension ChatUserListController {
                 }
             }
         }
-//        worker.update(userListQuery: updatedQuery) { error in
-//            self.callback { completion?(error) }
-//        }
     }
 }
 
