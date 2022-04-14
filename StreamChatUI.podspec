@@ -25,5 +25,4 @@ Pod::Spec.new do |spec|
     spec.dependency "EFQRCode", "~> 6.2.0"
     spec.dependency "swiftScan"
     spec.dependency "SkeletonView", "1.29.2"
-    spec.dependency "lottie-ios", "3.2.3"
   end
