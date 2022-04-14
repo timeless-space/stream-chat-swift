@@ -18,6 +18,12 @@ public struct Constants {
     public static let MessageLeftPadding: CGFloat = 8.0
     public static let MessageRightPadding: CGFloat = -8.0
     public static let MessageTopPadding: CGFloat = 15
+
+    enum SocialMediaProfilePrefix {
+        static let instagram = "instagram.com/"
+        static let tiktok = "tiktok.com/@"
+        static let twitter = "twitter.com/"
+    }
 }
 
 public struct UserdefaultKey {
