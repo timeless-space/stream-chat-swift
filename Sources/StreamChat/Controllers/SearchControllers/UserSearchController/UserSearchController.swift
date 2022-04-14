@@ -219,12 +219,19 @@ public class ChatUserSearchController: DataController, DelegateCallable, DataSto
             lastQuery = newQuery
             //
 
-            userQueryUpdater.update(userListQuery: newQuery, policy: .replace) { [weak self] error in
-                guard let self = self else {
+            userQueryUpdater.update(userListQuery: newQuery, policy: .replace) { [weak self] result in
+                guard let weakSelf = self else {
+                    completion?(nil)
                     return
                 }
-                self.state = error == nil ? .remoteDataFetched : .remoteDataFetchFailed(ClientError(with: error))
-                self.callback { completion?(error) }
+                switch result {
+                case .success:
+                    weakSelf.state = .remoteDataFetched
+                    weakSelf.callback { completion?(nil) }
+                case let .failure(error):
+                    weakSelf.state = .remoteDataFetchFailed(ClientError(with: error))
+                    weakSelf.callback { completion?(error) }
+                }
             }
         }
     /// Searches users for the given query.
@@ -247,12 +254,19 @@ public class ChatUserSearchController: DataController, DelegateCallable, DataSto
         
         lastQuery = query
         
-        userQueryUpdater.update(userListQuery: query, policy: .replace) { [weak self] error in
-            guard let self = self else {
+        userQueryUpdater.update(userListQuery: query, policy: .replace) { [weak self] result in
+            guard let weakSelf = self else {
+                completion?(nil)
                 return
             }
-            self.state = error == nil ? .remoteDataFetched : .remoteDataFetchFailed(ClientError(with: error))
-            self.callback { completion?(error) }
+            switch result {
+            case .success:
+                weakSelf.state = .remoteDataFetched
+                weakSelf.callback { completion?(nil) }
+            case let .failure(error):
+                weakSelf.state = .remoteDataFetchFailed(ClientError(with: error))
+                weakSelf.callback { completion?(error) }
+            }
         }
     }
     
@@ -274,11 +288,17 @@ public class ChatUserSearchController: DataController, DelegateCallable, DataSto
         
         var updatedQuery = lastQuery
         updatedQuery.pagination = Pagination(pageSize: limit, offset: users.count)
-        userQueryUpdater.update(userListQuery: updatedQuery) { [weak self] error in
-            guard let self = self else {
+        userQueryUpdater.update(userListQuery: updatedQuery) { [weak self] result in
+            guard let weakSelf = self else {
+                completion?(nil)
                 return
             }
-            self.callback { completion?(error) }
+            switch result {
+            case let .success(payload):
+                weakSelf.callback { completion?(nil) }
+            case let .failure(error):
+                weakSelf.callback { completion?(error) }
+            }
         }
     }
 }

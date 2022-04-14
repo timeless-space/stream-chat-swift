@@ -21,7 +21,7 @@ class UserListUpdater: Worker {
     ///   - policy: The update policy for the resulting user set. See `UpdatePolicy`
     ///   - completion: Called when the API call is finished. Called with `Error` if the remote update fails.
     ///
-    func update(userListQuery: UserListQuery, policy: UpdatePolicy = .merge, completion: ((Error?) -> Void)? = nil) {
+    func update(userListQuery: UserListQuery, policy: UpdatePolicy = .merge, completion: ((Result<UserListPayload, Error>) -> Void)? = nil) {
         apiClient
             .request(endpoint: .users(query: userListQuery)) { (result: Result<UserListPayload, Error>) in
                 switch result {
@@ -38,14 +38,14 @@ class UserListUpdater: Worker {
                     } completion: { error in
                         if let error = error {
                             log.error("Failed to save `UserListPayload` to the database. Error: \(error)")
-                            completion?(error)
+                            completion?(.failure(error))
                         } else {
-                            completion?(nil)
+                            completion?(.success(userListPayload))
                         }
                     }
                     
                 case let .failure(error):
-                    completion?(error)
+                    completion?(.failure(error))
                 }
             }
     }
