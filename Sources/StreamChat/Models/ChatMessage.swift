@@ -213,6 +213,85 @@ extension ChatMessage {
     public var isPinned: Bool {
         pinDetails != nil
     }
+
+    public var isWalletRequestPayCell: Bool {
+        if let wallet = attachments(payloadType: WalletAttachmentPayload.self).first {
+            return true
+        }
+        return false
+    }
+
+    public var isOneWalletCell: Bool {
+        extraData.keys.contains("oneWalletTx") ?? false
+    }
+
+    public var isRedPacketCell: Bool {
+        extraData.keys.contains("redPacketPickup") ?? false
+    }
+
+    public var isRedPacketAmountCell: Bool {
+        return extraData.keys.contains("RedPacketOtherAmountReceived") ?? false
+    }
+
+    public var isRedPacketReceivedCell: Bool {
+        extraData.keys.contains("RedPacketTopAmountReceived") ?? false
+    }
+
+    public var isRedPacketExpiredCell: Bool {
+        guard let redPacket = getExtraData(key: "RedPacketExpired") else {
+            return false
+        }
+        if let userName = redPacket["highestAmountUserName"] {
+            let strUserName = fetchRawData(raw: userName) as? String ?? ""
+            return !strUserName.isEmpty
+        } else {
+            return false
+        }
+    }
+
+    public var isRedPacketNoPickUpCell: Bool {
+        guard let redPacket = getExtraData(key: "RedPacketExpired") else {
+            return false
+        }
+        if let userName = redPacket["highestAmountUserName"] {
+            let strUserName = fetchRawData(raw: userName) as? String ?? ""
+            return strUserName.isEmpty
+        } else {
+            return false
+        }
+    }
+
+    public func getExtraData(key: String) -> [String: RawJSON]? {
+        if let extraData = extraData[key] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+
+    public func fetchRawData(raw: RawJSON) -> Any? {
+        switch raw {
+        case .number(let double):
+            return double
+        case .string(let string):
+            return string
+        case .bool(let bool):
+            return bool
+        case .dictionary(let dictionary):
+            return dictionary
+        case .array(let array):
+            return array
+        case .nil:
+            return nil
+        @unknown default:
+            return nil
+        }
+    }
 }
 
 public extension ChatMessage {

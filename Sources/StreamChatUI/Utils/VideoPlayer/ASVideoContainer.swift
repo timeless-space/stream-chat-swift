@@ -16,6 +16,7 @@ class ASVideoContainer {
             player.isMuted = ASVideoPlayerController.sharedVideoPlayer.mute
             playerItem.preferredPeakBitRate = ASVideoPlayerController.sharedVideoPlayer.preferredPeakBitRate
             if playOn && playerItem.status == .readyToPlay {
+                player.seek(to: .zero)
                 player.play()
             } else {
                 player.pause()

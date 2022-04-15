@@ -8,7 +8,7 @@
 import UIKit
 import AVKit
 
-open class ASVideoTableViewCell: UITableViewCell, ASAutoPlayVideoLayerContainer {
+open class ASVideoTableViewCell: _TableViewCell, ASAutoPlayVideoLayerContainer {
 
     // MARK: Variables
     public var videoURL: String? {

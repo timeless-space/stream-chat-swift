@@ -4,7 +4,7 @@
 
 import Foundation
 
-final class Cache<Key: Hashable, Value> {
+open class Cache<Key: Hashable, Value> {
     private let wrapped: NSCache<WrappedKey, Entry>
     
     init(countLimit: Int = 0) {

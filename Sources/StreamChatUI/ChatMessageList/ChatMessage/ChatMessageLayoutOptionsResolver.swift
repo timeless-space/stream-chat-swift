@@ -31,11 +31,26 @@ open class ChatMessageLayoutOptionsResolver {
         let messageIndex = messages.index(messages.startIndex, offsetBy: indexPath.item)
         let message = messages[messageIndex]
 
-        let isLastInSequence = isMessageLastInSequence(
+        var isLastInSequence = isMessageLastInSequence(
             messageIndexPath: indexPath,
             messages: messages
         )
-        
+
+        let nextMessageIndex = messages.index(before: messageIndex)
+        if messages.indices.contains(nextMessageIndex) {
+            let nextMessage = messages[nextMessageIndex]
+            let isCardMessage = nextMessage.isWalletRequestPayCell ||
+            nextMessage.isOneWalletCell ||
+            nextMessage.isRedPacketAmountCell ||
+            nextMessage.isRedPacketCell ||
+            nextMessage.isRedPacketExpiredCell ||
+            nextMessage.isRedPacketReceivedCell ||
+            nextMessage.isRedPacketNoPickUpCell
+            if isCardMessage && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+                isLastInSequence = true
+            }
+        }
+
         var options: ChatMessageLayoutOptions = []
 
         // The text should be centered without a bubble for system messages
@@ -85,12 +100,12 @@ open class ChatMessageLayoutOptionsResolver {
             // The bubbles with thread look like continuous bubbles
             options.insert(.continuousBubble)
         }
-        if isRedPacketAmountCell(message) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+        if message.isRedPacketAmountCell && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.avatar)
             options.insert(.authorName)
             options.insert(.timestamp)
         }
-        if isWalletRequestPayCell(message) && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+        if message.isWalletRequestPayCell && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.avatar)
             options.insert(.authorName)
             options.insert(.timestamp)
@@ -104,18 +119,7 @@ open class ChatMessageLayoutOptionsResolver {
 
         return options
     }
-    
-    private func isRedPacketAmountCell(_ message: ChatMessage?) -> Bool {
-        message?.extraData.keys.contains("RedPacketOtherAmountReceived") ?? false
-    }
-    
-    private func isWalletRequestPayCell(_ message: ChatMessage?) -> Bool {
-        if let wallet = message?.attachments(payloadType: WalletAttachmentPayload.self).first {
-            return true
-        }
-        return false
-    }
-    
+
     func hasQuotedMessage(_ message: ChatMessage) -> Bool {
         message.quotedMessage?.id != nil
     }
