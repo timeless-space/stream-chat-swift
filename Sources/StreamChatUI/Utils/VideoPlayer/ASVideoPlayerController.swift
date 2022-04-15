@@ -29,6 +29,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
     static public let sharedVideoPlayer = ASVideoPlayerController()
     //video url for currently playing video
     private var videoURL: String?
+    var currentCell: ASVideoTableViewCell?
     /**
      Stores video url as key and true as value when player item associated to the url
      is being observed for its status change.
@@ -167,6 +168,10 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
         return nil
     }
 
+    func currentVideoCell() -> ASVideoTableViewCell? {
+        currentCell
+    }
+
     private func addObservers(url: String, videoContainer: ASVideoContainer) {
         if self.observingURLs[url] == false || self.observingURLs[url] == nil {
             videoContainer.player.currentItem?.addObserver(self,
@@ -205,16 +210,23 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
         var maxHeight: CGFloat = 0.0
         for cellView in visibleCells {
             guard var containerCell = cellView as? ASAutoPlayVideoLayerContainer else {
-                      continue
-                  }
+                continue
+            }
             let height = cellView.bounds.height
             if visibleCells.count <= 2 {
                 tableView.indexPathsForVisibleRows?.forEach({ index in
                     let cellRect = tableView.rectForRow(at: index)
                     let completelyVisible = tableView.bounds.contains(cellRect)
-                    if cellView == tableView.cellForRow(at: index) && completelyVisible {
+                    // First cell
+                    let lastCellIndex = (tableView.numberOfRows(inSection: 0) - 1)
+                    if ((Int(cellRect.maxY) - Int(tableView.contentSize.height)) < 5) && index.row == lastCellIndex {
                         maxHeight = height
-                        videoCellContainer = containerCell
+                        videoCellContainer = visibleCells.last as? ASAutoPlayVideoLayerContainer
+                    } else {
+                        if cellView == tableView.cellForRow(at: index) && completelyVisible {
+                            maxHeight = height
+                            videoCellContainer = containerCell
+                        }
                     }
                 })
                 if visibleCells.count == 1 {
@@ -222,14 +234,21 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
                     videoCellContainer = containerCell
                 }
             } else if cellView == visibleCells.middle {
-                maxHeight = height
-                videoCellContainer = containerCell
+                // last cell
+                if tableView.contentOffset.y == 0 {
+                    maxHeight = height
+                    videoCellContainer = visibleCells.first as? ASAutoPlayVideoLayerContainer
+                } else {
+                    maxHeight = height
+                    videoCellContainer = containerCell
+                }
             }
             containerCell.isVideoPlaying = false
             if let cell = containerCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
+                currentCell = cell
                 // Disable gif support for now
-//                cell.imgView.stopAnimatingGif()
+                //                cell.imgView.stopAnimatingGif()
             }
             if let videoCellURL = videoURL {
                 pauseRemoveLayer(layer: containerCell.videoLayer, url: videoCellURL, layerHeight: height)
@@ -254,6 +273,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
             videoCell.isVideoPlaying = true
             if let cell = videoCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
+                currentCell = cell
                 // Disable gif support for now
                 // cell.imgView.startAnimatingGif()
             }
@@ -270,9 +290,9 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
     // Play video only when current videourl's player is ready to play
     //swiftlint:disable block_based_kvo
     open override func observeValue(forKeyPath keyPath: String?,
-                               of object: Any?,
-                               change: [NSKeyValueChangeKey: Any]?,
-                               context: UnsafeMutableRawPointer?) {
+                                    of object: Any?,
+                                    change: [NSKeyValueChangeKey: Any]?,
+                                    context: UnsafeMutableRawPointer?) {
         // Make sure the this KVO callback was intended for this view controller.
         guard context == &ASVideoPlayerController.playerViewControllerKVOContext else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)

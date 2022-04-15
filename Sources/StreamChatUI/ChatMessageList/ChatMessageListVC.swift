@@ -73,8 +73,7 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
-    var streamVideoLoader = StreamVideoLoader()
-    
+
     open override func viewDidLoad() {
         super.viewDidLoad()
         listView.register(CryptoSentBubble.self, forCellReuseIdentifier: "CryptoSentBubble")
@@ -82,16 +81,23 @@ open class ChatMessageListVC:
         listView.register(RedPacketSentBubble.self, forCellReuseIdentifier: "RedPacketSentBubble")
         listView.register(WalletRequestPayBubble.self, forCellReuseIdentifier: "RequestBubble")
         listView.register(RedPacketBubble.self, forCellReuseIdentifier: "RedPacketBubble")
+        listView.register(ChatMessageStickerBubble.self, forCellReuseIdentifier: "ChatMessageStickerBubble")
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
-        //setupEmptyState()
-//        if let numberMessage = dataSource?.numberOfMessages(in: self) {
-//            viewEmptyState.isHidden = numberMessage != 0
-//        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            guard let `self` = self else { return }
+            self.pausePlayVideos()
+        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
 
     override open func setUp() {
@@ -258,7 +264,6 @@ open class ChatMessageListVC:
             controller.messageController = messageController
             return controller
         }()
-
         router.showMessageActionsPopUp(
             messageContentView: messageContentView,
             messageActionsController: actionsController,
@@ -291,13 +296,13 @@ open class ChatMessageListVC:
         let currentUserId = ChatClient.shared.currentUserId
         let isMessageFromCurrentUser = message?.author.id == currentUserId
         if channelType == .announcement {
-            guard let cell = tableView.dequeueReusableCell(
+            guard let cell = listView.dequeueReusableCell(
                 withIdentifier: "AnnouncementTableViewCell",
                 for: indexPath) as? AnnouncementTableViewCell else {
                     return UITableViewCell()
                 }
             cell.delegate = self
-            cell.streamVideoLoader = streamVideoLoader
+            cell.cacheVideoThumbnail = components.cacheVideoThumbnail
             cell.message = message
             cell.configureCell(message)
             cell.transform = .mirrorY
@@ -462,6 +467,19 @@ open class ChatMessageListVC:
                 cell.configCell(messageCount: messagesCont)
                 cell.transform = .mirrorY
                 return cell
+            } else if isStickerCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "ChatMessageStickerBubble",
+                    for: indexPath) as? ChatMessageStickerBubble else {
+                        return UITableViewCell()
+                    }
+                let messagesCont = dataSource?.numberOfMessages(in: self) ?? 0
+                cell.content = message
+                cell.chatChannel = dataSource?.channel(for: self) 
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -512,6 +530,10 @@ open class ChatMessageListVC:
         message?.extraData.keys.contains("redPacketPickup") ?? false
     }
 
+    private func isStickerCell(_ message: ChatMessage?) -> Bool {
+        return (message?.extraData.keys.contains("stickerUrl") ?? false) || (message?.extraData.keys.contains("giphyUrl") ?? false)
+    }
+
     private func isRedPacketExpiredCell(_ message: ChatMessage?) -> Bool {
         guard let extraData = message?.extraData, let redPacket = getExtraData(message: message, key: "RedPacketExpired") else {
             return false
@@ -557,6 +579,11 @@ open class ChatMessageListVC:
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
+    }
+
+    public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let cell = cell as? ASVideoTableViewCell else { return }
+        ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
     }
 
     open func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -737,6 +764,11 @@ open class ChatMessageListVC:
         guard channelType == .announcement else { return }
         ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView)
     }
+
+    @objc private func handleAppDidBecomeActive() {
+        guard channelType == .announcement else { return }
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true)
+    }
 }
 
 extension ChatMessageListVC: UIScrollViewDelegate {
@@ -762,7 +794,14 @@ extension ChatMessageListVC: AnnouncementAction {
         )
     }
 
-    func didSelectAnnouncementAction(_ message: ChatMessage?) {
-        debugPrint(message?.text)
+    func didSelectAnnouncementAction(_ message: ChatMessage?) { }
+
+    func didRefreshCell(_ cell: AnnouncementTableViewCell, _ img: UIImage) {
+        guard let indexPath = listView.indexPath(for: cell),
+            let visibleRows = listView.indexPathsForVisibleRows,
+            visibleRows.contains(indexPath)
+        else { return }
+        let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
+        cell.configureCell(message)
     }
 }

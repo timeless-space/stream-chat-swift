@@ -270,44 +270,79 @@ public extension Appearance {
             }
         }()
 
+        public var menuKeyboard: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "keyboard")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+
+        public var addIcon: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "plus")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+
+        public var downloadSticker: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "arrow.down.circle")
+            } else {
+                return nil
+            }
+        }()
+
+        public var downloadStickerFill: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "arrow.down.circle.fill")
+            } else {
+                return nil
+            }
+        }()
+
+        public var clock: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "clock")?
+                    .withRenderingMode(.alwaysTemplate)
+                    .tinted(with: UIColor.white.withAlphaComponent(0.6))
+            } else {
+                return nil
+            }
+        }()
+
         // MARK: - Reactions
-
-        public var reactionLoveSmall: UIImage = loadImageSafely(with: "reaction_love_small")
-        public var reactionLoveBig: UIImage = loadImageSafely(with: "reaction_love_big")
-        public var reactionLolSmall: UIImage = loadImageSafely(with: "reaction_lol_small")
-        public var reactionLolBig: UIImage = loadImageSafely(with: "reaction_lol_big")
-        public var reactionThumgsUpSmall: UIImage = loadImageSafely(with: "reaction_thumbsup_small")
-        public var reactionThumgsUpBig: UIImage = loadImageSafely(with: "reaction_thumbsup_big")
-        public var reactionThumgsDownSmall: UIImage = loadImageSafely(with: "reaction_thumbsdown_small")
-        public var reactionThumgsDownBig: UIImage = loadImageSafely(with: "reaction_thumbsdown_big")
-        public var reactionWutSmall: UIImage = loadImageSafely(with: "reaction_wut_small")
-        public var reactionWutBig: UIImage = loadImageSafely(with: "reaction_wut_big")
-
+        public var angryEmojiWithAnimation = "angry-emoji"
+        public var grinningFaceEmojiWithAnimation = "grinning-face-emoji"
+        public var rollingEyesEmojiWithAnimation = "rolling-eyes-emoji"
+        public var sadFaceEmojiWithAnimation = "sad-face-emoji"
+        public var smilingFaceEmojiWithAnimation = "smiling-face-emoji"
+        public var angryEmoji = "🤬"
+        public var grinningFaceEmoji = "😄"
+        public var rollingEyesEmoji = "🙄"
+        public var sadFaceEmoji = "😞"
+        public var smilingFaceEmoji = "😍"
         private var _availableReactions: [MessageReactionType: ChatMessageReactionAppearanceType]?
         public var availableReactions: [MessageReactionType: ChatMessageReactionAppearanceType] {
             get {
                 _availableReactions ??
                     [
-                        .init(rawValue: "love"): ChatMessageReactionAppearance(
-                            smallIcon: reactionLoveSmall,
-                            largeIcon: reactionLoveBig
-                        ),
-                        .init(rawValue: "haha"): ChatMessageReactionAppearance(
-                            smallIcon: reactionLolSmall,
-                            largeIcon: reactionLolBig
-                        ),
-                        .init(rawValue: "like"): ChatMessageReactionAppearance(
-                            smallIcon: reactionThumgsUpSmall,
-                            largeIcon: reactionThumgsUpBig
-                        ),
-                        .init(rawValue: "sad"): ChatMessageReactionAppearance(
-                            smallIcon: reactionThumgsDownSmall,
-                            largeIcon: reactionThumgsDownBig
-                        ),
-                        .init(rawValue: "wow"): ChatMessageReactionAppearance(
-                            smallIcon: reactionWutSmall,
-                            largeIcon: reactionWutBig
-                        )
+                        .init(rawValue: "angryEmoji"): ChatMessageReactionAppearance(
+                            emojiAnimated: angryEmojiWithAnimation,
+                            emojiString: angryEmoji),
+                        .init(rawValue: "grinningFaceEmoji"): ChatMessageReactionAppearance(
+                            emojiAnimated: grinningFaceEmojiWithAnimation,
+                            emojiString: grinningFaceEmoji),
+                        .init(rawValue: "rollingEyesEmoji"): ChatMessageReactionAppearance(
+                            emojiAnimated: rollingEyesEmojiWithAnimation,
+                            emojiString: rollingEyesEmoji),
+                        .init(rawValue: "sadFaceEmoji"): ChatMessageReactionAppearance(
+                            emojiAnimated: sadFaceEmojiWithAnimation,
+                            emojiString: sadFaceEmoji),
+                        .init(rawValue: "smilingFaceEmoji"): ChatMessageReactionAppearance(
+                            emojiAnimated: smilingFaceEmojiWithAnimation,
+                            emojiString: smilingFaceEmoji),
                     ]
             }
             set { _availableReactions = newValue }
@@ -381,11 +416,42 @@ public extension Appearance {
         }
 
         // MARK: - Message Actions
-
-        public var messageActionInlineReply: UIImage = loadImageSafely(with: "reply") //icn_inline_reply
+        public var messageActionInlineReply: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "arrowshape.turn.up.left")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
         public var messageActionThreadReply: UIImage = loadImageSafely(with: "icn_thread_reply")
-        public var messageActionEdit: UIImage = loadImageSafely(with: "icn_edit")
-        public var messageActionCopy: UIImage = loadImageSafely(with: "copy") //icn_copy
+        public var messageActionEdit: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "pencil.circle")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionCopy: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "doc.on.doc")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionPin: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "pin")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
+        public var messageActionForward: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "arrowshape.turn.up.right")?.withRenderingMode(.alwaysTemplate)
+            } else {
+                return nil
+            }
+        }()
         public var messageActionTranslate: UIImage = loadImageSafely(with: "icn_translate")
         public var moreAction: UIImage = loadImageSafely(with: "icn_more")
         public var messageActionBlockUser: UIImage = loadImageSafely(with: "icn_block_user")
@@ -499,5 +565,6 @@ public extension Appearance {
 
         // MARK: QR Code Option
         public var shareImageIcon: UIImage = loadImageSafely(with: "share_image_icon")
+        public var gif: UIImage = loadImageSafely(with: "gif")
     }
 }

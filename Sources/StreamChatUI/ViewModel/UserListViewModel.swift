@@ -11,6 +11,7 @@ import StreamChat
 import StreamChatUI
 
 public class UserListViewModel: NSObject {
+    
     // MARK: - VARIABLE
     public enum ChatUserLoadingState {
         case searching,searchingError, loading, loadMoreData, error, completed , none
@@ -34,13 +35,15 @@ public class UserListViewModel: NSObject {
     private var searchOperation: DispatchWorkItem?
     public var hasLoadedAllData: Bool = false
     private var userFetchLimit: Int = 99
-    private var userListPreviousCount: Int = 0
+    private var retryApiCount: Int = 0
     public lazy var sectionWiseUserList = [ChatUserListData]()
+
     // MARK: - INIT
     init(sortType: Em_ChatUserListFilterTypes) {
         self.sortType = sortType
         super.init()
     }
+
     // MARK: - METHOD
     public func isUserSelected(chatUser: ChatUser) -> Int? {
         return self.selectedUsers.firstIndex(where: { $0.id.lowercased() == chatUser.id.lowercased()})
@@ -92,6 +95,7 @@ extension UserListViewModel {
 // MARK: - GET STREAM API
 extension UserListViewModel {
     public func searchDataUsing(searchString: String?) {
+        self.searchText = searchString
         if self.dataLoadingState != .searching {
             self.dataLoadingState = .searching
         }
@@ -104,7 +108,6 @@ extension UserListViewModel {
     }
     
     private func searchUser(with name: String?) {
-        self.searchText = name
         if let strName = name, strName.isEmpty == false {
             if strName.containsEmoji  || strName.isBlank {
                 Snackbar.show(text: "Please enter valid name")
@@ -132,7 +135,7 @@ extension UserListViewModel {
     
     open func refreshUserList(_ fetchMoreData: Bool = false) {
         hasLoadedAllData = false
-        userListPreviousCount = 0
+        retryApiCount = 0
         searchText = nil
         fetchUserList(fetchMoreData)
     }
@@ -141,52 +144,57 @@ extension UserListViewModel {
         if hasLoadedAllData {
             return
         }
-        guard self.searchText == nil else {
+        guard searchText == nil else {
             return
         }
         searchOperation?.cancel()
-        if self.dataLoadingState == .loading || self.dataLoadingState == .loadMoreData {
+        if dataLoadingState == .loading || dataLoadingState == .loadMoreData {
             return
         }
-        if self.dataLoadingState != .loading && fetchMoreData == false {
-            self.dataLoadingState = .loading
+        if dataLoadingState != .loading && fetchMoreData == false {
+            dataLoadingState = .loading
         }
         if fetchMoreData {
-            self.dataLoadingState = .loadMoreData
-            var userQuery = UserListQuery(filter: .and([
+            dataLoadingState = .loadMoreData
+        }
+        callStreamChatUserListApi(fetchMoreData)
+    }
+
+    private func callStreamChatUserListApi(_ fetchMoreData: Bool) {
+        if userListController == nil {
+            var userQuery: UserListQuery?
+            if sortType == .sortByAtoZ {
+                userQuery = UserListQuery(sort: [.init(key: .name, isAscending: true)], pageSize: userFetchLimit)
+            } else {
+                userQuery = UserListQuery(sort: [.init(key: .lastActivityAt, isAscending: false)], pageSize: userFetchLimit)
+            }
+            userQuery?.filter = .and([
+                .exists(.id),
+                .exists(.lastActiveAt),
                 .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
-            ]), sort: [], pageSize: userFetchLimit)
-            self.userListController = ChatClient.shared.userListController(query: userQuery)
-            self.userListController?.synchronize { [weak self] error in
+                .lessOrEqual(.lastActiveAt, than: Date()),
+            ])
+            userQuery?.shouldBeUpdatedInBackground = false
+            self.userListController = ChatClient.shared.userListController(query: userQuery ?? .init())
+        }
+        if fetchMoreData {
+            userListController?.loadNextUsers(limit: userFetchLimit, completion: { [weak self] (error,paginationStatus) in
                 guard let weakSelf = self else { return }
+                weakSelf.hasLoadedAllData = paginationStatus
                 if error == nil {
                     DispatchQueue.main.async {
-                        let fetchCount = weakSelf.userListController?.users.count ?? 0
-                        if fetchCount > 0 && fetchCount == weakSelf.userListPreviousCount {
-                            weakSelf.hasLoadedAllData = true
-                            weakSelf.dataLoadingState = .completed
-                            return
-                        }
-                        weakSelf.userListPreviousCount = fetchCount
-                        let filterData = weakSelf.getFilteredData(users: weakSelf.userListController?.users ?? [])
-                        weakSelf.bCallbackDataUserList?(filterData)
-                        weakSelf.dataLoadingState = .completed
+                        weakSelf.processUserList()
                     }
                 } else {
                     weakSelf.dataLoadingState = weakSelf.searchText == nil ? .error : .searchingError
                 }
-            }
+            })
         } else {
-            let date = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
-            let userQuery = UserListQuery.init(filter: .greaterOrEqual(.lastActiveAt, than: date), sort: [], pageSize: userFetchLimit)
-            self.userListController = ChatClient.shared.userListController(query: userQuery)
-            self.userListController?.synchronize { [weak self] error in
+            userListController?.synchronize { [weak self] error in
                 guard let weakSelf = self else { return }
                 if error == nil {
                     DispatchQueue.main.async {
-                        let filterData = weakSelf.getFilteredData(users: weakSelf.userListController?.users ?? [])
-                        weakSelf.bCallbackDataUserList?(filterData)
-                        weakSelf.dataLoadingState = .completed
+                        weakSelf.processUserList()
                     }
                 } else {
                     weakSelf.dataLoadingState = .error
@@ -194,16 +202,36 @@ extension UserListViewModel {
             }
         }
     }
-    
-    open func sortUserList() {
-        if let strName = searchText, strName.isBlank == false {
-            let filterData = self.getFilteredData(users: self.searchListController.users)
-            self.bCallbackDataUserList?(filterData)
-        } else  {
-            let filterData = self.getFilteredData(users: self.userListController?.users ?? [])
-            self.bCallbackDataUserList?(filterData)
+
+    private func processUserList() {
+        let filterData = getFilteredData(users: userListController?.users ?? [])
+        // checking sorting type , if it sortByAtoZ , then we will skip no alphabetUsers users
+        guard sortType == .sortByAtoZ else {
+            bCallbackDataUserList?(filterData)
+            dataLoadingState = .completed
+            return
         }
-        self.dataLoadingState = .completed
+        let alphabetUsers = filterData.filter({ $0.name?.isFirstCharacterAlp == true })
+        guard alphabetUsers.count == 0 else {
+            bCallbackDataUserList?(alphabetUsers)
+            dataLoadingState = .completed
+            return
+        }
+        guard retryApiCount <= 4 else {
+            bCallbackDataUserList?(filterData)
+            dataLoadingState = .completed
+            return
+        }
+        retryApiCount += 1
+        callStreamChatUserListApi(true)
+    }
+
+    open func getUsers() -> [ChatUser] {
+        if let strName = searchText, strName.isBlank == false {
+            return getFilteredData(users: searchListController.users)
+        } else  {
+            return getFilteredData(users: userListController?.users ?? [])
+        }
     }
     
     private func getFilteredData(users: LazyCachedMapCollection<ChatUser>) -> [ChatUser] {

@@ -25,7 +25,7 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
 
     override open func setUpAppearance() {
         super.setUpAppearance()
-        contentViewBackground.layer.borderWidth = 1
+        contentViewBackground.layer.borderWidth = 0
     }
     
     override open func setUpLayout() {
@@ -50,7 +50,7 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
         tailBehind.image = tailBackImage
         tailInFront.image = tailFrontImage
         contentViewBackground.backgroundColor = contentBackgroundColor
-        contentViewBackground.layer.borderColor = contentBorderColor.cgColor
+        contentViewBackground.layer.borderColor = UIColor.clear.cgColor
         contentViewBackground.directionalLayoutMargins = contentLayoutMargins
     }
 
@@ -58,8 +58,8 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
         guard let content = content else { return .zero }
 
         return content.style.isBig ?
-            .init(top: 8, leading: 16, bottom: 8, trailing: 16) :
-            .init(top: 4, leading: 4, bottom: 4, trailing: 4)
+            .init(top: 4, leading: 10, bottom: 4, trailing: 10) :
+            .init(top: 4, leading: 10, bottom: 4, trailing: 10)
     }
     
     open var contentBackgroundColor: UIColor {
@@ -67,9 +67,9 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
 
         switch content.style {
         case .bigIncoming, .bigOutgoing, .smallOutgoing:
-            return appearance.colorPalette.popoverBackground
+            return appearance.colorPalette.messageActionMenuBackground
         case .smallIncoming:
-            return appearance.colorPalette.background2
+            return appearance.colorPalette.messageActionMenuBackground
         }
     }
 
@@ -79,9 +79,9 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
         let color: UIColor
         switch content.style {
         case .smallOutgoing:
-            color = appearance.colorPalette.border
+            color = contentBackgroundColor
         case .smallIncoming:
-            color = appearance.colorPalette.border
+            color = contentBackgroundColor
         default:
             color = contentBackgroundColor
         }
@@ -103,17 +103,17 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
             )
         case .smallIncoming, .smallOutgoing:
             let borderColor = content.style.isIncoming ?
-                appearance.colorPalette.border :
-                appearance.colorPalette.border
+            contentBackgroundColor :
+            contentBackgroundColor
             
             let innerColor = content.style.isIncoming ?
-                appearance.colorPalette.background2 :
-                appearance.colorPalette.popoverBackground
+            contentBackgroundColor :
+            contentBackgroundColor
             
             return .tail(
                 options: .small(flipped: content.style.isIncoming),
                 colors: .init(
-                    outlineColor: resolvedColor(appearance.colorPalette.background),
+                    outlineColor: resolvedColor(contentBackgroundColor),
                     borderColor: resolvedColor(borderColor),
                     innerColor: resolvedColor(innerColor)
                 )
@@ -129,8 +129,8 @@ open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
             return nil
         case .smallIncoming, .smallOutgoing:
             let innerColor = content.style.isIncoming ?
-                appearance.colorPalette.background2 :
-                appearance.colorPalette.popoverBackground
+            contentBackgroundColor :
+            contentBackgroundColor
             return .tail(
                 options: .small(flipped: content.style.isIncoming),
                 colors: .init(

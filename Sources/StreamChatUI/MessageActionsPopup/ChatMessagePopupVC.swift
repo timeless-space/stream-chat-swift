@@ -16,7 +16,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     open private(set) lazy var blurView: UIView = {
         let blur: UIBlurEffect
         if #available(iOS 13.0, *) {
-            blur = UIBlurEffect(style: .systemUltraThinMaterial)
+            blur = UIBlurEffect(style: .systemMaterial)
         } else {
             blur = UIBlurEffect(style: .regular)
         }
@@ -26,11 +26,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     
     /// Container view that holds `messageContentView`.
     open private(set) lazy var messageContentContainerView = UIView()
-        .withoutAutoresizingMaskConstraints
-
-    open private(set) lazy var scrollView = UIScrollView()
-        .withoutAutoresizingMaskConstraints
-    open private(set) lazy var containerStackView = ContainerStackView()
         .withoutAutoresizingMaskConstraints
 
     /// Insets for `messageContentView`'s bubble view.
@@ -45,7 +40,9 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     public var actionsController: ChatMessageActionsVC!
     /// `_ChatMessageReactionsVC` instance for showing reactions.
     public var reactionsController: ChatMessageReactionsVC?
-
+    /// empty padding view
+    private lazy var paddingView = UIView()
+    
     override open func setUp() {
         super.setUp()
         
@@ -63,27 +60,16 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         guard messageViewFrame != nil else { return }
         
         view.embed(blurView)
-        view.embed(scrollView)
 
         messageContainerStackView.axis = .vertical
-        messageContainerStackView.spacing = 8
-        scrollView.addSubview(containerStackView)
-        containerStackView.axis = .vertical
-        containerStackView.spacing = 8
-
-
-        let paddingView = UIView()
-        paddingView.translatesAutoresizingMaskIntoConstraints = false
-        paddingView.isHidden = true
-        containerStackView.addArrangedSubview(paddingView)
-
-        containerStackView.addArrangedSubview(messageContainerStackView)
+        messageContainerStackView.spacing = 0
+        view.addSubview(messageContainerStackView)
 
         var constraints: [NSLayoutConstraint] = [
-            containerStackView.bottomAnchor.pin(equalTo: scrollView.bottomAnchor),
-            containerStackView.topAnchor.pin(equalTo: scrollView.topAnchor),
-            containerStackView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: 0),
-            containerStackView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 0),
+            messageContainerStackView.bottomAnchor.pin(lessThanOrEqualTo: view.bottomAnchor),
+            messageContainerStackView.topAnchor.pin(greaterThanOrEqualTo: view.topAnchor),
+            messageContainerStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            messageContainerStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
         ]
 
         if let reactionsController = reactionsController {
@@ -93,37 +79,59 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             
             reactionsController.view.translatesAutoresizingMaskIntoConstraints = false
             addChildViewController(reactionsController, targetView: reactionsContainerView)
-            
+
             reactionsContainerView.addArrangedSubview(.spacer(axis: .horizontal))
             
             if message.isSentByCurrentUser {
                 constraints += [
-                    reactionsController.view.leadingAnchor
-                        .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
+                    reactionsController.view.trailingAnchor
+                        .pin(lessThanOrEqualTo: actionsController.view.trailingAnchor),
                     reactionsController.reactionsBubble.tailTrailingAnchor
-                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left)
+                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left),
                 ]
             } else {
                 constraints += [
+                    // added leadingAnchor
+                    reactionsController.view.leadingAnchor
+                        .pin(greaterThanOrEqualTo: actionsController.view.leadingAnchor),
                     reactionsController.reactionsBubble.tailLeadingAnchor
-                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
+                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right),
                 ]
             }
+            constraints += [
+                reactionsController.view.bottomAnchor.constraint(equalTo: messageContentContainerView.topAnchor, constant: 0),
+                reactionsController.view.widthAnchor.pin(lessThanOrEqualTo: view.widthAnchor, multiplier: 0.8),
+            ]
         }
         
         constraints.append(
-            actionsController.view.widthAnchor.pin(equalTo: view.widthAnchor, multiplier: 0.7)
+            actionsController.view.widthAnchor.pin(equalTo: view.widthAnchor, multiplier: 0.6)
         )
-        var contentHeight = messageViewFrame.height
-//        if contentHeight > UIScreen.main.bounds.midY {
-//            contentHeight = UIScreen.main.bounds.midY
-//        }
+        
+        paddingView.translatesAutoresizingMaskIntoConstraints = false
+        constraints.append(
+            paddingView.heightAnchor.constraint(equalToConstant: 12)
+        )
         messageContainerStackView.addArrangedSubview(messageContentContainerView)
+        messageContainerStackView.addArrangedSubview(paddingView)
+
+        if let timeStampLabel = messageContentView.timestampLabel {
+            constraints.append(
+                paddingView.heightAnchor.constraint(equalToConstant: 5)
+            )
+        } else {
+            constraints.append(
+                paddingView.heightAnchor.constraint(equalToConstant: 12)
+            )
+        }
+        var contentHeight = messageViewFrame.height
+        if contentHeight > UIScreen.main.bounds.midY {
+            contentHeight = UIScreen.main.bounds.midY
+        }
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
             messageContentContainerView.heightAnchor.pin(equalToConstant: contentHeight)
         ]
-
         let actionsContainerStackView = ContainerStackView()
         actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
         messageContainerStackView.addArrangedSubview(actionsContainerStackView)
@@ -133,7 +141,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
 
         if message.isSentByCurrentUser {
             constraints.append(
-                actionsController.view.trailingAnchor.pin(equalTo: messageContentContainerView.trailingAnchor)
+                actionsController.view.trailingAnchor.constraint(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
             )
         } else {
             constraints.append(
@@ -145,40 +153,27 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         }
         
         if message.isSentByCurrentUser {
-            containerStackView.alignment = .trailing
-            constraints.append(
-                containerStackView.trailingAnchor.pin(
-                    equalTo: scrollView.leadingAnchor,
-                    constant: messageViewFrame.maxX
-                )
-            )
+            messageContainerStackView.alignment = .trailing
         } else {
-            containerStackView.alignment = .leading
-            constraints.append(
-                containerStackView.leadingAnchor.pin(
-                    equalTo: scrollView.leadingAnchor,
-                    constant: messageViewFrame.minX
-                )
-            )
+            messageContainerStackView.alignment = .leading
         }
 
         if messageViewFrame.minY <= 0 {
             constraints += [
                 (reactionsController?.view ?? messageContentContainerView).topAnchor
-                    .pin(equalTo: scrollView.topAnchor)
+                    .pin(equalTo: view.topAnchor)
                     .with(priority: .streamAlmostRequire)
             ]
         } else {
             reactionsController?.view.layoutIfNeeded()
             constraints += [
                 messageContentContainerView.topAnchor.pin(
-                    equalTo: scrollView.topAnchor,
+                    equalTo: view.topAnchor,
                     constant: messageViewFrame.minY
                 )
                 .with(priority: .streamLow)
             ]
         }
-
         NSLayoutConstraint.activate(constraints)
     }
 

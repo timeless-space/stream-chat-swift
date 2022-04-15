@@ -402,27 +402,47 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
     func leaveChannel() {
         guard let channelController = viewModel.channelController else { return }
         var alertTitle = ""
-        if isUserAdmin() {
-            alertTitle = "Would you like to delete this channel?\nIt'll be permanently deleted."
+        var actionTitle = ""
+        if isDirectMessageChannel() {
+            alertTitle = "Would you like to delete this conversation?"
+            actionTitle = "Delete Conversation"
         } else {
-            alertTitle = "Would you like to leave this channel?"
+            if isUserAdmin() {
+                alertTitle = "Would you like to delete this channel?\nIt'll be permanently deleted."
+            } else {
+                alertTitle = "Would you like to leave this channel?"
+            }
+            actionTitle = "Leave Channel"
         }
-        let deleteAction = UIAlertAction(title: "Leave Channel", style: .destructive) { [weak self] _ in
+        let deleteAction = UIAlertAction(title: actionTitle, style: .destructive) { [weak self] _ in
             guard let self = self else {
                 return
             }
-            if self.isUserAdmin() {
-                self.deleteAndLeaveChannel()
+            if self.isDirectMessageChannel() {
+                channelController.hideChannel(clearHistory: true) { [weak self] error in
+                    guard let self = self else {
+                        return
+                    }
+                    if error == nil {
+                        self.popBack()
+                    } else {
+                        Snackbar.show(text: "Error while deleting conversation")
+                    }
+                }
             } else {
-                if let userId = ChatClient.shared.currentUserId {
-                    channelController.removeMembers(userIds: [userId]) { [weak self] error in
-                        guard let self = self else {
-                            return
-                        }
-                        if error == nil {
-                            self.popBack()
-                        } else {
-                            Snackbar.show(text: "Error while removing member")
+                if self.isUserAdmin() {
+                    self.deleteAndLeaveChannel()
+                } else {
+                    if let userId = ChatClient.shared.currentUserId {
+                        channelController.removeMembers(userIds: [userId]) { [weak self] error in
+                            guard let self = self else {
+                                return
+                            }
+                            if error == nil {
+                                self.popBack()
+                            } else {
+                                Snackbar.show(text: "Error while leaving channel")
+                            }
                         }
                     }
                 }
