@@ -19,7 +19,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             self.currentUserId = currentUserId
         }
     }
-    
+    // avatar size
+    private var avatarSize: CGFloat = 48
     /// The data this view component shows.
     public var content: Content? {
         didSet { updateContentIfNeeded() }
@@ -162,7 +163,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         ])
 
         NSLayoutConstraint.activate([
-            avatarView.heightAnchor.pin(equalToConstant: 48),
+            avatarView.heightAnchor.pin(equalToConstant: avatarSize),
             avatarView.widthAnchor.pin(equalTo: avatarView.heightAnchor)
         ])
 
@@ -184,6 +185,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
     override open func updateContent() {
         subtitleLabel.text = subtitleText
         timestampLabel.text = timestampText
+        avatarView.avatarCornerRadius = avatarSize/2
+        avatarView.layer.cornerRadius = avatarSize/2
         avatarView.content = (content?.channel, content?.currentUserId)
 
         unreadCountView.content = content?.channel.unreadCount ?? .noUnread

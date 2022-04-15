@@ -12,7 +12,8 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     open private(set) lazy var presenceAvatarView: ChatPresenceAvatarView = components
         .presenceAvatarView.init()
         .withoutAutoresizingMaskConstraints
-
+    // avatar corner radius
+    open var avatarCornerRadius: CGFloat = 0
     /// The data this view component shows.
     open var content: (channel: ChatChannel?, currentUserId: UserId?) {
         didSet { updateContentIfNeeded() }
@@ -26,13 +27,6 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     open var imageMerger: ImageMerging = {
         DefaultImageMerger()
     }()
-    private let shimmerBackgroundColor = Appearance.default.colorPalette.placeHolderBalanceBG
-    private lazy var shimmerGradient: SkeletonGradient = {
-        return SkeletonGradient(colors: [
-            shimmerBackgroundColor.withAlphaComponent(0.5),
-            shimmerBackgroundColor.withAlphaComponent(0.2),
-            shimmerBackgroundColor.withAlphaComponent(0.5)])
-    }()
     private lazy var imageProcessor: ImageProcessor = {
         return NukeImageProcessor()
     }()
@@ -45,12 +39,11 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         super.setUpLayout()
         embed(presenceAvatarView)
         presenceAvatarView.isSkeletonable = true
-        presenceAvatarView.skeletonCornerRadius = 24
-        SkeletonAppearance.default.gradient = shimmerGradient
     }
 
     override open func updateContent() {
         presenceAvatarView.avatarView.imageView.image = nil
+        presenceAvatarView.skeletonCornerRadius = Float(avatarCornerRadius)
         presenceAvatarView.showAnimatedGradientSkeleton()
         guard let channel = content.channel else {
             loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder3)
@@ -125,8 +118,8 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         loadAvatarsFrom(urls: urls, channelId: channel.cid) { [weak self] avatars, channelId in
             guard let weakSelf = self, channelId == weakSelf.content.channel?.cid
             else { return }
-            DispatchQueue.global(qos: .userInteractive).async {
-                let combinedImage = weakSelf.createMergedAvatar(from: avatars) ?? weakSelf.appearance.images.userAvatarPlaceholder2
+            DispatchQueue.global(qos: .userInitiated).async {
+                let combinedImage = weakSelf.createMergedAvatar(from: avatars)
                 DispatchQueue.main.async {
                     weakSelf.loadIntoAvatarImageView(from: nil, placeholder: combinedImage)
                 }
