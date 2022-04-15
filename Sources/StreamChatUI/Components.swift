@@ -410,6 +410,8 @@ public struct Components {
     /// The router responsible for navigation on message list screen.
     public var messageListRouter: ChatMessageListRouter.Type = ChatMessageListRouter.self
 
+    public var cacheVideoThumbnail = Cache<URL, UIImage>.init()
+
     /// The router responsible for presenting alerts.
     public var alertsRouter: AlertsRouter.Type = AlertsRouter.self
     

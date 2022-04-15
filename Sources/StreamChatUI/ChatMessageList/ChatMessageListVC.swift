@@ -73,8 +73,7 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
-    var streamVideoLoader = StreamVideoLoader()
-    
+
     open override func viewDidLoad() {
         super.viewDidLoad()
         listView.register(CryptoSentBubble.self, forCellReuseIdentifier: "CryptoSentBubble")
@@ -89,10 +88,16 @@ open class ChatMessageListVC:
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
-        //setupEmptyState()
-//        if let numberMessage = dataSource?.numberOfMessages(in: self) {
-//            viewEmptyState.isHidden = numberMessage != 0
-//        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            guard let `self` = self else { return }
+            self.pausePlayVideos()
+        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
 
     override open func setUp() {
@@ -291,13 +296,13 @@ open class ChatMessageListVC:
         let currentUserId = ChatClient.shared.currentUserId
         let isMessageFromCurrentUser = message?.author.id == currentUserId
         if channelType == .announcement {
-            guard let cell = tableView.dequeueReusableCell(
+            guard let cell = listView.dequeueReusableCell(
                 withIdentifier: "AnnouncementTableViewCell",
                 for: indexPath) as? AnnouncementTableViewCell else {
                     return UITableViewCell()
                 }
             cell.delegate = self
-            cell.streamVideoLoader = streamVideoLoader
+            cell.cacheVideoThumbnail = components.cacheVideoThumbnail
             cell.message = message
             cell.configureCell(message)
             cell.transform = .mirrorY
@@ -576,6 +581,11 @@ open class ChatMessageListVC:
         delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
     }
 
+    public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let cell = cell as? ASVideoTableViewCell else { return }
+        ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
+    }
+
     open func scrollViewDidScroll(_ scrollView: UIScrollView) {
         delegate?.chatMessageListVC(self, scrollViewDidScroll: scrollView)
         setScrollToLatestMessageButton(visible: isScrollToBottomButtonVisible)
@@ -754,6 +764,11 @@ open class ChatMessageListVC:
         guard channelType == .announcement else { return }
         ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView)
     }
+
+    @objc private func handleAppDidBecomeActive() {
+        guard channelType == .announcement else { return }
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true)
+    }
 }
 
 extension ChatMessageListVC: UIScrollViewDelegate {
@@ -779,7 +794,14 @@ extension ChatMessageListVC: AnnouncementAction {
         )
     }
 
-    func didSelectAnnouncementAction(_ message: ChatMessage?) {
-        debugPrint(message?.text)
+    func didSelectAnnouncementAction(_ message: ChatMessage?) { }
+
+    func didRefreshCell(_ cell: AnnouncementTableViewCell, _ img: UIImage) {
+        guard let indexPath = listView.indexPath(for: cell),
+            let visibleRows = listView.indexPathsForVisibleRows,
+            visibleRows.contains(indexPath)
+        else { return }
+        let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
+        cell.configureCell(message)
     }
 }
