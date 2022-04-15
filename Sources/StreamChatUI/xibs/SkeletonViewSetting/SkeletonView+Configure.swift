@@ -22,6 +22,7 @@ public extension SkeletonAppearance {
 
         public static func setShimmerEffect() {
             SkeletonAppearance.default.gradient = SkeletonAppearance.Settings.shimmerGradient
+            SkeletonAppearance.default.textLineHeight = .relativeToFont
         }
     }
 }
