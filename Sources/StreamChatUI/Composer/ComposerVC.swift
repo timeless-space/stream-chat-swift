@@ -18,6 +18,7 @@ extension Notification.Name {
     public static let disburseFundAction = Notification.Name("kStreamChatDisburseFundTapAction")
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
+    public static let sendGiftTapAction = Notification.Name("kStreamChatSendGiftTapAction")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -574,6 +575,13 @@ open class ComposerVC: _ViewController,
                     guard let `self` = self else { return }
                     self.sendRedPacketAction()
                 }
+            case .gift:
+                self.animateToolkitView(isHide: true)
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    guard let `self` = self else { return }
+                    self.sendGiftAction()
+                }
             case .dao:
                 self.animateToolkitView(isHide: true)
                 break
@@ -835,6 +843,16 @@ open class ComposerVC: _ViewController,
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
         NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
+    }
+
+    //Tu Nguyen:
+    @objc open func sendGiftAction() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        guard let channelId = channelController?.channel?.cid else { return }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        NotificationCenter.default.post(name: .sendGiftTapAction, object: nil, userInfo: userInfo)
     }
 
     private func animateMenuButton() {

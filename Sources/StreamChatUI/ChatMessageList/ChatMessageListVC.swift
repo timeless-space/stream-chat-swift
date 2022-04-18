@@ -88,6 +88,7 @@ open class ChatMessageListVC:
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
+        listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -366,6 +367,29 @@ open class ChatMessageListVC:
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
                 return cell
+            } else if isGiftCell(message) {
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "GiftBubble",
+                        for: indexPath) as? GiftBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.content = message
+                    cell.configureCell(isSender: isMessageFromCurrentUser)
+                    cell.configData()
+                    return cell
+                }
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: TableViewCellRedPacketDrop.identifier,
+                    for: indexPath) as? TableViewCellRedPacketDrop else {
+                        return UITableViewCell()
+                    }
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.configData()
+                return cell
             }
             else if isRedPacketNoPickUpCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
@@ -528,6 +552,10 @@ open class ChatMessageListVC:
 
     private func isRedPacketCell(_ message: ChatMessage?) -> Bool {
         message?.extraData.keys.contains("redPacketPickup") ?? false
+    }
+
+    private func isGiftCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("gift") ?? false
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
