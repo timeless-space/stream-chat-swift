@@ -248,19 +248,6 @@ public extension Dictionary where Key == String, Value == RawJSON {
 
 // MARK: - RedPacket PickUp Bubble
 public extension Dictionary where Key == String, Value == RawJSON {
-    private var giftExtraData: [String: RawJSON] {
-        if let extraData = self["gift"] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return [:]
-            }
-        } else {
-            return [:]
-        }
-    }
-
     private var redPacketExtraData: [String: RawJSON] {
         if let extraData = self["redPacketPickup"] {
             switch extraData {
