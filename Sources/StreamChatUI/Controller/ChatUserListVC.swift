@@ -352,7 +352,7 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             header.bCallbackGroupWeHere = bCallbackGroupWeHere
             header.bCallbackGroupJoinViaQR = bCallbackGroupJoinViaQR
             header.selectionStyle = .none
-            header.sortingContainerView.isHidden = viewModel.filteredUsers.count == 0
+            header.labelSortingType.isHidden = viewModel.filteredUsers.count == 0
             return header
         case .noHeader,.alphabetHeader:
             let reuseID = TableViewCellChatUser.reuseId
