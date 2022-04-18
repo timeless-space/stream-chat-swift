@@ -377,7 +377,7 @@ open class ChatMessageListVC:
                     cell.options = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
                     cell.configureCell(isSender: isMessageFromCurrentUser)
-                    cell.configData()
+//                    cell.configData()
                     return cell
                 }
                 guard let cell = tableView.dequeueReusableCell(
