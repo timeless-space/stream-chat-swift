@@ -94,7 +94,7 @@ public class NameGroupViewController: ChatBaseVC {
     }
 
     @IBAction func doneTapped(_ sender: UIButton) {
-        self.view.endEditing(true)
+        view.endEditing(true)
         guard let name = nameField.text, !name.isEmpty else {
             Snackbar.show(text: "Group name cannot be blank")
             return
@@ -103,53 +103,40 @@ public class NameGroupViewController: ChatBaseVC {
             Snackbar.show(text: "Please enter valid group name")
             return
         }
-        let groupId = String(UUID().uuidString)
-        let encodeGroupId = groupId.base64Encoded.string ?? ""
-        let expiryDate = String(Date().withAddedHours(hours: 24).ticks).base64Encoded.string ?? ""
+        let groupId = UUID().uuidString
         var extraData: [String: RawJSON] = [:]
         extraData[kExtraDataChannelDescription] = RawJSON.string(self.groupDescriptionField.text ?? "")
-        // Deeplink url Callback
-        ChatClientConfiguration.shared.requestedGeneralGroupDynamicLink = { [weak self] url in
-            guard let weakSelf = self else { return }
-            guard let groupInviteLink = url else {
-                return
-            }
-            ChatClientConfiguration.shared.requestedGeneralGroupDynamicLink = nil
-            extraData["joinLink"] = .string(groupInviteLink.absoluteString)
-            do {
-                let channelController = try ChatClient.shared.channelController(
-                    createChannelWithId: .init(type: .messaging, id: groupId),
-                    name: name,
-                    members: Set(weakSelf.selectedUsers.map(\.id)), extraData: extraData)
-                // Channel synchronize
-                channelController.synchronize { [weak self] error in
-                    guard let weakSelf = self , error == nil else {
-                        DispatchQueue.main.async {
-                            Snackbar.show(text: "something went wrong!")
-                        }
-                        return
-                    }
+
+        do {
+            let channelController = try ChatClient.shared.channelController(
+                createChannelWithId: .init(
+                    type: .messaging,
+                    id: groupId), name: name,
+                members: Set(selectedUsers.map(\.id)))
+            channelController.synchronize { [weak self] error in
+                guard let weakSelf = self , error == nil else {
                     DispatchQueue.main.async {
-                        let chatChannelVC = ChatChannelVC.init()
-                        chatChannelVC.isChannelCreated = true
-                        chatChannelVC.channelController = channelController
-                        weakSelf.pushWithAnimation(controller: chatChannelVC)
-                        let navControllers = weakSelf.navigationController?.viewControllers ?? []
-                        for (index,navController) in navControllers.enumerated() {
-                            if index == 0 || navController.isKind(of: ChatChannelVC.self) {
-                                continue
-                            }
-                            navController.removeFromParent()
+                        Snackbar.show(text: "something went wrong!")
+                    }
+                    return
+                }
+                DispatchQueue.main.async {
+                    let chatChannelVC = ChatChannelVC.init()
+                    chatChannelVC.isChannelCreated = true
+                    chatChannelVC.channelController = channelController
+                    weakSelf.pushWithAnimation(controller: chatChannelVC)
+                    let navControllers = weakSelf.navigationController?.viewControllers ?? []
+                    for (index,navController) in navControllers.enumerated() {
+                        if index == 0 || navController.isKind(of: ChatChannelVC.self) {
+                            continue
                         }
+                        navController.removeFromParent()
                     }
                 }
-            } catch {
-                Snackbar.show(text: "Error while creating the channel")
             }
+        } catch {
+            Snackbar.show(text: "Error while creating the channel")
         }
-        // Fetching invite link
-        let parameter = [kInviteGroupID: encodeGroupId, kInviteExpiryDate: expiryDate]
-        NotificationCenter.default.post(name: .generalGroupInviteLink, object: nil, userInfo: parameter)
     }
 }
 // MARK: - UITextFieldDelegate

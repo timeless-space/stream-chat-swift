@@ -23,6 +23,8 @@ public class JoinGroupRequestVC: UIViewController {
     // MARK: - VARIBALES
     public var channelController: ChatChannelController!
     public var callbackUserJoined:(() -> Void)?
+    public var inviteCode: String?
+
     // MARK: - VIEW CYCLE
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,16 +42,18 @@ public class JoinGroupRequestVC: UIViewController {
     }
     
     @IBAction func joinGroupButtonAction(_ sender: UIButton) {
-        guard let userId = ChatClient.shared.currentUserId else { return }
-        channelController.addMembers(userIds: [userId]) { [weak self] error in
-            guard let weakSelf = self else { return }
-            guard error == nil else {
-                Snackbar.show(text: "Something went wrong!")
+        ChatClientConfiguration.shared.joinInviteGroup = { [weak self] isSuccess in
+            guard let self = self, isSuccess else {
                 return
             }
-            Snackbar.show(text: "Group joined successfully")
-            weakSelf.callbackUserJoined?()
+            guard isSuccess else {
+                self.dismiss(animated: true, completion: nil)
+                return
+            }
+            self.callbackUserJoined?()
         }
+        let parameter = [kInviteGroupID: channelController.channel?.cid.description, kInviteId: inviteCode]
+        NotificationCenter.default.post(name: .joinInviteGroup, object: nil, userInfo: parameter)
     }
 }
 
