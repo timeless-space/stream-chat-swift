@@ -65,7 +65,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         setupUI(contentView: scrollView)
         scrollToBottom()
         actionsController?.setUpLayout()
-
     }
 
     private func scrollToBottom()  {
@@ -170,13 +169,10 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 paddingView.heightAnchor.constraint(equalToConstant: 12)
             )
         }
-        var contentHeight = messageViewFrame.height
-//        if contentHeight > UIScreen.main.bounds.midY {
-//            contentHeight = UIScreen.main.bounds.midY
-//        }
+
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
-            messageContentContainerView.heightAnchor.pin(equalToConstant: contentHeight)
+            messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
         ]
         let actionsContainerStackView = ContainerStackView()
         actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
@@ -216,16 +212,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             )
         }
 
-        reactionsController?.view.layoutIfNeeded()
-        constraints += [
-            messageContentContainerView.topAnchor.pin(
-                equalTo: contentView.topAnchor,
-                constant: messageViewFrame.minY
-            )
-            .with(priority: .streamLow)
-        ]
-
-        if messageViewFrame.minY <= 0 {
+        if messageViewFrame.minY <= 0 || isScrollEnable() {
             constraints += [
                 (messageContentContainerView).topAnchor
                     .pin(equalTo: contentView.topAnchor)
@@ -243,6 +230,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         }
         NSLayoutConstraint.activate(constraints)
     }
+
     /// Triggered when `view` is tapped.
     @objc open func didTapOnView(_ gesture: UITapGestureRecognizer) {
         let actionsLocation = gesture.location(in: actionsController.view)
@@ -255,10 +243,5 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         }
 
         dismiss(animated: true)
-    }
-    func testView() {
-        if let controller = self.reactionsController, let reactionView = controller.view {
-            view.bringSubviewToFront(reactionView)
-        }
     }
 }
