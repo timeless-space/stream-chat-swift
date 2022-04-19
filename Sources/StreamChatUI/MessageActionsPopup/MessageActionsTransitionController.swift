@@ -101,7 +101,6 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
             toVC.view.isHidden = true
             toVC.messageContentView = messageView
             toVC.messageViewFrame = messageViewFrame
-            toVC.originalMessageContainerView = originalMessageContentView
             toVC.setUpLayout()
             toVC.actionsController?.setUpLayout()
             toVC.actionsController?.updateContent()
