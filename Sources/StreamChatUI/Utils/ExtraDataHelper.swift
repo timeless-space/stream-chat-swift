@@ -479,4 +479,20 @@ public extension Dictionary where Key == String, Value == RawJSON {
             return nil
         }
     }
+
+    var flair: String? {
+        if let flair = giftExtraData["flair"] {
+            return fetchRawData(raw: flair) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var symbol: String? {
+        if let symbol = giftExtraData["symbol"] {
+            return fetchRawData(raw: symbol) as? String
+        } else {
+            return nil
+        }
+    }
 }

@@ -19,6 +19,7 @@ extension Notification.Name {
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
     public static let sendGiftTapAction = Notification.Name("kStreamChatSendGiftTapAction")
+    public static let claimGiftPacketAction = Notification.Name("kStreamChatClaimGiftTapAction")
 }
 
 /// The possible errors that can occur in attachment validation

@@ -28,6 +28,8 @@ public struct RedPacket {
     public var packetId: String?
     public var packetAddress: String?
     public var strFormattedAmount: String?
+    public var flair: String?
+    public var symbol: String?
     //number of fraction digits in amount
     public var fractionDigits: Int = 0
 
@@ -53,6 +55,8 @@ public struct RedPacket {
         dictOut["packetId"] = .string(packetId ?? "")
         dictOut["packetAddress"] = .string(packetAddress ?? "")
         dictOut["isExpired"] = .bool(false)
+        dictOut["flair"] = .string(flair ?? "")
+        dictOut["symbol"] = .string(symbol ?? "")
         return dictOut
     }
 }

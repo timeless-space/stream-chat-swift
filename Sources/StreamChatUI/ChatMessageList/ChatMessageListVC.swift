@@ -368,24 +368,12 @@ open class ChatMessageListVC:
                 cell.configData()
                 return cell
             } else if isGiftCell(message) {
-                if isMessageFromCurrentUser {
-                    guard let cell = tableView.dequeueReusableCell(
-                        withIdentifier: "GiftBubble",
-                        for: indexPath) as? GiftBubble else {
-                            return UITableViewCell()
-                        }
-                    cell.options = cellLayoutOptionsForMessage(at: indexPath)
-                    cell.content = message
-                    cell.configureCell(isSender: isMessageFromCurrentUser)
-//                    cell.configData()
-                    return cell
-                }
                 guard let cell = tableView.dequeueReusableCell(
-                    withIdentifier: TableViewCellRedPacketDrop.identifier,
-                    for: indexPath) as? TableViewCellRedPacketDrop else {
+                    withIdentifier: "GiftBubble",
+                    for: indexPath) as? GiftBubble else {
                         return UITableViewCell()
                     }
-                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.options = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
