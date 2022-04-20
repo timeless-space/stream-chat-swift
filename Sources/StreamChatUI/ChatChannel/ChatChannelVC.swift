@@ -873,6 +873,7 @@ open class ChatChannelVC:
             }
             qrCodeVc.strContent = self.getGroupLink()
             qrCodeVc.groupName = self.channelController?.channel?.name
+            qrCodeVc.channelController = self.channelController
             qrCodeVc.modalPresentationStyle = .fullScreen
             UIApplication.shared.keyWindow?.rootViewController?.present(qrCodeVc, animated: true, completion: nil)
         }
