@@ -15,16 +15,19 @@ class WalletInputViewController: UIViewController {
     @IBOutlet weak var btnClose: UIButton!
     @IBOutlet var btnKeyPad: [UIButton]!
     @IBOutlet weak var walletStepper: WalletStepper!
+    @IBOutlet weak var btnDecimalSeparato: UIButton!
 
     // MARK: - Variables
     var updatedAmount = 0.0
     var paymentType: WalletAttachmentPayload.PaymentType = .request
     var didHide: ((Double, WalletAttachmentPayload.PaymentType) -> Void)?
     var isInputViewLoad = false
+    private var decimalSeparator = Locale.current.decimalSeparator ?? "."
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        btnDecimalSeparato.setTitle(decimalSeparator, for: .normal)
     }
 
     func setupUI() {

@@ -313,6 +313,7 @@
                     </view>
                     <connections>
                         <outlet property="btnClose" destination="qMD-wk-byz" id="3d5-TM-3ve"/>
+                        <outlet property="btnDecimalSeparato" destination="c8r-uF-CSf" id="ytt-eV-0FI"/>
                         <outlet property="viewKeypad" destination="3TD-Wc-zXo" id="gBs-7k-b8d"/>
                         <outlet property="walletStepper" destination="Gmf-pA-FAh" id="BYx-Ly-tiR"/>
                         <outletCollection property="btnKeyPad" destination="0ST-7a-mpZ" collectionClass="NSMutableArray" id="dc1-JP-fXP"/>

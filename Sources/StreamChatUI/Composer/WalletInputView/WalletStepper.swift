@@ -46,6 +46,7 @@ class WalletStepper: UIView {
 
     private var centerContainerXLayoutConstraint: NSLayoutConstraint?
     private var centerContainerYLayoutConstraint: NSLayoutConstraint?
+    private var decimalSeparator = Locale.current.decimalSeparator ?? "."
     private var startPosition: CGPoint!
     public var value: Double = 1
     public var minimumValue: Double = 0.0
@@ -250,21 +251,21 @@ class WalletStepper: UIView {
         guard isValidAmountInput(numberValue: numberValue ?? "") else { return }
         if let keyPadNumber = numberValue {
             var walletInputAmount = "\(self.lblAmount.text ?? "")".trimmingCharacters(in: .whitespaces)
-            if walletInputAmount == "0" && keyPadNumber != "." {
+            if walletInputAmount == "0" && keyPadNumber != decimalSeparator {
                 walletInputAmount = ""
             }
             amountString = "\(walletInputAmount)" + "\(keyPadNumber ?? "")"
-            if numberValue == "." {
+            if numberValue == decimalSeparator {
                 lblAmount.text = amountString
             } else {
-                let amount = amountString.replacingOccurrences(of: ",", with: "")
-                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: ".", with: "").isEmpty &&
-                    !(amount.components(separatedBy: ".").last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
-                    if !amount.contains(".") {
+                let amount = amountString
+                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
+                    !(amount.components(separatedBy: decimalSeparator).last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
+                    if !amount.contains(decimalSeparator) {
                         self.updateAmount(amount: Double(amount) ?? 0.0)
                     } else {
                         lblAmount.text = amount
-                        self.updateAmount(amount: Double(amount) ?? 0, shouldFormat: false)
+                        self.updateAmount(amount: Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0, shouldFormat: false)
                     }
                 } else {
                     lblAmount.text = amount
@@ -277,14 +278,14 @@ class WalletStepper: UIView {
                 value = 0
                 updateAmount(amount: value)
             } else {
-                let amount = amountString.replacingOccurrences(of: ",", with: "")
-                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: ".", with: "").isEmpty &&
-                    !(amount.components(separatedBy: ".").last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
-                    if !amount.contains(".") {
+                let amount = amountString
+                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
+                    !(amount.components(separatedBy: decimalSeparator).last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
+                    if !amount.contains(decimalSeparator) {
                         self.updateAmount(amount: Double(amount) ?? 0.0)
                     } else {
                         lblAmount.text = amount
-                        self.updateAmount(amount: Double(amount) ?? 0, shouldFormat: false)
+                        self.updateAmount(amount: Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0, shouldFormat: false)
                     }
                 } else {
                     lblAmount.text = amount
@@ -295,15 +296,15 @@ class WalletStepper: UIView {
     }
 
     private func isValidAmountInput(numberValue: String) -> Bool {
-        if (self.lblAmount.text ?? "").contains(".") && numberValue == "." {
+        if (self.lblAmount.text ?? "").contains(decimalSeparator) && numberValue == decimalSeparator {
             return false
         }
         var walletInputAmount = "\(self.lblAmount.text ?? "")" + numberValue
-        guard walletInputAmount.contains(".") else { return true }
+        guard walletInputAmount.contains(decimalSeparator) else { return true }
         if currencyType == .ONE {
-            return !(walletInputAmount.components(separatedBy: ".").last?.count ?? 0 > 3)
+            return !(walletInputAmount.components(separatedBy: decimalSeparator).last?.count ?? 0 > 3)
         } else {
-            return !(walletInputAmount.components(separatedBy: ".").last?.count ?? 0 > 2)
+            return !(walletInputAmount.components(separatedBy: decimalSeparator).last?.count ?? 0 > 2)
         }
     }
 
@@ -312,10 +313,9 @@ class WalletStepper: UIView {
         currencyFormatter.usesGroupingSeparator = true
         currencyFormatter.numberStyle = .currency
         currencyFormatter.currencySymbol = ""
-        currencyFormatter.decimalSeparator = "."
+        currencyFormatter.decimalSeparator = decimalSeparator
         currencyFormatter.maximumFractionDigits = 4
         currencyFormatter.minimumFractionDigits = 0
-        currencyFormatter.locale = Locale.init(identifier: "en_US")
         if let priceString = currencyFormatter.string(from: NSNumber(value: value)) {
             lblAmount.text = priceString
         }
