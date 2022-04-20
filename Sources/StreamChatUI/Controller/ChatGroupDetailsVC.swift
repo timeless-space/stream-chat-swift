@@ -234,6 +234,26 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
         }
         addMenuToMoreButton()
     }
+
+    open func loadMoreChannelMembers(tableView: UITableView, forItemAt indexPath: IndexPath) {
+        guard let controller = viewModel.chatMemberController else { return }
+        guard let totalMembers = viewModel.channelController?.channel?.memberCount, totalMembers > 0 else { return }
+        guard viewModel.channelMembers.count != totalMembers else { return }
+        if controller.state != .remoteDataFetched {
+            return
+        }
+        guard let lastVisibleIndexPath = tableView.indexPathsForVisibleRows?.last else {
+            return
+        }
+        guard indexPath.row == viewModel.channelMembers.count - 1  else {
+            return
+        }
+        guard !viewModel.loadingMoreMembers else {
+            return
+        }
+        viewModel.loadingMoreMembers = true
+        viewModel.loadMoreMembers()
+    }
 }
 
 // MARK: - TableView delegates
@@ -284,7 +304,7 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
             cell.configCell(
                 controller: controller,
                 screenType: viewModel.screenType,
-                members: viewModel.chatMemberController?.members.count ?? 0,
+                members: viewModel.channelController?.channel?.memberCount ?? 0,
                 channelMember: viewModel.user)
             return cell
         case .userList:
@@ -299,6 +319,10 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
             cell.selectionStyle = .none
             return cell
         }
+    }
+
+    public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        loadMoreChannelMembers(tableView: tableView, forItemAt: indexPath)
     }
 
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -324,7 +348,7 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
         guard let view = ChannelMemberCountView.instanceFromNib() else {
             return nil
         }
-        view.setParticipantsCount(viewModel.chatMemberController?.members.count ?? 0)
+        view.setParticipantsCount(viewModel.channelController?.channel?.memberCount ?? 0)
         return view
     }
 

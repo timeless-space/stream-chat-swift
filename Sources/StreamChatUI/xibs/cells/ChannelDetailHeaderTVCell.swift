@@ -325,7 +325,7 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
                 lblSubTitle.text = "Never seen"
             }
         } else {
-            let totalFriends = max(channelMembers - 1, 0)
+            let totalFriends = channelMembers
             if totalFriends <= 1 {
                 lblSubTitle.text = "\(totalFriends) Friend"
             } else {
