@@ -8,7 +8,7 @@ extension UIViewController {
     func alert(title: String, message: String, completion: @escaping () -> Void = {}) {
         let controller = UIAlertController(title: title, message: message, preferredStyle: .alert)
         controller.addAction(.init(title: "OK", style: .default, handler: { _ in completion() }))
-        present(controller, animated: true)
+        UIApplication.shared.windows.first?.rootViewController?.present(controller, animated: true)
     }
     
     func alertTextField(title: String, placeholder: String, completion: @escaping (String) -> Void) {
@@ -20,6 +20,6 @@ extension UIViewController {
         controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         controller.addTextField(configurationHandler: nil)
         controller.textFields?.first?.placeholder = placeholder
-        present(controller, animated: true)
+        UIApplication.shared.windows.first?.rootViewController?.present(controller, animated: true)
     }
 }

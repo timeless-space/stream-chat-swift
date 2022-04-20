@@ -131,7 +131,7 @@ extension UIViewController {
                 cancelHandler()
             }))
         }
-        present(alert, animated: true, completion: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
     }
 
     func presentAlert(
@@ -155,7 +155,7 @@ extension UIViewController {
         alert.addAction(.init(title: "Cancel", style: .destructive, handler: { _ in
             cancelHandler?()
         }))
-        present(alert, animated: true, completion: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
     }
 
     func presentAlert(title: String?,
@@ -167,7 +167,7 @@ extension UIViewController {
             preferredStyle: .alert
         )
         actions.forEach { alert.addAction($0) }
-        present(alert, animated: true, completion: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
     }
 }
 
