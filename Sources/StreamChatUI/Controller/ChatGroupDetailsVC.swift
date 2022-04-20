@@ -56,6 +56,14 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
         }
         closures()
         addMenuToMoreButton()
+        if isDirectMessageChannel() {
+            guard let channel = viewModel.channelController?.channel,
+                  let otherMember = Array(channel.lastActiveMembers)
+                    .first(where: { member in member.id != ChatClient.shared.currentUserId }) else {
+                        return
+                    }
+            viewModel.user = otherMember
+        }
     }
 
     private func closures() {
@@ -207,8 +215,7 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
     }
 
     private func addToContact() {
-        guard viewModel.screenType == .userdetail,
-              let member = viewModel.user else {
+        guard let member = viewModel.user else {
             return
         }
         if contacts == nil {

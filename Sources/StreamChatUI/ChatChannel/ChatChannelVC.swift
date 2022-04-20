@@ -715,7 +715,7 @@ open class ChatChannelVC:
         }
         let noAction = UIAlertAction(title: "No", style: .default) { _ in }
         presentAlert(
-            title: "Are you sure you want to delete chat?",
+            title: "Would you like to delete this conversation?\nIt'll be permanently deleted.",
             message: nil, actions: [yesAction, noAction])
     }
     // MARK: - ChatMessageListVCDataSource
