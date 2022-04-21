@@ -21,20 +21,28 @@ public class JoinGroupRequestVC: UIViewController {
     @IBOutlet private weak var backgroundView: UIView!
 
     // MARK: - VARIBALES
-    public var channelController: ChatChannelController!
     public var callbackUserJoined:(() -> Void)?
     public var inviteCode: String?
+    public var cidDescription: String?
+    public var channelName: String?
+    public var channelDescription: String?
+    public var channelAvatar = [URL]()
 
     // MARK: - VIEW CYCLE
     public override func viewDidLoad() {
         super.viewDidLoad()
         groupImageView.layer.cornerRadius = groupImageView.bounds.width / 2
-        groupImageView.content = (channelController.channel, nil)
-        groupNameLabel.text = channelController.channel?.name?.capitalizingFirstLetter() ?? ""
-        lblGroupDetails.text = channelController.channel?.extraData.channelDescription ?? ""
+        groupNameLabel.text = channelName?.capitalizingFirstLetter() ?? ""
+        lblGroupDetails.text = channelDescription ?? ""
         joinGroupButton.layer.cornerRadius = joinGroupButton.bounds.height/2
         closeButton.setImage(Appearance.default.images.closePopup, for: .normal)
         backgroundView.backgroundColor = Appearance.default.colorPalette.panModelColor
+        guard let channel = try? ChannelId.init(cid: cidDescription ?? "") else { return }
+        groupImageView.loadAvatarsFrom(urls: channelAvatar, channelId: channel) { [weak self] images, _ in
+            guard let `self` = self else { return }
+            self.groupImageView.presenceAvatarView.avatarView.imageView.image = self.groupImageView.createMergedAvatar(from: images)
+        }
+
     }
     
     @IBAction func closeButtonAction(_ sender: UIButton) {
@@ -52,7 +60,7 @@ public class JoinGroupRequestVC: UIViewController {
             }
             self.callbackUserJoined?()
         }
-        let parameter = [kInviteGroupID: channelController.channel?.cid.description, kInviteId: inviteCode]
+        let parameter = [kInviteGroupID: cidDescription, kInviteId: inviteCode]
         NotificationCenter.default.post(name: .joinInviteGroup, object: nil, userInfo: parameter)
     }
 }

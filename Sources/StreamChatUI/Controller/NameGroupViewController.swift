@@ -112,7 +112,7 @@ public class NameGroupViewController: ChatBaseVC {
                 createChannelWithId: .init(
                     type: .messaging,
                     id: groupId), name: name,
-                members: Set(selectedUsers.map(\.id)))
+                members: Set(selectedUsers.map(\.id)), extraData: extraData)
             channelController.synchronize { [weak self] error in
                 guard let weakSelf = self , error == nil else {
                     DispatchQueue.main.async {
