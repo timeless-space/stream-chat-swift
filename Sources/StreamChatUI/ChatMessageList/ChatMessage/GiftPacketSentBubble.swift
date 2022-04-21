@@ -244,21 +244,8 @@ class GiftBubble: UITableViewCell {
         if content?.isSentByCurrentUser ?? false {
             Snackbar.show(text: "You can not pickup your own packet")
             return false
-        } else {
-            // check end time
-            if let endDate = getEndTime() {
-                let minutes = Date().minutesFromCurrentDate(endDate)
-                if minutes <= 0 {
-                    Snackbar.show(text: "", messageType: StreamChatMessageType.RedPacketExpired)
-                    return false
-                } else {
-                    return true
-                }
-            } else {
-                Snackbar.show(text: "", messageType: StreamChatMessageType.RedPacketExpired)
-                return false
-            }
         }
+        return true
     }
 
     @objc func didTap(tap: UITapGestureRecognizer) {
