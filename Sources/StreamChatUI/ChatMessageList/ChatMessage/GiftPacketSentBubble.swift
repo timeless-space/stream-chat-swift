@@ -223,10 +223,10 @@ class GiftBubble: UITableViewCell {
         guard let extraData = content?.extraData else {
             return
         }
-        titleLabel.text = extraData.giftTitle
+        titleLabel.text = "Gift Card"
         if let amount = extraData.giftAmount,
            let symbol = extraData.symbol {
-            amountLabel.text = "\(amount) \(symbol)"
+            amountLabel.text = "\(amount.replacingOccurrences(of: ".0", with: "")) \(symbol)"
         }
     }
 
