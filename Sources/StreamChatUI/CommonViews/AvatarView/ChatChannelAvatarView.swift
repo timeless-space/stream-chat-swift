@@ -5,12 +5,16 @@
 import StreamChat
 import UIKit
 import SkeletonView
+import Nuke
 
 /// A view that shows a channel avatar including an online indicator if any user is online.
 open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     /// A view that shows the avatar image
     open private(set) lazy var presenceAvatarView: ChatPresenceAvatarView = components
         .presenceAvatarView.init()
+        .withoutAutoresizingMaskConstraints
+    // Shimmer effect View
+    open private(set) lazy var shimmerView: UIView = UIView()
         .withoutAutoresizingMaskConstraints
     // avatar corner radius
     open var avatarCornerRadius: CGFloat = 0
@@ -38,13 +42,16 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     override open func setUpLayout() {
         super.setUpLayout()
         embed(presenceAvatarView)
-        presenceAvatarView.isSkeletonable = true
+        embed(shimmerView)
+        shimmerView.isSkeletonable = true
     }
 
     override open func updateContent() {
-        presenceAvatarView.avatarView.imageView.image = nil
-        presenceAvatarView.skeletonCornerRadius = Float(avatarCornerRadius)
-        presenceAvatarView.showAnimatedGradientSkeleton()
+        loadIntoAvatarImageView(from: nil, placeholder: nil)
+        shimmerView.layer.cornerRadius = avatarCornerRadius
+        shimmerView.skeletonCornerRadius = Float(avatarCornerRadius)
+        shimmerView.showAnimatedGradientSkeleton()
+        shimmerView.isHidden = true
         guard let channel = content.channel else {
             loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder3)
             presenceAvatarView.isOnlineIndicatorVisible = false
@@ -72,6 +79,10 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     /// Loads the avatar from the URL. This function is used when the channel has a non-nil `imageURL`
     /// - Parameter url: The `imageURL` of the channel
     open func loadChannelAvatar(from url: URL) {
+        if let imageContainer = ImagePipeline.shared.cachedImage(for: url) {
+            loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
+            return
+        }
         loadIntoAvatarImageView(from: url, placeholder: appearance.images.userAvatarPlaceholder4)
     }
     
@@ -86,9 +97,18 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
             loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder4)
             return
         }
-        
-        loadIntoAvatarImageView(from: otherMember.imageURL, placeholder: appearance.images.userAvatarPlaceholder3)
+        guard let imageUrl = otherMember.imageURL else {
+            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder4)
+            return
+        }
         presenceAvatarView.isOnlineIndicatorVisible = otherMember.isOnline
+        if let imageContainer = ImagePipeline.shared.cachedImage(for: imageUrl) {
+            loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
+            return
+        }
+        shimmerView.showAnimatedGradientSkeleton()
+        shimmerView.isHidden = false
+        loadIntoAvatarImageView(from: otherMember.imageURL, placeholder: nil)
     }
     
     /// Loads an avatar which is merged (tiled) version of the first four active members of the channel
@@ -114,7 +134,18 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         
         // We show a combination of at max 4 images combined
         urls = Array(urls.prefix(maxNumberOfImagesInCombinedAvatar))
-
+        let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
+        // Checked if avatar already cached
+        if let imageContainer = ImagePipeline.shared.cache.cachedImage(for: customKeyForCache), let cachedUrlCount = imageContainer.userInfo["count"] as? Int {
+            if urls.count == cachedUrlCount{
+                loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
+                shimmerView.hideSkeleton()
+                return
+            }
+        }
+        // showing shimmer effect while loading avatar
+        shimmerView.showAnimatedGradientSkeleton()
+        shimmerView.isHidden = false
         loadAvatarsFrom(urls: urls, channelId: channel.cid) { [weak self] avatars, channelId in
             guard let weakSelf = self, channelId == weakSelf.content.channel?.cid
             else { return }
@@ -122,6 +153,12 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 let combinedImage = weakSelf.createMergedAvatar(from: avatars)
                 DispatchQueue.main.async {
                     weakSelf.loadIntoAvatarImageView(from: nil, placeholder: combinedImage)
+                    weakSelf.shimmerView.hideSkeleton()
+                    if let image = combinedImage {
+                        let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
+                        let imageContainer = ImageContainer.init(image: image, type: nil, isPreview: false, data: nil, userInfo: ["count":urls.count])
+                        ImagePipeline.shared.cache.storeCachedImage(imageContainer, for: customKeyForCache)
+                    }
                 }
             }
         }
@@ -273,13 +310,23 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     }
     
     open func loadIntoAvatarImageView(from url: URL?, placeholder: UIImage?) {
-        presenceAvatarView.hideSkeleton()
+        if url == nil {
+            shimmerView.isHidden = true
+            shimmerView.hideSkeleton()
+        } else {
+            shimmerView.showAnimatedGradientSkeleton()
+            shimmerView.isHidden = false
+        }
         components.imageLoader.loadImage(
             into: presenceAvatarView.avatarView.imageView,
             url: url,
             imageCDN: components.imageCDN,
             placeholder: placeholder,
             preferredSize: .avatarThumbnailSize
-        )
+        ) { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.shimmerView.hideSkeleton()
+            weakSelf.shimmerView.isHidden = true
+        }
     }
 }
