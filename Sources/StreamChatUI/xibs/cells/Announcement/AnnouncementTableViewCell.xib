@@ -73,17 +73,18 @@
                                 </variation>
                             </view>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bTX-bD-CGh">
-                                <rect key="frame" x="0.0" y="0.0" width="255" height="250"/>
+                                <rect key="frame" x="0.0" y="0.0" width="255" height="255"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="250" id="wqe-Ag-qye"/>
+                                    <constraint firstAttribute="width" secondItem="bTX-bD-CGh" secondAttribute="height" multiplier="1:1" id="2Oy-Db-jgs"/>
+                                    <constraint firstAttribute="height" priority="998" constant="255" id="EnA-pC-5eH"/>
                                 </constraints>
                             </imageView>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="goy-Mo-hsb">
-                                <rect key="frame" x="0.0" y="0.0" width="255" height="250"/>
+                                <rect key="frame" x="0.0" y="0.0" width="255" height="255"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="play.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="k6h-Ns-GbU">
-                                        <rect key="frame" x="102.5" y="100.5" width="50" height="49"/>
+                                        <rect key="frame" x="102.5" y="103" width="50" height="49"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="50" id="2XK-kQ-MaU"/>
@@ -98,11 +99,11 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Uqj-t9-WIh">
-                                <rect key="frame" x="0.0" y="0.0" width="255" height="250"/>
+                                <rect key="frame" x="0.0" y="0.0" width="255" height="255"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="hMs-E0-dn9">
-                                <rect key="frame" x="12" y="262" width="233" height="112"/>
+                                <rect key="frame" x="12" y="267" width="233" height="107"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The Title" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JnZ-oi-BmJ">
                                         <rect key="frame" x="0.0" y="0.0" width="233" height="0.0"/>
@@ -111,20 +112,20 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" verticalCompressionResistancePriority="751" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k59-Wr-zSE">
-                                        <rect key="frame" x="0.0" y="4" width="233" height="56"/>
+                                        <rect key="frame" x="0.0" y="4" width="233" height="51"/>
                                         <string key="text">Coventry is a city with a thousand years of history that has plenty to offer the visiting tourist. It is located in the heart of Warwickshire, UK.</string>
                                         <fontDescription key="fontDescription" name="SFProText-Regular" family="SF Pro Text" pointSize="14"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="#relax, #travel" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eID-Yp-ZBm">
-                                        <rect key="frame" x="0.0" y="64" width="233" height="0.0"/>
+                                        <rect key="frame" x="0.0" y="59" width="233" height="0.0"/>
                                         <fontDescription key="fontDescription" name="SFProText-Regular" family="SF Pro Text" pointSize="15"/>
                                         <color key="textColor" red="0.96078431369999995" green="0.29411764709999999" blue="0.3921568627" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Wb5-mQ-8m9">
-                                        <rect key="frame" x="0.0" y="68" width="233" height="44"/>
+                                        <rect key="frame" x="0.0" y="63" width="233" height="44"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WFd-2h-nIc">
                                                 <rect key="frame" x="5" y="10" width="223" height="34"/>
@@ -155,7 +156,7 @@
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Sg6-7u-q7k">
-                                <rect key="frame" x="0.0" y="0.0" width="255" height="250"/>
+                                <rect key="frame" x="0.0" y="0.0" width="255" height="255"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <connections>
@@ -210,7 +211,8 @@
                 <outlet property="btnContainer" destination="Sg6-7u-q7k" id="NMU-Lh-ygC"/>
                 <outlet property="btnShowMore" destination="WFd-2h-nIc" id="DEL-AF-XXh"/>
                 <outlet property="containerView" destination="BmX-Br-KI2" id="nKZ-nG-YpC"/>
-                <outlet property="imgHeightConst" destination="wqe-Ag-qye" id="klc-pM-ftV"/>
+                <outlet property="imgAspectConst" destination="2Oy-Db-jgs" id="nCM-FK-0ZX"/>
+                <outlet property="imgHeightConst" destination="EnA-pC-5eH" id="FfW-TA-sFi"/>
                 <outlet property="imgPlay" destination="k6h-Ns-GbU" id="Vrg-Eh-LHX"/>
                 <outlet property="imgView" destination="bTX-bD-CGh" id="zIt-Uc-9lL"/>
                 <outlet property="lblHashTag" destination="eID-Yp-ZBm" id="qSr-Tu-pTi"/>

@@ -94,16 +94,18 @@ final class NewUserQueryUpdater: Worker {
             } catch {
                 log.error("Internal error. Failed to update UserListQueries for the new user: \(error)")
             }
-            
+            // Commenting this function to stop calling api's multiple times for userListQuery
             // Send `update(userListQuery:` requests so corresponding queries will be linked to the user
-            updatedQueries.forEach {
-                self?.userListUpdater.update(userListQuery: $0) { error in
-                    if let error = error {
-                        log
-                            .error("Internal error. Failed to update UserListQueries for the new user: \(error)")
-                    }
-                }
-            }
+//            updatedQueries.forEach {
+//                self?.userListUpdater.update(userListQuery: $0) { result in
+//                    switch result {
+//                    case let .success(_ ): break
+//                    case let .failure(error):
+//                        log
+//                            .error("Internal error. Failed to update UserListQueries for the new user: \(error)")
+//                    }
+//                }
+//            }
         }
     }
 }
