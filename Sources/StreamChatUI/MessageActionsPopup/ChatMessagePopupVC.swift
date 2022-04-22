@@ -169,8 +169,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 paddingView.heightAnchor.constraint(equalToConstant: 12)
             )
         }
-        let frameWithExtraSpace = (messageViewFrame.height + metaContainerViewFrame.height + treadInfoViewFrame.height + 12)
-        var contentSize = isScrollEnable() ? frameWithExtraSpace : messageViewFrame.height
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
             messageContentContainerView.heightAnchor.pin(greaterThanOrEqualToConstant: messageViewFrame.height)
