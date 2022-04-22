@@ -28,8 +28,9 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
             let reactionsBubbleHeight = messageContentView.reactionsBubbleView?.frame.height ?? 0
 
             var frame = messageContentView.superview?.convert(messageContentView.frame, to: nil) ?? .zero
-            frame.size.height -= reactionsBubbleHeight / 2
-            frame.origin.y += reactionsBubbleHeight / 2
+//            frame.size.height -= reactionsBubbleHeight / 2
+//            frame.origin.y += reactionsBubbleHeight / 2
+            frame.size.height = messageContentView.mainContainer.frame.height
             return frame
         }
 
@@ -176,6 +177,7 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
                     toVC.actionsController?.setUpLayout()
                     toVC.actionsController?.updateContent()
                     toVC.actionsController?.view.layoutSubviews()
+                    toVC.messageContentView.layoutSubviews()
                     toVC.view.isHidden = false
 
                     transitionContext.completeTransition(!transitionContext.transitionWasCancelled)

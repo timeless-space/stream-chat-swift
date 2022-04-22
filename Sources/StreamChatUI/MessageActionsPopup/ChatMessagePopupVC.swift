@@ -43,7 +43,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     public var reactionsController: ChatMessageReactionsVC?
     /// empty padding view
     private lazy var paddingView = UIView()
-    
+
     override open func setUp() {
         super.setUp()
         
@@ -169,10 +169,11 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                 paddingView.heightAnchor.constraint(equalToConstant: 12)
             )
         }
-
+        let frameWithExtraSpace = (messageViewFrame.height + metaContainerViewFrame.height + treadInfoViewFrame.height + 12)
+        var contentSize = isScrollEnable() ? frameWithExtraSpace : messageViewFrame.height
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
-            messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
+            messageContentContainerView.heightAnchor.pin(greaterThanOrEqualToConstant: messageViewFrame.height)
         ]
         let actionsContainerStackView = ContainerStackView()
         actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
