@@ -31,6 +31,7 @@ open class PrivateGroupOTPVC: UIViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        bindClosure()
     }
 
     // MARK: - IBAction
@@ -66,6 +67,22 @@ open class PrivateGroupOTPVC: UIViewController {
         lblOtpDetails.text = "Join a group with friends nearby by \n entering the secret four digits"
     }
 
+    private func bindClosure() {
+        ChatClientConfiguration.shared.getPrivateGroup = { [weak self] groupInfo in
+            guard let `self` = self else { return }
+            guard let joinPrivateGroupVC: JoinPrivateGroupVC = JoinPrivateGroupVC.instantiateController(storyboard: .PrivateGroup),
+                  let opt = self.viewOTP.text,
+                  !self.isPushed else {
+                return
+            }
+            joinPrivateGroupVC.userStatus = .joinGroup
+            joinPrivateGroupVC.passWord = opt
+            joinPrivateGroupVC.groupInfo = groupInfo
+            joinPrivateGroupVC.otpViewDelegate = self
+            self.pushWithAnimation(controller: joinPrivateGroupVC)
+        }
+    }
+
     private func checkLocationPermission() {
         if LocationManager.shared.hasLocationPermissionDenied() {
             LocationManager.showLocationPermissionAlert()
@@ -79,15 +96,10 @@ open class PrivateGroupOTPVC: UIViewController {
 
     // MARK: - Navigations
     private func pushToJoinPrivateGroup() {
-        guard let joinPrivateGroupVC: JoinPrivateGroupVC = JoinPrivateGroupVC.instantiateController(storyboard: .PrivateGroup),
-              let opt = viewOTP.text,
-              !isPushed else {
-            return
-        }
-        joinPrivateGroupVC.passWord = opt
-        joinPrivateGroupVC.otpViewDelegate = self
-        pushWithAnimation(controller: joinPrivateGroupVC)
-        //navigationController?.pushViewController(joinPrivateGroupVC, animated: true)
+        let parameter: [String: Any] = [kPrivateGroupLat: Float(LocationManager.shared.location.value.coordinate.latitude),
+                         kPrivateGroupLon: Float(LocationManager.shared.location.value.coordinate.longitude),
+                         kPrivateGroupPasscode: viewOTP.text ?? ""]
+        NotificationCenter.default.post(name: .getPrivateGroup, object: nil, userInfo: parameter)
     }
 
     private func handleLocationPermissionAndPush() {
