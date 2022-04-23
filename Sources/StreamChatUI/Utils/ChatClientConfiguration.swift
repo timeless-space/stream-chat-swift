@@ -46,7 +46,7 @@ open class ChatClientConfiguration {
     // get private group
     open var getPrivateGroup: ((ChatInviteInfo?) -> Void)?
     // create private group
-    open var createPrivateGroup: ((Bool) -> Void)?
+    open var createPrivateGroup: ((CreatePrivateGroup) -> Void)?
 
     // MARK: - Init
     public init() {}

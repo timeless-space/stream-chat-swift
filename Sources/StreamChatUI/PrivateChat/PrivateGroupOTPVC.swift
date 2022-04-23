@@ -69,15 +69,28 @@ open class PrivateGroupOTPVC: UIViewController {
 
     private func bindClosure() {
         ChatClientConfiguration.shared.getPrivateGroup = { [weak self] groupInfo in
+            guard let `self` = self, let info = groupInfo else { return }
+            guard let joinPrivateGroupVC: JoinPrivateGroupVC = JoinPrivateGroupVC.instantiateController(storyboard: .PrivateGroup),
+                  let opt = self.viewOTP.text,
+                  !self.isPushed else {
+                return
+            }
+            joinPrivateGroupVC.userStatus = (info.isMember ? .alreadyJoined : .joinGroup)
+            joinPrivateGroupVC.passWord = opt
+            joinPrivateGroupVC.groupInfo = info
+            joinPrivateGroupVC.otpViewDelegate = self
+            self.pushWithAnimation(controller: joinPrivateGroupVC)
+        }
+        ChatClientConfiguration.shared.createPrivateGroup = { [weak self] groupInfo in
             guard let `self` = self else { return }
             guard let joinPrivateGroupVC: JoinPrivateGroupVC = JoinPrivateGroupVC.instantiateController(storyboard: .PrivateGroup),
                   let opt = self.viewOTP.text,
                   !self.isPushed else {
                 return
             }
-            joinPrivateGroupVC.userStatus = .joinGroup
+            joinPrivateGroupVC.userStatus = .createGroup
             joinPrivateGroupVC.passWord = opt
-            joinPrivateGroupVC.groupInfo = groupInfo
+            joinPrivateGroupVC.createChannelInfo = groupInfo
             joinPrivateGroupVC.otpViewDelegate = self
             self.pushWithAnimation(controller: joinPrivateGroupVC)
         }
