@@ -145,13 +145,16 @@ class WalletStepper: UIView {
     }
 
     @objc func panGestureDidReceiveInteraction(_ panGesture: UIPanGestureRecognizer) {
-        guard let centerContainerXLayoutConstraint = centerContainerXLayoutConstraint, let centerContainerYLayoutConstraint = centerContainerYLayoutConstraint else { return }
+        guard let centerContainerXLayoutConstraint = centerContainerXLayoutConstraint,
+                let centerContainerYLayoutConstraint = centerContainerYLayoutConstraint
+        else { return }
         let gestureLocation = panGesture.location(in: self)
         if panGesture.state == .began {
             startPosition = gestureLocation
         } else if panGesture.state == .changed {
             guard startPosition != nil else { return }
-            if ((abs(startPosition.y - gestureLocation.y) > 10) && scrollLock == false) || ((abs(startPosition.x - gestureLocation.x) > 10 && scrollLock == false)) {
+            if ((abs(startPosition.y - gestureLocation.y) > 10) && scrollLock == false) ||
+                ((abs(startPosition.x - gestureLocation.x) > 10 && scrollLock == false)) {
                 scrollDirection = (abs(startPosition.y - gestureLocation.y) > 10) ? .upDown : .leftRight
                 scrollLock = true
             }
@@ -259,13 +262,19 @@ class WalletStepper: UIView {
                 lblAmount.text = amountString
             } else {
                 let amount = amountString
-                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
-                    !(amount.components(separatedBy: decimalSeparator).last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
+                if !amount.replacingOccurrences(of: "0", with: "")
+                    .replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
+                    !(amount.components(separatedBy: decimalSeparator).last?
+                        .replacingOccurrences(of: "0", with: "").isEmpty ?? false)
+                {
                     if !amount.contains(decimalSeparator) {
                         self.updateAmount(amount: Double(amount) ?? 0.0)
                     } else {
                         lblAmount.text = amount
-                        self.updateAmount(amount: Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0, shouldFormat: false)
+                        self.updateAmount(
+                            amount: Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0,
+                            shouldFormat: false
+                        )
                     }
                 } else {
                     lblAmount.text = amount
@@ -279,8 +288,10 @@ class WalletStepper: UIView {
                 updateAmount(amount: value)
             } else {
                 let amount = amountString
-                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
-                    !(amount.components(separatedBy: decimalSeparator).last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
+                if !amount.replacingOccurrences(of: "0", with: "")
+                    .replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
+                    !(amount.components(separatedBy: decimalSeparator).last?
+                        .replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
                     if !amount.contains(decimalSeparator) {
                         self.updateAmount(amount: Double(amount) ?? 0.0)
                     } else {
@@ -322,7 +333,14 @@ class WalletStepper: UIView {
     }
 
     private func animate(animations: @escaping (() -> Void), completion: @escaping (() -> Void)) {
-        UIView.animate(withDuration: 0.6, delay: 0.0, usingSpringWithDamping: 0.75, initialSpringVelocity: 2, options: .curveEaseInOut, animations: animations, completion: { _ in
+        UIView.animate(
+            withDuration: 0.6,
+            delay: 0.0,
+            usingSpringWithDamping: 0.75,
+            initialSpringVelocity: 2,
+            options: .curveEaseInOut,
+            animations: animations,
+            completion: { _ in
             completion()
         })
     }
