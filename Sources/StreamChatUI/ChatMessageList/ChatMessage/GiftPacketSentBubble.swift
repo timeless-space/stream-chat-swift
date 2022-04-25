@@ -85,7 +85,7 @@ class GiftBubble: UITableViewCell {
         detailsStack.alignment = .leading
         detailsStack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            detailsStack.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
+            detailsStack.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 10),
             detailsStack.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -31),
             detailsStack.bottomAnchor.constraint(equalTo: sentThumbImageView.topAnchor, constant: -8),
         ])
@@ -94,7 +94,7 @@ class GiftBubble: UITableViewCell {
         detailLabel.translatesAutoresizingMaskIntoConstraints = false
         subContainer.addSubview(detailLabel)
         NSLayoutConstraint.activate([
-            detailLabel.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
+            detailLabel.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 10),
             detailLabel.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
             detailLabel.bottomAnchor.constraint(equalTo: detailsStack.topAnchor, constant: 0),
             detailLabel.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 10)
