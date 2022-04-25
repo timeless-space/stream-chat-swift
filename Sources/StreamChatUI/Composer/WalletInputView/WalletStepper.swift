@@ -46,7 +46,7 @@ class WalletStepper: UIView {
 
     private var centerContainerXLayoutConstraint: NSLayoutConstraint?
     private var centerContainerYLayoutConstraint: NSLayoutConstraint?
-    private var decimalSeparator = Locale.current.decimalSeparator ?? "."
+    private var decimalSeparator = Constants.decimalSeparator
     private var startPosition: CGPoint!
     public var value: Double = 1
     public var minimumValue: Double = 0.0

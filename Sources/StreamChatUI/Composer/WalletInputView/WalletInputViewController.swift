@@ -22,12 +22,10 @@ class WalletInputViewController: UIViewController {
     var paymentType: WalletAttachmentPayload.PaymentType = .request
     var didHide: ((Double, WalletAttachmentPayload.PaymentType) -> Void)?
     var isInputViewLoad = false
-    private var decimalSeparator = Locale.current.decimalSeparator ?? "."
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        btnDecimalSeparato.setTitle(decimalSeparator, for: .normal)
     }
 
     func setupUI() {
@@ -35,7 +33,8 @@ class WalletInputViewController: UIViewController {
             btn.layer.cornerRadius = 30
         }
         btnClose.setImage(Appearance.default.images.closePopup, for: .normal)
-        self.walletStepper.updateAmount(amount: updatedAmount)
+        walletStepper.updateAmount(amount: updatedAmount)
+        btnDecimalSeparato.setTitle(Constants.decimalSeparator, for: .normal)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
