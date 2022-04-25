@@ -136,12 +136,12 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         urls = Array(urls.prefix(maxNumberOfImagesInCombinedAvatar))
         let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
         // Checked if avatar already cached
-        if let imageContainer = ImagePipeline.shared.cache.cachedImage(for: customKeyForCache), let cachedUrlCount = imageContainer.userInfo["count"] as? Int {
-            if urls.count == cachedUrlCount{
+        if let imageContainer = ImagePipeline.shared.cache.cachedImage(for: customKeyForCache),
+           let cachedUrlCount = imageContainer.userInfo["count"] as? Int,
+            urls.count == cachedUrlCount {
                 loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
                 shimmerView.hideSkeleton()
                 return
-            }
         }
         // showing shimmer effect while loading avatar
         shimmerView.showAnimatedGradientSkeleton()
@@ -210,15 +210,10 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         guard !avatars.isEmpty else {
             return nil
         }
-        
         var combinedImage: UIImage?
-        
-        let imageProcessor = imageProcessor
-        
         let images = avatars.map {
             imageProcessor.scale(image: $0, to: .avatarThumbnailSize)
         }
-        
         // The half of the width of the avatar
         let halfContainerSize = CGSize(width: CGSize.avatarThumbnailSize.width / 2, height: CGSize.avatarThumbnailSize.height)
         
