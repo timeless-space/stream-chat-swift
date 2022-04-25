@@ -156,7 +156,12 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                     weakSelf.shimmerView.hideSkeleton()
                     if let image = combinedImage {
                         let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
-                        let imageContainer = ImageContainer.init(image: image, type: nil, isPreview: false, data: nil, userInfo: ["count":urls.count])
+                        let imageContainer = ImageContainer.init(
+                            image: image,
+                            type: nil,
+                            isPreview: false,
+                            data: nil,
+                            userInfo: ["count": urls.count])
                         ImagePipeline.shared.cache.storeCachedImage(imageContainer, for: customKeyForCache)
                     }
                 }
