@@ -28,7 +28,7 @@ public struct Channel: Codable {
 // MARK: - Member
 public struct Member: Codable {
     public let userID: String?
-    public let user: User?
+    public let user: InviteUser?
     public let createdAt, updatedAt: String?
     public let banned, shadowBanned: Bool?
     public let role, channelRole: String?
@@ -46,7 +46,7 @@ public struct Member: Codable {
 }
 
 // MARK: - User
-public struct User: Codable {
+public struct InviteUser: Codable {
     public let banned, online: Bool?
     public let userID, id, role, createdAt: String?
     public let image: String?
