@@ -24,7 +24,13 @@ class PrivateGroupUsersCVCell: UICollectionViewCell {
 
     // MARK: - Functions
     func configData(data: Member) {
-        NukeImageLoader().loadImage(into: imgAvatar, url: URL(string: data.user?.image ?? ""), imageCDN: StreamImageCDN(), placeholder: Appearance.default.images.userAvatarPlaceholder4, resize: true) 
+        NukeImageLoader().loadImage(
+            into: imgAvatar,
+            url: URL(string: data.user?.image ?? ""),
+            imageCDN: StreamImageCDN(),
+            placeholder: Appearance.default.images.userAvatarPlaceholder4,
+            resize: true
+        )
         lblUserName.text = data.user?.name
         imgAvatar.cornerRadius = 35
         imgAvatar.layoutIfNeeded()
