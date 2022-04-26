@@ -158,7 +158,7 @@ class JoinPrivateGroupVC: UIViewController {
     }
 
     private func createPrivateChannel() {
-        self.channelController?.synchronize{ [weak self] error in
+        self.channelController?.synchronize { [weak self] error in
             guard error == nil, let self = self else {
                 return
             }

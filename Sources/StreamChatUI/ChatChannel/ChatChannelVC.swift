@@ -19,19 +19,6 @@ extension Notification.Name {
     public static let getPrivateGroup = Notification.Name("kGetPrivateGroup")
 }
 
-public let kExtraDataChannelDescription = "channelDescription"
-public let kExtraDataOneToOneChat = "OneToOneChat"
-public let kExtraDataIsGroupChat = "DataIsGroupChat"
-
-public let kInviteGroupID = "kInviteGroupID"
-public let kInviteId = "kInviteId"
-public let kInviteExpiryDate = "kInviteExpiryDate"
-
-public let kPrivateGroupPasscode = "kPrivateGroupPasscode"
-public let kPrivateGroupLat = "kPrivateGroupLat"
-public let kPrivateGroupLon = "kPrivateGroupLon"
-public let kGroupId = "kGroupId"
-
 /// Controller responsible for displaying the channel messages.
 @available(iOSApplicationExtension, unavailable)
 open class ChatChannelVC:
