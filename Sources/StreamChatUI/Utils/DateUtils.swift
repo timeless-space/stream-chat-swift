@@ -50,4 +50,31 @@ class DateUtils {
         let diff = calendar.dateComponents([.month], from: date, to: now).month ?? 0
         return diff > 1 ? L10n.Dates.timeAgoMonthsPlural(diff) : L10n.Dates.timeAgoMonthsSingular
     }
+
+    class func formatCurrency(_ number: Double?) -> String {
+        if let number = number {
+            if let formattedBalance = NumberFormatter.twoFractionDigitFormatter.string(from: number as NSNumber) {
+                return formattedBalance
+            }
+        }
+        return "0.00"
+    }
+
+    class func formatONE(_ number: Double?) -> String {
+        if let number = number {
+            if let formattedBalance = NumberFormatter.oneFractionDigitFormatter.string(from: number as NSNumber) {
+                return formattedBalance
+            }
+        }
+        return "0.000"
+    }
+
+    class func formatBalance(_ number: Double?) -> String {
+        if let number = number {
+            if let formattedBalance = NumberFormatter.currencyFractionDigitFormatter.string(from: number as NSNumber) {
+                return formattedBalance
+            }
+        }
+        return "0.0000"
+    }
 }
