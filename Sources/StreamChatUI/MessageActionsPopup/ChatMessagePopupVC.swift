@@ -57,9 +57,9 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     override open func setUp() {
         super.setUp()
         
-            let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTapOnView))
-            tapRecognizer.cancelsTouchesInView = false
-            view.addGestureRecognizer(tapRecognizer)
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTapOnView))
+        tapRecognizer.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapRecognizer)
     }
 
     override open func setUpAppearance() {
