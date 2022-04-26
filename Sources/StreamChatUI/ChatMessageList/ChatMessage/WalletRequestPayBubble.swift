@@ -115,7 +115,7 @@ class WalletRequestPayBubble: UITableViewCell {
                     Nuke.loadImage(with: themeURL, into: sentThumbImageView)
                 }
             }
-            lblDetails.text = "AMOUNT: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"
+            lblDetails.text = "AMOUNT: \(requestedAmount(raw: payload?.extraData)?.formattedOneBalance ?? "0") ONE"
         }
         detailsStack = UIStackView(arrangedSubviews: [lblDetails])
         detailsStack.axis = .vertical
@@ -231,11 +231,10 @@ class WalletRequestPayBubble: UITableViewCell {
         }
         if let receivedAmount = topAmount["receivedAmount"] {
             let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            let strReceivedAmount = String(format: "%.2f", dblReceivedAmount)
             if ChatClient.shared.currentUserId ?? "" == getUserId(raw: topAmount) {
-                lblDetails.text = "You just picked up \(strReceivedAmount) ONE!"
+                lblDetails.text = "You just picked up \(NumberUtils.formatONE(dblReceivedAmount)) ONE!"
             } else {
-                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(strReceivedAmount) ONE!"
+                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(NumberUtils.formatONE(dblReceivedAmount)) ONE!"
             }
         }
     }

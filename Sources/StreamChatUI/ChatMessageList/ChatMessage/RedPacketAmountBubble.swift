@@ -178,11 +178,11 @@ class RedPacketAmountBubble: UITableViewCell {
             var descriptionText = ""
             if strUserId == client?.currentUserId ?? "" {
                 // I picked up other amount
-                descriptionText = "\(getCongrates(extraData)) \nYou just picked up \(getAmount(extraData)) ONE! \n\n🧧Red Packet"
+                descriptionText = "\(getCongrates(extraData)) \nYou just picked up \(getAmount(extraData).formattedOneBalance) ONE! \n\n🧧Red Packet"
 
             } else {
                 // someone pickup amount
-                descriptionText = "\(getCongrates(extraData)) \n\(getUserName(extraData)) just picked up \(getAmount(extraData)) ONE! \n\n🧧Red Packet"
+                descriptionText = "\(getCongrates(extraData)) \n\(getUserName(extraData)) just picked up \(getAmount(extraData).formattedOneBalance) ONE! \n\n🧧Red Packet"
             }
             
             let imageAttachment = NSTextAttachment()

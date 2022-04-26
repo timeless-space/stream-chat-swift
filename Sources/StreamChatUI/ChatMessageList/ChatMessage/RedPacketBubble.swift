@@ -113,7 +113,6 @@ class RedPacketBubble: UITableViewCell {
         if type == .EXPIRED {
             descriptionLabel.text = "That was fun! \nWant to go next!?"
         } else if type == .RECEIVED {
-            //lblDetails.text = "You just picked up 65 ONE!"
             descriptionLabel.text = "Rad - Top Amount!"
         }
 
@@ -242,11 +241,10 @@ class RedPacketBubble: UITableViewCell {
         }
         if let receivedAmount = topAmount["receivedAmount"] {
             let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            let strReceivedAmount = String(format: "%.2f", dblReceivedAmount)
             if ChatClient.shared.currentUserId ?? "" == getUserId(raw: topAmount) {
-                lblDetails.text = "You just picked up \(strReceivedAmount) ONE!"
+                lblDetails.text = "You just picked up \(NumberUtils.formatONE(dblReceivedAmount)) ONE!"
             } else {
-                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(strReceivedAmount) ONE!"
+                lblDetails.text = "\(getUserName(raw: topAmount).formattedOneBalance) just picked up \(NumberUtils.formatONE(dblReceivedAmount)) ONE!"
             }
         }
     }

@@ -206,7 +206,7 @@ class CryptoSentBubble: UITableViewCell {
         }
         if let amount = walletData["transferAmount"] {
             let one = fetchRawData(raw: amount) as? Double ?? 0
-            sentCryptoLabel.text = "SENT: \(one) ONE"
+            sentCryptoLabel.text = "SENT: \(NumberUtils.formatONE(one)) ONE"
         }
         let defaultURL = WalletAttachmentPayload.PaymentTheme.none.getPaymentThemeUrl()
         if let themeURL = requestedThemeURL(raw: walletData), let imageUrl = URL(string: themeURL) {

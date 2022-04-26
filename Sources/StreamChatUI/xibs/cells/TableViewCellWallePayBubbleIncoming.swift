@@ -106,7 +106,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
                     Nuke.loadImage(with: themeURL, into: sentThumbImageView)
                 }
             }
-            lblDetails.text = "REQUEST: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"
+            lblDetails.text = "REQUEST: \(requestedAmount(raw: payload?.extraData)?.formattedOneBalance ?? "0") ONE"
         }
         // pickUpButton
         pickUpButton.setTitle("Pay", for: .normal)
@@ -155,9 +155,9 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
             let strReceivedAmount = String(format: "%.2f", dblReceivedAmount)
             if ChatClient.shared.currentUserId ?? "" == getUserId(raw: topAmount) {
-                lblDetails.text = "You just picked up \(strReceivedAmount) ONE!"
+                lblDetails.text = "You just picked up \(NumberUtils.formatONE(dblReceivedAmount)) ONE!"
             } else {
-                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(strReceivedAmount) ONE!"
+                lblDetails.text = "\(getUserName(raw: topAmount).formattedOneBalance) just picked up \(NumberUtils.formatONE(dblReceivedAmount)) ONE!"
             }
         }
     }
