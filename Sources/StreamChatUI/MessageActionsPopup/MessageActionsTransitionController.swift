@@ -21,16 +21,16 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
         /// The message list view controller.
         public private(set) weak var messageListVC: ChatMessageListVC?
 
+        /// extra Padding to solve message jump issue
+        private let extraPadding: CGFloat = 80
+
         /// The frame the message view's snapshot animates to when pop-up is being dismissed.
         open var selectedMessageContentViewFrame: CGRect? {
             guard let messageContentView = selectedMessageCell?.messageContentView else { return nil }
-
-            let reactionsBubbleHeight = messageContentView.reactionsBubbleView?.frame.height ?? 0
-
+            let reactionsBubbleHeight = messageContentView.reactionsBubbleView?.frame.height ?? extraPadding
             var frame = messageContentView.superview?.convert(messageContentView.frame, to: nil) ?? .zero
-//            frame.size.height -= reactionsBubbleHeight / 2
-//            frame.origin.y += reactionsBubbleHeight / 2
-            frame.size.height = messageContentView.mainContainer.frame.height
+            frame.origin.y -= reactionsBubbleHeight
+            frame.size.height = (messageContentView.frame.height + reactionsBubbleHeight)
             return frame
         }
 
@@ -102,10 +102,11 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
             toVC.view.isHidden = true
             toVC.messageContentView = messageView
             toVC.messageViewFrame = messageViewFrame
+            toVC.reactionViewFrame = (originalMessageContentView.reactionsBubbleView?
+                                        .frame ?? .zero)
+            toVC.messageContentViewPadding = extraPadding
+            toVC.messageContentYPosition = originalMessageContentView.mainContainer.frame.minY
             toVC.setUpLayout()
-            toVC.actionsController?.setUpLayout()
-            toVC.actionsController?.updateContent()
-            toVC.actionsController?.view.layoutSubviews()
             let blurView = UIVisualEffectView()
             blurView.frame = transitionContext.finalFrame(for: toVC)
 
@@ -131,6 +132,7 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
 
             transitionSubviews.forEach(transitionContext.containerView.addSubview)
             messageView.mainContainer.layoutMargins = originalMessageContentView.mainContainer.layoutMargins
+            messageView.bubbleThreadMetaContainer.layoutMargins = originalMessageContentView.bubbleThreadMetaContainer.layoutMargins
 
             let duration = transitionDuration(using: transitionContext)
             UIView.animate(
@@ -164,20 +166,11 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
                     showSnapshot(reactionsSnapshot)
 
                     blurView.effect = (toVC.blurView as? UIVisualEffectView)?.effect
-                    toVC.actionsController?.setUpLayout()
-                    toVC.actionsController?.updateContent()
-                    toVC.actionsController?.view.layoutSubviews()
                 },
                 completion: { _ in
                     transitionSubviews.forEach { $0.removeFromSuperview() }
 
                     toVC.messageContentContainerView.embed(messageView.withoutAutoresizingMaskConstraints)
-                    toVC.actionsController?.setUpLayout()
-                    toVC.actionsController?.updateContent()
-                    toVC.actionsController?.setUpLayout()
-                    toVC.actionsController?.updateContent()
-                    toVC.actionsController?.view.layoutSubviews()
-                    toVC.messageContentView.layoutSubviews()
                     toVC.view.isHidden = false
 
                     transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
@@ -206,9 +199,10 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
 
             let reactionsSnapshot: UIView? = makeSnapshot(fromVC.reactionsController)
             let actionsSnapshot: UIView? = makeSnapshot(fromVC.actionsController)
-
+            let messageViewFrame = self.selectedMessageContentViewFrame ?? .zero
             let messageView = fromVC.messageContentView!
-            let frame = fromVC.messageContentContainerView.convert(messageView.frame, to: transitionContext.containerView)
+            var frame = fromVC.messageContentContainerView.convert(messageView.frame, to: transitionContext.containerView)
+            //frame.size.height = messageViewFrame.height
             messageView.removeFromSuperview()
             messageView.frame = frame
             messageView.translatesAutoresizingMaskIntoConstraints = true
@@ -224,7 +218,7 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
             selectedMessageCell?.messageContentView?.alpha = 0.0
 
             let hideView: (UIView?) -> Void = { view in
-                view?.transform = CGAffineTransform(scaleX: 0.01, y: 0.01)
+                view?.transform = CGAffineTransform(scaleX: 0.0, y: 0.0)
                 view?.alpha = 0.0
             }
 
