@@ -327,10 +327,8 @@ extension EmojiContainerViewController: GPHGridDelegate {
 @available(iOS 13.0, *)
 extension EmojiContainerViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
-        var giphyPicker = GiphyViewController()
-        giphyPicker.mediaTypeConfig = [.gifs]
-        giphyPicker.delegate = self
-        UIApplication.shared.keyWindow?.rootViewController?.present(giphyPicker, animated: true, completion: nil)
+        var emojiMainController = EmojiMainViewController()
+        UIApplication.shared.keyWindow?.rootViewController?.present(emojiMainController, animated: true, completion: nil)
         return false
     }
 }
