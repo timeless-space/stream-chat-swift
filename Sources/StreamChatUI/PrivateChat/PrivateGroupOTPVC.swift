@@ -9,10 +9,6 @@
 import UIKit
 import CoreLocation
 
-protocol PrivateGroupOTPVCDelegate: class {
-    func popToThisVC()
-}
-
 open class PrivateGroupOTPVC: UIViewController {
 
     // MARK: - Variables
@@ -52,12 +48,10 @@ open class PrivateGroupOTPVC: UIViewController {
         btnBack.setImage(Appearance.default.images.backCircle, for: .normal)
         btnBack.setTitle("", for: .normal)
         view.backgroundColor = Appearance.default.colorPalette.chatViewBackground
-        indicator.startAnimating()
         LocationManager.shared.location.bind { [weak self] location in
             guard let self = self else {
                 return
             }
-            self.indicator.stopAnimating()
             if !LocationManager.shared.isEmptyCurrentLoc() {
                 if self.viewOTP.validate() {
                     self.pushToJoinPrivateGroup()
@@ -78,7 +72,8 @@ open class PrivateGroupOTPVC: UIViewController {
             joinPrivateGroupVC.userStatus = (info.isMember ? .alreadyJoined : .joinGroup)
             joinPrivateGroupVC.passWord = opt
             joinPrivateGroupVC.groupInfo = info
-            joinPrivateGroupVC.otpViewDelegate = self
+            self.indicator.stopAnimating()
+            self.isPushed = true
             self.pushWithAnimation(controller: joinPrivateGroupVC)
         }
         ChatClientConfiguration.shared.createPrivateGroup = { [weak self] groupInfo in
@@ -91,7 +86,8 @@ open class PrivateGroupOTPVC: UIViewController {
             joinPrivateGroupVC.userStatus = .createGroup
             joinPrivateGroupVC.passWord = opt
             joinPrivateGroupVC.createChannelInfo = groupInfo
-            joinPrivateGroupVC.otpViewDelegate = self
+            self.indicator.stopAnimating()
+            self.isPushed = true
             self.pushWithAnimation(controller: joinPrivateGroupVC)
         }
     }
@@ -109,6 +105,7 @@ open class PrivateGroupOTPVC: UIViewController {
 
     // MARK: - Navigations
     private func pushToJoinPrivateGroup() {
+        guard viewOTP.validate() else { return }
         let parameter: [String: Any] = [kPrivateGroupLat: Float(LocationManager.shared.location.value.coordinate.latitude),
                          kPrivateGroupLon: Float(LocationManager.shared.location.value.coordinate.longitude),
                          kPrivateGroupPasscode: viewOTP.text ?? ""]
@@ -117,6 +114,7 @@ open class PrivateGroupOTPVC: UIViewController {
 
     private func handleLocationPermissionAndPush() {
         viewOTP.resignFirstResponder()
+        indicator.startAnimating()
         if LocationManager.shared.hasLocationPermissionDenied() {
             LocationManager.showLocationPermissionAlert()
         } else if !LocationManager.shared.isEmptyCurrentLoc() {
@@ -125,13 +123,6 @@ open class PrivateGroupOTPVC: UIViewController {
                 self.pushToJoinPrivateGroup()
             }
         }
-    }
-}
-
-// MARK: - PrivateGroupOTPVCDelegate
-extension PrivateGroupOTPVC: PrivateGroupOTPVCDelegate {
-    func popToThisVC() {
-        isPushed = false
     }
 }
 

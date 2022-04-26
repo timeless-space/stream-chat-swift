@@ -17,7 +17,6 @@ class JoinPrivateGroupVC: UIViewController {
     var passWord = ""
     private var channelMembers = [Member]()
     private var channelController: ChatChannelController?
-    weak var otpViewDelegate: PrivateGroupOTPVCDelegate?
     var userStatus: UserStatus?
     var groupInfo: ChatInviteInfo?
     var createChannelInfo: CreatePrivateGroup?
@@ -55,8 +54,7 @@ class JoinPrivateGroupVC: UIViewController {
 
     // MARK: - IBOutlets
     @IBAction func btnBackAction(_ sender: UIButton) {
-        otpViewDelegate?.popToThisVC()
-        popWithAnimation()
+        navigationController?.popToRootViewController(animated: true)
     }
 
     @IBAction func btnJoinGroupAction(_ sender: UIButton) {
@@ -112,20 +110,24 @@ class JoinPrivateGroupVC: UIViewController {
         }
     }
 
+    private func getPrivateGroupInfo() {
+        let parameter: [String: Any] = [kPrivateGroupLat: Float(LocationManager.shared.location.value.coordinate.latitude),
+                                        kPrivateGroupLon: Float(LocationManager.shared.location.value.coordinate.longitude),
+                                   kPrivateGroupPasscode: self.passWord]
+        NotificationCenter.default.post(name: .getPrivateGroup, object: nil, userInfo: parameter)
+    }
+
     private func bindClosure() {
         timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
             guard let `self` = self else { return }
-            let parameter: [String: Any] = [kPrivateGroupLat: Float(LocationManager.shared.location.value.coordinate.latitude),
-                                            kPrivateGroupLon: Float(LocationManager.shared.location.value.coordinate.longitude),
-                                       kPrivateGroupPasscode: self.passWord]
-            NotificationCenter.default.post(name: .getPrivateGroup, object: nil, userInfo: parameter)
+            self.getPrivateGroupInfo()
         }
 
-        ChatClientConfiguration.shared.joinPrivateGroup = {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else {
-                    return
-                }
+        ChatClientConfiguration.shared.joinPrivateGroup = { [weak self] in
+            guard let self = self else {
+                return
+            }
+            DispatchQueue.main.async {
                 self.viewJoinOverlay.isHidden = true
                 self.handleNavigation()
             }
@@ -170,6 +172,7 @@ class JoinPrivateGroupVC: UIViewController {
                                 "messageType": .string(AdminMessageType.privateChat.rawValue)],
                     completion: nil)
             }
+            self.getPrivateGroupInfo()
         }
     }
 }
