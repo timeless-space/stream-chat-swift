@@ -52,7 +52,6 @@ class WalletInputViewController: UIViewController {
 
     @IBAction func btnSendAction(_ sender: Any) {
         paymentType = .pay
-        didHide?(walletStepper.value, paymentType)
         NotificationCenter.default.post(name: .hidePaymentOptions, object: nil, userInfo: ["isHide": false])
         self.dismiss(animated: true, completion: nil)
         didHide?(walletStepper.value, paymentType)
