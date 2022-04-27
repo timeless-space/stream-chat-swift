@@ -34,14 +34,14 @@ class GiftBubble: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.selectionStyle = .none
         self.backgroundColor = .clear
+        setupUI()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
 
-    func configureCell(isSender: Bool) {
-        self.isSender = isSender
+    private func setupUI() {
         let gesture = UITapGestureRecognizer(target: self, action: #selector(didTap(tap:)))
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -53,13 +53,6 @@ class GiftBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -72,9 +65,23 @@ class GiftBubble: UITableViewCell {
             subContainer.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
         ])
+    }
+
+    func configureCell(isSender: Bool) {
+        self.isSender = isSender
+        if isSender {
+            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
+            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
+        } else {
+            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
+            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
+        }
+
         setFlair()
         titleLabel = createTitleLabel()
         amountLabel = createAmountLabel()
+        detailLabel = createDetailsLabel()
+        timestampLabel = createTimestampLabel()
 
         detailsStack = UIStackView(arrangedSubviews: [titleLabel, amountLabel])
         detailsStack.axis = .horizontal
@@ -89,8 +96,6 @@ class GiftBubble: UITableViewCell {
             detailsStack.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -31),
             detailsStack.bottomAnchor.constraint(equalTo: sentThumbImageView.topAnchor, constant: -8),
         ])
-
-        detailLabel = createDetailsLabel()
         detailLabel.translatesAutoresizingMaskIntoConstraints = false
         subContainer.addSubview(detailLabel)
         NSLayoutConstraint.activate([
@@ -102,9 +107,9 @@ class GiftBubble: UITableViewCell {
         detailLabel.transform = .mirrorY
         detailLabel.textAlignment = .left
 
-        timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
+
         timestampLabel.textAlignment = isSender ? .right : .left
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
