@@ -21,6 +21,7 @@ class WalletInputViewController: UIViewController {
     var updatedAmount = 0.0
     var paymentType: WalletAttachmentPayload.PaymentType = .request
     var didHide: ((Double, WalletAttachmentPayload.PaymentType) -> Void)?
+    var didUpdateAmount: ((Double) -> Void)?
     var isInputViewLoad = false
 
     override func viewDidLoad() {
@@ -39,24 +40,29 @@ class WalletInputViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        didHide?(walletStepper.value, paymentType)
+        didUpdateAmount?(walletStepper.value)
     }
 
     @IBAction func btnRequestAction(_ sender: Any) {
         paymentType = .request
         NotificationCenter.default.post(name: .hidePaymentOptions, object: nil, userInfo: ["isHide": false])
         self.dismiss(animated: true, completion: nil)
+        didHide?(walletStepper.value, paymentType)
     }
 
     @IBAction func btnSendAction(_ sender: Any) {
         paymentType = .pay
+        didHide?(walletStepper.value, paymentType)
         NotificationCenter.default.post(name: .hidePaymentOptions, object: nil, userInfo: ["isHide": false])
         self.dismiss(animated: true, completion: nil)
+        didHide?(walletStepper.value, paymentType)
     }
 
     @IBAction func btnKeypadAction(_ sender: UIButton) {
         if !isInputViewLoad {
-            if let amount = Double(sender.titleLabel?.text ?? "") {
+            if sender.titleLabel?.text == Constants.decimalSeparator {
+                walletStepper.insertNumber(numberValue: sender.titleLabel?.text)
+            } else if let amount = Double(sender.titleLabel?.text ?? "") {
                 walletStepper.updateAmount(amount: amount)
             }
             isInputViewLoad = true
@@ -66,7 +72,6 @@ class WalletInputViewController: UIViewController {
     }
 
     @IBAction func btnCloseAction(_ sender: Any) {
-        didHide?(walletStepper.value, paymentType)
         self.dismiss(animated: true, completion: nil)
     }
 

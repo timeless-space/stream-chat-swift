@@ -33,7 +33,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="IZg-r0-iLV">
-                                <rect key="frame" x="88.5" y="532.5" width="237" height="44"/>
+                                <rect key="frame" x="88.5" y="533" width="237" height="44"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gjv-Np-0uA">
                                         <rect key="frame" x="0.0" y="0.0" width="111" height="44"/>
@@ -80,7 +80,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SYs-2b-Sh5">
-                                <rect key="frame" x="77" y="112.5" width="260" height="90"/>
+                                <rect key="frame" x="77" y="113" width="260" height="90"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Gmf-pA-FAh" customClass="WalletStepper" customModule="StreamChatUI" customModuleProvider="target">
                                         <rect key="frame" x="1.5" y="0.0" width="257" height="90"/>
@@ -100,7 +100,7 @@
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="3TD-Wc-zXo">
-                                <rect key="frame" x="37" y="262.5" width="340" height="220"/>
+                                <rect key="frame" x="37" y="263" width="340" height="220"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="gvn-zb-w8J">
                                         <rect key="frame" x="0.0" y="0.0" width="340" height="55"/>
@@ -288,7 +288,7 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Timeless" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ycs-2s-2WE">
-                                <rect key="frame" x="30" y="59" width="314" height="23.5"/>
+                                <rect key="frame" x="30" y="59" width="314" height="24"/>
                                 <fontDescription key="fontDescription" name="SFProDisplay-Bold" family="SF Pro Display" pointSize="20"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
