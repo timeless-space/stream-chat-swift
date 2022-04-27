@@ -1,15 +1,14 @@
 //
-//  RedPacket.swift
+//  GiftPacket.swift
 //  StreamChatUI
 //
-//  Created by Ajay Ghodadra on 07/12/21.
-//  Copyright © 2021 Stream.io Inc. All rights reserved.
+//  Created by Tu Nguyen on 4/27/22.
 //
 
 import Foundation
 import StreamChat
 
-public struct RedPacket {
+public struct GiftPacket {
     // MARK: - Variables
     public var title: String?
     public var myName: String?
@@ -28,6 +27,8 @@ public struct RedPacket {
     public var packetId: String?
     public var packetAddress: String?
     public var strFormattedAmount: String?
+    public var flair: String?
+    public var symbol: String?
     //number of fraction digits in amount
     public var fractionDigits: Int = 0
 
@@ -53,8 +54,8 @@ public struct RedPacket {
         dictOut["packetId"] = .string(packetId ?? "")
         dictOut["packetAddress"] = .string(packetAddress ?? "")
         dictOut["isExpired"] = .bool(false)
+        dictOut["flair"] = .string(flair ?? "")
+        dictOut["symbol"] = .string(symbol ?? "")
         return dictOut
     }
 }
-
-/*[“totalOne”: 100, “max”: “65”, split_type: “group/single”, createdAt: “Date”, expireaT: “Date”, splitBetween: 7, isPacketClaimed: Bool, redPacketId: 123345, isExpired: Bool, highestAmountUserName: “ABC”, highestAmountUserId: “1234”]*/

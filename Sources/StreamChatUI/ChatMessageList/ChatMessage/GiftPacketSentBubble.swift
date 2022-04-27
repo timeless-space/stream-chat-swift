@@ -216,10 +216,10 @@ class GiftBubble: UITableViewCell {
         } else {
             timestampLabel?.text = nil
         }
-        configRedPacket()
+        configGiftPacket()
     }
 
-    private func configRedPacket() {
+    private func configGiftPacket() {
         guard let extraData = content?.extraData else {
             return
         }

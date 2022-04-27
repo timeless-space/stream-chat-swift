@@ -542,7 +542,7 @@ open class ComposerVC: _ViewController,
     func bindMenuController() {
         menuController = ChatMenuViewController.instantiateController(storyboard: .wallet)
         menuController?.extraData = self.channelController?.channel?.extraData ?? [:]
-        menuController?.isChatOnly = self.channelController?.channel?.name == nil
+        menuController?.isChatOnly = self.channelController?.channel?.isDirectMessageChannel ?? false
         menuController?.didTapAction = { [weak self] action in
             guard let `self` = self else { return }
             self.lockInputViewObserver = true
