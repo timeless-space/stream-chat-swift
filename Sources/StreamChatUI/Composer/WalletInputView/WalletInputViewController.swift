@@ -15,7 +15,7 @@ class WalletInputViewController: UIViewController {
     @IBOutlet weak var btnClose: UIButton!
     @IBOutlet var btnKeyPad: [UIButton]!
     @IBOutlet weak var walletStepper: WalletStepper!
-    @IBOutlet weak var btnDecimalSeparato: UIButton!
+    @IBOutlet weak var btnDecimalSeparator: UIButton!
 
     // MARK: - Variables
     var updatedAmount = 0.0
@@ -34,7 +34,7 @@ class WalletInputViewController: UIViewController {
         }
         btnClose.setImage(Appearance.default.images.closePopup, for: .normal)
         walletStepper.updateAmount(amount: updatedAmount)
-        btnDecimalSeparato.setTitle(Constants.decimalSeparator, for: .normal)
+        btnDecimalSeparator.setTitle(Constants.decimalSeparator, for: .normal)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
