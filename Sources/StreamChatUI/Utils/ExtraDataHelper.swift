@@ -384,3 +384,22 @@ public extension Dictionary where Key == String, Value == RawJSON {
         }
     }
 }
+
+public func fetchRawData(raw: RawJSON) -> Any? {
+    switch raw {
+    case .number(let double):
+        return double
+    case .string(let string):
+        return string
+    case .bool(let bool):
+        return bool
+    case .dictionary(let dictionary):
+        return dictionary
+    case .array(let array):
+        return array
+    case .nil:
+        return nil
+    @unknown default:
+        return nil
+    }
+}

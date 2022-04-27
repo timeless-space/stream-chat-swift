@@ -363,8 +363,7 @@ open class ChatMessageListVC:
                     }
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
             }
             else if isRedPacketNoPickUpCell(message) {

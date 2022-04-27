@@ -10,10 +10,6 @@ import UIKit
 
 class TableViewHeaderCreateChat: UITableViewCell {
     // MARK: - VARIBALES
-    static var nib: UINib {
-        return UINib(nibName: reuseID, bundle: nil)
-    }
-    static let reuseID = "TableViewHeaderCreateChat"
     var bCallbackGroupCreate: (() -> Void)?
     var bCallbackGroupSelect: (() -> Void)?
     var bCallbackGroupWeHere: (() -> Void)?
