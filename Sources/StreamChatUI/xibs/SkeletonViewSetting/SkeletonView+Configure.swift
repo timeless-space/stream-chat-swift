@@ -6,7 +6,6 @@
 //  Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
-import Foundation
 import SkeletonView
 
 public extension SkeletonAppearance {
