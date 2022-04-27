@@ -169,10 +169,11 @@ class JoinPrivateGroupVC: UIViewController {
                     pinning: nil,
                     attachments: [],
                     extraData: ["adminMessage": .string(self.channelController?.channel?.createdBy?.name ?? ""),
-                                "messageType": .string(AdminMessageType.privateChat.rawValue)],
-                    completion: nil)
+                                "messageType": .string(AdminMessageType.privateChat.rawValue)])
+                { _ in
+                    self.getPrivateGroupInfo()
+                }
             }
-            self.getPrivateGroupInfo()
         }
     }
 }
