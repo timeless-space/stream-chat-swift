@@ -65,19 +65,21 @@ class GiftBubble: UITableViewCell {
             subContainer.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
         ])
-    }
 
-    func configureCell(isSender: Bool) {
-        self.isSender = isSender
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
+        sentThumbImageView = UIImageView()
+        sentThumbImageView.backgroundColor = .black
+        sentThumbImageView.transform = .mirrorY
+        sentThumbImageView.contentMode = .scaleAspectFill
+        sentThumbImageView.translatesAutoresizingMaskIntoConstraints = false
+        sentThumbImageView.clipsToBounds = true
+        subContainer.addSubview(sentThumbImageView)
+        NSLayoutConstraint.activate([
+            sentThumbImageView.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
+            sentThumbImageView.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
+            sentThumbImageView.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
+            sentThumbImageView.heightAnchor.constraint(equalToConstant: 250)
+        ])
 
-        setFlair()
         titleLabel = createTitleLabel()
         amountLabel = createAmountLabel()
         detailLabel = createDetailsLabel()
@@ -121,6 +123,18 @@ class GiftBubble: UITableViewCell {
         timestampLabel.transform = .mirrorY
     }
 
+    func configureCell(isSender: Bool) {
+        self.isSender = isSender
+        if isSender {
+            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
+            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
+        } else {
+            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
+            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
+        }
+        setFlair()
+    }
+
     private var cellWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.3
     }
@@ -129,8 +143,6 @@ class GiftBubble: UITableViewCell {
         guard let extraData = content?.extraData else {
             return
         }
-        sentThumbImageView = UIImageView()
-        sentThumbImageView.backgroundColor = .black
         if self.isVideoType(extraData.flair ?? "") {
             let videoURL = URL(string: extraData.flair ?? "")
             let player = AVPlayer(url: videoURL!)
@@ -144,17 +156,6 @@ class GiftBubble: UITableViewCell {
             let loader = UIActivityIndicatorView(style: .white)
             sentThumbImageView.setGifFromURL(url, customLoader: loader)
         }
-        sentThumbImageView.transform = .mirrorY
-        sentThumbImageView.contentMode = .scaleAspectFill
-        sentThumbImageView.translatesAutoresizingMaskIntoConstraints = false
-        sentThumbImageView.clipsToBounds = true
-        subContainer.addSubview(sentThumbImageView)
-        NSLayoutConstraint.activate([
-            sentThumbImageView.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
-            sentThumbImageView.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
-            sentThumbImageView.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
-            sentThumbImageView.heightAnchor.constraint(equalToConstant: 250)
-        ])
     }
 
     private func isVideoType(_ path: String) -> Bool {
