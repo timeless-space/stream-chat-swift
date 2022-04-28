@@ -18,8 +18,8 @@ extension Notification.Name {
     public static let disburseFundAction = Notification.Name("kStreamChatDisburseFundTapAction")
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
-    public static let sendGiftTapAction = Notification.Name("kStreamChatSendGiftTapAction")
-    public static let claimGiftPacketAction = Notification.Name("kStreamChatClaimGiftTapAction")
+    public static let sendGiftCardTapAction = Notification.Name("kStreamChatSendGiftCardTapAction")
+    public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -847,14 +847,13 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
     }
 
-    //Tu Nguyen:
     @objc open func sendGiftAction() {
         composerView.inputMessageView.textView.text = nil
         composerView.inputMessageView.textView.resignFirstResponder()
         guard let channelId = channelController?.channel?.cid else { return }
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
-        NotificationCenter.default.post(name: .sendGiftTapAction, object: nil, userInfo: userInfo)
+        NotificationCenter.default.post(name: .sendGiftCardTapAction, object: nil, userInfo: userInfo)
     }
 
     private func animateMenuButton() {

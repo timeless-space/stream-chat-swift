@@ -259,6 +259,6 @@ class GiftBubble: UITableViewCell {
               isSender == false else {
             return
         }
-        NotificationCenter.default.post(name: .claimGiftPacketAction, object: nil, userInfo: extraData)
+        NotificationCenter.default.post(name: .claimGiftCardPacketAction, object: nil, userInfo: extraData)
     }
 }
