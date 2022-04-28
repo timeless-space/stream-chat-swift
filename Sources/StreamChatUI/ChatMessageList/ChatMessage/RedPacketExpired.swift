@@ -21,6 +21,10 @@ class RedPacketExpired: UITableViewCell {
     public private(set) var pickUpButton: UIButton!
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var leadingAnchorForReceiver: NSLayoutConstraint?
+    private var trailingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorForReceiver: NSLayoutConstraint?
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
@@ -31,8 +35,7 @@ class RedPacketExpired: UITableViewCell {
     // MARK: - View Cycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
@@ -43,7 +46,10 @@ class RedPacketExpired: UITableViewCell {
         return UIScreen.main.bounds.width * 0.3
     }
 
-    func configureCell(isSender: Bool) {
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
+
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -53,13 +59,10 @@ class RedPacketExpired: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -137,11 +140,10 @@ class RedPacketExpired: UITableViewCell {
         ])
         pickUpButton.transform = .mirrorY
 
-
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
-        timestampLabel.textAlignment = isSender ? .right : .left
+
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -150,6 +152,32 @@ class RedPacketExpired: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
+    }
+
+    func configData(isSender: Bool) {
+        setBubbleConstraints(isSender)
+        timestampLabel.textAlignment = isSender ? .right : .left
+        var nameAndTimeString: String? = ""
+        if let options = layoutOptions {
+            if options.contains(.authorName), let name = content?.author.name {
+                nameAndTimeString?.append("\(name)   ")
+            }
+            if options.contains(.timestamp) , let createdAt = content?.createdAt {
+                nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+            }
+        }
+        timestampLabel?.text = nameAndTimeString
+    }
+
+    private func setBubbleConstraints(_ isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        leadingAnchorForSender?.constant = cellWidth
+        trailingAnchorForSender?.isActive = isSender
+        trailingAnchorForSender?.constant = -8
+        leadingAnchorForReceiver?.isActive = !isSender
+        leadingAnchorForReceiver?.constant = 8
+        trailingAnchorForReceiver?.isActive = !isSender
+        trailingAnchorForReceiver?.constant = -cellWidth
     }
 
     private func createTimestampLabel() -> UILabel {
@@ -203,19 +231,6 @@ class RedPacketExpired: UITableViewCell {
             sentCryptoLabel.font = Appearance.default.fonts.footnote.withSize(11)
         }
         return sentCryptoLabel
-    }
-
-    func configData() {
-        var nameAndTimeString: String? = ""
-        if let options = layoutOptions {
-            if options.contains(.authorName), let name = content?.author.name {
-                nameAndTimeString?.append("\(name)   ")
-            }
-            if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
-            }
-        }
-        timestampLabel?.text = nameAndTimeString
     }
 
     @objc func btnSendPacketAction() {

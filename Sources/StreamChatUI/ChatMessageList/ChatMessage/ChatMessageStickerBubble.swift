@@ -23,6 +23,13 @@ class ChatMessageStickerBubble: _TableViewCell {
     public private(set) var sentThumbStickerView: SPUIStickerView!
     public private(set) var sentThumbGifView: UIImageView!
     public private(set) var authorAvatarView: ChatAvatarView?
+    private var leadingMainContainer: NSLayoutConstraint?
+    private var trailingMainContainer: NSLayoutConstraint?
+    private var stickerHeightConstraint: NSLayoutConstraint?
+    private var stickerWidthConstraint: NSLayoutConstraint?
+    private var thumbGifViewHeightConstraint: NSLayoutConstraint?
+    private var thumbGifViewWidthConstraint: NSLayoutConstraint?
+    private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     var content: ChatMessage?
     var chatChannel: ChatChannel?
@@ -30,8 +37,7 @@ class ChatMessageStickerBubble: _TableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
@@ -40,20 +46,18 @@ class ChatMessageStickerBubble: _TableViewCell {
 
     private var cellWidth: CGFloat = 100.0
 
-    func configureCell(isSender: Bool) {
-        if let giphyUrl = content?.extraData.giphyUrl {
-            cellWidth = 200
-        } else {
-            cellWidth = 150
-        }
-        if mainContainer != nil && subContainer != nil {
-            mainContainer.removeFromSuperview()
-            subContainer.removeFromSuperview()
-            mainContainer.removeAllArrangedSubviews()
-            subContainer.removeAllArrangedSubviews()
-            timestampLabel = nil
-            authorAvatarView = nil
-        }
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
+
+        leadingMainContainer = mainContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingMainContainer = mainContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        stickerHeightConstraint = sentThumbStickerView.heightAnchor.constraint(equalToConstant: cellWidth)
+        stickerWidthConstraint = sentThumbStickerView.widthAnchor.constraint(equalToConstant: cellWidth)
+        thumbGifViewHeightConstraint = sentThumbGifView.heightAnchor.constraint(equalToConstant: cellWidth)
+        thumbGifViewWidthConstraint = sentThumbGifView.widthAnchor.constraint(equalToConstant: cellWidth)
+        timestampLabelWidthConstraint = timestampLabel?.widthAnchor.constraint(equalToConstant: cellWidth)
+
         mainContainer.addArrangedSubviews([createAvatarView(), subContainer])
         mainContainer.alignment = .bottom
         contentView.addSubview(mainContainer)
@@ -61,17 +65,8 @@ class ChatMessageStickerBubble: _TableViewCell {
             mainContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 4),
             mainContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -4)
         ])
-        if isSender {
-            mainContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-            authorAvatarView?.isHidden = true
-        } else {
-            mainContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            authorAvatarView?.isHidden = false
-        }
 
         sentThumbStickerView = SPUIStickerView()
-        sentThumbStickerView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        sentThumbStickerView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
         sentThumbStickerView.backgroundColor = Appearance.default.colorPalette.background6
         sentThumbStickerView.transform = .mirrorY
         sentThumbStickerView.contentMode = .scaleAspectFill
@@ -79,19 +74,43 @@ class ChatMessageStickerBubble: _TableViewCell {
         sentThumbStickerView.translatesAutoresizingMaskIntoConstraints = false
         sentThumbStickerView.clipsToBounds = true
         subContainer.transform = .mirrorY
+
         sentThumbGifView = GPHMediaView()
         sentThumbGifView.backgroundColor = Appearance.default.colorPalette.background6
         sentThumbGifView.transform = .mirrorY
         sentThumbGifView.contentMode = .scaleAspectFill
         sentThumbGifView.layer.cornerRadius = 12
         sentThumbGifView.translatesAutoresizingMaskIntoConstraints = false
-        sentThumbGifView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        sentThumbGifView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
         sentThumbGifView.clipsToBounds = true
         subContainer.addSubview(sentThumbGifView)
+
         subContainer.addArrangedSubviews([createTimestampLabel(), sentThumbStickerView, sentThumbGifView])
         subContainer.alignment = .leading
-        timestampLabel?.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
+    }
+
+    private func setBubbleConstraints(_ isSender: Bool) {
+        leadingMainContainer?.isActive = !isSender
+        trailingMainContainer?.isActive = isSender
+        stickerHeightConstraint?.constant = cellWidth
+        stickerWidthConstraint?.constant = cellWidth
+        thumbGifViewHeightConstraint?.constant = cellWidth
+        thumbGifViewWidthConstraint?.constant = cellWidth
+        timestampLabelWidthConstraint?.constant = cellWidth
+    }
+
+    func configureCell(isSender: Bool) {
+        if let giphyUrl = content?.extraData.giphyUrl {
+            cellWidth = 200
+        } else {
+            cellWidth = 150
+        }
+        setBubbleConstraints(isSender)
+        if isSender {
+            authorAvatarView?.isHidden = true
+        } else {
+            authorAvatarView?.isHidden = false
+        }
+
         if let giphyUrl = content?.extraData.giphyUrl, let gifUrl = URL(string: giphyUrl) {
             sentThumbGifView.setGifFromURL(gifUrl)
             sentThumbGifView.isHidden = false

@@ -15,6 +15,10 @@ class RedPacketAmountBubble: UITableViewCell {
     public private(set) var subContainer: UIView!
     public private(set) var timestampLabel: UILabel!
     public private(set) var descriptionLabel: UILabel!
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var leadingAnchorForReceiver: NSLayoutConstraint?
+    private var trailingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorForReceiver: NSLayoutConstraint?
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     var client: ChatClient?
@@ -32,8 +36,7 @@ class RedPacketAmountBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
@@ -44,7 +47,9 @@ class RedPacketAmountBubble: UITableViewCell {
         return UIScreen.main.bounds.width * 0.3
     }
 
-    func configureCell(isSender: Bool) {
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -54,13 +59,10 @@ class RedPacketAmountBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -73,7 +75,7 @@ class RedPacketAmountBubble: UITableViewCell {
             subContainer.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
         ])
-        
+
         descriptionLabel = createDescLabel()
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         subContainer.addSubview(descriptionLabel)
@@ -85,7 +87,7 @@ class RedPacketAmountBubble: UITableViewCell {
         ])
         descriptionLabel.transform = .mirrorY
         descriptionLabel.textAlignment = .left
-        
+
         btnExplore.translatesAutoresizingMaskIntoConstraints = false
         subContainer.insertSubview(btnExplore, aboveSubview: descriptionLabel)
 
@@ -97,7 +99,7 @@ class RedPacketAmountBubble: UITableViewCell {
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
-        timestampLabel.textAlignment = isSender ? .right : .left
+
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -106,6 +108,17 @@ class RedPacketAmountBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
+    }
+
+    private func setBubbleConstraints(_ isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        leadingAnchorForSender?.constant = cellWidth
+        trailingAnchorForSender?.isActive = isSender
+        trailingAnchorForSender?.constant = -8
+        leadingAnchorForReceiver?.isActive = !isSender
+        leadingAnchorForReceiver?.constant = 8
+        trailingAnchorForReceiver?.isActive = !isSender
+        trailingAnchorForReceiver?.constant = -cellWidth
     }
 
     @objc func btnTapExploreAction() {
@@ -155,7 +168,9 @@ class RedPacketAmountBubble: UITableViewCell {
         return lblDetails
     }
 
-    func configData() {
+    func configData(isSender: Bool) {
+        setBubbleConstraints(isSender)
+        timestampLabel.textAlignment = isSender ? .right : .left
         var nameAndTimeString: String? = ""
         if let options = layoutOptions {
             if options.contains(.authorName), let name = content?.author.name {

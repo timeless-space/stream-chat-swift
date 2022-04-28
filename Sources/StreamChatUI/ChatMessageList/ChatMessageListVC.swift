@@ -377,8 +377,7 @@ open class ChatMessageListVC:
                 cell.client = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
             }
             else if isRedPacketExpiredCell(message) {
@@ -417,8 +416,7 @@ open class ChatMessageListVC:
                 cell.client = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser)
                 cell.blockExpAction = { blockExpUrl in
                     let svc = SFSafariViewController(url: blockExpUrl)
                     let nav = UINavigationController(rootViewController: svc)
