@@ -116,7 +116,6 @@ class CryptoReceiveBubble: UITableViewCell {
         ])
         blockExplorerButton.transform = .mirrorY
 
-
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)

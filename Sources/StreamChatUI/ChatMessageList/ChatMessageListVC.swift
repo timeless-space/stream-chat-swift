@@ -352,8 +352,7 @@ open class ChatMessageListVC:
                         }
                     cell.options = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
-                    cell.configureCell(isSender: isMessageFromCurrentUser)
-                    cell.configData()
+                    cell.configData(isSender: isMessageFromCurrentUser)
                     return cell
                 }
                 guard let cell = tableView.dequeueReusableCell(
@@ -394,8 +393,7 @@ open class ChatMessageListVC:
                 cell.chatClient = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser, with: .EXPIRED)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser, with: .EXPIRED)
                 return cell
             } else if isRedPacketReceivedCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
@@ -408,8 +406,7 @@ open class ChatMessageListVC:
                 }
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser, with: .RECEIVED)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser, with: .RECEIVED)
                 return cell
             } else if isRedPacketAmountCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
@@ -440,8 +437,7 @@ open class ChatMessageListVC:
                     cell.client = client
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
-                    cell.configureCell(isSender: isMessageFromCurrentUser)
-                    cell.configData()
+                    cell.configData(isSender: isMessageFromCurrentUser)
                     return cell
                 }
                 guard let cell = tableView.dequeueReusableCell(
