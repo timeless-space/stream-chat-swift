@@ -112,7 +112,6 @@ class GiftBubble: UITableViewCell {
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
 
-        timestampLabel.textAlignment = isSender ? .right : .left
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -133,6 +132,7 @@ class GiftBubble: UITableViewCell {
             viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
         }
         setFlair()
+        timestampLabel.textAlignment = isSender ? .right : .left
     }
 
     private var cellWidth: CGFloat {
