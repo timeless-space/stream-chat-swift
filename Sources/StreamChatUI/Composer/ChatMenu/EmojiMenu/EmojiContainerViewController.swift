@@ -10,6 +10,7 @@ import StreamChat
 import Combine
 import Nuke
 import GiphyUISDK
+import SwiftyGiphy
 
 @available(iOS 13.0, *)
 class EmojiContainerViewController: UIViewController {
@@ -327,7 +328,9 @@ extension EmojiContainerViewController: GPHGridDelegate {
 @available(iOS 13.0, *)
 extension EmojiContainerViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
-        var emojiMainController = EmojiMainViewController()
+        
+        var emojiMainController = SwiftyGiphyViewController()
+        SwiftyGiphyAPI.shared.apiKey = "DJD2vKVk1YX5x0HXHVfQHUnI7GRQGgJT"
         UIApplication.shared.keyWindow?.rootViewController?.present(emojiMainController, animated: true, completion: nil)
         return false
     }

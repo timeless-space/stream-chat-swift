@@ -28,4 +28,8 @@ Pod::Spec.new do |spec|
     spec.dependency "Stipop", "0.3.1"
     spec.dependency "Giphy", "2.1.21"
     spec.dependency "lottie-ios", "3.2.3"
+#    spec.dependency "FLAnimatedImage", "1.0.11"
+    spec.dependency "SwiftyGiphy"
+#    spec.dependency "SDWebImage/GIF"
+#    spec.dependency "SDWebImageFLPlugin"
   end

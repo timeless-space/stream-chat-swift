@@ -10,7 +10,7 @@ import UIKit
 
 public let kGiphyNetworkingErrorDomain = "kGiphyNetworkingErrorDomain"
 
-internal typealias GiphyMultipleGIFResponseBlock = (_ error: NSError?, _ response: GiphyResponse?) -> Void
+typealias GiphyMultipleGIFResponseBlock = (_ error: NSError?, _ response: GiphyResponse?) -> Void
 
 
 fileprivate typealias GiphyAPIResponseBlock = (_ error: NSError?, _ response: Data?) -> Void
@@ -212,7 +212,7 @@ public class SwiftyGiphyAPI {
 }
 
 // MARK: - GIF Support
-public extension SwiftyGiphyAPI {
+extension SwiftyGiphyAPI {
     
     /// Get the currently trending gifs from Giphy
     ///
@@ -221,19 +221,19 @@ public extension SwiftyGiphyAPI {
     ///   - rating: The max rating for the gifs
     ///   - offset: The paging offset
     ///   - completion: The completion block to call when done
-    func getTrending(limit: Int = 1, rating: SwiftyGiphyAPIContentRating = .pg13, offset: Int? = nil, completion: GiphyMultipleGIFResponseBlock?)
+    func getTrending(limit: Int = 25, rating: SwiftyGiphyAPIContentRating = .pg13, offset: Int? = nil, completion: GiphyMultipleGIFResponseBlock?)
     {
-        guard apiKey != nil || !isUsingDefaultAPIBase else {
-            print("ATTENTION: You need to set your Giphy API key before using SwiftyGiphy.")
-            
-            completion?(networkError(description: NSLocalizedString("You need to set your Giphy API key before using SwiftyGiphy.", comment: "You need to set your Giphy API key before using SwiftyGiphy.")), nil)
-            return
-        }
+//        guard apiKey != nil || !isUsingDefaultAPIBase else {
+//            print("ATTENTION: You need to set your Giphy API key before using SwiftyGiphy.")
+//
+//            completion?(networkError(description: NSLocalizedString("You need to set your Giphy API key before using SwiftyGiphy.", comment: "You need to set your Giphy API key before using SwiftyGiphy.")), nil)
+//            return
+//        }
         
         var params = [String : Any]()
         
 
-        params["api_key"] = apiKey
+        params["api_key"] = "DJD2vKVk1YX5x0HXHVfQHUnI7GRQGgJT"
 
         
         params["limit"] = limit
@@ -241,18 +241,19 @@ public extension SwiftyGiphyAPI {
         
         if let currentOffset = offset {
             params["offset"] = currentOffset
+            debugPrint("TAG New Offset :- \(currentOffset)")
         }
         
         let request = createRequest(baseURL: giphyAPIBase, relativePath: "trending", method: "GET", params: params)
         
         send(request: request) { [unowned self] (error, response) in
 
-            guard error == nil, response != nil else {
-                DispatchQueue.main.async {
-                    completion?(error ?? self.networkError(description: kGiphyUnknownResponseError), nil)
-                }
-                return
-            }
+//            guard error == nil, response != nil else {
+//                DispatchQueue.main.async {
+//                    completion?(error ?? self.networkError(description: kGiphyUnknownResponseError), nil)
+//                }
+//                return
+//            }
             
             // We have gifs!
             guard let validResponse = response else {
@@ -262,6 +263,10 @@ public extension SwiftyGiphyAPI {
             let gifs = try? JSONDecoder().decode(GiphyResponse.self, from: validResponse)
             DispatchQueue.main.async {
                 completion?(nil, gifs)
+                let allIds = gifs?.data.map({ item in
+                    item.id
+                })
+                debugPrint("TAG New Gif Ids :- \(allIds)")
             }
         }
     }
@@ -277,7 +282,7 @@ public extension SwiftyGiphyAPI {
     func getSearch(searchTerm: String, limit: Int = 25, rating: SwiftyGiphyAPIContentRating = .pg13, offset: Int? = nil, completion: GiphyMultipleGIFResponseBlock?)
     {
         guard apiKey != nil || !isUsingDefaultAPIBase else {
-            print("ATTENTION: You need to set your Giphy API key before using SwiftyGiphy.")
+            print("ATTENTION: You need to set your Giphy API key before using SwiftyGiphy. \(apiKey)")
             
             completion?(networkError(description: NSLocalizedString("You need to set your Giphy API key before using SwiftyGiphy.", comment: "You need to set your Giphy API key before using SwiftyGiphy.")), nil)
             return
@@ -286,7 +291,7 @@ public extension SwiftyGiphyAPI {
         var params = [String : Any]()
         
 
-        params["api_key"] = apiKey
+        params["api_key"] = "DJD2vKVk1YX5x0HXHVfQHUnI7GRQGgJT"
 
         params["q"] = searchTerm
         params["limit"] = limit
