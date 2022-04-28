@@ -14,6 +14,7 @@ extension Notification.Name {
     public static let sendGiftPacketTapAction = Notification.Name("kStreamChatSendGiftPacketTapAction")
     public static let pickUpGiftPacket = Notification.Name("kStreamChatPickUpGiftPacket")
     public static let showSnackBar = Notification.Name("kStreamshowSnackBar")
+    public static let hideSnackBar = Notification.Name("kStreamhideSnackBar")
     public static let payRequestTapAction = Notification.Name("kPayRequestTapAction")
     public static let disburseFundAction = Notification.Name("kStreamChatDisburseFundTapAction")
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
@@ -742,6 +743,10 @@ open class ComposerVC: _ViewController,
                 self.walletInputView?.paymentType = type
                 self.walletInputView?.walletStepper.updateAmount(amount: amount)
                 self.walletInputView?.showPaymentOptionView()
+            }
+            walletView.didUpdateAmount = { [weak self] amount in
+                guard let `self` = self else { return }
+                self.walletInputView?.walletStepper.updateAmount(amount: amount)
             }
             UIApplication.shared.windows.first?.rootViewController?.present(walletView, animated: true, completion: nil)
         }
