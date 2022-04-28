@@ -18,6 +18,9 @@ public struct Constants {
     public static let MessageLeftPadding: CGFloat = 8.0
     public static let MessageRightPadding: CGFloat = -8.0
     public static let MessageTopPadding: CGFloat = 15
+    public static var decimalSeparator: String {
+        return Locale.current.decimalSeparator ?? "."
+    }
 }
 
 public struct UserdefaultKey {
