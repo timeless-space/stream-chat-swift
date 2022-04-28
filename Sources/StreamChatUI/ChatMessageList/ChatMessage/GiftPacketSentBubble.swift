@@ -23,6 +23,12 @@ class GiftBubble: UITableViewCell {
     public private(set) var detailLabel: UILabel!
     public private(set) var titleLabel: UILabel!
     private var detailsStack: UIStackView!
+
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var leadingAnchorForReceiver: NSLayoutConstraint?
+    private var trailingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorForReceiver: NSLayoutConstraint?
+
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
     var isSender = false
@@ -53,6 +59,11 @@ class GiftBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
+
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -124,14 +135,19 @@ class GiftBubble: UITableViewCell {
 
     func configureCell(isSender: Bool) {
         self.isSender = isSender
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
+        setBubbleConstraints(isSender)
         setFlair()
+    }
+
+    private func setBubbleConstraints(_ isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        leadingAnchorForSender?.constant = cellWidth
+        trailingAnchorForSender?.isActive = isSender
+        trailingAnchorForSender?.constant = -8
+        leadingAnchorForReceiver?.isActive = !isSender
+        leadingAnchorForReceiver?.constant = 8
+        trailingAnchorForReceiver?.isActive = !isSender
+        trailingAnchorForReceiver?.constant = -cellWidth
         timestampLabel.textAlignment = isSender ? .right : .left
     }
 
