@@ -41,6 +41,13 @@ open class ChatClientConfiguration {
     open var requestedGeneralGroupDynamicLink: callbackGeneralGroupInviteLink?
     // join group
     open var joinInviteGroup: ((Bool) -> Void)?
+    // Join private group
+    open var joinPrivateGroup: (() -> Void)?
+    // get private group
+    open var getPrivateGroup: ((ChatInviteInfo?) -> Void)?
+    // create private group
+    open var createPrivateGroup: ((CreatePrivateGroup) -> Void)?
+
     // MARK: - Init
     public init() {}
 }
