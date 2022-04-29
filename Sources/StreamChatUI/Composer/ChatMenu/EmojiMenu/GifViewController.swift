@@ -87,14 +87,13 @@ class GifViewController: UIViewController {
 
     /// Setup Collection View in feed view
     func setUpWithCollectionView() {
-        let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .vertical
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 0
+        let layout = WaterFallLayout()
+        layout.delegate = self
         collectionView = UICollectionView(frame: view.frame, collectionViewLayout: layout)
         guard let collectionView = collectionView else {
             return
         }
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         collectionView.autoresizesSubviews = false
         collectionView.register(GiphyCell.self, forCellWithReuseIdentifier: "cellIdentifier")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -235,6 +234,14 @@ extension GifViewController: UICollectionViewDataSource {
 extension GifViewController: UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.frame.size.width / 2, height: 200)
+        let itemSize = (collectionView.frame.width - (collectionView.contentInset.left + collectionView.contentInset.right)) / 2
+        return CGSize(width: itemSize, height: itemSize)
+    }
+}
+
+extension GifViewController: WaterFallLayoutDelegate {
+    func collectionView(_ collectionView: UICollectionView, heightForPhotoAtIndexPath indexPath: IndexPath) -> CGFloat {
+        let item = isSearchActive ? searchGifs[indexPath.row] : trendingGifs[indexPath.row]
+        return CGFloat((item.images.fixedWidthDownsampled.height as NSString).floatValue) ?? 0.0
     }
 }

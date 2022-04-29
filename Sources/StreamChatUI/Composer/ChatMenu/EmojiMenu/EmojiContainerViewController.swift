@@ -10,7 +10,6 @@ import StreamChat
 import Combine
 import Nuke
 import GiphyUISDK
-import SwiftyGiphy
 
 @available(iOS 13.0, *)
 class EmojiContainerViewController: UIViewController {
