@@ -158,10 +158,12 @@ class JoinPrivateGroupVC: UIViewController {
     }
 
     private func createPrivateChannel() {
+        btnJoinGroup.isHidden = true
         self.channelController?.synchronize { [weak self] error in
             guard error == nil, let self = self else {
                 return
             }
+            self.btnJoinGroup.isHidden = false
             if self.channelController?.channel?.lastMessageAt == nil {
                 var extraData = [String: RawJSON]()
                 self.channelController?.createNewMessage(
