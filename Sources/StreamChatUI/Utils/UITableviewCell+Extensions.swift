@@ -9,5 +9,4 @@ import Foundation
 
 public extension UITableViewCell {
     static var identifier: String { return String(describing: self) }
-    static let nib = UINib.init(nibName: identifier, bundle: nil)
 }

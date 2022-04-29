@@ -59,7 +59,9 @@ public class NameGroupViewController: ChatBaseVC {
         lblFriendCount.text = "\(self.selectedUsers.count) \(str)"
         lblTitle.text = "New Group"
         nameField.placeholder = "Group chat name"
-        tableView?.register(TableViewCellChatUser.nib, forCellReuseIdentifier: TableViewCellChatUser.identifier)
+        let chatUserID = TableViewCellChatUser.reuseId
+        let chatUserNib = UINib(nibName: chatUserID, bundle: nil)
+        tableView?.register(chatUserNib, forCellReuseIdentifier: chatUserID)
         //
         tableView.dataSource = self
         tableView.keyboardDismissMode = .onDrag

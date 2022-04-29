@@ -61,10 +61,6 @@ class WalletRequestPayBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
-        trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding)
-        leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding)
-        trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -148,6 +144,11 @@ class WalletRequestPayBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
+
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding)
+        leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding)
+        trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
     }
 
     func configData(isSender: Bool) {
