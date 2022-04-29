@@ -15,21 +15,12 @@ class JoinPrivateGroupVC: UIViewController {
     // MARK: - Variables
     var controller: ChatChannelListController?
     var passWord = ""
-    private var isChannelFetched = false
-    private var memberListController: ChatChannelMemberListController?
-    private var channelMembers: LazyCachedMapCollection<ChatChannelMember> = []
+    private var channelMembers = [Member]()
     private var channelController: ChatChannelController?
-    weak var otpViewDelegate: PrivateGroupOTPVCDelegate?
-    private var nearByChannel: ChatChannel?
-    var userStatus: UserStatus? {
-        didSet {
-            if userStatus == .createGroup || userStatus == .alreadyJoined {
-                btnJoinGroup.setTitle("Go To Chat", for: .normal)
-            } else if userStatus == .joinGroup {
-                btnJoinGroup.setTitle("Join This Group", for: .normal)
-            }
-        }
-    }
+    var userStatus: UserStatus?
+    var groupInfo: ChatInviteInfo?
+    var createChannelInfo: CreatePrivateGroup?
+    var timer: Timer?
 
     // MARK: - enums
     enum UserStatus {
@@ -53,37 +44,27 @@ class JoinPrivateGroupVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        bindClosure()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        timer?.invalidate()
     }
 
     // MARK: - IBOutlets
     @IBAction func btnBackAction(_ sender: UIButton) {
-        otpViewDelegate?.popToThisVC()
-        popWithAnimation()
+        navigationController?.popToRootViewController(animated: true)
     }
 
     @IBAction func btnJoinGroupAction(_ sender: UIButton) {
-        guard let channelController = channelController else {
-            return
-        }
         if userStatus == .joinGroup {
             viewJoinOverlay.isHidden = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
                 guard let `self` = self else { return }
-                self.addMeInChannel(channelId: channelController.cid?.id ?? "") { error in
-                    guard error == nil else {
-                        Snackbar.show(text: "Something went wrong!")
-                        self.viewJoinOverlay.isHidden = true
-                        return
-                    }
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else {
-                            return
-                        }
-                        self.viewJoinOverlay.isHidden = true
-                        self.handleNavigation()
-                    }
-
-                }
+                let parameter: [String: Any] = [kPrivateGroupPasscode: self.passWord,
+                                                             kGroupId: self.groupInfo?.channel.cid ?? ""]
+                NotificationCenter.default.post(name: .joinPrivateGroup, object: nil, userInfo: parameter)
             }
         } else {
             handleNavigation()
@@ -105,8 +86,6 @@ class JoinPrivateGroupVC: UIViewController {
         btnJoinGroup.layer.cornerRadius = 20
         cvUserList?.register(UINib(nibName: PrivateGroupUsersCVCell.identifier, bundle: nil),
                              forCellWithReuseIdentifier: PrivateGroupUsersCVCell.identifier)
-        filterChannels()
-
         let imageAttachment = NSTextAttachment()
         imageAttachment.image = Appearance.default.images.handPointUp
         let joinString = NSMutableAttributedString(string: "Nearby friends can join by entering the ")
@@ -114,6 +93,51 @@ class JoinPrivateGroupVC: UIViewController {
         joinString.append(NSAttributedString(string: " secret code."))
         lblDescription.attributedText = joinString
         viewJoinOverlay.isHidden = true
+        channelMembers = groupInfo?.members ?? []
+        if userStatus == .createGroup {
+            btnJoinGroup.setTitle("Go To Chat", for: .normal)
+            guard let cid = try? ChannelId.init(cid: createChannelInfo?.cid ?? "") else { return }
+            channelController = ChatClient.shared.channelController(for: .init(cid: cid))
+            createPrivateChannel()
+        } else if userStatus == .joinGroup {
+            btnJoinGroup.setTitle("Join This Group", for: .normal)
+            guard let cid = try? ChannelId.init(cid: groupInfo?.channel.cid ?? "") else { return }
+            channelController = ChatClient.shared.channelController(for: .init(cid: cid))
+        } else {
+            guard let cid = try? ChannelId.init(cid: groupInfo?.channel.cid ?? "") else { return }
+            channelController = ChatClient.shared.channelController(for: .init(cid: cid))
+            btnJoinGroup.setTitle("Go To Chat", for: .normal)
+        }
+    }
+
+    private func getPrivateGroupInfo() {
+        let parameter: [String: Any] = [kPrivateGroupLat: Float(LocationManager.shared.location.value.coordinate.latitude),
+                                        kPrivateGroupLon: Float(LocationManager.shared.location.value.coordinate.longitude),
+                                   kPrivateGroupPasscode: self.passWord]
+        NotificationCenter.default.post(name: .getPrivateGroup, object: nil, userInfo: parameter)
+    }
+
+    private func bindClosure() {
+        timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
+            guard let `self` = self else { return }
+            self.getPrivateGroupInfo()
+        }
+
+        ChatClientConfiguration.shared.joinPrivateGroup = { [weak self] in
+            guard let self = self else {
+                return
+            }
+            DispatchQueue.main.async {
+                self.viewJoinOverlay.isHidden = true
+                self.handleNavigation()
+            }
+        }
+
+        ChatClientConfiguration.shared.getPrivateGroup = { [weak self] groupInfo in
+            guard let `self` = self else { return }
+            self.channelMembers = groupInfo?.members ?? []
+            self.cvUserList.reloadData()
+        }
     }
 
     private func handleNavigation() {
@@ -133,186 +157,29 @@ class JoinPrivateGroupVC: UIViewController {
         navigationController?.setViewControllers(newControllers, animated: true)
     }
 
-    private func filterChannels() {
-        controller = ChatClient.shared.channelListController(
-            query: .init(
-                filter: .and([
-                    .equal(.type, to: .privateMessaging),
-                    .equal("password", to: passWord)
-                ])))
-        controller?.synchronize()
-        controller?.delegate = self
-    }
-
     private func createPrivateChannel() {
-        let groupId = String(UUID().uuidString)
-        let encodeGroupId = groupId.base64Encoded.string ?? ""
-        let encodePassword = passWord.base64Encoded.string ?? ""
-        
-        let expiryDate = String(Date().withAddedHours(hours: 24).ticks).base64Encoded.string ?? ""
-        var extraData: [String: RawJSON] = [:]
-        extraData["isPrivateChat"] = .bool(true)
-        extraData["password"] = .string(passWord)
-        extraData["latitude"] = .string("\(LocationManager.shared.location.value.coordinate.latitude)")
-        extraData["longitude"] = .string("\(LocationManager.shared.location.value.coordinate.longitude)")
-        ChatClientConfiguration.shared.requestedPrivateGroupDynamicLink = { [weak self] dynamicLink in
-            guard let self = self, let dynamicLink = dynamicLink else {
-                Snackbar.show(text: "error while creating channel")
+        btnJoinGroup.isHidden = true
+        channelController?.synchronize { [weak self] error in
+            guard error == nil, let self = self else {
                 return
             }
-            extraData["joinLink"] = .string(dynamicLink.absoluteString)
-            do {
-                self.channelController = try ChatClient.shared.channelController(
-                    createChannelWithId: .init(type: .privateMessaging, id: groupId),
-                    name: "Unnamed private group",
-                    members: [],
-                    extraData: extraData)
-                self.channelController?.synchronize{ [weak self] error in
-                    guard error == nil, let self = self else {
-                        return
-                    }
-                    if self.channelController?.channel?.lastMessageAt == nil {
-                        var extraData = [String: RawJSON]()
-                        self.channelController?.createNewMessage(
-                            text: "",
-                            pinning: nil,
-                            attachments: [],
-                            extraData: ["adminMessage": .string(self.channelController?.channel?.createdBy?.name ?? ""),
-                                        "messageType": .string(AdminMessageType.privateChat.rawValue)],
-                            completion: nil)
-                    }
-                    self.fetchChannelMembers(id: self.channelController?.channel?.cid.id ?? "")
-                }
-            } catch {
-                Snackbar.show(text: "error while creating channel")
-            }
-        }
-        ChatClientConfiguration.shared.requestPrivateGroupDynamicLink?(encodeGroupId, encodePassword, expiryDate)
-    }
-
-    private func addMeInChannel(channelId: String, completion: ((Error?) -> Void)? = nil) {
-        guard let currentUserId = ChatClient.shared.currentUserId else {
-            return
-        }
-        channelController?.addMembers(userIds: [currentUserId], completion: completion)
-    }
-
-    private func fetchChannelMembers(id: String) {
-        memberListController = ChatClient.shared.memberListController(query: .init(cid: .init(type: .privateMessaging, id: id)))
-        memberListController?.delegate = self
-        memberListController?.synchronize()
-        channelMembers = memberListController?.members ?? []
-        cvUserList.reloadData()
-    }
-
-    private func getLatitude(raw: [String: RawJSON]?) -> Double? {
-        guard let rawData = raw,
-              let latitude = rawData["latitude"],
-              let strLatitude = fetchRawData(raw: latitude) as? String
-        else { return nil }
-        return Double(strLatitude)
-    }
-
-    private func getLongitude(raw: [String: RawJSON]?) -> Double? {
-        guard let rawData = raw,
-              let longitude = rawData["longitude"],
-              let strLongitude = fetchRawData(raw: longitude) as? String
-        else { return nil }
-        return Double(strLongitude)
-    }
-
-    private func getPassword(raw: [String: RawJSON]?) -> String? {
-        guard let rawDate = raw,
-              let password = rawDate["password"],
-              let strPassword = fetchRawData(raw: password) as? String else {
-            return nil
-        }
-        return strPassword
-    }
-
-    private func isChannelNearBy(_ channelData: [String: RawJSON]) -> Bool {
-        guard let latitude = getLatitude(raw: channelData),
-              let longitude = getLongitude(raw: channelData),
-              let password = getPassword(raw: channelData) else {
-                  return false
-              }
-        let coordinator = CLLocation(latitude: .init(latitude), longitude: .init(longitude))
-        let distance = LocationManager.getDistanceInKm(from: coordinator, to: LocationManager.shared.location.value)
-        if password == self.passWord && distance <= Constants.privateGroupRadius {
-            return true
-        } else {
-            return false
-        }
-    }
-}
-
-// MARK: - ChannelList delegate
-extension JoinPrivateGroupVC: ChatChannelListControllerDelegate {
-    open func controller(_ controller: ChatChannelListController, shouldAddNewChannelToList channel: ChatChannel) -> Bool {
-        return true
-    }
-
-    open func controller(_ controller: ChatChannelListController, shouldListUpdatedChannel channel: ChatChannel) -> Bool {
-        return true
-    }
-
-    open func controller(_ controller: DataController, didChangeState state: DataController.State) {
-        guard let channelController = self.controller, !isChannelFetched else {
-            return
-        }
-         isChannelFetched = true
-        switch state {
-        case .localDataFetched, .remoteDataFetched:
-            if channelController.channels.isEmpty {
-                userStatus = .createGroup
-                createPrivateChannel()
-            } else {
-                let nearByChannels = channelController.channels.filter { channel in
-                    return isChannelNearBy(channel.extraData)
-                }
-                if nearByChannels.isEmpty {
-                    userStatus = .createGroup
-                    createPrivateChannel()
-                } else {
-                    guard let firstChannel = nearByChannels.first else {
-                        return
-                    }
-                    let channelMembers = ChatClient.shared.memberListController(
-                        query: .init(
-                            cid: .init(
-                                type: .privateMessaging,
-                                id: firstChannel.cid.id)))
-
-                    channelMembers.synchronize { [weak self] error in
-                        guard error == nil, let self  = self else {
-                            self?.popWithAnimation()
-                            return
-                        }
-                        let isUserExiestInChat = !channelMembers.members.filter( {$0.id == ChatClient.shared.currentUserId}).isEmpty
-                        if isUserExiestInChat {
-                            self.userStatus = .alreadyJoined
-                        } else {
-                            self.userStatus = .joinGroup
-                        }
-                        self.channelController = ChatClient.shared.channelController(for: .init(type: .privateMessaging, id: firstChannel.cid.id))
-                        self.fetchChannelMembers(id: firstChannel.cid.id)
-                    }
+            self.btnJoinGroup.isHidden = false
+            if self.channelController?.channel?.lastMessageAt == nil {
+                var extraData = [String: RawJSON]()
+                self.channelController?.createNewMessage(
+                    text: "",
+                    pinning: nil,
+                    attachments: [],
+                    extraData: ["adminMessage": .string(self.channelController?.channel?.createdBy?.name ?? ""),
+                                "messageType": .string(AdminMessageType.privateChat.rawValue)])
+                { _ in
+                    self.getPrivateGroupInfo()
                 }
             }
-        default:
-            break
         }
     }
 }
 
-// MARK: - ChatChannelMemberListController Delegate
-extension JoinPrivateGroupVC: ChatChannelMemberListControllerDelegate, ChatUserListControllerDelegate {
-    func memberListController(_ controller: ChatChannelMemberListController, didChangeMembers changes: [ListChange<ChatChannelMember>]) {
-        memberListController?.synchronize()
-        channelMembers = memberListController?.members ?? []
-        cvUserList.reloadData()
-    }
-}
 
 // MARK: - CollectionView delegates
 extension JoinPrivateGroupVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
