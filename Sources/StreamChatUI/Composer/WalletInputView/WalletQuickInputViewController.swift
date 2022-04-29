@@ -43,6 +43,7 @@ class WalletQuickInputViewController: UIViewController {
     }
     
     @IBAction func btnShowKeypadAction(_ sender: Any) {
+        Snackbar.hide()
         showKeypad?(walletStepper.value)
     }
 
