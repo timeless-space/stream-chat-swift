@@ -313,6 +313,7 @@
                     </view>
                     <connections>
                         <outlet property="btnClose" destination="qMD-wk-byz" id="3d5-TM-3ve"/>
+                        <outlet property="btnDecimalSeparator" destination="c8r-uF-CSf" id="2Cx-aR-6vN"/>
                         <outlet property="viewKeypad" destination="3TD-Wc-zXo" id="gBs-7k-b8d"/>
                         <outlet property="walletStepper" destination="Gmf-pA-FAh" id="BYx-Ly-tiR"/>
                         <outletCollection property="btnKeyPad" destination="0ST-7a-mpZ" collectionClass="NSMutableArray" id="dc1-JP-fXP"/>
@@ -1336,7 +1337,7 @@
         <image name="arrow.down.circle" catalog="system" width="128" height="121"/>
         <image name="clock" catalog="system" width="128" height="121"/>
         <image name="closePopup" width="30" height="30"/>
-        <image name="delete.left.fill" catalog="system" width="128" height="104"/>
+        <image name="delete.left.fill" catalog="system" width="32" height="32"/>
         <image name="media" width="29" height="24"/>
         <image name="plus" catalog="system" width="128" height="113"/>
         <namedColor name="walletMenuBackground">

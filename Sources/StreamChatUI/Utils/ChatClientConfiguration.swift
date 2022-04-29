@@ -39,6 +39,8 @@ open class ChatClientConfiguration {
     open var requestedPrivateGroupDynamicLink: ((URL?) -> Void)?
     // General group invite link
     open var requestedGeneralGroupDynamicLink: callbackGeneralGroupInviteLink?
+    // join group
+    open var joinInviteGroup: ((Bool) -> Void)?
     // MARK: - Init
     public init() {}
 }
