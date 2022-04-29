@@ -23,4 +23,8 @@ class Snackbar {
         }
         NotificationCenter.default.post(name: .showSnackBar, object: nil, userInfo: userInfo)
     }
+
+    static func hide() {
+        NotificationCenter.default.post(name: .hideSnackBar, object: nil)
+    }
 }
