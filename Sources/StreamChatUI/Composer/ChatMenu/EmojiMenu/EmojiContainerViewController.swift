@@ -80,6 +80,10 @@ class EmojiContainerViewController: UIViewController {
         }
     }
 
+    deinit {
+        GPHCache.shared.clear()
+    }
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
@@ -328,9 +332,7 @@ extension EmojiContainerViewController: GPHGridDelegate {
 @available(iOS 13.0, *)
 extension EmojiContainerViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
-        
-        var emojiMainController = SwiftyGiphyViewController()
-        SwiftyGiphyAPI.shared.apiKey = "DJD2vKVk1YX5x0HXHVfQHUnI7GRQGgJT"
+        var emojiMainController = GifViewController()
         UIApplication.shared.keyWindow?.rootViewController?.present(emojiMainController, animated: true, completion: nil)
         return false
     }

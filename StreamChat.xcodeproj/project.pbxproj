@@ -1143,7 +1143,7 @@
 		DBCAFE2425C44B920015AD58 /* LazyCachedMapCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBCAFE2325C44B920015AD58 /* LazyCachedMapCollection.swift */; };
 		DBF12128258BAFC1001919C6 /* OnlyLinkTappableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF12127258BAFC1001919C6 /* OnlyLinkTappableTextView.swift */; };
 		DBF17AE825D48865004517B3 /* BackgroundTaskScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF17AE725D48865004517B3 /* BackgroundTaskScheduler.swift */; };
-		E3DAF4992819830F002CA91C /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49728197880002CA91C /* CustomCell.swift */; };
+		E3DAF4992819830F002CA91C /* GiphyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49728197880002CA91C /* GiphyCell.swift */; };
 		E3DAF49A28198313002CA91C /* GiphyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF4952819726D002CA91C /* GiphyModel.swift */; };
 		E3DAF49B28198315002CA91C /* SwiftyGiphyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */; };
 		E701201E2583EBD50036DACD /* CALayer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70120152583EBC90036DACD /* CALayer+Extensions.swift */; };
@@ -2721,7 +2721,7 @@
 		E0D462C3A1288350E42719FC /* Pods-StreamChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-StreamChat.release.xcconfig"; path = "Target Support Files/Pods-StreamChat/Pods-StreamChat.release.xcconfig"; sourceTree = "<group>"; };
 		E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyGiphyAPI.swift; sourceTree = "<group>"; };
 		E3DAF4952819726D002CA91C /* GiphyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyModel.swift; sourceTree = "<group>"; };
-		E3DAF49728197880002CA91C /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
+		E3DAF49728197880002CA91C /* GiphyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyCell.swift; sourceTree = "<group>"; };
 		E4615C3D10765DC6561CFFF7 /* Pods-YouTube.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YouTube.debug.xcconfig"; path = "Target Support Files/Pods-YouTube/Pods-YouTube.debug.xcconfig"; sourceTree = "<group>"; };
 		E70120152583EBC90036DACD /* CALayer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayer+Extensions.swift"; sourceTree = "<group>"; };
 		E7073A6225DD67B3003896B9 /* UILabel+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UILabel+Extensions.swift"; sourceTree = "<group>"; };
@@ -5754,7 +5754,7 @@
 			children = (
 				E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */,
 				E3DAF4952819726D002CA91C /* GiphyModel.swift */,
-				E3DAF49728197880002CA91C /* CustomCell.swift */,
+				E3DAF49728197880002CA91C /* GiphyCell.swift */,
 			);
 			path = ApiLayer;
 			sourceTree = "<group>";
@@ -7454,7 +7454,7 @@
 				843F0BC526775D2D00B342CB /* VideoLoading.swift in Sources */,
 				88CABC4625933EE70061BB67 /* ChatReactionPickerBubbleView.swift in Sources */,
 				F838F6A92636D3C30025E1F5 /* ZoomTransitionController.swift in Sources */,
-				E3DAF4992819830F002CA91C /* CustomCell.swift in Sources */,
+				E3DAF4992819830F002CA91C /* GiphyCell.swift in Sources */,
 				CD24C71727846C4300F6378D /* DPOTPView.swift in Sources */,
 				AD81AF0D25ED141A00F17F8F /* ListCollectionViewLayout.swift in Sources */,
 				8850B92A255C286B003AED69 /* Components.swift in Sources */,

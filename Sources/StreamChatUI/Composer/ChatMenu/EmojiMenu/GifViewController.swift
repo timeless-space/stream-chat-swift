@@ -8,7 +8,7 @@
 import UIKit
 import GiphyUISDK
 
-class EmojiMainViewController: UIViewController {
+class GifViewController: UIViewController {
 
     open private(set) lazy var searchView = UISearchBar
         .init()
@@ -54,7 +54,7 @@ class EmojiMainViewController: UIViewController {
     }
 
     deinit {
-        debugPrint("Deinit called")
+        GPHCache.shared.clear()
     }
 
     private func setUpGifView() {
@@ -70,8 +70,8 @@ class EmojiMainViewController: UIViewController {
         hStack.leadingAnchor.constraint(equalTo: gifView.leadingAnchor, constant: 15).isActive = true
         setUpWithCollectionView()
         // set to 300 mb
-        GPHCache.shared.cache.diskCapacity = 300 * 1000 * 1000
-        GPHCache.shared.cache.memoryCapacity = 100 * 1000 * 1000
+        GPHCache.shared.cache.diskCapacity = 50 * 1000 * 1000
+        GPHCache.shared.cache.memoryCapacity = 50 * 1000 * 1000
     }
 
     private func setUpProgressView() {
@@ -90,7 +90,6 @@ class EmojiMainViewController: UIViewController {
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 0
-        layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
         layout.minimumInteritemSpacing = 0
         collectionView = UICollectionView(frame: view.frame, collectionViewLayout: layout)
         guard let collectionView = collectionView else {
@@ -146,6 +145,7 @@ class EmojiMainViewController: UIViewController {
 
     private func getSearchGifs(isSearch: Bool) {
         apiHandler.getSearch(searchTerm: currentSearchText, offset: currentSearchOffset, completion: { [weak self] error, response in
+            debugPrint("Response :- \(response)")
             guard let `self` = self else { return }
             if isSearch {
                 self.searchGifs.removeAll()
@@ -153,10 +153,10 @@ class EmojiMainViewController: UIViewController {
             } else {
                 self.searchGifs.append(contentsOf: response?.data ?? [])
             }
+            debugPrint("Search Term :- \(self.currentSearchText)")
             self.pagingProgressView.isHidden = true
             self.latestSearchResponse = response
             self.progressView.isHidden = true
-            debugPrint("Search Response received")
             self.collectionView?.reloadData()
         })
     }
@@ -168,23 +168,7 @@ class EmojiMainViewController: UIViewController {
 }
 
 @available(iOS 13.0, *)
-extension EmojiMainViewController: GPHGridDelegate {
-    func contentDidUpdate(resultCount: Int, error: Error?) { }
-
-    func didSelectMedia(media: GPHMedia, cell: UICollectionViewCell) {
-        dismiss(animated: true)
-        NotificationCenter.default.post(name: .sendSticker, object: nil, userInfo: ["giphyUrl": media.url(rendition: .downsized, fileType: .gif)])
-    }
-
-    func didSelectMoreByYou(query: String) { }
-
-    func didScroll(offset: CGFloat) {
-        view.endEditing(true)
-    }
-}
-
-@available(iOS 13.0, *)
-extension EmojiMainViewController: UISearchBarDelegate {
+extension GifViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         return true
     }
@@ -206,7 +190,7 @@ extension EmojiMainViewController: UISearchBarDelegate {
     }
 }
 
-extension EmojiMainViewController: UICollectionViewDelegate {
+extension GifViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.row == trendingGifs.count - 1 {
@@ -234,31 +218,23 @@ extension EmojiMainViewController: UICollectionViewDelegate {
 
 }
 
-extension EmojiMainViewController: UICollectionViewDataSource {
+extension GifViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        debugPrint("isSearchActive :- \(isSearchActive)  searchGifs.count :- \(searchGifs.count)  trendingGifs.count \(trendingGifs.count)")
         return isSearchActive ? searchGifs.count : trendingGifs.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellIdentifier", for: indexPath) as? GiphyCell else { return UICollectionViewCell() }
-        cell.configureFor(giphyModel: isSearchActive ? searchGifs[indexPath.row] : trendingGifs[indexPath.row])
+        cell.configureCell(giphyModel: isSearchActive ? searchGifs[indexPath.row] : trendingGifs[indexPath.row])
         return cell
     }
-
-//    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-//        guard let cell = cell as? GiphyCell else {
-//            return
-//        }
-//        cell.
-//    }
-
 }
 
-extension EmojiMainViewController: UICollectionViewDelegateFlowLayout {
+extension GifViewController: UICollectionViewDelegateFlowLayout {
 
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-//        return CGSize(width: collectionView.frame.size.width / 2, height: 200)
-//    }
-
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: collectionView.frame.size.width / 2, height: 200)
+    }
 }
