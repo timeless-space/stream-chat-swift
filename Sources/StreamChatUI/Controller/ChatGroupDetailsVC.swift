@@ -413,6 +413,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
                 return
             }
             qrCodeVc.groupName = channelController.channel?.name
+            qrCodeVc.channelController = channelController
             qrCodeVc.modalPresentationStyle = .fullScreen
             if channelController.channel?.type == .dao {
                 qrCodeVc.strContent = channelController.channel?.extraData.daoJoinLink
