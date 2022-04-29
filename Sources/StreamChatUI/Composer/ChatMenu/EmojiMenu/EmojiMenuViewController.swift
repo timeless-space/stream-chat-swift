@@ -29,6 +29,7 @@ class EmojiMenuViewController: UIViewController {
     private var pageController: UIPageViewController?
     private var currentIndex: Int = 0
     private var initialVC: EmojiContainerViewController!
+    private var gifVC: GifViewController!
     var didSelectSticker: ((Sticker) -> ())?
     var didSelectMarketPlace: (([Int]) -> ())?
 

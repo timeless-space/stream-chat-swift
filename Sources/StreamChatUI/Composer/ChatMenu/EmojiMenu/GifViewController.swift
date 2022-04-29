@@ -44,6 +44,16 @@ class GifViewController: UIViewController {
     private var apiHandler = SwiftyGiphyAPI.shared
     private var isSearchActive = false
     private var currentSearchText = ""
+    private var isSearchEnable = false
+
+    init(with isSearchEnable: Bool) {
+        super.init(nibName: nil, bundle: nil)
+        self.isSearchEnable = isSearchEnable
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -114,7 +124,7 @@ class GifViewController: UIViewController {
         gifView.addSubview(pagingProgressView)
         NSLayoutConstraint.activate([
             pagingProgressView.centerXAnchor.constraint(equalTo: gifView.centerXAnchor),
-            pagingProgressView.bottomAnchor.constraint(equalTo: gifView.bottomAnchor)
+            pagingProgressView.topAnchor.constraint(equalTo: gifView.bottomAnchor)
         ])
     }
 
@@ -124,6 +134,7 @@ class GifViewController: UIViewController {
         hStack.spacing = 10
         backButton.setImage(UIImage(named: "closeSmall"), for: .normal)
         backButton.addTarget(self, action: #selector(btnBackPressed), for: .touchUpInside)
+        backButton.isHidden = !isSearchEnable
         searchView.backgroundColor = Appearance.default.colorPalette.stickerBg
         searchView.backgroundImage = UIImage()
         searchView.delegate = self
@@ -145,7 +156,6 @@ class GifViewController: UIViewController {
 
     private func getSearchGifs(isSearch: Bool) {
         apiHandler.getSearch(searchTerm: currentSearchText, offset: currentSearchOffset, completion: { [weak self] error, response in
-            debugPrint("Response :- \(response)")
             guard let `self` = self else { return }
             if isSearch {
                 self.searchGifs.removeAll()
@@ -153,7 +163,6 @@ class GifViewController: UIViewController {
             } else {
                 self.searchGifs.append(contentsOf: response?.data ?? [])
             }
-            debugPrint("Search Term :- \(self.currentSearchText)")
             self.pagingProgressView.isHidden = true
             self.latestSearchResponse = response
             self.progressView.isHidden = true
@@ -170,7 +179,11 @@ class GifViewController: UIViewController {
 @available(iOS 13.0, *)
 extension GifViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
-        return true
+        if !isSearchEnable {
+            let gifVc = GifViewController(with: true)
+            UIApplication.shared.keyWindow?.rootViewController?.present(gifVc, animated: true, completion: nil)
+        }
+        return isSearchEnable
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -180,7 +193,6 @@ extension GifViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if !searchText.isEmpty {
             isSearchActive = true
-            debugPrint("Search started")
             currentSearchText = searchText
             getSearchGifs(isSearch: true)
         } else {
@@ -216,12 +228,14 @@ extension GifViewController: UICollectionViewDelegate {
         NotificationCenter.default.post(name: .sendSticker, object: nil, userInfo: ["giphyUrl":  selectedGif.images.downsized.url])
     }
 
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        view.endEditing(true)
+    }
 }
 
 extension GifViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        debugPrint("isSearchActive :- \(isSearchActive)  searchGifs.count :- \(searchGifs.count)  trendingGifs.count \(trendingGifs.count)")
         return isSearchActive ? searchGifs.count : trendingGifs.count
     }
 

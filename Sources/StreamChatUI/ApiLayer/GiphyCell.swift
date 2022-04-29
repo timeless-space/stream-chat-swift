@@ -18,30 +18,13 @@ class GiphyCell: UICollectionViewCell {
     // MARK: - Variables
     private var mediaView: GPHMediaView!
 
-    private var progressIndicator: UIActivityIndicatorView = {
-        let indicatorView = UIActivityIndicatorView()
-        indicatorView.color = .white
-        indicatorView.translatesAutoresizingMaskIntoConstraints = false
-        indicatorView.startAnimating()
-        return indicatorView
-    }()
-
     // MARK: - Lifecycle Overrides
     override init(frame: CGRect) {
         super.init(frame: frame)
         mediaView = GPHMediaView()
-        setUpIndicatorView()
         mediaView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(mediaView)
         mediaView.pin(to: self)
-    }
-
-    func setUpIndicatorView() {
-        addSubview(progressIndicator)
-        NSLayoutConstraint.activate([
-            progressIndicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            progressIndicator.centerYAnchor.constraint(equalTo: self.centerYAnchor)
-        ])
     }
 
     required init?(coder: NSCoder) {
