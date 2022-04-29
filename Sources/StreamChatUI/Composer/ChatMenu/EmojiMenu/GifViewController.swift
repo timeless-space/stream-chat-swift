@@ -135,6 +135,7 @@ class GifViewController: UIViewController {
         backButton.addTarget(self, action: #selector(btnBackPressed), for: .touchUpInside)
         backButton.isHidden = !isSearchEnable
         searchView.backgroundColor = Appearance.default.colorPalette.stickerBg
+        searchView.placeholder = "Search Gifs"
         searchView.backgroundImage = UIImage()
         searchView.delegate = self
         hStack.addArrangedSubview(backButton)
