@@ -220,6 +220,128 @@ public extension Dictionary where Key == String, Value == RawJSON {
     }
 }
 
+// MARK: - RedPacket other amount bubble
+public extension Dictionary where Key == String, Value == RawJSON {
+    private var redPacketOtherAmountExtraData: [String: RawJSON] {
+        if let extraData = self["RedPacketOtherAmountReceived"] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
+    var otherAmountUserId: String? {
+        if let userId = redPacketOtherAmountExtraData["userId"] {
+            return fetchRawData(raw: userId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var otherReceivedAmount: String? {
+        if let amount = redPacketOtherAmountExtraData["receivedAmount"] {
+            let dblAmount = fetchRawData(raw: amount) as? Double ?? 0
+            return String(format: "%.1f", dblAmount)
+        } else {
+            return nil
+        }
+    }
+
+    var otherAmuntReceivedUserName: String? {
+        if let userName = redPacketOtherAmountExtraData["userName"] {
+            return fetchRawData(raw: userName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var otherAmountReceivedCongratesKey: String? {
+        if let congrates = redPacketOtherAmountExtraData["congratsKey"] {
+            return fetchRawData(raw: congrates) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var otherAmountTxId: String? {
+        if let txId = redPacketOtherAmountExtraData["txId"] {
+            return fetchRawData(raw: txId) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
+// MARK: - RedPacket Top Amount cell
+public extension Dictionary where Key == String, Value == RawJSON {
+    private var redPacketTopAmountExtraData: [String: RawJSON] {
+        if let extraData = self["RedPacketTopAmountReceived"] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
+    var topReceivedAmount: String? {
+        if let amount = redPacketTopAmountExtraData["receivedAmount"] {
+            let dblAmount = fetchRawData(raw: amount) as? Double ?? 0
+            return String(format: "%.2f", dblAmount)
+        } else {
+            return nil
+        }
+    }
+
+    var highestAmountUserName: String? {
+        if let userName = redPacketTopAmountExtraData["highestAmountUserName"] {
+            return fetchRawData(raw: userName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var highestAmountUserId: String? {
+        if let userId = redPacketTopAmountExtraData["highestAmountUserId"] {
+            return fetchRawData(raw: userId) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
+// MARK: - TedPacket Expired cell
+public extension Dictionary where Key == String, Value == RawJSON {
+    private var redPacketExpiredExtraData: [String: RawJSON] {
+        if let extraData = self["RedPacketExpired"] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
+    var redPacketExpiredHighestAmountUserName: String? {
+        if let userName = redPacketExpiredExtraData["highestAmountUserName"] {
+            return fetchRawData(raw: userName) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
 // MARK: - Announcement
 public extension Dictionary where Key == String, Value == RawJSON {
     var tag: [String]? {

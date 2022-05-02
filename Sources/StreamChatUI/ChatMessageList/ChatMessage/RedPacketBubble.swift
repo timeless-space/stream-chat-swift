@@ -244,57 +244,17 @@ class RedPacketBubble: UITableViewCell {
     }
 
     func configTopAmountCell() {
-        guard let topAmount = getExtraData(key: "RedPacketTopAmountReceived") else {
-            return
-        }
-        if let receivedAmount = topAmount["receivedAmount"] {
-            let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            let strReceivedAmount = String(format: "%.2f", dblReceivedAmount)
-            if ChatClient.shared.currentUserId ?? "" == getUserId(raw: topAmount) {
-                lblDetails.text = "You just picked up \(strReceivedAmount) ONE!"
-            } else {
-                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(strReceivedAmount) ONE!"
-            }
+        let strReceivedAmount = content?.extraData.topReceivedAmount
+        if ChatClient.shared.currentUserId ?? "" == content?.extraData.highestAmountUserId {
+            lblDetails.text = "You just picked up \(strReceivedAmount ?? "") ONE!"
+        } else {
+            lblDetails.text = "\(content?.extraData.highestAmountUserName ?? "") just picked up \(strReceivedAmount ?? "") ONE!"
         }
     }
 
     func configExpiredCell() {
-        guard let expiredData = getExtraData(key: "RedPacketExpired") else {
-            return
-        }
-        if let userName = expiredData["highestAmountUserName"] {
-            let strUserName = fetchRawData(raw: userName) as? String ?? ""
-            lblDetails.text = "\(strUserName) selected the highest amount!"
-        }
-    }
-
-    private func getUserName(raw: [String: RawJSON]) -> String {
-        if let userName = raw["highestAmountUserName"] {
-            return fetchRawData(raw: userName) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func getUserId(raw: [String: RawJSON]) -> String {
-        if let userId = raw["highestAmountUserId"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func getExtraData(key: String) -> [String: RawJSON]? {
-        if let extraData = content?.extraData[key] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
-        }
+        let strUserName = content?.extraData.redPacketExpiredHighestAmountUserName ?? ""
+        lblDetails.text = "\(strUserName) selected the highest amount!"
     }
     
     @objc func btnSendPacketAction() {
