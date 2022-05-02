@@ -293,7 +293,15 @@ extension ChatMessage {
         }
     }
 
-    public var getNotificationMessage: String {
+    public func getNotificationTitle() -> String {
+        if isWalletRequestPayCell || isRedPacketCell {
+            return "New message"
+        } else {
+            return "New message from \(author.name)"
+        }
+    }
+
+    public func getNotificationMessage() -> String {
         if isWalletRequestPayCell {
             let payload = attachments(payloadType: WalletAttachmentPayload.self).first
             let userName = author.name ?? ""
