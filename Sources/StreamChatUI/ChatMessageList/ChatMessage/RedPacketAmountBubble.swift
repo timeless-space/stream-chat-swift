@@ -123,7 +123,7 @@ class RedPacketAmountBubble: UITableViewCell {
     }
 
     @objc func btnTapExploreAction() {
-        if let txID = getExtraData()?.txId {
+        if let txID = content?.extraData.otherAmountTxId {
             if let blockExpURL = URL(string: "\(Constants.blockExplorer)\(txID)") {
                 blockExpAction?(blockExpURL)
             }
@@ -186,79 +186,25 @@ class RedPacketAmountBubble: UITableViewCell {
     }
 
     private func configOtherAmount() {
-        guard let extraData = getExtraData() else {
-            return
-        }
-        if let userId = extraData["userId"] {
-            let strUserId = fetchRawData(raw: userId) as? String ?? ""
-            var descriptionText = ""
-            if strUserId == client?.currentUserId ?? "" {
-                // I picked up other amount
-                descriptionText = "\(getCongrates(extraData)) \nYou just picked up \(getAmount(extraData)) ONE! \n\n🧧Red Packet"
+        let strUserId = content?.extraData.otherAmountUserId ?? ""
+        var descriptionText = ""
+        if strUserId == client?.currentUserId ?? "" {
+            // I picked up other amount
+            descriptionText = "\(content?.extraData.otherAmountReceivedCongratesKey ?? "") \nYou just picked up \(content?.extraData.otherReceivedAmount ?? "") ONE! \n\n🧧Red Packet"
 
-            } else {
-                // someone pickup amount
-                descriptionText = "\(getCongrates(extraData)) \n\(getUserName(extraData)) just picked up \(getAmount(extraData)) ONE! \n\n🧧Red Packet"
-            }
-            
-            let imageAttachment = NSTextAttachment()
-            if #available(iOS 13.0, *) {
-                imageAttachment.image = Appearance.default.images.arrowUpRightSquare?.withTintColor(.white)
-            } else {
-                // Fallback on earlier versions
-            }
-            let fullString = NSMutableAttributedString(string: descriptionText + "  ")
-            fullString.append(NSAttributedString(attachment: imageAttachment))
-            descriptionLabel.attributedText = fullString
-        }
-    }
-
-    private func getAmount(_ extraData: [String: RawJSON]?) -> String {
-        guard let data = extraData else {
-            return ""
-        }
-        if let receivedAmount = data["receivedAmount"] {
-            let amount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            return String(format: "%.1f", amount)
         } else {
-            return "\(0)"
+            // someone pickup amount
+            descriptionText = "\(content?.extraData.otherAmountReceivedCongratesKey ?? "") \n\(content?.extraData.otherAmuntReceivedUserName ?? "") just picked up \(content?.extraData.otherReceivedAmount ?? "") ONE! \n\n🧧Red Packet"
         }
-    }
 
-    private func getUserName(_ extraData: [String: RawJSON]?) -> String {
-        guard let data = extraData else {
-            return ""
-        }
-        if let receivedAmount = data["userName"] {
-            let strAmount = fetchRawData(raw: receivedAmount) as? String ?? ""
-            return strAmount
+        let imageAttachment = NSTextAttachment()
+        if #available(iOS 13.0, *) {
+            imageAttachment.image = Appearance.default.images.arrowUpRightSquare?.withTintColor(.white)
         } else {
-            return ""
+            // Fallback on earlier versions
         }
-    }
-
-    private func getCongrates(_ extraData: [String: RawJSON]?) -> String {
-        guard let data = extraData else {
-            return ""
-        }
-        if let congrates = data["congratsKey"] {
-            let strCongrates = fetchRawData(raw: congrates) as? String ?? ""
-            return strCongrates
-        } else {
-            return ""
-        }
-    }
-
-    private func getExtraData() -> [String: RawJSON]? {
-        if let extraData = content?.extraData["RedPacketOtherAmountReceived"] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
-        }
+        let fullString = NSMutableAttributedString(string: descriptionText + "  ")
+        fullString.append(NSAttributedString(attachment: imageAttachment))
+        descriptionLabel.attributedText = fullString
     }
 }
