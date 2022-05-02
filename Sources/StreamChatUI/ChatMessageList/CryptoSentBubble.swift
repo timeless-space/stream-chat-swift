@@ -27,8 +27,16 @@ class CryptoSentBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
 
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -36,10 +44,10 @@ class CryptoSentBubble: UITableViewCell {
         viewContainer.clipsToBounds = true
         contentView.addSubview(viewContainer)
         NSLayoutConstraint.activate([
-            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
-            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding),
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth),
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8),
+            viewContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
+            viewContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Constants.MessageTopPadding),
+            viewContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: cellWidth),
+            viewContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
         ])
 
         subContainer = UIView()
@@ -107,7 +115,6 @@ class CryptoSentBubble: UITableViewCell {
         ])
         blockExplorerButton.transform = .mirrorY
 
-
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
@@ -119,10 +126,6 @@ class CryptoSentBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
     }
 
     private var cellWidth: CGFloat {
@@ -242,24 +245,5 @@ class CryptoSentBubble: UITableViewCell {
         } else {
             return nil
         }
-    }
-}
-
-public func fetchRawData(raw: RawJSON) -> Any? {
-    switch raw {
-    case .number(let double):
-        return double
-    case .string(let string):
-        return string
-    case .bool(let bool):
-        return bool
-    case .dictionary(let dictionary):
-        return dictionary
-    case .array(let array):
-        return array
-    case .nil:
-        return nil
-    @unknown default:
-        return nil
     }
 }
