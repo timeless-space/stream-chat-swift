@@ -249,6 +249,10 @@ class WalletStepper: UIView {
         }
     }
 
+    func getAmount() -> Double {
+        return Double(lblAmount.text ?? "0") ?? 0
+    }
+
     func insertNumber(numberValue: String?) {
         var amountString = ""
         guard isValidAmountInput(numberValue: numberValue ?? "") else { return }
