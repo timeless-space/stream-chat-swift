@@ -294,23 +294,30 @@ extension ChatMessage {
     }
 
     public func getNotificationTitle() -> String {
-        if isWalletRequestPayCell || isRedPacketCell {
+        if isWalletRequestPayCell || isRedPacketCell || isRedPacketAmountCell || isRedPacketReceivedCell {
             return "New message"
         } else {
-            return "New message from \(author.name)"
+            return "New message from \(author.name ?? "someone")"
         }
     }
 
     public func getNotificationMessage() -> String {
         if isWalletRequestPayCell {
-            let payload = attachments(payloadType: WalletAttachmentPayload.self).first
+            guard let payload = attachments(payloadType: WalletAttachmentPayload.self).first else {
+                return text
+            }
             let userName = author.name ?? ""
-            let amount = payRequestedAmount(raw: payload?.extraData) ?? "0"
+            let amount = payload.extraData?.requestedAmount ?? "0"
             let message = "\(userName) is requesting \(amount) ONE"
             return message
-        } else if isWalletRequestPayCell || isRedPacketAmountCell || isRedPacketReceivedCell {
+        } else if isRedPacketAmountCell {
             let userName = author.name ?? ""
-            let amount = getRedPacketAmount() ?? "0"
+            let amount = extraData.otherReceivedAmount ?? "0"
+            let message = "\(userName) just picked up \(amount) ONE!"
+            return message
+        } else if isRedPacketReceivedCell {
+            let userName = author.name ?? ""
+            let amount = extraData.topReceivedAmount ?? "0"
             let message = "\(userName) just picked up \(amount) ONE!"
             return message
         } else if isRedPacketCell {
@@ -319,42 +326,13 @@ extension ChatMessage {
             return message
         } else if isOneWalletCell {
             let userName = author.name ?? ""
-            let amount = getOneWalletAmount()
+            let amount = extraData.sentOneTransferAmount ?? "0"
             let message = "\(userName) SENT: \(amount) ONE"
             return message
         } else if isRedPacketExpiredCell {
             return "Red Packet expired"
         }
         return text
-    }
-
-    public func payRequestedAmount(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let key = extraData["transferAmount"] {
-            return fetchRawData(raw: key) as? String
-        } else {
-            return nil
-        }
-    }
-
-    public func getRedPacketAmount() -> String? {
-        guard let extraData = getExtraData(key: "RedPacketTopAmountReceived") else {
-            return nil
-        }
-        guard let receivedAmount = extraData["receivedAmount"] else { return nil }
-        let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-        return String(format: "%.2f", dblReceivedAmount)
-    }
-
-    public func getOneWalletAmount() -> String? {
-        guard let extraData = getExtraData(key: "oneWalletTx") else {
-            return nil
-        }
-        guard let receivedAmount = extraData["transferAmount"] else { return nil }
-        let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-        return String(format: "%.2f", dblReceivedAmount)
     }
 }
 
