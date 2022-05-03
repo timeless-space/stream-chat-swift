@@ -16,15 +16,6 @@ extension Notification.Name {
     public static let joinInviteGroup = Notification.Name("kJoinInviteGroup")
 }
 
-public let kExtraDataChannelDescription = "channelDescription"
-public let kExtraDataOneToOneChat = "OneToOneChat"
-public let kExtraDataIsGroupChat = "DataIsGroupChat"
-
-public let kInviteGroupID = "kInviteGroupID"
-public let kInviteId = "kInviteId"
-public let kInviteExpiryDate = "kInviteExpiryDate"
-
-
 /// Controller responsible for displaying the channel messages.
 @available(iOSApplicationExtension, unavailable)
 open class ChatChannelVC:
