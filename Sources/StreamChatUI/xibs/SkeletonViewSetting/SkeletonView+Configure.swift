@@ -15,7 +15,7 @@ public extension SkeletonAppearance {
         public static var shimmerGradient: SkeletonGradient = {
             return SkeletonGradient(colors: [
                 shimmerBackgroundColor.withAlphaComponent(0.5),
-                shimmerBackgroundColor.withAlphaComponent(0.2),
+                UIColor.black.withAlphaComponent(0.2),
                 shimmerBackgroundColor.withAlphaComponent(0.5)])
         }()
 

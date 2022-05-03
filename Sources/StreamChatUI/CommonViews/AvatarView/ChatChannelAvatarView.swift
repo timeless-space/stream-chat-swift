@@ -17,7 +17,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     open private(set) lazy var shimmerView: UIView = UIView()
         .withoutAutoresizingMaskConstraints
     // avatar corner radius
-    open var avatarCornerRadius: CGFloat = 0
+    open var avatarCornerRadius: CGFloat = 24
     /// The data this view component shows.
     open var content: (channel: ChatChannel?, currentUserId: UserId?) {
         didSet { updateContentIfNeeded() }
@@ -39,28 +39,43 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     }()
 
     // MARK: - Layout
+    open override func setUp() {
+        super.setUp()
+        setUpShimmerView()
+    }
+
     override open func setUpLayout() {
         super.setUpLayout()
         embed(presenceAvatarView)
         embed(shimmerView)
-        shimmerView.isSkeletonable = true
     }
 
-    override open func updateContent() {
-        loadIntoAvatarImageView(from: nil, placeholder: nil)
+    open override func setUpAppearance() {
+        super.setUpAppearance()
+        presenceAvatarView
+            .avatarView
+            .imageView
+            .backgroundColor =  SkeletonAppearance.Settings.shimmerBackgroundColor
+    }
+
+    open func setUpShimmerView() {
+        shimmerView.isSkeletonable = true
         shimmerView.layer.cornerRadius = avatarCornerRadius
         shimmerView.skeletonCornerRadius = Float(avatarCornerRadius)
         shimmerView.showAnimatedGradientSkeleton()
         shimmerView.isHidden = true
+    }
+
+    override open func updateContent() {
+        super.updateContent()
         guard let channel = content.channel else {
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder3)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             presenceAvatarView.isOnlineIndicatorVisible = false
             return
         }
-
         loadAvatar(for: channel)
     }
-    
+
     open func loadAvatar(for channel: ChatChannel) {
         // If the channel has an avatar set, load that avatar
         if let channelAvatarUrl = channel.imageURL {
@@ -83,7 +98,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
             loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
             return
         }
-        loadIntoAvatarImageView(from: url, placeholder: appearance.images.userAvatarPlaceholder4)
+        loadIntoAvatarImageView(from: url, placeholder: nil)
     }
     
     /// Loads avatar for a directMessageChannel
@@ -94,11 +109,11 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         // If there are no members other than the current user in the channel, load a placeholder
         guard !lastActiveMembers.isEmpty, let otherMember = lastActiveMembers.first else {
             presenceAvatarView.isOnlineIndicatorVisible = false
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder4)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
         guard let imageUrl = otherMember.imageURL else {
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder4)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
         presenceAvatarView.isOnlineIndicatorVisible = otherMember.isOnline
@@ -121,14 +136,14 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         
         // If there are no members other than the current user in the channel, load a placeholder
         guard !lastActiveMembers.isEmpty else {
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder4)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
         
         var urls = lastActiveMembers.map(\.imageURL)
         
         if urls.isEmpty {
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder3)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
         
