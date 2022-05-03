@@ -133,14 +133,9 @@ class CryptoSentBubble: UITableViewCell {
     }
 
     @objc private func check() {
-        guard let walletData = getOneWalletExtraData() else {
-            return
-        }
-        if let txID = walletData["txId"] {
-            let rawTxId = fetchRawData(raw: txID) as? String ?? ""
-            if let blockExpURL = URL(string: "\(Constants.blockExplorer)\(rawTxId)") {
-                blockExpAction?(blockExpURL)
-            }
+        let rawTxId = content?.extraData.sentOneTxId as? String ?? ""
+        if let blockExpURL = URL(string: "\(Constants.blockExplorer)\(rawTxId)") {
+            blockExpAction?(blockExpURL)
         }
     }
 
@@ -195,24 +190,18 @@ class CryptoSentBubble: UITableViewCell {
     }
 
     private func configOneWallet() {
-        guard let walletData = getOneWalletExtraData() else {
-            return
-        }
-        if let toUserName = walletData["recipientName"] {
-            let recipientName = fetchRawData(raw: toUserName) as? String ?? ""
+            let recipientName = content?.extraData.sentOneRecipientName ?? ""
             let imageAttachment = NSTextAttachment()
             imageAttachment.image = Appearance.default.images.senOneImage
             let fullString = NSMutableAttributedString(string: "You ")
             fullString.append(NSAttributedString(attachment: imageAttachment))
             fullString.append(NSAttributedString(string: " \(recipientName)"))
             descriptionLabel.attributedText = fullString
-        }
-        if let amount = walletData["transferAmount"] {
-            let one = fetchRawData(raw: amount) as? Double ?? 0
+            let one = content?.extraData.sentOneTransferAmount ?? "0"
             sentCryptoLabel.text = "SENT: \(one) ONE"
-        }
         let defaultURL = WalletAttachmentPayload.PaymentTheme.none.getPaymentThemeUrl()
-        if let themeURL = requestedThemeURL(raw: walletData), let imageUrl = URL(string: themeURL) {
+        let themeURL = content?.extraData.sentOnePaymentTheme ?? "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
+        if let imageUrl = URL(string: themeURL) {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
@@ -220,30 +209,6 @@ class CryptoSentBubble: UITableViewCell {
             }
         } else {
             Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
-        }
-    }
-
-    private func requestedThemeURL(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["paymentTheme"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
-        }
-    }
-
-    private func getOneWalletExtraData() -> [String: RawJSON]? {
-        if let extraData = content?.extraData["oneWalletTx"] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
         }
     }
 }

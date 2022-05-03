@@ -358,6 +358,13 @@ extension ChatMessage {
     }
 }
 
+public enum AdminMessageType: String {
+    case daoAddInitialSigners
+    case simpleGroupChat
+    case privateChat
+    case none
+}
+
 public extension ChatMessage {
     /// Returns all the attachments with the payload of the provided type.
     ///
