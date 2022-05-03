@@ -1361,8 +1361,8 @@
 		FC1A920C27F5ED23006A1E1A /* ContactModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A920B27F5ED22006A1E1A /* ContactModel.swift */; };
 		FC1A920E27F5EDAB006A1E1A /* SCSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A920D27F5EDAB006A1E1A /* SCSettings.swift */; };
 		FC1A921127F5EE31006A1E1A /* UserDefault.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A921027F5EE31006A1E1A /* UserDefault.swift */; };
+		FC25D4482821090100A32947 /* ExtraDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC25D4472821090100A32947 /* ExtraDataHelper.swift */; };
 		FC2F12C92820FE41001996E0 /* ConstantsKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2F12C82820FE41001996E0 /* ConstantsKey.swift */; };
-		FC2F12CB2820FEA7001996E0 /* ExtraDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2F12CA2820FEA7001996E0 /* ExtraDataHelper.swift */; };
 		FC4F2EF727F413AE00A6D729 /* ChannelDetailDescView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC4F2EF627F413AE00A6D729 /* ChannelDetailDescView.swift */; };
 		FC4F2EF927F413D300A6D729 /* ChannelDetailDescView.xib in Resources */ = {isa = PBXBuildFile; fileRef = FC4F2EF827F413D300A6D729 /* ChannelDetailDescView.xib */; };
 		FC4F2EFB27F4407000A6D729 /* ChannelMemberCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC4F2EFA27F4407000A6D729 /* ChannelMemberCountView.swift */; };
@@ -2910,8 +2910,8 @@
 		FC1A920B27F5ED22006A1E1A /* ContactModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactModel.swift; sourceTree = "<group>"; };
 		FC1A920D27F5EDAB006A1E1A /* SCSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCSettings.swift; sourceTree = "<group>"; };
 		FC1A921027F5EE31006A1E1A /* UserDefault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserDefault.swift; sourceTree = "<group>"; };
+		FC25D4472821090100A32947 /* ExtraDataHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtraDataHelper.swift; sourceTree = "<group>"; };
 		FC2F12C82820FE41001996E0 /* ConstantsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConstantsKey.swift; sourceTree = "<group>"; };
-		FC2F12CA2820FEA7001996E0 /* ExtraDataHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExtraDataHelper.swift; path = Sources/StreamChatUI/Utils/ExtraDataHelper.swift; sourceTree = SOURCE_ROOT; };
 		FC4F2EF627F413AE00A6D729 /* ChannelDetailDescView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelDetailDescView.swift; sourceTree = "<group>"; };
 		FC4F2EF827F413D300A6D729 /* ChannelDetailDescView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ChannelDetailDescView.xib; sourceTree = "<group>"; };
 		FC4F2EFA27F4407000A6D729 /* ChannelMemberCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMemberCountView.swift; sourceTree = "<group>"; };
@@ -3586,8 +3586,8 @@
 				8AE335A324FCF95D002B6677 /* InternetConnection */,
 				79BF83EA248F8EC0007611A1 /* Logger */,
 				79280F6F2487CD2B00CDEB89 /* Atomic.swift */,
-				FC2F12CA2820FEA7001996E0 /* ExtraDataHelper.swift */,
 				E7DD8EC025E4083B0059A322 /* OptionalDecodable.swift */,
+				FC25D4472821090100A32947 /* ExtraDataHelper.swift */,
 				79280F702487CD2B00CDEB89 /* Atomic_Tests.swift */,
 				792A4F3D247FFDE700EAF71D /* Codable+Extensions.swift */,
 				792A4F3E247FFDE700EAF71D /* Data+Gzip.swift */,
@@ -7859,7 +7859,7 @@
 				79CDE1DD24B321FE0003BD1D /* CurrentUserDTO.swift in Sources */,
 				6EEFB79327BB83AD007224C2 /* PanContainerView.swift in Sources */,
 				ADF34F9E25CDD8E600AD637C /* ConnectionController+SwiftUI.swift in Sources */,
-				FC2F12CB2820FEA7001996E0 /* ExtraDataHelper.swift in Sources */,
+				FC25D4482821090100A32947 /* ExtraDataHelper.swift in Sources */,
 				DAD539DB250B8A9C00CFC649 /* Controller.swift in Sources */,
 				F6ED5F76250278D7005D7327 /* SyncEndpoint.swift in Sources */,
 				797A756824814F0D003CF16D /* Bundle+Extensions.swift in Sources */,
