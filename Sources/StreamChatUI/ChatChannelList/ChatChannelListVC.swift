@@ -8,6 +8,7 @@ import SwiftUI
 
 public extension Notification.Name {
     static let pushToDaoChatMessageScreen = Notification.Name("pushToDaoChatMessageScreen")
+    static let pushToChatMessageScreen = Notification.Name("pushToChatMessageScreen")
 }
 
 /// A `UIViewController` subclass  that shows list of channels.
@@ -128,6 +129,23 @@ open class ChatChannelListVC: _ViewController,
             selector: #selector(pushToDaoChatMessageScreen(_:)),
             name: .pushToDaoChatMessageScreen,
             object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(pushToChatMessageScreen(_:)),
+            name: .pushToChatMessageScreen,
+            object: nil)
+    }
+
+    @objc private func pushToChatMessageScreen(_ notification: NSNotification) {
+        guard let cid = notification.userInfo?["channelId"] as? String else {
+            return
+        }
+        do {
+            let chatChannelVC = ChatChannelVC.init()
+            let channelController = try ChatClient.shared.channelController(for: .init(cid: cid))
+            chatChannelVC.channelController = channelController
+            pushWithAnimation(controller: chatChannelVC)
+        } catch {}
     }
 
     @objc private func pushToDaoChatMessageScreen(_ notification: NSNotification) {
