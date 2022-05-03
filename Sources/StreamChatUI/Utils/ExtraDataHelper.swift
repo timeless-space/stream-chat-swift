@@ -318,6 +318,55 @@ public extension Dictionary where Key == String, Value == RawJSON {
     }
 }
 
+// MARK: - Send ONE cell
+public extension Dictionary where Key == String, Value == RawJSON {
+    private var sendOneExtraData: [String: RawJSON] {
+        if let extraData = self["oneWalletTx"] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
+    var sentOneTxId: String? {
+        if let txId = sendOneExtraData["txId"] {
+            return fetchRawData(raw: txId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var sentOneRecipientName: String? {
+        if let recipientName = sendOneExtraData["recipientName"] {
+            return fetchRawData(raw: recipientName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var sentOneTransferAmount: String? {
+        if let transferAmount = sendOneExtraData["transferAmount"] {
+            let dblAmount = fetchRawData(raw: transferAmount) as? Double ?? 0
+            return String(format: "%.2f", dblAmount)
+        } else {
+            return nil
+        }
+    }
+
+    var sentOnePaymentTheme: String? {
+        if let paymentTheme = sendOneExtraData["paymentTheme"] {
+            return fetchRawData(raw: paymentTheme) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
 // MARK: - TedPacket Expired cell
 public extension Dictionary where Key == String, Value == RawJSON {
     private var redPacketExpiredExtraData: [String: RawJSON] {
@@ -336,6 +385,33 @@ public extension Dictionary where Key == String, Value == RawJSON {
     var redPacketExpiredHighestAmountUserName: String? {
         if let userName = redPacketExpiredExtraData["highestAmountUserName"] {
             return fetchRawData(raw: userName) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
+// MARK: - Wallet request pay bubble
+public extension Dictionary where Key == String, Value == RawJSON {
+    var recipientName: String? {
+        if let recipientNames = self["recipientNames"] {
+            return fetchRawData(raw: recipientNames) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var requestedThemeUrl: String? {
+        if let paymentTheme = self["paymentTheme"] {
+            return fetchRawData(raw: paymentTheme) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var recipientUserId: String? {
+        if let recipientUserId = self["recipientUserId"] {
+            return fetchRawData(raw: recipientUserId) as? String
         } else {
             return nil
         }
@@ -362,6 +438,30 @@ public extension Dictionary where Key == String, Value == RawJSON {
     var ctaData: String? {
         if let ctaDataStr = self["cta_data"] {
             return fetchRawData(raw: ctaDataStr) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var requestedIsPaid: Bool {
+        if let isPaid = self["isPaid"] {
+            return fetchRawData(raw: isPaid) as? Bool ?? true
+        } else {
+            return true
+        }
+    }
+
+    var requestedImageUrl: String? {
+        if let recipientImageUrl = self["recipientImageUrl"] {
+            return fetchRawData(raw: recipientImageUrl) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var requestedAmount: String? {
+        if let transferAmount = self["transferAmount"] {
+            return fetchRawData(raw: transferAmount) as? String
         } else {
             return nil
         }

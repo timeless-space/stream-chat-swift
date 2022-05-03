@@ -159,14 +159,15 @@ class WalletRequestPayBubble: UITableViewCell {
         if walletPaymentType == .request {
             let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first
             descriptionLabel.text = "Payment Requested"
-            if let themeURL = requestedThemeURL(raw: payload?.extraData), let imageUrl = URL(string: themeURL) {
+            let themeURL = payload?.extraData?.requestedThemeUrl ?? "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
+            if let imageUrl = URL(string: themeURL) {
                 if imageUrl.pathExtension == "gif" {
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
                     Nuke.loadImage(with: themeURL, into: sentThumbImageView)
                 }
             }
-            lblDetails.text = "AMOUNT: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"
+            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount ?? "0") ONE"
         }
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.string(from: createdAt)
@@ -235,141 +236,21 @@ class WalletRequestPayBubble: UITableViewCell {
         return sentCryptoLabel
     }
 
-    func configTopAmountCell() {
-        guard let topAmount = getExtraData(key: "RedPacketTopAmountReceived") else {
-            return
-        }
-        if let receivedAmount = topAmount["receivedAmount"] {
-            let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            let strReceivedAmount = String(format: "%.2f", dblReceivedAmount)
-            if ChatClient.shared.currentUserId ?? "" == getUserId(raw: topAmount) {
-                lblDetails.text = "You just picked up \(strReceivedAmount) ONE!"
-            } else {
-                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(strReceivedAmount) ONE!"
-            }
-        }
-    }
-
-    func configExpiredCell() {
-        guard let expiredData = getExtraData(key: "RedPacketExpired") else {
-            return
-        }
-        if let userName = expiredData["highestAmountUserName"] {
-            let strUserName = fetchRawData(raw: userName) as? String ?? ""
-            lblDetails.text = "\(strUserName) selected the highest amount!"
-        }
-    }
-
-    private func getUserName(raw: [String: RawJSON]) -> String {
-        if let userName = raw["highestAmountUserName"] {
-            return fetchRawData(raw: userName) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func getUserId(raw: [String: RawJSON]) -> String {
-        if let userId = raw["highestAmountUserId"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func requestedUserName(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["recipientName"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedThemeURL(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["paymentTheme"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
-        }
-    }
-
-    private func requestedUserId(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["recipientUserId"] {
-            return fetchRawData(raw: userId) as? String
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedAmount(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["transferAmount"] {
-            return fetchRawData(raw: userId) as? String
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedImageUrl(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let imageUrl = extraData["recipientImageUrl"] {
-            return fetchRawData(raw: imageUrl) as? String
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedIsPaid(raw: [String: RawJSON]?) -> Bool {
-        guard let extraData = raw else {
-            return true
-        }
-        if let imageUrl = extraData["isPaid"] {
-            return fetchRawData(raw: imageUrl) as? Bool ?? true
-        } else {
-            return true
-        }
-    }
-
-    private func getExtraData(key: String) -> [String: RawJSON]? {
-        if let extraData = content?.extraData[key] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
-        }
-    }
-
     @objc func btnSendPacketAction() {
         if walletPaymentType == .request {
             guard let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first,
-                  requestedIsPaid(raw: payload.extraData) == false else {
+                  payload.extraData?.requestedIsPaid == false else {
                 return
             }
-            if requestedUserId(raw: payload.extraData) == ChatClient.shared.currentUserId {
+            if payload.extraData?.recipientUserId == ChatClient.shared.currentUserId {
                 Snackbar.show(text: "You can not send one to your own wallet")
                 return
             }
             var userInfo = [String: Any]()
-            userInfo["transferAmount"] = requestedAmount(raw: payload.extraData)
-            userInfo["recipientName"] = requestedUserName(raw: payload.extraData)
-            userInfo["recipientUserId"] = requestedUserId(raw: payload.extraData)
-            userInfo["requestedImageUrl"] = requestedImageUrl(raw: payload.extraData)
+            userInfo["transferAmount"] = payload.extraData?.requestedAmount
+            userInfo["recipientName"] = payload.extraData?.recipientName
+            userInfo["recipientUserId"] = payload.extraData?.recipientUserId
+            userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         } else {
             guard let channelId = channel?.cid else { return }
