@@ -1,8 +1,9 @@
 //
-//  ConstantKeys.swift
-//  Pods
+//  ConstantsKey.swift
+//  StreamChat
 //
 //  Created by Ajay Ghodadra on 03/05/22.
+//  Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
