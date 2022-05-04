@@ -832,6 +832,52 @@ open class ChatChannelVC:
             self.groupCreateMessageView?.contentView.removeFromSuperview()
             self.groupCreateMessageView = nil
         }
+        for change in changes {
+            switch change {
+
+            case .insert(let message, index: let index):
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    let currentUserId = ChatClient.shared.currentUserId
+                    guard message.author.id != currentUserId else { return }
+                    guard let uniqueId = message.getPaidMessageID() else { return }
+
+                    let filteredMessages = channelController.messages.filter({ $0.isWalletRequestPayCell })
+
+                    for item in filteredMessages {
+                        guard let payload = item.attachments(payloadType: WalletAttachmentPayload.self).first
+                              else {
+                            continue
+                        }
+                        guard let msgID = self.messageUniqueID(raw: payload.extraData) else {
+                            continue
+                        }
+                        guard msgID == uniqueId else { continue }
+
+                        var extraData: [String: RawJSON] = item.extraData
+                        extraData["isPaid"] = .bool(true)
+                        guard let data = try? JSONEncoder().encode(extraData) else { return }
+                        guard let cid = channelController.channel?.cid else { return }
+                        let messageController = channelController.client.messageController(
+                            cid: cid,
+                            messageId: item.id
+                        )
+                        messageController.updateMessage(extraData: data, completion: { error in
+                            debugPrint("eeeeee\(String(describing: error))")
+                        })
+                    }
+
+                }
+            default: break
+            }
+        }
+    }
+
+    private func messageUniqueID(raw: [String: RawJSON]?) -> String? {
+        guard let extraData = raw else { return nil }
+        if let uniqueID = extraData["uniqueID"] {
+            return fetchRawData(raw: uniqueID) as? String
+        }
+        return nil
     }
 
     open func channelController(

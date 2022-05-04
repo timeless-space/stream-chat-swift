@@ -784,6 +784,7 @@ open class ComposerVC: _ViewController,
                 extraData["isPaid"] = .bool(false)
                 extraData["paymentTheme"] = .string(paymentTheme.getPaymentThemeUrl())
                 extraData["recipientImageUrl"] = .string(ChatClient.shared.currentUserController().currentUser?.imageURL?.absoluteString ?? "")
+                extraData["uniqueID"] = .string(UUID().uuidString)
                 let attachment = try AnyAttachmentPayload(extraData: extraData, paymentType: paymentType)
                 self.content.attachments.append(attachment)
                 self.composerView.inputMessageView.sendButton.isHidden = false

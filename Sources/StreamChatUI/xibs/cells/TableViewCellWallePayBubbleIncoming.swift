@@ -261,6 +261,22 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
         }
     }
 
+    private func messageUniqueID(raw: [String: RawJSON]?) -> String? {
+        guard let extraData = raw else { return nil }
+        if let uniqueID = extraData["uniqueID"] {
+            return fetchRawData(raw: uniqueID) as? String
+        }
+        return nil
+    }
+
+    private func isPayRequestCompleted(raw: [String: RawJSON]?) -> Bool {
+        guard let extraData = raw else { return false }
+        if let isPaid = extraData["isPaid"] {
+            return fetchRawData(raw: isPaid) as? Bool ?? false
+        }
+        return false
+    }
+
     private func getExtraData(key: String) -> [String: RawJSON]? {
         if let extraData = content?.extraData[key] {
             switch extraData {
@@ -276,7 +292,9 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
 
     @objc func btnSendPacketAction() {
         if walletPaymentType == .request {
-            if let isPaid = content?.extraData["isPaid"] as? Bool, isPaid {
+            if let messageExtraData = content?.extraData,
+               isPayRequestCompleted(raw: messageExtraData) {
+                Snackbar.show(text: "Request already paid")
                 return
             }
             guard let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first,
@@ -292,9 +310,8 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             userInfo["recipientName"] = requestedUserName(raw: payload.extraData)
             userInfo["recipientUserId"] = requestedUserId(raw: payload.extraData)
             userInfo["requestedImageUrl"] = requestedImageUrl(raw: payload.extraData)
-            if let messageID = content?.id {
-                userInfo["messageId"] = messageID
-            }
+            userInfo["requestedImageUrl"] = requestedImageUrl(raw: payload.extraData)
+            userInfo["uniqueID"] = messageUniqueID(raw: payload.extraData)
             userInfo["paymentTheme"] = requestedThemeURL(raw: payload.extraData)
             if let channelId = channelId {
                 userInfo["channelId"] = channelId.description

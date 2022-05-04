@@ -20,7 +20,7 @@ public struct SendOneWallet {
     public var txId: String?
     public var strFormattedAmount: String?
     public var paymentTheme: String?
-    public var messageId: String?
+    public var uniqueID: String?
     public var channelId: String?
     //number of fraction digits in transferAmount
     public var fractionDigits: Int = 0
@@ -39,8 +39,8 @@ public struct SendOneWallet {
         dictOut["transferAmount"] = .number(Double(transferAmount ?? 0).rounded(toPlaces: 2))
         dictOut["txId"] = .string(txId ?? "")
         dictOut["paymentTheme"] = .string(paymentTheme ?? "")
-        if let messageId = messageId {
-            dictOut["messageId"] = .string(messageId)
+        if let uniqueID = uniqueID {
+            dictOut["uniqueID"] = .string(uniqueID)
         }
         dictOut["channelId"] = .string(channelId ?? "")
         return dictOut

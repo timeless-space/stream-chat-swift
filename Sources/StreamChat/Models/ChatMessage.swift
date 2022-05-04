@@ -274,6 +274,13 @@ extension ChatMessage {
         }
     }
 
+    public func getPaidMessageID() -> String? {
+        if let paidMessageID = extraData["uniqueID"] {
+            return fetchRawData(raw: paidMessageID) as? String
+        }
+        return nil
+    }
+
     public func fetchRawData(raw: RawJSON) -> Any? {
         switch raw {
         case .number(let double):
