@@ -264,7 +264,7 @@ class GiftBubble: UITableViewCell {
     private func isAllowToPick() -> Bool {
         // check userId
         if content?.isSentByCurrentUser ?? false {
-            Snackbar.show(text: "You can not pickup your own packet")
+            Snackbar.show(text: "You cannot pickup your own packet")
             return false
         }
         return true
