@@ -40,7 +40,7 @@ class GifViewController: UIViewController {
         .init()
         .withoutAutoresizingMaskConstraints
 
-    open private (set) lazy var subView = UIView
+    open private (set) lazy var bottomView = UIView
         .init()
         .withoutAutoresizingMaskConstraints
 
@@ -56,8 +56,8 @@ class GifViewController: UIViewController {
     private var currentSearchText = ""
     private var isSearchEnable = false
     @Published var searchingText: String = ""
-    var listenCancellables = Set<AnyCancellable>()
-    var isFetchingApiData = false
+    private var listenCancellables = Set<AnyCancellable>()
+    private var isFetchingApiData = false
 
     init(with isSearchEnable: Bool) {
         super.init(nibName: nil, bundle: nil)
@@ -73,8 +73,14 @@ class GifViewController: UIViewController {
         setUpGifView()
         setUpProgressView()
         getTrendingGifs()
-        view.backgroundColor = Appearance.default.colorPalette.emojiBg
+        setUpDebouncer()
+    }
 
+    deinit {
+        GPHCache.shared.clear()
+    }
+
+    private func setUpDebouncer() {
         $searchingText
             .debounce(for: 0.5, scheduler: RunLoop.main)
             .subscribe(on: RunLoop.main)
@@ -90,11 +96,8 @@ class GifViewController: UIViewController {
             .store(in: &listenCancellables)
     }
 
-    deinit {
-        GPHCache.shared.clear()
-    }
-
     private func setUpGifView() {
+        view.backgroundColor = Appearance.default.colorPalette.emojiBg
         view.insertSubview(gifView, at: 0)
         gifView.backgroundColor = Appearance.default.colorPalette.stickerBg
         gifView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
@@ -104,9 +107,9 @@ class GifViewController: UIViewController {
         gifView.addSubview(hStack)
         setUpBackButton()
         hStack.pin(anchors: [.top, .trailing], to: gifView)
-        hStack.leadingAnchor.constraint(equalTo: gifView.leadingAnchor, constant: 15).isActive = true
+        hStack.leadingAnchor.constraint(equalTo: gifView.leadingAnchor, constant: 10).isActive = true
         setUpWithCollectionView()
-        // set to 300 mb
+        // set to 50 mb
         GPHCache.shared.cache.diskCapacity = 50 * 1000 * 1000
         GPHCache.shared.cache.memoryCapacity = 50 * 1000 * 1000
     }
@@ -124,11 +127,10 @@ class GifViewController: UIViewController {
 
     /// Setup Collection View in feed view
     func setUpWithCollectionView() {
-
         vStack.axis = .vertical
         pagingProgressView.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        subView.heightAnchor.constraint(equalToConstant: 20).isActive = true
-
+        bottomView.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        // Collection View layout
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 0
@@ -142,11 +144,11 @@ class GifViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.delegate = self
         collectionView.dataSource = self
-
+        // Setup our Vertical stack
         vStack.addArrangedSubview(collectionView)
         vStack.addArrangedSubview(pagingProgressView)
-         vStack.addArrangedSubview(subView)
-
+        vStack.addArrangedSubview(bottomView)
+        // Add subview
         view.addSubview(vStack)
         NSLayoutConstraint.activate([
             vStack.leftAnchor.constraint(equalTo: gifView.safeLeftAnchor),
@@ -184,13 +186,13 @@ class GifViewController: UIViewController {
         progressView.isHidden = trendingGifs.count != 0
         isFetchingApiData = true
         pagingProgressView.isHidden = trendingGifs.count == 0
-        subView.isHidden = trendingGifs.count == 0
+        bottomView.isHidden = trendingGifs.count == 0
         apiHandler.getTrending(offset: currentTrendingOffset) { [weak self] error, response in
             guard let `self` = self else { return }
             self.isFetchingApiData = false
             self.progressView.isHidden = true
             self.pagingProgressView.isHidden = true
-            self.subView.isHidden = true
+            self.bottomView.isHidden = true
             self.searchGifs.removeAll()
             self.currentSearchOffset = 0
             self.trendingGifs.append(contentsOf: response?.data ?? [])
@@ -204,7 +206,7 @@ class GifViewController: UIViewController {
         progressView.isHidden = !isSearch
         isFetchingApiData = true
         pagingProgressView.isHidden = isSearch
-        subView.isHidden = isSearch
+        bottomView.isHidden = isSearch
         apiHandler.getSearch(searchTerm: currentSearchText, offset: currentSearchOffset, completion: { [weak self] error, response in
             guard let `self` = self else { return }
             self.isFetchingApiData = false
@@ -215,7 +217,7 @@ class GifViewController: UIViewController {
                 self.searchGifs.append(contentsOf: response?.data ?? [])
             }
             self.pagingProgressView.isHidden = true
-            self.subView.isHidden = true
+            self.bottomView.isHidden = true
             self.latestSearchResponse = response
             self.progressView.isHidden = true
             self.trendingGifs.removeAll()
@@ -294,7 +296,6 @@ extension GifViewController: UICollectionViewDelegate {
 
 @available(iOS 13.0, *)
 extension GifViewController: UICollectionViewDataSource {
-
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return isSearchActive ? searchGifs.count : trendingGifs.count
     }
@@ -308,7 +309,6 @@ extension GifViewController: UICollectionViewDataSource {
 
 @available(iOS 13.0, *)
 extension GifViewController: UICollectionViewDelegateFlowLayout {
-
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.frame.size.width / 2, height: 125)
     }

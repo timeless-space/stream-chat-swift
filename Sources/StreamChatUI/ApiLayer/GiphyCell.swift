@@ -43,5 +43,4 @@ class GiphyCell: UICollectionViewCell {
     func clearData() {
         mediaView.clear()
     }
-
 }

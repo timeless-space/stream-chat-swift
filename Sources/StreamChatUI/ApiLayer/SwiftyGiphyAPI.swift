@@ -9,18 +9,11 @@
 import UIKit
 
 public let kGiphyNetworkingErrorDomain = "kGiphyNetworkingErrorDomain"
-
 typealias GiphyMultipleGIFResponseBlock = (_ error: NSError?, _ response: GiphyResponse?) -> Void
-
-
 fileprivate typealias GiphyAPIResponseBlock = (_ error: NSError?, _ response: Data?) -> Void
-
-fileprivate let kGiphyUnknownResponseError = NSLocalizedString("The server returned an unknown response.", comment: "The error message shown when the server produces something unintelligible.")
-
-fileprivate let kGiphyDefaultAPIBase = URL(string: "https://api.giphy.com/v1/gifs/")!
+fileprivate let kGiphyUnknownResponseError = NSLocalizedString("The server returned an unknown response.", comment: "Error from server")
 
 public enum SwiftyGiphyAPIContentRating: String {
-    
     case y = "y"
     case g = "g"
     case pg = "pg"
@@ -29,8 +22,6 @@ public enum SwiftyGiphyAPIContentRating: String {
 }
 
 public class SwiftyGiphyAPI {
-
-    public static let publicBetaKey = "dc6zaTOxFJmzC"
     
     /// Access the Giphy API through the shared singleton.
     public static let shared: SwiftyGiphyAPI = SwiftyGiphyAPI()
@@ -41,22 +32,10 @@ public class SwiftyGiphyAPI {
     /// This can be overriden to use a custom API base url, in the scenario that you want requests to pass through your own server.
     /// - Note:
     ///     - Changing this URL will disable the requirement for an API key to be set on SwiftyGiphyAPI. You can still set one if you want, but we allow it to be nil in case you want the API key to live on your server.
-    public var giphyAPIBase: URL = kGiphyDefaultAPIBase
-
-    fileprivate var isUsingDefaultAPIBase: Bool {
-        get {
-            return giphyAPIBase == kGiphyDefaultAPIBase
-        }
-    }
-    
-    /// This is private, you should use the shared singleton instead of creating your own instance.
-    fileprivate init() { }
-    
-    // MARK: Networking Utilities
+    public var giphyAPIBase: URL = URL(string: "https://api.giphy.com/v1/gifs/")!
     
     /**
      Send a request
-     
      - parameter request:    The request to send.
      - parameter completion: The completion block to call when done.
      */
@@ -66,11 +45,10 @@ public class SwiftyGiphyAPI {
             // Check for network error
             guard error == nil else {
                 completion?(error as NSError?, nil)
-                return;
+                return
             }
             // Check for valid JSON
-            guard let
-                    validData = data,
+            guard let validData = data,
                   let jsonObj = try? JSONSerialization.jsonObject(with: validData, options: .allowFragments),
                   let jsonDict = jsonObj as? [String : AnyObject],
                   let httpResponse = response as? HTTPURLResponse else {
@@ -86,18 +64,15 @@ public class SwiftyGiphyAPI {
                       completion?(error, nil)
                       return;
                   }
-            
             // Check the network error code
             guard httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 else {
-
                 let error = NSError(domain: kGiphyNetworkingErrorDomain, code: httpResponse.statusCode, userInfo: [
                     NSLocalizedDescriptionKey : kGiphyUnknownResponseError
                 ])
                 completion?(error, data)
                 return;
             }
-            
-            // It looks like we have a valid response in the 200 range.
+            // Valid response
             completion?(nil, validData)
         }).resume()
     }
@@ -134,8 +109,7 @@ public class SwiftyGiphyAPI {
                 var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)!
                 components.queryItems = queryItems
                 request.url = components.url
-            }
-            else {
+            } else {
                 // JSON params
                 let jsonData = try? JSONSerialization.data(withJSONObject: localparams, options: JSONSerialization.WritingOptions())
                 request.httpBody = jsonData
@@ -156,12 +130,12 @@ extension SwiftyGiphyAPI {
     ///   - rating: The max rating for the gifs
     ///   - offset: The paging offset
     ///   - completion: The completion block to call when done
-    func getTrending(limit: Int = 25, rating: SwiftyGiphyAPIContentRating = .pg13, offset: Int? = nil, completion: GiphyMultipleGIFResponseBlock?)
-    {
-        guard apiKey != nil || !isUsingDefaultAPIBase else {
-            completion?(networkError(description: NSLocalizedString("You need to set your Giphy API key before using SwiftyGiphy.", comment: "You need to set your Giphy API key before using SwiftyGiphy.")), nil)
-            return
-        }
+    func getTrending(
+        limit: Int = 25,
+        rating: SwiftyGiphyAPIContentRating = .pg13,
+        offset: Int? = nil,
+        completion: GiphyMultipleGIFResponseBlock?
+    ) {
         var params = [String : Any]()
         params["api_key"] = apiKey
         params["limit"] = limit
@@ -169,9 +143,7 @@ extension SwiftyGiphyAPI {
         if let currentOffset = offset {
             params["offset"] = currentOffset
         }
-        
         let request = createRequest(baseURL: giphyAPIBase, relativePath: "trending", method: "GET", params: params)
-        
         send(request: request) { [unowned self] (error, response) in
             guard error == nil, response != nil else {
                 DispatchQueue.main.async {
@@ -199,13 +171,13 @@ extension SwiftyGiphyAPI {
     ///   - rating: The max rating for the gifs
     ///   - offset: The paging offset
     ///   - completion: The completion block to call when done
-    func getSearch(searchTerm: String, limit: Int = 25, rating: SwiftyGiphyAPIContentRating = .pg13, offset: Int? = nil, completion: GiphyMultipleGIFResponseBlock?)
-    {
-        guard apiKey != nil || !isUsingDefaultAPIBase else {
-            completion?(networkError(description: NSLocalizedString("You need to set your Giphy API key before using SwiftyGiphy.", comment: "You need to set your Giphy API key before using SwiftyGiphy.")), nil)
-            return
-        }
-        
+    func getSearch(
+        searchTerm: String,
+        limit: Int = 25,
+        rating: SwiftyGiphyAPIContentRating = .pg13,
+        offset: Int? = nil,
+        completion: GiphyMultipleGIFResponseBlock?
+    ) {
         var params = [String : Any]()
         params["api_key"] = apiKey
         params["q"] = searchTerm
@@ -215,7 +187,6 @@ extension SwiftyGiphyAPI {
             params["offset"] = currentOffset
         }
         let request = createRequest(baseURL: giphyAPIBase, relativePath: "search", method: "GET", params: params)
-        
         send(request: request) { [unowned self] (error, response) in
             guard error == nil, response != nil else {
                 DispatchQueue.main.async {
@@ -234,5 +205,4 @@ extension SwiftyGiphyAPI {
             }
         }
     }
-
 }
