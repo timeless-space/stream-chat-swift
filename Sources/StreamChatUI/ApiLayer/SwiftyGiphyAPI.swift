@@ -159,7 +159,6 @@ extension SwiftyGiphyAPI {
     func getTrending(limit: Int = 25, rating: SwiftyGiphyAPIContentRating = .pg13, offset: Int? = nil, completion: GiphyMultipleGIFResponseBlock?)
     {
         guard apiKey != nil || !isUsingDefaultAPIBase else {
-            debugPrint("You need to set your Giphy API key before using SwiftyGiphy.")
             completion?(networkError(description: NSLocalizedString("You need to set your Giphy API key before using SwiftyGiphy.", comment: "You need to set your Giphy API key before using SwiftyGiphy.")), nil)
             return
         }
@@ -169,7 +168,6 @@ extension SwiftyGiphyAPI {
         params["rating"] = rating.rawValue
         if let currentOffset = offset {
             params["offset"] = currentOffset
-            debugPrint("TAG New Offset :- \(currentOffset)")
         }
         
         let request = createRequest(baseURL: giphyAPIBase, relativePath: "trending", method: "GET", params: params)
@@ -204,7 +202,6 @@ extension SwiftyGiphyAPI {
     func getSearch(searchTerm: String, limit: Int = 25, rating: SwiftyGiphyAPIContentRating = .pg13, offset: Int? = nil, completion: GiphyMultipleGIFResponseBlock?)
     {
         guard apiKey != nil || !isUsingDefaultAPIBase else {
-            debugPrint("You need to set your Giphy API key before using SwiftyGiphy.")
             completion?(networkError(description: NSLocalizedString("You need to set your Giphy API key before using SwiftyGiphy.", comment: "You need to set your Giphy API key before using SwiftyGiphy.")), nil)
             return
         }

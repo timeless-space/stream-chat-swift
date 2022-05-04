@@ -41,6 +41,10 @@ class EmojiMenuViewController: UIViewController {
         loadMenu(result: menus)
     }
 
+    deinit {
+        GPHCache.shared.clear()
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchSticker()

@@ -7,7 +7,9 @@
 
 import UIKit
 import GiphyUISDK
+import Combine
 
+@available(iOS 13.0, *)
 class GifViewController: UIViewController {
 
     open private(set) lazy var searchView = UISearchBar
@@ -34,6 +36,14 @@ class GifViewController: UIViewController {
         .init()
         .withoutAutoresizingMaskConstraints
 
+    open private (set) lazy var vStack = UIStackView
+        .init()
+        .withoutAutoresizingMaskConstraints
+
+    open private (set) lazy var subView = UIView
+        .init()
+        .withoutAutoresizingMaskConstraints
+
     private var trendingGifs:[GiphyModelItem] = []
     private var searchGifs:[GiphyModelItem] = []
     private var latestTrendingResponse: GiphyResponse?
@@ -45,6 +55,9 @@ class GifViewController: UIViewController {
     private var isSearchActive = false
     private var currentSearchText = ""
     private var isSearchEnable = false
+    @Published var searchingText: String = ""
+    var listenCancellables = Set<AnyCancellable>()
+    var isFetchingApiData = false
 
     init(with isSearchEnable: Bool) {
         super.init(nibName: nil, bundle: nil)
@@ -57,10 +70,24 @@ class GifViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        getTrendingGifs()
         setUpGifView()
         setUpProgressView()
-        view.backgroundColor = Appearance.default.colorPalette.stickerBg
+        getTrendingGifs()
+        view.backgroundColor = Appearance.default.colorPalette.emojiBg
+
+        $searchingText
+            .debounce(for: 0.5, scheduler: RunLoop.main)
+            .subscribe(on: RunLoop.main)
+            .sink { [weak self] result in
+                guard let `self` = self else { return }
+                if result == "" {
+                    return
+                }
+                self.isSearchActive = true
+                self.currentSearchText = result
+                self.getSearchGifs(isSearch: true)
+            }
+            .store(in: &listenCancellables)
     }
 
     deinit {
@@ -97,34 +124,39 @@ class GifViewController: UIViewController {
 
     /// Setup Collection View in feed view
     func setUpWithCollectionView() {
-        let layout = WaterFallLayout()
-        layout.delegate = self
+
+        vStack.axis = .vertical
+        pagingProgressView.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        subView.heightAnchor.constraint(equalToConstant: 20).isActive = true
+
+        let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 0
         collectionView = UICollectionView(frame: view.frame, collectionViewLayout: layout)
         guard let collectionView = collectionView else {
             return
         }
-        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         collectionView.autoresizesSubviews = false
         collectionView.register(GiphyCell.self, forCellWithReuseIdentifier: "cellIdentifier")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.delegate = self
         collectionView.dataSource = self
-        view.addSubview(collectionView)
+
+        vStack.addArrangedSubview(collectionView)
+        vStack.addArrangedSubview(pagingProgressView)
+         vStack.addArrangedSubview(subView)
+
+        view.addSubview(vStack)
         NSLayoutConstraint.activate([
-            collectionView.leftAnchor.constraint(equalTo: gifView.safeLeftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: gifView.safeRightAnchor),
-            collectionView.topAnchor.constraint(equalTo: searchView.bottomAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: gifView.safeBottomAnchor)
+            vStack.leftAnchor.constraint(equalTo: gifView.safeLeftAnchor),
+            vStack.rightAnchor.constraint(equalTo: gifView.safeRightAnchor),
+            vStack.topAnchor.constraint(equalTo: searchView.bottomAnchor),
+            vStack.bottomAnchor.constraint(equalTo: gifView.bottomAnchor)
         ])
         pagingProgressView.color = .white
         pagingProgressView.translatesAutoresizingMaskIntoConstraints = false
         pagingProgressView.startAnimating()
-        pagingProgressView.isHidden = true
-        gifView.addSubview(pagingProgressView)
-        NSLayoutConstraint.activate([
-            pagingProgressView.centerXAnchor.constraint(equalTo: gifView.centerXAnchor),
-            pagingProgressView.topAnchor.constraint(equalTo: gifView.bottomAnchor)
-        ])
     }
 
     private func setUpBackButton() {
@@ -138,25 +170,44 @@ class GifViewController: UIViewController {
         searchView.placeholder = "Search Gifs"
         searchView.backgroundImage = UIImage()
         searchView.delegate = self
+        if (isSearchEnable) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                guard let `self` = self else { return }
+                self.searchView.becomeFirstResponder()
+            }
+        }
         hStack.addArrangedSubview(backButton)
         hStack.addArrangedSubview(searchView)
     }
 
-    private func getTrendingGifs() {
+    private func getTrendingGifs(isPaginated: Bool = false) {
         progressView.isHidden = trendingGifs.count != 0
+        isFetchingApiData = true
+        pagingProgressView.isHidden = trendingGifs.count == 0
+        subView.isHidden = trendingGifs.count == 0
         apiHandler.getTrending(offset: currentTrendingOffset) { [weak self] error, response in
             guard let `self` = self else { return }
+            self.isFetchingApiData = false
             self.progressView.isHidden = true
+            self.pagingProgressView.isHidden = true
+            self.subView.isHidden = true
+            self.searchGifs.removeAll()
+            self.currentSearchOffset = 0
             self.trendingGifs.append(contentsOf: response?.data ?? [])
             self.latestTrendingResponse = response
-            self.pagingProgressView.isHidden = true
             self.collectionView?.reloadData()
         }
     }
 
     private func getSearchGifs(isSearch: Bool) {
+        collectionView?.alpha = isSearch ? 0.0 : 1.0
+        progressView.isHidden = !isSearch
+        isFetchingApiData = true
+        pagingProgressView.isHidden = isSearch
+        subView.isHidden = isSearch
         apiHandler.getSearch(searchTerm: currentSearchText, offset: currentSearchOffset, completion: { [weak self] error, response in
             guard let `self` = self else { return }
+            self.isFetchingApiData = false
             if isSearch {
                 self.searchGifs.removeAll()
                 self.searchGifs.append(contentsOf: response?.data ?? [])
@@ -164,8 +215,12 @@ class GifViewController: UIViewController {
                 self.searchGifs.append(contentsOf: response?.data ?? [])
             }
             self.pagingProgressView.isHidden = true
+            self.subView.isHidden = true
             self.latestSearchResponse = response
             self.progressView.isHidden = true
+            self.trendingGifs.removeAll()
+            self.currentTrendingOffset = 0
+            self.collectionView?.alpha = 1.0
             self.collectionView?.reloadData()
         })
     }
@@ -173,7 +228,6 @@ class GifViewController: UIViewController {
     @objc func btnBackPressed(sender: UIButton!) {
         dismiss(animated: true, completion: nil)
     }
-
 }
 
 @available(iOS 13.0, *)
@@ -192,9 +246,7 @@ extension GifViewController: UISearchBarDelegate {
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if !searchText.isEmpty {
-            isSearchActive = true
-            currentSearchText = searchText
-            getSearchGifs(isSearch: true)
+            searchingText = searchText
         } else {
             isSearchActive = false
             getTrendingGifs()
@@ -202,21 +254,23 @@ extension GifViewController: UISearchBarDelegate {
     }
 }
 
+@available(iOS 13.0, *)
 extension GifViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if indexPath.row == trendingGifs.count - 1 {
+        if isFetchingApiData {
+            return
+        }
+        if (isSearchActive ? indexPath.row == searchGifs.count - 1 : indexPath.row == trendingGifs.count - 1) {
             if isSearchActive {
                 if searchGifs.count < (latestSearchResponse?.pagination.totalCount ?? 0) {
                     currentSearchOffset = searchGifs.count
                     getSearchGifs(isSearch: false)
-                    pagingProgressView.isHidden = false
                 }
             } else {
                 if trendingGifs.count < (latestTrendingResponse?.pagination.totalCount ?? 0) {
                     currentTrendingOffset = trendingGifs.count
-                    getTrendingGifs()
-                    pagingProgressView.isHidden = false
+                    getTrendingGifs(isPaginated: true)
                 }
             }
         }
@@ -225,14 +279,20 @@ extension GifViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedGif = isSearchActive ? searchGifs[indexPath.row] : trendingGifs[indexPath.row]
         dismiss(animated: true)
-        NotificationCenter.default.post(name: .sendSticker, object: nil, userInfo: ["giphyUrl":  selectedGif.images.downsized.url])
+        NotificationCenter.default.post(name: .sendSticker, object: nil, userInfo: ["giphyUrl":  selectedGif.images.fixedWidthDownsampled.url])
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         view.endEditing(true)
     }
+
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let currentCell = cell as? GiphyCell else { return }
+        currentCell.clearData()
+    }
 }
 
+@available(iOS 13.0, *)
 extension GifViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -246,17 +306,10 @@ extension GifViewController: UICollectionViewDataSource {
     }
 }
 
+@available(iOS 13.0, *)
 extension GifViewController: UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let itemSize = (collectionView.frame.width - (collectionView.contentInset.left + collectionView.contentInset.right)) / 2
-        return CGSize(width: itemSize, height: itemSize)
-    }
-}
-
-extension GifViewController: WaterFallLayoutDelegate {
-    func collectionView(_ collectionView: UICollectionView, heightForPhotoAtIndexPath indexPath: IndexPath) -> CGFloat {
-        let item = isSearchActive ? searchGifs[indexPath.row] : trendingGifs[indexPath.row]
-        return CGFloat((item.images.fixedWidthDownsampled.height as NSString).floatValue) ?? 0.0
+        return CGSize(width: collectionView.frame.size.width / 2, height: 125)
     }
 }

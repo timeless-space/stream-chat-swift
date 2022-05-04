@@ -23,8 +23,8 @@ class GiphyCell: UICollectionViewCell {
         super.init(frame: frame)
         mediaView = GPHMediaView()
         mediaView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(mediaView)
-        mediaView.pin(to: self)
+        mediaView.backgroundColor = Appearance.default.colorPalette.emojiBg
+        self.embed(mediaView, insets: .init(top: 4, leading: 0, bottom: 0, trailing: 4))
     }
 
     required init?(coder: NSCoder) {
@@ -33,10 +33,15 @@ class GiphyCell: UICollectionViewCell {
 
     // MARK: - Custom functions
     func configureCell(giphyModel: GiphyModelItem?) {
+        mediaView.clear()
         guard let giphyModel = giphyModel else {
             return
         }
-        mediaView.loadAsset(at: giphyModel.images.fixedWidthSmall.url)
+        mediaView.loadAsset(at: giphyModel.images.fixedWidthDownsampled.url)
+    }
+
+    func clearData() {
+        mediaView.clear()
     }
 
 }
