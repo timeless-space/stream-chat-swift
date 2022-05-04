@@ -17,6 +17,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
     @IBOutlet private weak var viewContainer: UIView!
     @IBOutlet private weak var subContainer: UIView!
     @IBOutlet private weak var sentThumbImageView: UIImageView!
+    @IBOutlet private weak var payRequestImageView: UIImageView!
     @IBOutlet private weak var timestampLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var pickUpButton: UIButton!
@@ -38,7 +39,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
     var content: ChatMessage?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
     var isSender = false
-    var channel: ChatChannel?
+    var channelId: ChannelId?
     var chatClient: ChatClient?
     var client: ChatClient?
     var walletPaymentType: WalletAttachmentPayload.PaymentType = .pay
@@ -76,6 +77,9 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
         sentThumbImageView.backgroundColor = Appearance.default.colorPalette.background6
         sentThumbImageView.contentMode = .scaleAspectFill
         sentThumbImageView.clipsToBounds = true
+        payRequestImageView.backgroundColor = Appearance.default.colorPalette.background6
+        payRequestImageView.contentMode = .scaleAspectFill
+        payRequestImageView.clipsToBounds = true
         // lblDetails
         lblDetails.textAlignment = .center
         lblDetails.numberOfLines = 0
@@ -101,13 +105,16 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             }
             if let themeURL = requestedThemeURL(raw: payload?.extraData), let imageUrl = URL(string: themeURL) {
                 if imageUrl.pathExtension == "gif" {
+                    sentThumbImageView.isHidden = false
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
-                    Nuke.loadImage(with: themeURL, into: sentThumbImageView)
+                    sentThumbImageView.isHidden = true
+                    Nuke.loadImage(with: themeURL, into: payRequestImageView)
                 }
             }
             lblDetails.text = "REQUEST: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"
         }
+        payRequestImageView.isHidden = !sentThumbImageView.isHidden
         // pickUpButton
         pickUpButton.setTitle("Pay", for: .normal)
         pickUpButton.addTarget(self, action: #selector(btnSendPacketAction), for: .touchUpInside)
@@ -288,12 +295,11 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             if let messageID = content?.id {
                 userInfo["messageId"] = messageID
             }
+            userInfo["paymentTheme"] = requestedThemeURL(raw: payload.extraData)
+            if let channelId = channelId {
+                userInfo["channelId"] = channelId.description
+            }
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
-        } else {
-            guard let channelId = channel?.cid else { return }
-            var userInfo = [String: Any]()
-            userInfo["channelId"] = channelId
-            NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
-        }
+        } 
     }
 }
