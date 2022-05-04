@@ -269,6 +269,9 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
 
     @objc func btnSendPacketAction() {
         if walletPaymentType == .request {
+            if let isPaid = content?.extraData["isPaid"] as? Bool, isPaid {
+                return
+            }
             guard let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first,
                   requestedIsPaid(raw: payload.extraData) == false else {
                 return
@@ -282,6 +285,9 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             userInfo["recipientName"] = requestedUserName(raw: payload.extraData)
             userInfo["recipientUserId"] = requestedUserId(raw: payload.extraData)
             userInfo["requestedImageUrl"] = requestedImageUrl(raw: payload.extraData)
+            if let messageID = content?.id {
+                userInfo["messageId"] = messageID
+            }
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         } else {
             guard let channelId = channel?.cid else { return }

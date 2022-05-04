@@ -21,13 +21,14 @@ public struct SendOneWallet {
     public var strFormattedAmount: String?
     public var paymentTheme: String?
     public var channelId: ChannelId?
+    public var messageId: String?
     //number of fraction digits in transferAmount
     public var fractionDigits: Int = 0
 
     public init() {
     }
 
-   public func toDictionary() -> [String: RawJSON] {
+    public func toDictionary() -> [String: RawJSON] {
         var dictOut = [String: RawJSON]()
         dictOut["myName"] = .string(myName ?? "")
         dictOut["myWalletAddress"] = .string(myWalletAddress ?? "")
@@ -38,6 +39,9 @@ public struct SendOneWallet {
         dictOut["transferAmount"] = .number(Double(transferAmount ?? 0).rounded(toPlaces: 2))
         dictOut["txId"] = .string(txId ?? "")
         dictOut["paymentTheme"] = .string(paymentTheme ?? "")
+        if let messageId = messageId {
+            dictOut["messageId"] = .string(messageId)
+        }
         return dictOut
     }
 }

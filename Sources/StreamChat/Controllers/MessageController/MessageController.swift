@@ -182,7 +182,13 @@ public extension ChatMessageController {
             }
         }
     }
-    
+    func updateMessage(extraData: Data, completion: ((Error?) -> Void)? = nil) {
+        messageUpdater.updateMessageExtraData(messageId: messageId, extraData: extraData) { error in
+            self.callback {
+                completion?(error)
+            }
+        }
+    }
     /// Deletes the message this controller manages.
     ///
     /// - Parameters:

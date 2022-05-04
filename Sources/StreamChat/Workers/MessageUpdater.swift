@@ -108,6 +108,28 @@ class MessageUpdater: Worker {
         })
     }
 
+    func updateMessageExtraData(messageId: MessageId, extraData: Data, completion: ((Error?) -> Void)? = nil) {
+        database.write({ session in
+            let messageDTO = try session.messageEditableByCurrentUser(messageId)
+
+            switch messageDTO.localMessageState {
+            case nil, .pendingSync, .syncingFailed, .deletingFailed:
+                messageDTO.extraData = extraData
+                messageDTO.localMessageState = .pendingSync
+            case .pendingSend, .sendingFailed:
+                messageDTO.extraData = extraData
+                messageDTO.localMessageState = .pendingSend
+            case .sending, .syncing, .deleting:
+                throw ClientError.MessageEditing(
+                    messageId: messageId,
+                    reason: "message is in `\(messageDTO.localMessageState!)` state"
+                )
+            }
+        }, completion: {
+            completion?($0)
+        })
+    }
+
     /// Creates a new reply message in the local DB and sets its local state to `.pendingSend`.
     ///
     /// - Parameters:
