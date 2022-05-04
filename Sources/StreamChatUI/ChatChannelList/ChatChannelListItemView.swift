@@ -113,6 +113,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         } else if lastMessage.extraData.keys.contains("RedPacketTopAmountReceived")
                     || lastMessage.extraData.keys.contains("RedPacketOtherAmountReceived") {
             return "Red Packet Amount Received"
+        } else if lastMessage.extraData.keys.contains("gift") {
+            return "Gift"
         } else if !lastMessage.text.isEmpty {
             return content.channel.isDirectMessageChannel ? lastMessage.text : "\(authorName) \(lastMessage.text)"
         } else {
