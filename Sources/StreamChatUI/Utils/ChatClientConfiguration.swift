@@ -10,18 +10,25 @@ import UIKit
 import StreamChat
 
 public extension ChatClient {
-    static var shared: ChatClient = {
-        var config = ChatClientConfig(apiKey: APIKey(ChatClientConfiguration.shared.apiKey))
-        config.isLocalStorageEnabled = true
-        config.shouldFlushLocalStorageOnStart = false
-        let client = ChatClient(config: config) { completion in
-            ChatClientConfiguration.shared.requestNewChatToken?()
-            ChatClientConfiguration.shared.streamChatToken = { token in
-                completion(.success(token))
+    static var shared: ChatClient {
+        get {
+            if let client =  ChatClientConfiguration.shared.chatClient {
+                return client
+            } else {
+                var config = ChatClientConfig(apiKey: APIKey(ChatClientConfiguration.shared.apiKey))
+                config.isLocalStorageEnabled = true
+                config.shouldFlushLocalStorageOnStart = false
+                let client = ChatClient(config: config) { completion in
+                    ChatClientConfiguration.shared.requestNewChatToken?()
+                    ChatClientConfiguration.shared.streamChatToken = { token in
+                        completion(.success(token))
+                    }
+                }
+                ChatClientConfiguration.shared.chatClient = client
+                return ChatClientConfiguration.shared.chatClient!
             }
         }
-        return client
-    }()
+    }
 }
 
 public typealias callbackGeneralGroupInviteLink = ((URL?) -> Void)
@@ -30,6 +37,10 @@ open class ChatClientConfiguration {
 
     // MARK: - Variables
     public static let shared = ChatClientConfiguration()
+
+    // Current Chat client
+    open var chatClient: ChatClient?
+
     open var apiKey = ""
     // streamChat request token
     open var streamChatToken: ((Token) -> Void)?
