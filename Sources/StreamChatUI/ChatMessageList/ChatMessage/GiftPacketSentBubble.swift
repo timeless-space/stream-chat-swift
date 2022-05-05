@@ -38,7 +38,6 @@ class GiftBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
         self.selectionStyle = .none
         self.backgroundColor = .clear
         setupUI()
@@ -161,9 +160,13 @@ class GiftBubble: UITableViewCell {
             return
         }
         if self.isVideoType(extraData.flair ?? "") {
+            NotificationCenter.default.removeObserver(self,
+                                                      name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                                      object: nil)
             NotificationCenter.default.addObserver(self,
-            selector:#selector(didEndPlayback),
-            name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
+                                                   selector: #selector(didEndPlayback),
+                                                   name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                                   object: nil)
             let videoURL = URL(string: extraData.flair ?? "")
             player = AVPlayer(url: videoURL!)
             playerLayer = AVPlayerLayer(player: player)
