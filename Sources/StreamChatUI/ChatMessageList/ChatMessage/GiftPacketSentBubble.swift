@@ -33,11 +33,12 @@ class GiftBubble: UITableViewCell {
     var content: ChatMessage?
     var isSender = false
     var player : AVPlayer!
-    var avPlayerLayer : AVPlayerLayer!
+    var playerLayer : AVPlayerLayer!
     public lazy var dateFormatter: DateFormatter = .makeDefault()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
         self.selectionStyle = .none
         self.backgroundColor = .clear
         setupUI()
@@ -160,9 +161,12 @@ class GiftBubble: UITableViewCell {
             return
         }
         if self.isVideoType(extraData.flair ?? "") {
+            NotificationCenter.default.addObserver(self,
+            selector:#selector(didEndPlayback),
+            name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
             let videoURL = URL(string: extraData.flair ?? "")
-            let player = AVPlayer(url: videoURL!)
-            let playerLayer = AVPlayerLayer(player: player)
+            player = AVPlayer(url: videoURL!)
+            playerLayer = AVPlayerLayer(player: player)
             playerLayer.frame = CGRect(x: 0, y: 0, width: 250, height: 250)
             playerLayer.videoGravity = .resizeAspectFill
             sentThumbImageView.layer.addSublayer(playerLayer)
@@ -277,5 +281,10 @@ class GiftBubble: UITableViewCell {
             return
         }
         NotificationCenter.default.post(name: .claimGiftCardPacketAction, object: nil, userInfo: extraData)
+    }
+
+    @objc func didEndPlayback(notification: Notification) {
+        player.seek(to: .zero)
+        player.play()
     }
 }
