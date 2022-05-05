@@ -27,7 +27,7 @@ class WalletRequestPayBubble: UITableViewCell {
     var content: ChatMessage?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
     var isSender = false
-    var channel: ChatChannel?
+    var channelId: ChannelId?
     var chatClient: ChatClient?
     var client: ChatClient?
     var walletPaymentType: WalletAttachmentPayload.PaymentType = .pay
@@ -360,12 +360,11 @@ class WalletRequestPayBubble: UITableViewCell {
             userInfo["recipientName"] = requestedUserName(raw: payload.extraData)
             userInfo["recipientUserId"] = requestedUserId(raw: payload.extraData)
             userInfo["requestedImageUrl"] = requestedImageUrl(raw: payload.extraData)
+            userInfo["paymentTheme"] = requestedThemeURL(raw: payload.extraData)
+            if let channelId = channelId {
+                userInfo["channelId"] = channelId.description
+            }
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
-        } else {
-            guard let channelId = channel?.cid else { return }
-            var userInfo = [String: Any]()
-            userInfo["channelId"] = channelId
-            NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
         }
     }
 }

@@ -295,6 +295,15 @@ extension ChatMessage {
 }
 
 public extension ChatMessage {
+    static func payRequestPaidSuccessfully(messageID: String) {
+        UserDefaults.standard.setValue(true, forKey: "\(messageID)_Paid")
+    }
+    func isPayRequestPaid() -> Bool {
+        return UserDefaults.standard.bool(forKey: "\(id)_Paid")
+    }
+}
+
+public extension ChatMessage {
     /// Returns all the attachments with the payload of the provided type.
     ///
     /// - Important: Attachments are loaded lazily and cached to maintain high performance.
