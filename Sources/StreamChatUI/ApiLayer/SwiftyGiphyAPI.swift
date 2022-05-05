@@ -13,14 +13,6 @@ typealias GiphyMultipleGIFResponseBlock = (_ error: NSError?, _ response: GiphyR
 fileprivate typealias GiphyAPIResponseBlock = (_ error: NSError?, _ response: Data?) -> Void
 fileprivate let kGiphyUnknownResponseError = NSLocalizedString("The server returned an unknown response.", comment: "Error from server")
 
-public enum SwiftyGiphyAPIContentRating: String {
-    case y = "y"
-    case g = "g"
-    case pg = "pg"
-    case pg13 = "pg-13"
-    case r = "r"
-}
-
 public class SwiftyGiphyAPI {
     
     /// Access the Giphy API through the shared singleton.
@@ -28,10 +20,6 @@ public class SwiftyGiphyAPI {
     
     /// Before you can use SwiftyGiphy, you need to set your API key.
     public var apiKey = ChatClientConfiguration.shared.giphyApiKey
-    
-    /// This can be overriden to use a custom API base url, in the scenario that you want requests to pass through your own server.
-    /// - Note:
-    ///     - Changing this URL will disable the requirement for an API key to be set on SwiftyGiphyAPI. You can still set one if you want, but we allow it to be nil in case you want the API key to live on your server.
     public var giphyAPIBase: URL = URL(string: "https://api.giphy.com/v1/gifs/")!
     
     /**
@@ -132,14 +120,13 @@ extension SwiftyGiphyAPI {
     ///   - completion: The completion block to call when done
     func getTrending(
         limit: Int = 25,
-        rating: SwiftyGiphyAPIContentRating = .pg13,
         offset: Int? = nil,
         completion: GiphyMultipleGIFResponseBlock?
     ) {
         var params = [String : Any]()
         params["api_key"] = apiKey
         params["limit"] = limit
-        params["rating"] = rating.rawValue
+        params["rating"] = "pg-13"
         if let currentOffset = offset {
             params["offset"] = currentOffset
         }
@@ -174,7 +161,6 @@ extension SwiftyGiphyAPI {
     func getSearch(
         searchTerm: String,
         limit: Int = 25,
-        rating: SwiftyGiphyAPIContentRating = .pg13,
         offset: Int? = nil,
         completion: GiphyMultipleGIFResponseBlock?
     ) {
@@ -182,7 +168,7 @@ extension SwiftyGiphyAPI {
         params["api_key"] = apiKey
         params["q"] = searchTerm
         params["limit"] = limit
-        params["rating"] = rating.rawValue
+        params["rating"] = "pg-13"
         if let currentOffset = offset {
             params["offset"] = currentOffset
         }

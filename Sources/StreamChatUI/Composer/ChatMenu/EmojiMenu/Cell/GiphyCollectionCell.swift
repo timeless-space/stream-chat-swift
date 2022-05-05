@@ -13,7 +13,7 @@ import GiphyUISDK
 import UIKit
 import Stipop
 
-class GiphyCell: UICollectionViewCell {
+class GiphyCollectionCell: UICollectionViewCell {
 
     // MARK: - Variables
     private var mediaView: GPHMediaView!
@@ -21,10 +21,6 @@ class GiphyCell: UICollectionViewCell {
     // MARK: - Lifecycle Overrides
     override init(frame: CGRect) {
         super.init(frame: frame)
-        mediaView = GPHMediaView()
-        mediaView.translatesAutoresizingMaskIntoConstraints = false
-        mediaView.backgroundColor = Appearance.default.colorPalette.emojiBg
-        self.embed(mediaView, insets: .init(top: 4, leading: 0, bottom: 0, trailing: 4))
     }
 
     required init?(coder: NSCoder) {
@@ -33,7 +29,11 @@ class GiphyCell: UICollectionViewCell {
 
     // MARK: - Custom functions
     func configureCell(giphyModel: GiphyModelItem?) {
-        mediaView.clear()
+        clearData()
+        mediaView = GPHMediaView()
+        mediaView.translatesAutoresizingMaskIntoConstraints = false
+        mediaView.backgroundColor = Appearance.default.colorPalette.emojiBg
+        self.embed(mediaView, insets: .init(top: 4, leading: 0, bottom: 0, trailing: 4))
         guard let giphyModel = giphyModel else {
             return
         }
@@ -41,6 +41,9 @@ class GiphyCell: UICollectionViewCell {
     }
 
     func clearData() {
-        mediaView.clear()
+        if mediaView != nil {
+            mediaView.clear()
+            mediaView.removeFromSuperview()
+        }
     }
 }

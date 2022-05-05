@@ -4,10 +4,9 @@ import Foundation
 struct GiphyResponse: Codable {
     let data: [GiphyModelItem]
     let pagination: GiphyPagination
-    let meta: GiphyMeta
 }
 
-// MARK: - Datum
+// MARK: - Data
 struct GiphyModelItem: Codable {
     let type, id: String
     let images: Images
@@ -30,17 +29,6 @@ struct Images: Codable {
 // MARK: - FixedHeight
 struct FixedHeight: Codable {
     let url: String
-}
-
-// MARK: - Meta
-struct GiphyMeta: Codable {
-    let status: Int
-    let msg, responseID: String
-
-    enum CodingKeys: String, CodingKey {
-        case status, msg
-        case responseID = "response_id"
-    }
 }
 
 // MARK: - GiphyPagination
