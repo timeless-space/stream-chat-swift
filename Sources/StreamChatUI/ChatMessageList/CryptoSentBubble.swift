@@ -27,8 +27,16 @@ class CryptoSentBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
 
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -36,10 +44,10 @@ class CryptoSentBubble: UITableViewCell {
         viewContainer.clipsToBounds = true
         contentView.addSubview(viewContainer)
         NSLayoutConstraint.activate([
-            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
-            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding),
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth),
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8),
+            viewContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
+            viewContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Constants.MessageTopPadding),
+            viewContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: cellWidth),
+            viewContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
         ])
 
         subContainer = UIView()
@@ -107,7 +115,6 @@ class CryptoSentBubble: UITableViewCell {
         ])
         blockExplorerButton.transform = .mirrorY
 
-
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
@@ -121,23 +128,14 @@ class CryptoSentBubble: UITableViewCell {
         timestampLabel.transform = .mirrorY
     }
 
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-
     private var cellWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.3
     }
 
     @objc private func check() {
-        guard let walletData = getOneWalletExtraData() else {
-            return
-        }
-        if let txID = walletData["txId"] {
-            let rawTxId = fetchRawData(raw: txID) as? String ?? ""
-            if let blockExpURL = URL(string: "\(Constants.blockExplorer)\(rawTxId)") {
-                blockExpAction?(blockExpURL)
-            }
+        let rawTxId = content?.extraData.sentOneTxId as? String ?? ""
+        if let blockExpURL = URL(string: "\(Constants.blockExplorer)\(rawTxId)") {
+            blockExpAction?(blockExpURL)
         }
     }
 
@@ -192,24 +190,18 @@ class CryptoSentBubble: UITableViewCell {
     }
 
     private func configOneWallet() {
-        guard let walletData = getOneWalletExtraData() else {
-            return
-        }
-        if let toUserName = walletData["recipientName"] {
-            let recipientName = fetchRawData(raw: toUserName) as? String ?? ""
-            let imageAttachment = NSTextAttachment()
-            imageAttachment.image = Appearance.default.images.senOneImage
-            let fullString = NSMutableAttributedString(string: "You ")
-            fullString.append(NSAttributedString(attachment: imageAttachment))
-            fullString.append(NSAttributedString(string: " \(recipientName)"))
-            descriptionLabel.attributedText = fullString
-        }
-        if let amount = walletData["transferAmount"] {
-            let one = fetchRawData(raw: amount) as? Double ?? 0
-            sentCryptoLabel.text = "SENT: \(NumberUtils.formatONE(one)) ONE"
-        }
+        let recipientName = content?.extraData.sentOneRecipientName ?? ""
+        let imageAttachment = NSTextAttachment()
+        imageAttachment.image = Appearance.default.images.senOneImage
+        let fullString = NSMutableAttributedString(string: "You ")
+        fullString.append(NSAttributedString(attachment: imageAttachment))
+        fullString.append(NSAttributedString(string: " \(recipientName)"))
+        descriptionLabel.attributedText = fullString
+        let one = content?.extraData.sentOneTransferAmount ?? "0"
+        sentCryptoLabel.text = "SENT: \(one.formattedOneBalance) ONE"
         let defaultURL = WalletAttachmentPayload.PaymentTheme.none.getPaymentThemeUrl()
-        if let themeURL = requestedThemeURL(raw: walletData), let imageUrl = URL(string: themeURL) {
+        let themeURL = content?.extraData.sentOnePaymentTheme ?? "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
+        if let imageUrl = URL(string: themeURL) {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
@@ -218,48 +210,5 @@ class CryptoSentBubble: UITableViewCell {
         } else {
             Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
         }
-    }
-
-    private func requestedThemeURL(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["paymentTheme"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
-        }
-    }
-
-    private func getOneWalletExtraData() -> [String: RawJSON]? {
-        if let extraData = content?.extraData["oneWalletTx"] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
-        }
-    }
-}
-
-public func fetchRawData(raw: RawJSON) -> Any? {
-    switch raw {
-    case .number(let double):
-        return double
-    case .string(let string):
-        return string
-    case .bool(let bool):
-        return bool
-    case .dictionary(let dictionary):
-        return dictionary
-    case .array(let array):
-        return array
-    case .nil:
-        return nil
-    @unknown default:
-        return nil
     }
 }
