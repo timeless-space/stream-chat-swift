@@ -6,17 +6,13 @@
 //  Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
-import Foundation
-import StreamChatUI
-import StreamChat
 import GiphyUISDK
 import UIKit
-import Stipop
 
 class GiphyCollectionCell: UICollectionViewCell {
 
     // MARK: - Variables
-    private var mediaView: GPHMediaView!
+    private var mediaView: GPHMediaView?
 
     // MARK: - Lifecycle Overrides
     override init(frame: CGRect) {
@@ -31,19 +27,19 @@ class GiphyCollectionCell: UICollectionViewCell {
     func configureCell(giphyModel: GiphyModelItem?) {
         clearData()
         mediaView = GPHMediaView()
-        mediaView.translatesAutoresizingMaskIntoConstraints = false
-        mediaView.backgroundColor = Appearance.default.colorPalette.emojiBg
-        self.embed(mediaView, insets: .init(top: 4, leading: 0, bottom: 0, trailing: 4))
+        mediaView?.translatesAutoresizingMaskIntoConstraints = false
+        mediaView?.backgroundColor = Appearance.default.colorPalette.emojiBg
+        self.embed(mediaView ?? UIView(), insets: .init(top: 4, leading: 0, bottom: 0, trailing: 4))
         guard let giphyModel = giphyModel else {
             return
         }
-        mediaView.loadAsset(at: giphyModel.images.fixedWidthDownsampled.url)
+        mediaView?.loadAsset(at: giphyModel.images.fixedWidthDownsampled.url)
     }
 
-    func clearData() {
+    private func clearData() {
         if mediaView != nil {
-            mediaView.clear()
-            mediaView.removeFromSuperview()
+            mediaView?.clear()
+            mediaView?.removeFromSuperview()
         }
     }
 }

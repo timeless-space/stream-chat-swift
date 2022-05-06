@@ -155,9 +155,8 @@ class EmojiContainerViewController: UIViewController {
     }
 
     private func setupGifLayout() {
-        let gifVc = GifViewController(with: false)
+        let gifVc = GifViewController(with: false, viewModel: GifViewModel())
         addChildViewController(gifVc, embedIn: view)
-        return
     }
 
     private func showNoStickerView() {
