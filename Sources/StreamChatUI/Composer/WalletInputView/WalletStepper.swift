@@ -317,9 +317,13 @@ class WalletStepper: UIView {
         var walletInputAmount = "\(self.lblAmount.text ?? "")" + numberValue
         guard walletInputAmount.contains(decimalSeparator) else { return true }
         if currencyType == .ONE {
-            return !(walletInputAmount.components(separatedBy: decimalSeparator).last?.count ?? 0 > 3)
+            return !(walletInputAmount.components(
+                separatedBy: decimalSeparator).last?.count ?? 0 > NumberUtils.Constant.coin.maximumFractionDigits
+            )
         } else {
-            return !(walletInputAmount.components(separatedBy: decimalSeparator).last?.count ?? 0 > 2)
+            return !(walletInputAmount.components(
+                separatedBy: decimalSeparator).last?.count ?? 0 > NumberUtils.Constant.currency.maximumFractionDigits
+            )
         }
     }
 
@@ -329,7 +333,7 @@ class WalletStepper: UIView {
         currencyFormatter.numberStyle = .currency
         currencyFormatter.currencySymbol = ""
         currencyFormatter.decimalSeparator = decimalSeparator
-        currencyFormatter.maximumFractionDigits = 4
+        currencyFormatter.maximumFractionDigits = NumberUtils.Constant.coin.maximumFractionDigits
         currencyFormatter.minimumFractionDigits = 0
         if let priceString = currencyFormatter.string(from: NSNumber(value: value)) {
             lblAmount.text = priceString
