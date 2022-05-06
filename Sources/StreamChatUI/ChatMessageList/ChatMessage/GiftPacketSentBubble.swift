@@ -12,6 +12,7 @@ import StreamChat
 import StreamChatUI
 import SwiftyGif
 import AVKit
+import BigInt
 
 class GiftBubble: UITableViewCell {
     public private(set) var viewContainer: UIView!
@@ -35,6 +36,12 @@ class GiftBubble: UITableViewCell {
     var player : AVPlayer!
     var playerLayer : AVPlayerLayer!
     public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var claimedFormatter: DateFormatter = .claimedFormatter
+
+    enum Constant {
+        static let oneWeiUnit = 1_000_000_000_000_000_000
+        static let tokenWeiUnit = 1_000_000
+    }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -233,7 +240,6 @@ class GiftBubble: UITableViewCell {
             .withoutAutoresizingMaskConstraints
         lblDetails.textAlignment = .center
         lblDetails.numberOfLines = 0
-        lblDetails.text = "Tap to claim the gift card"
         lblDetails.textColor = .white.withAlphaComponent(0.5)
         lblDetails.font = Appearance.default.fonts.body.withSize(13)
         return lblDetails
@@ -253,19 +259,29 @@ class GiftBubble: UITableViewCell {
             return
         }
         titleLabel.text = "Gift Card"
+        if let claimedTime = getClaimedAtTime() {
+            detailLabel.text = "Claimed at \(claimedTime)"
+        } else {
+            detailLabel.text = "Tap to claim the gift card"
+        }
         if let amount = extraData.giftAmount,
-           let symbol = extraData.symbol {
-            amountLabel.text = "\(amount.replacingOccurrences(of: ".0", with: "")) \(symbol)"
+        let bigInt = BigUInt(amount) {
+            if extraData.tokenAddress != nil {
+                let double = amountFromWeiUnit(amount: bigInt, weiUnit: Constant.tokenWeiUnit)
+                amountLabel.text = "\(double) USDC".replacingOccurrences(of: ".0", with: "")
+            } else {
+                let double = amountFromWeiUnit(amount: bigInt, weiUnit: Constant.oneWeiUnit)
+                amountLabel.text = "\(double) ONE".replacingOccurrences(of: ".0", with: "")
+            }
         }
     }
 
-    private func getEndTime() -> Date? {
-        let strEndTime = content?.extraData.giftEndTime ?? ""
-        if let date = ISO8601DateFormatter.redPacketExpirationFormatter.date(from: "\(strEndTime)") {
-            return date
-        } else {
-            return nil
-        }
+    private func getClaimedAtTime() -> String? {
+        let claimedAt = content?.extraData.claimedAt ?? ""
+        let dateFormatterGet = DateFormatter()
+        dateFormatterGet.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX"
+        guard let datee = dateFormatterGet.date(from: claimedAt) else { return nil }
+        return claimedFormatter.string(from: datee)
     }
 
     private func isAllowToPick() -> Bool {
@@ -277,9 +293,24 @@ class GiftBubble: UITableViewCell {
         return true
     }
 
+    private func decimalAmountFromWeiUnit(amount: BigUInt, weiUnit: Int) -> Decimal {
+        let amountDict = amount.quotientAndRemainder(dividingBy: BigUInt(weiUnit))
+        return (Decimal(string: String(amountDict.quotient))!
+                + Decimal(string: String(amountDict.remainder))! / Decimal(weiUnit))
+    }
+
+    private func amountFromWeiUnit(amount: BigUInt, weiUnit: Int) -> Double {
+        // rounding down to 10 decimal digits to avoid rounding issue
+        var decimalAmount = decimalAmountFromWeiUnit(amount: amount, weiUnit: weiUnit)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &decimalAmount, 10, .down)
+        return NSDecimalNumber(decimal: rounded).doubleValue
+    }
+
     @objc func didTap(tap: UITapGestureRecognizer) {
         guard isAllowToPick(),
               let extraData = content?.extraData,
+              extraData.claimedAt == nil,
               isSender == false else {
             return
         }

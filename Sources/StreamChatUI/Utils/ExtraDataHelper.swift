@@ -424,14 +424,6 @@ public extension Dictionary where Key == String, Value == RawJSON {
         }
     }
 
-    var giftMyImageUrl: String? {
-        if let myImageUrl = giftExtraData["myImageUrl"] {
-            return fetchRawData(raw: myImageUrl) as? String
-        } else {
-            return nil
-        }
-    }
-
     var giftChannelUsers: String? {
         if let channelUsers = giftExtraData["channelUsers"] {
             return fetchRawData(raw: channelUsers) as? String
@@ -441,7 +433,7 @@ public extension Dictionary where Key == String, Value == RawJSON {
     }
 
     var giftAmount: String? {
-        if let amount = giftExtraData["amount"] {
+        if let amount = giftExtraData["total_amount"] {
             return fetchRawData(raw: amount) as? String
         } else {
             return nil
@@ -465,7 +457,7 @@ public extension Dictionary where Key == String, Value == RawJSON {
     }
 
     var giftID: String? {
-        if let packetId = giftExtraData["packetId"] {
+        if let packetId = giftExtraData["id"] {
             return fetchRawData(raw: packetId) as? String
         } else {
             return nil
@@ -488,9 +480,17 @@ public extension Dictionary where Key == String, Value == RawJSON {
         }
     }
 
-    var symbol: String? {
-        if let symbol = giftExtraData["symbol"] {
+    var tokenAddress: String? {
+        if let symbol = giftExtraData["token_address"] {
             return fetchRawData(raw: symbol) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var claimedAt: String? {
+        if let claimedAt = self["claimed_at"] {
+            return fetchRawData(raw: claimedAt) as? String
         } else {
             return nil
         }
