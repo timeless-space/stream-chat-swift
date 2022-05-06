@@ -18,6 +18,9 @@ public struct Constants {
     public static let MessageLeftPadding: CGFloat = 8.0
     public static let MessageRightPadding: CGFloat = -8.0
     public static let MessageTopPadding: CGFloat = 15
+    public static var decimalSeparator: String {
+        return Locale.current.decimalSeparator ?? "."
+    }
 }
 
 public struct UserdefaultKey {
@@ -25,3 +28,17 @@ public struct UserdefaultKey {
     public static let visibleSticker = "visibleSticker"
     public static let recentSticker = "recentSticker"
 }
+
+// MARK: Constant key
+public let kExtraDataChannelDescription = "channelDescription"
+public let kExtraDataOneToOneChat = "OneToOneChat"
+public let kExtraDataIsGroupChat = "DataIsGroupChat"
+
+public let kInviteGroupID = "kInviteGroupID"
+public let kInviteId = "kInviteId"
+public let kInviteExpiryDate = "kInviteExpiryDate"
+
+public let kPrivateGroupPasscode = "kPrivateGroupPasscode"
+public let kPrivateGroupLat = "kPrivateGroupLat"
+public let kPrivateGroupLon = "kPrivateGroupLon"
+public let kGroupId = "kGroupId"

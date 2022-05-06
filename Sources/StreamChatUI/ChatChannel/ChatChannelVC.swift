@@ -13,15 +13,11 @@ extension Notification.Name {
     public static let hidePaymentOptions = Notification.Name("kStreamHidePaymentOptions")
     public static let showFriendScreen = Notification.Name("showFriendScreen")
     public static let generalGroupInviteLink = Notification.Name("kGeneralGoupeInviteLink")
+    public static let joinInviteGroup = Notification.Name("kJoinInviteGroup")
+    public static let createPrivateGroup = Notification.Name("kCreatePrivateGroup")
+    public static let joinPrivateGroup = Notification.Name("kJoinPrivateGroup")
+    public static let getPrivateGroup = Notification.Name("kGetPrivateGroup")
 }
-
-public let kExtraDataChannelDescription = "channelDescription"
-public let kExtraDataOneToOneChat = "OneToOneChat"
-public let kExtraDataIsGroupChat = "DataIsGroupChat"
-
-public let kInviteGroupID = "kInviteGroupID"
-public let kInviteExpiryDate = "kInviteExpiryDate"
-
 
 /// Controller responsible for displaying the channel messages.
 @available(iOSApplicationExtension, unavailable)
@@ -591,8 +587,7 @@ open class ChatChannelVC:
             guard let qrCodeVc: GroupQRCodeVC = GroupQRCodeVC.instantiateController(storyboard: .PrivateGroup) else {
                 return
             }
-            qrCodeVc.strContent = weakSelf.getGroupLink()
-            qrCodeVc.groupName = weakSelf.channelController?.channel?.name
+            qrCodeVc.channelController = weakSelf.channelController
             qrCodeVc.modalPresentationStyle = .fullScreen
             UIApplication.shared.keyWindow?.rootViewController?.present(qrCodeVc, animated: true, completion: nil)
         }
@@ -872,6 +867,7 @@ open class ChatChannelVC:
             }
             qrCodeVc.strContent = self.getGroupLink()
             qrCodeVc.groupName = self.channelController?.channel?.name
+            qrCodeVc.channelController = self.channelController
             qrCodeVc.modalPresentationStyle = .fullScreen
             UIApplication.shared.keyWindow?.rootViewController?.present(qrCodeVc, animated: true, completion: nil)
         }

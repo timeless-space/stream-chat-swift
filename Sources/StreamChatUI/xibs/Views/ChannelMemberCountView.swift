@@ -26,9 +26,9 @@ class ChannelMemberCountView: UIView {
     // MARK: - Functions
     func setParticipantsCount(_ count: Int) {
         if count <= 1 {
-            lblparticipantsCount.text = "\(count) participant"
+            lblparticipantsCount.text = "\(count) member"
         } else {
-            lblparticipantsCount.text = "\(count) participants"
+            lblparticipantsCount.text = "\(count) members"
         }
     }
 }
