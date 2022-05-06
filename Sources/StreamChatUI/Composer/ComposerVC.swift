@@ -519,6 +519,7 @@ open class ComposerVC: _ViewController,
         }
         walletInputView?.didRequestAction = { [weak self] (amount, type, theme) in
             guard let `self` = self else { return }
+            self.content.attachments = []
             if type == .request {
                 self.addWalletAttachment(amount: amount, paymentType: type, paymentTheme: theme)
             } else {
@@ -602,9 +603,27 @@ open class ComposerVC: _ViewController,
             channelController?.sendStopTypingEvent()
         } else {
             createNewMessage(text: text)
+            let payRequestAttachment = content.attachments.filter({ $0.type == .wallet })
+            if !payRequestAttachment.isEmpty && !text.isBlank {
+                sendTextMessageForPayRequest(text: text)
+            }
         }
         content.clear()
         self.composerView.leadingContainer.isHidden = false
+    }
+
+    private func sendTextMessageForPayRequest(text: String) {
+        let mentionedUsers = content.mentionedUsers.map(\.id)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.channelController?.createNewMessage(
+                text: text,
+                pinning: nil,
+                attachments: [],
+                mentionedUserIds: mentionedUsers,
+                quotedMessageId: nil
+            )
+        }
     }
 
     @objc open func showEmojiMenu(_ sender: UIButton) {
