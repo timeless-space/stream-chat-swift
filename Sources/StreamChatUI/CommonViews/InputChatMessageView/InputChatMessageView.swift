@@ -102,7 +102,7 @@ open class InputChatMessageView: _View, ComponentsProvider, AppearanceProvider {
         quotedMessageView.isHidden = true
         attachmentsViewContainer.isHidden = true
         inputTextContainer.isLayoutMarginsRelativeArrangement = true
-        inputTextContainer.alignment = .center
+        inputTextContainer.alignment = .bottom
         inputTextContainer.spacing = 6
         inputTextContainer.directionalLayoutMargins = .init(top: 0, leading: 6, bottom: 0, trailing: 6)
         inputTextContainer.addArrangedSubview(commandLabelView)
@@ -126,7 +126,7 @@ open class InputChatMessageView: _View, ComponentsProvider, AppearanceProvider {
         sendButton.pin(anchors: [.width], to: 35)
         sendButton.pin(anchors: [.height], to: 40)
         emojiButton.pin(anchors: [.width], to: 30)
-        emojiButton.pin(anchors: [.height], to: 30)
+        emojiButton.pin(anchors: [.height], to: 40)
     }
 
     override open func updateContent() {

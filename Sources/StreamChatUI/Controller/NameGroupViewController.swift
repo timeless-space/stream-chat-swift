@@ -83,7 +83,7 @@ public class NameGroupViewController: ChatBaseVC {
         }
         let name = self.nameField.text ?? ""
         let description = self.groupDescriptionField.text ?? ""
-        if name.isBlank || name.containsEmoji || description.containsEmoji {
+        if name.isBlank {
             self.btnNext?.isHidden = true
         } else {
             self.btnNext?.isHidden = false
@@ -98,10 +98,6 @@ public class NameGroupViewController: ChatBaseVC {
         view.endEditing(true)
         guard let name = nameField.text, !name.isEmpty else {
             Snackbar.show(text: "Group name cannot be blank")
-            return
-        }
-        guard name.containsEmoji == false else {
-            Snackbar.show(text: "Please enter valid group name")
             return
         }
         let groupId = UUID().uuidString
