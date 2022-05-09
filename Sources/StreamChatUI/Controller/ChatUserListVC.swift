@@ -101,6 +101,7 @@ extension ChatUserListVC {
         tableView?.register(TableViewCellChatUser.nib, forCellReuseIdentifier: TableViewCellChatUser.identifier)
         tableView?.register(TableViewHeaderCreateChat.nib, forCellReuseIdentifier: TableViewHeaderCreateChat.reuseID)
         tableView?.register(TableViewCellEmptyChatListData.nib, forCellReuseIdentifier: TableViewCellEmptyChatListData.identifier)
+        tableView?.register(TableViewCellShimmerEffect.nib, forCellReuseIdentifier: TableViewCellShimmerEffect.identifier)
         // adding table view to container view
         tableView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: UIView.safeAreaBottom, right: 0)
         containerView.addSubview(tableView!)
@@ -331,15 +332,14 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             cell.configureCell()
             return cell
         case .loadingData:
+            let reuseID = TableViewCellShimmerEffect.identifier
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TableViewCellChatUser.identifier,
-                for: indexPath) as? TableViewCellChatUser else {
+                withIdentifier: reuseID,
+                for: indexPath) as? TableViewCellShimmerEffect else {
                     return UITableViewCell()
                 }
             cell.backgroundColor = .clear
             cell.selectedBackgroundView = nil
-            cell.nameLabel.text = "loading..."
-            cell.descriptionLabel.text = "loading..."
             cell.showShimmer()
             return cell
         case .createChatHeader:
@@ -353,14 +353,16 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             header.bCallbackGroupWeHere = bCallbackGroupWeHere
             header.bCallbackGroupJoinViaQR = bCallbackGroupJoinViaQR
             header.selectionStyle = .none
-            header.sortingContainerView.isHidden = viewModel.filteredUsers.count == 0
+            header.labelSortingType.isHidden = false
+            if viewModel.dataLoadingState == .completed {
+                header.labelSortingType.isHidden = viewModel.filteredUsers.count == 0
+            }
             return header
         case .noHeader, .alphabetHeader:
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: TableViewCellChatUser.identifier, for: indexPath) as? TableViewCellChatUser else {
                     return UITableViewCell()
                 }
-            cell.hideShimmer()
             var user: ChatUser? = sectionWiseList[indexPath.section].users[indexPath.row]
             if user == nil {
                 return UITableViewCell.init(frame: .zero)
@@ -379,9 +381,10 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             }
             return cell
         case .pagination:
+            let reuseID = TableViewCellShimmerEffect.identifier
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TableViewCellChatUser.identifier,
-                for: indexPath) as? TableViewCellChatUser else {
+                withIdentifier: reuseID,
+                for: indexPath) as? TableViewCellShimmerEffect else {
                     return UITableViewCell()
                 }
             cell.backgroundColor = .clear
@@ -571,14 +574,6 @@ public enum Em_ChatUserListFilterTypes: Hashable {
         case .sortByName: return "SORTED BY NAME"
         case .sortByLastSeen: return "SORTED BY LAST SEEN TIME"
         case .sortByAtoZ: return ""
-        }
-    }
-    public var getSearchQuery: UserListQuery {
-        switch self {
-        case .sortByName,.sortByAtoZ:
-            return UserListQuery(filter: .exists(.id), sort: [.init(key: .name, isAscending: true)])
-        case .sortByLastSeen:
-            return UserListQuery(filter: .exists(.id), sort: [.init(key: .lastActivityAt, isAscending: false)])
         }
     }
 }
