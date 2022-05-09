@@ -252,9 +252,7 @@ class WalletRequestPayBubble: UITableViewCell {
             userInfo["recipientUserId"] = payload.extraData?.recipientUserId
             userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
             userInfo["paymentTheme"] = payload.extraData?.sentOnePaymentTheme
-            if let channelId = channelId {
-                userInfo["channelId"] = channelId.description
-            }
+            userInfo["channelId"] = channelId
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         }
     }
