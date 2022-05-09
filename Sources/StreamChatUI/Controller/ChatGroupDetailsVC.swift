@@ -309,7 +309,7 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
             return cell
         case .userList:
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TableViewCellChatUser.reuseId,
+                withIdentifier: TableViewCellChatUser.identifier,
                 for: indexPath) as? TableViewCellChatUser else {
                       return UITableViewCell()
                   }
@@ -413,6 +413,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
                 return
             }
             qrCodeVc.groupName = channelController.channel?.name
+            qrCodeVc.channelController = channelController
             qrCodeVc.modalPresentationStyle = .fullScreen
             if channelController.channel?.type == .dao {
                 qrCodeVc.strContent = channelController.channel?.extraData.daoJoinLink

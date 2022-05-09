@@ -98,7 +98,7 @@ extension ChatUserListVC {
         tableView?.estimatedRowHeight = 44.0
         tableView?.rowHeight = UITableView.automaticDimension
         tableView?.register(TableViewHeaderAlphabetSection.nib, forHeaderFooterViewReuseIdentifier: TableViewHeaderAlphabetSection.identifier)
-        tableView?.register(TableViewCellChatUser.nib, forCellReuseIdentifier: TableViewCellChatUser.reuseId)
+        tableView?.register(TableViewCellChatUser.nib, forCellReuseIdentifier: TableViewCellChatUser.identifier)
         tableView?.register(TableViewHeaderCreateChat.nib, forCellReuseIdentifier: TableViewHeaderCreateChat.reuseID)
         tableView?.register(TableViewCellEmptyChatListData.nib, forCellReuseIdentifier: TableViewCellEmptyChatListData.identifier)
         tableView?.register(TableViewCellShimmerEffect.nib, forCellReuseIdentifier: TableViewCellShimmerEffect.identifier)
@@ -343,8 +343,9 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             cell.showShimmer()
             return cell
         case .createChatHeader:
-            let reuseID = TableViewHeaderCreateChat.reuseID
-            guard let header = tableView.dequeueReusableCell(withIdentifier: reuseID) as? TableViewHeaderCreateChat else { return UITableViewCell.init(frame: .zero)}
+            guard let header = tableView.dequeueReusableCell(
+                withIdentifier: TableViewHeaderCreateChat.identifier) as? TableViewHeaderCreateChat
+            else { return UITableViewCell.init(frame: .zero)}
             header.labelSortingType.text = sortType.getTitle
             header.backgroundColor = .clear
             header.bCallbackGroupCreate = bCallbackGroupCreate
@@ -357,10 +358,9 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
                 header.labelSortingType.isHidden = viewModel.filteredUsers.count == 0
             }
             return header
-        case .noHeader,.alphabetHeader:
-            let reuseID = TableViewCellChatUser.reuseId
+        case .noHeader, .alphabetHeader:
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: reuseID, for: indexPath) as? TableViewCellChatUser else {
+                withIdentifier: TableViewCellChatUser.identifier, for: indexPath) as? TableViewCellChatUser else {
                     return UITableViewCell()
                 }
             var user: ChatUser? = sectionWiseList[indexPath.section].users[indexPath.row]

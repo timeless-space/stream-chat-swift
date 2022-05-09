@@ -8,7 +8,7 @@
 
 import UIKit
 
-public protocol DPOTPViewDelegate {
+public protocol DPOTPViewDelegate: class {
     func dpOTPViewAddText(_ text:String , at position:Int)
     func dpOTPViewRemoveText(_ text:String , at position:Int)
     func dpOTPViewChangePositionAt(_ position:Int)
@@ -110,7 +110,7 @@ public protocol DPOTPViewDelegate {
     open dynamic var inputViewForAll: UIView?
     open dynamic var inputAccessoryViewForAll: UIView?
     
-    open dynamic var dpOTPViewDelegate : DPOTPViewDelegate?
+    open dynamic weak var dpOTPViewDelegate : DPOTPViewDelegate?
     open dynamic var keyboardType:UIKeyboardType = UIKeyboardType.asciiCapableNumberPad
     
     open dynamic var text : String? {
