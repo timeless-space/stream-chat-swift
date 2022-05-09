@@ -12,34 +12,59 @@ import Combine
 typealias GiphyApiResponseCompletion = (_ isSuccess: Bool, _ response: GiphyResponse?) -> Void
 
 @available(iOS 13.0, *)
-class GifViewModel: NSObject {
+class GifViewModel: ObservableObject {
 
     private var apiHandler = SwiftyGiphyApiCallCombine.shared
     var trendingGifs:[GiphyModelItem] = []
     var searchGifs:[GiphyModelItem] = []
-    var latestTrendingResponse: GiphyResponse?
-    var latestSearchResponse: GiphyResponse?
+    var isSearch = false
+    var scrollToTop = false
+    var isSearchActive = false
+    private var currentSearchText = ""
+    @Published var latestTrendingResponse: GiphyResponse?
+    @Published var latestSearchResponse: GiphyResponse?
+    @Published var apiError: Bool?
+    @Published var searchingText: String = ""
     var currentNetworkCalls = Set<AnyCancellable>()
+    var callSearchApi: (() -> Void)?
 
-    func getTrendingApiCalls(currentTrendingOffset: Int, completion: @escaping GiphyApiResponseCompletion) {
-        apiHandler.getTrending(req: RequestGetSearch(offset: currentTrendingOffset)).sink(receiveValue: { result in
+    init() {
+        $searchingText
+            .debounce(for: 0.5, scheduler: RunLoop.main)
+            .subscribe(on: RunLoop.main)
+            .sink { [weak self] result in
+                guard let `self` = self else { return }
+                if result == "" {
+                    return
+                }
+                self.isSearchActive = true
+                self.currentSearchText = result
+                self.callSearchApi?()
+            }
+            .store(in: &currentNetworkCalls)
+    }
+
+    func getTrendingApiCall() {
+        apiHandler.getTrending(req: RequestGetSearch(offset: trendingGifs.count)).sink(receiveValue: { [weak self] result in
+            guard let `self` = self else { return }
             switch result {
             case .success(let giphyResponse):
-                completion(true, giphyResponse)
+                self.latestTrendingResponse = giphyResponse
             case .failure:
-                completion(false, nil)
+                self.apiError = true
             default: break
             }
         }).store(in: &currentNetworkCalls)
     }
 
-    func getSearchApiCalls(currentSearchText: String, currentSearchOffset: Int, completion: @escaping GiphyApiResponseCompletion) {
-        apiHandler.getSearch(req: RequestGetSearch(searchText: currentSearchText, offset: currentSearchOffset)).sink(receiveValue: { result in
+    func getSearchApiCall() {
+        apiHandler.getSearch(req: RequestGetSearch(searchText: currentSearchText, offset: searchGifs.count)).sink(receiveValue: { [weak self] result in
+            guard let `self` = self else { return }
             switch result {
             case .success(let giphyResponse):
-                completion(true, giphyResponse)
+                self.latestSearchResponse = giphyResponse
             case .failure:
-                completion(false, nil)
+                self.apiError = true
             default: break
             }
         })
