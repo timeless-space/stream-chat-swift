@@ -23,6 +23,10 @@ class GiftBubble: UITableViewCell {
     public private(set) var amountLabel: UILabel!
     public private(set) var detailLabel: UILabel!
     public private(set) var titleLabel: UILabel!
+    public private(set) var uiimage = UIImageView()
+    public private(set) var videoView = UIView()
+    public lazy var stickerContainer = ContainerStackView(axis: .vertical)
+            .withoutAutoresizingMaskConstraints
     private var detailsStack: UIStackView!
 
     private var leadingAnchorForSender: NSLayoutConstraint?
@@ -84,18 +88,17 @@ class GiftBubble: UITableViewCell {
             subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
         ])
 
-        sentThumbImageView = UIImageView()
-        sentThumbImageView.backgroundColor = .black
-        sentThumbImageView.transform = .mirrorY
-        sentThumbImageView.contentMode = .scaleAspectFill
-        sentThumbImageView.translatesAutoresizingMaskIntoConstraints = false
-        sentThumbImageView.clipsToBounds = true
-        subContainer.addSubview(sentThumbImageView)
+        stickerContainer.backgroundColor = .black
+        stickerContainer.transform = .mirrorY
+        stickerContainer.contentMode = .scaleAspectFill
+        stickerContainer.translatesAutoresizingMaskIntoConstraints = false
+        stickerContainer.clipsToBounds = true
+        subContainer.addSubview(stickerContainer)
         NSLayoutConstraint.activate([
-            sentThumbImageView.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
-            sentThumbImageView.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
-            sentThumbImageView.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
-            sentThumbImageView.heightAnchor.constraint(equalToConstant: 250)
+            stickerContainer.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
+            stickerContainer.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
+            stickerContainer.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
+            stickerContainer.heightAnchor.constraint(equalToConstant: 250)
         ])
 
         titleLabel = createTitleLabel()
@@ -114,7 +117,7 @@ class GiftBubble: UITableViewCell {
         NSLayoutConstraint.activate([
             detailsStack.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 10),
             detailsStack.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -31),
-            detailsStack.bottomAnchor.constraint(equalTo: sentThumbImageView.topAnchor, constant: -8),
+            detailsStack.bottomAnchor.constraint(equalTo: stickerContainer.topAnchor, constant: -8),
         ])
         detailLabel.translatesAutoresizingMaskIntoConstraints = false
         subContainer.addSubview(detailLabel)
@@ -163,10 +166,12 @@ class GiftBubble: UITableViewCell {
     }
 
     private func setFlair() {
-        guard let extraData = content?.extraData else {
+        guard let extraData = content?.extraData,
+        let flair = extraData.flair else {
             return
         }
-        if self.isVideoType(extraData.flair ?? "") {
+        stickerContainer.removeAllArrangedSubviews()
+        if self.isVideoType(flair) {
             NotificationCenter.default.removeObserver(self,
                                                       name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
                                                       object: nil)
@@ -179,12 +184,14 @@ class GiftBubble: UITableViewCell {
             playerLayer = AVPlayerLayer(player: player)
             playerLayer.frame = CGRect(x: 0, y: 0, width: 250, height: 250)
             playerLayer.videoGravity = .resizeAspectFill
-            sentThumbImageView.layer.addSublayer(playerLayer)
+            videoView.layer.addSublayer(playerLayer)
+            stickerContainer.addArrangedSubview(videoView)
             player.play()
         } else {
-            let url = URL(string: extraData.flair ?? "")!
+            let url = URL(string: flair)!
             let loader = UIActivityIndicatorView(style: .white)
-            sentThumbImageView.setGifFromURL(url, customLoader: loader)
+            uiimage.setGifFromURL(url, customLoader: loader)
+            stickerContainer.addArrangedSubview(uiimage)
         }
     }
 
