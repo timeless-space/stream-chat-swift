@@ -255,6 +255,13 @@ class WalletStepper: UIView {
 
     func insertNumber(numberValue: String?) {
         var amountString = ""
+        if let amount = Double(self.lblAmount.text?.replacingOccurrences(of: decimalSeparator, with: ".").trimmingCharacters(in: .whitespaces) ?? "0"),
+           amount >= maximumValue,
+           numberValue != nil,
+           numberValue == decimalSeparator {
+            self.requireUserAttention(on: lblAmount)
+            return
+        }
         guard isValidAmountInput(numberValue: numberValue ?? "") else { return }
         if let keyPadNumber = numberValue {
             var walletInputAmount = "\(self.lblAmount.text ?? "")".trimmingCharacters(in: .whitespaces)
