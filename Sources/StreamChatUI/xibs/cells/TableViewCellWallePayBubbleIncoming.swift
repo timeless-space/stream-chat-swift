@@ -12,7 +12,6 @@ import Nuke
 
 public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
     public static let nib: UINib = UINib.init(nibName: identifier, bundle: nil)
-    
     // MARK: -  @IBOutlet
     @IBOutlet private weak var viewContainer: UIView!
     @IBOutlet private weak var subContainer: UIView!

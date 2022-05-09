@@ -294,6 +294,13 @@ extension ChatMessage {
     }
 }
 
+public enum AdminMessageType: String {
+    case daoAddInitialSigners
+    case simpleGroupChat
+    case privateChat
+    case none
+}
+
 public extension ChatMessage {
     static func payRequestPaidSuccessfully(messageID: String) {
         UserDefaults.standard.setValue(true, forKey: "\(messageID)_Paid")

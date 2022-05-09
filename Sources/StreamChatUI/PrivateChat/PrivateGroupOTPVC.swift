@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreLocation
+import StreamChat
 
 open class PrivateGroupOTPVC: UIViewController {
 
