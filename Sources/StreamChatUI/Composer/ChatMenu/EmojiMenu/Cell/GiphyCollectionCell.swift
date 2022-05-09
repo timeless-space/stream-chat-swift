@@ -7,7 +7,6 @@
 //
 
 import GiphyUISDK
-import UIKit
 
 class GiphyCollectionCell: UICollectionViewCell {
 

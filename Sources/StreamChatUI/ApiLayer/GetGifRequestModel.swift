@@ -6,7 +6,7 @@
 //  Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
-class RequestGetSearch {
+class GetGifRequestModel {
 
     var apiKey: String?
     var searchText: String?

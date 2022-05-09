@@ -10,11 +10,11 @@ import UIKit
 import Combine
 
 @available(iOS 13.0, *)
-class SwiftyGiphyApiCallCombine: BaseRestAPI<SwiftyGiphyApiCallCombine.RequestType>, GiphyApiServiceProtocol {
+class SwiftyGiphyApiCallClient: BaseRestAPI<SwiftyGiphyApiCallClient.RequestType>, GiphyApiServiceProtocol {
 
-    static let shared: SwiftyGiphyApiCallCombine = SwiftyGiphyApiCallCombine()
+    static let shared: SwiftyGiphyApiCallClient = SwiftyGiphyApiCallClient()
 
-    func getSearch(req: RequestGetSearch) -> AnyPublisher<Result<GiphyResponse, Error>, Never> {
+    func getSearch(req: GetGifRequestModel) -> AnyPublisher<Result<GiphyResponse, Error>, Never> {
         return call(type: .getSearch(queryItems: req.searchQueryItems()), params: nil)
             .unwrapResultJSONFromAPI()
             .map { $0.data }
@@ -29,7 +29,7 @@ class SwiftyGiphyApiCallCombine: BaseRestAPI<SwiftyGiphyApiCallCombine.RequestTy
                     .eraseToAnyPublisher()
     }
 
-    func getTrending(req: RequestGetSearch) -> AnyPublisher<Result<GiphyResponse, Error>, Never> {
+    func getTrending(req: GetGifRequestModel) -> AnyPublisher<Result<GiphyResponse, Error>, Never> {
         return call(type: .getTrending(queryItems: req.trendingQueryItems()), params: nil)
             .unwrapResultJSONFromAPI()
             .map { $0.data }
@@ -54,7 +54,7 @@ class NetworkHelper {
 }
 
 @available(iOS 13.0, *)
-extension SwiftyGiphyApiCallCombine {
+extension SwiftyGiphyApiCallClient {
     enum RequestType: EndPointType {
         case getTrending(queryItems: [URLQueryItem])
         case getSearch(queryItems: [URLQueryItem])

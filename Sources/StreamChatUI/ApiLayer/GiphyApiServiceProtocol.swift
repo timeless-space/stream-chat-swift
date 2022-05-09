@@ -10,6 +10,6 @@ import Combine
 
 @available(iOS 13.0, *)
 protocol GiphyApiServiceProtocol {
-    func getSearch(req: RequestGetSearch) -> AnyPublisher<Result<GiphyResponse, Error>, Never>
-    func getTrending(req: RequestGetSearch) -> AnyPublisher<Result<GiphyResponse, Error>, Never>
+    func getSearch(req: GetGifRequestModel) -> AnyPublisher<Result<GiphyResponse, Error>, Never>
+    func getTrending(req: GetGifRequestModel) -> AnyPublisher<Result<GiphyResponse, Error>, Never>
 }

@@ -14,9 +14,9 @@ typealias GiphyApiResponseCompletion = (_ isSuccess: Bool, _ response: GiphyResp
 @available(iOS 13.0, *)
 class GifViewModel: ObservableObject {
 
-    private var apiHandler = SwiftyGiphyApiCallCombine.shared
-    var trendingGifs:[GiphyModelItem] = []
-    var searchGifs:[GiphyModelItem] = []
+    private var apiHandler = SwiftyGiphyApiCallClient.shared
+    var trendingGifs: [GiphyModelItem] = []
+    var searchGifs: [GiphyModelItem] = []
     var isSearch = false
     var scrollToTop = false
     var isSearchActive = false
@@ -45,7 +45,7 @@ class GifViewModel: ObservableObject {
     }
 
     func getTrendingApiCall() {
-        apiHandler.getTrending(req: RequestGetSearch(offset: trendingGifs.count)).sink(receiveValue: { [weak self] result in
+        apiHandler.getTrending(req: GetGifRequestModel(offset: trendingGifs.count)).sink(receiveValue: { [weak self] result in
             guard let `self` = self else { return }
             switch result {
             case .success(let giphyResponse):
@@ -58,7 +58,7 @@ class GifViewModel: ObservableObject {
     }
 
     func getSearchApiCall() {
-        apiHandler.getSearch(req: RequestGetSearch(searchText: currentSearchText, offset: searchGifs.count)).sink(receiveValue: { [weak self] result in
+        apiHandler.getSearch(req: GetGifRequestModel(searchText: currentSearchText, offset: searchGifs.count)).sink(receiveValue: { [weak self] result in
             guard let `self` = self else { return }
             switch result {
             case .success(let giphyResponse):
