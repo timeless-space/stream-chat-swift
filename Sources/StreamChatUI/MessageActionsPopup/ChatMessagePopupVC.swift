@@ -53,10 +53,13 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     private var actionMenuMaxHeight: CGFloat {
         return CGFloat(actionsController.messageActions.count * 50)
     }
+    /// actionMenuMaxHeight
+    private var topPadding: CGFloat {
+        return (UIView.safeAreaTop + 50)
+    }
 
     override open func setUp() {
         super.setUp()
-        
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTapOnView))
         tapRecognizer.cancelsTouchesInView = false
         view.addGestureRecognizer(tapRecognizer)
@@ -69,7 +72,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
 
     override open func setUpLayout() {
         guard messageViewFrame != nil else { return }
-        
         view.embed(blurView)
         view.embed(scrollView)
         setupUI(contentView: scrollView)
@@ -78,9 +80,10 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     }
 
     private func scrollToBottom()  {
-        let contentSizeHeight = (abs(messageContentView.frame.origin.y - messageContentViewPadding)
+        let contentSizeHeight = (abs(messageContentView.frame.origin.y)
                                  + messageContentView.frame.height
-                                 + actionMenuMaxHeight + messageContentViewPadding)
+                                 + actionMenuMaxHeight
+                                 + messageContentViewPadding)
         scrollView.contentSize = CGSize(width: UIScreen.main.bounds.width,
                                         height: contentSizeHeight)
         let point = CGPoint(x: 0, y: scrollView.contentSize.height
@@ -132,17 +135,18 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                         .pin(greaterThanOrEqualTo: view.leadingAnchor, constant: messageBubbleViewInsets.left),
                 ]
             }
+            let reactionViewTop = (reactionViewFrame.height > 0
+                                   ? messageContentViewPadding
+                                   - (reactionViewFrame.height - messageContentYPosition)
+                                   : messageContentViewPadding)
+
             if isScrollEnable() {
                 constraints += [
                     reactionsController.view.topAnchor.constraint(
                         equalTo: view.topAnchor,
-                        constant: UIScreen.main.bounds.midY),
+                        constant: reactionViewTop),
                 ]
             } else {
-                let reactionViewTop = (reactionViewFrame.height > 0
-                                       ? messageContentViewPadding
-                                       - (reactionViewFrame.height - messageContentYPosition)
-                                       : messageContentViewPadding)
                 constraints += [
                     reactionsController.view.bottomAnchor.constraint(
                         equalTo: messageContainerStackView.topAnchor,
@@ -171,7 +175,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
 
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
-            messageContentContainerView.heightAnchor.pin(greaterThanOrEqualToConstant: messageViewFrame.height)
+            messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
         ]
 
         let actionsContainerStackView = ContainerStackView()
@@ -212,12 +216,13 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             )
         }
 
-        let topSpacing = (UIView.safeAreaTop + 50)
-        if messageViewFrame.minY <= topSpacing || isScrollEnable() {
+        if messageViewFrame.minY <= topPadding || isScrollEnable() {
+            let topConstant = reactionViewFrame.height > 0 ? (reactionViewFrame.height / 2) :
+            20
             constraints += [
                 (messageContentContainerView).topAnchor
                     .pin(equalTo: contentView.topAnchor,
-                         constant: topSpacing)
+                         constant: isScrollEnable() ? topConstant : topPadding)
                     .with(priority: .streamAlmostRequire)
             ]
         } else {
