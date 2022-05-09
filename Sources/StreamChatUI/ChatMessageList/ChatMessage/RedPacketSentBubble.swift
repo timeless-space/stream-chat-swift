@@ -23,6 +23,10 @@ class RedPacketSentBubble: UITableViewCell {
     public private(set) var lblMax: UILabel!
     public private(set) var lblDetails: UILabel!
     public private(set) var lblExpire: UILabel!
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorSender: NSLayoutConstraint?
+    private var leadingAnchorReceiver: NSLayoutConstraint?
+    private var trailingAnchorReceiver: NSLayoutConstraint?
     private var detailsStack: UIStackView!
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
@@ -31,16 +35,16 @@ class RedPacketSentBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
 
-    func configureCell(isSender: Bool) {
-        self.isSender = isSender
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -50,14 +54,7 @@ class RedPacketSentBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
-        
+
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
         subContainer.backgroundColor = Appearance.default.colorPalette.background6
@@ -147,10 +144,33 @@ class RedPacketSentBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
+
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
+    }
+
+    func configData(isSender: Bool) {
+        self.isSender = isSender
+        handleBubbleConstraints(isSender)
+        if let createdAt = content?.createdAt {
+            timestampLabel?.text = dateFormatter.string(from: createdAt)
+        } else {
+            timestampLabel?.text = nil
+        }
+        configRedPacket()
     }
 
     private var cellWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.3
+    }
+
+    private func handleBubbleConstraints(_ isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        trailingAnchorSender?.isActive = isSender
+        leadingAnchorReceiver?.isActive = !isSender
+        trailingAnchorReceiver?.isActive = !isSender
     }
 
     private func createTimestampLabel() -> UILabel {
@@ -204,15 +224,6 @@ class RedPacketSentBubble: UITableViewCell {
             sentCryptoLabel.font = Appearance.default.fonts.footnote.withSize(11)
         }
         return sentCryptoLabel
-    }
-
-    func configData() {
-        if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
-        } else {
-            timestampLabel?.text = nil
-        }
-        configRedPacket()
     }
 
     private func configRedPacket() {

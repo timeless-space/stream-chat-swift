@@ -720,7 +720,13 @@ open class ComposerVC: _ViewController,
     }
 
     @objc open func clearContent(sender: UIButton) {
-        content.clear()
+        if content.state == .quote {
+            var newContent = Content.initial()
+            newContent.text = composerView.inputMessageView.textView.text
+            content = newContent
+        } else {
+            content.clear()
+        }
     }
 
     open func showPayment() {
