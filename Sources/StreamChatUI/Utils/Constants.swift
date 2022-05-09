@@ -28,3 +28,21 @@ public struct UserdefaultKey {
     public static let visibleSticker = "visibleSticker"
     public static let recentSticker = "recentSticker"
 }
+
+// MARK: Constant key
+public let kExtraDataChannelDescription = "channelDescription"
+public let kExtraDataOneToOneChat = "OneToOneChat"
+public let kExtraDataIsGroupChat = "DataIsGroupChat"
+
+public let kInviteGroupID = "kInviteGroupID"
+public let kInviteId = "kInviteId"
+public let kInviteExpiryDate = "kInviteExpiryDate"
+
+public let kPrivateGroupPasscode = "kPrivateGroupPasscode"
+public let kPrivateGroupLat = "kPrivateGroupLat"
+public let kPrivateGroupLon = "kPrivateGroupLon"
+public let kGroupId = "kGroupId"
+
+// MARK: - Base url's
+public let giphyBaseUrl = "https://api.giphy.com/"
+
