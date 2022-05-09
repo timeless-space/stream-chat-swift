@@ -195,28 +195,18 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         completion: @escaping ([UIImage], ChannelId)
             -> Void
     ) {
-        var placeholderAvatars: [UIImage] = []
-        
-        var placeholderImages = [
-            appearance.images.userAvatarPlaceholder1,
-            appearance.images.userAvatarPlaceholder2,
-            appearance.images.userAvatarPlaceholder3,
-            appearance.images.userAvatarPlaceholder4
-        ]
-        
+
         var avatarUrls: [URL] = []
         
         for url in urls.prefix(maxNumberOfImagesInCombinedAvatar) {
             if let avatarUrl = url {
                 avatarUrls.append(avatarUrl)
-            } else {
-                placeholderAvatars.append(placeholderImages.removeFirst())
             }
         }
         
         components.imageLoader.loadImages(
             from: avatarUrls,
-            placeholders: placeholderImages,
+            placeholders: [],
             imageCDN: imageCDN
         ) { images in
             completion(images, channelId)
