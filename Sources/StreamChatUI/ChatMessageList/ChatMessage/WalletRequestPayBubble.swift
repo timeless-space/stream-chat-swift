@@ -251,7 +251,7 @@ class WalletRequestPayBubble: UITableViewCell {
             userInfo["recipientName"] = payload.extraData?.recipientName
             userInfo["recipientUserId"] = payload.extraData?.recipientUserId
             userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
-            userInfo["paymentTheme"] = payload.extraData?.pay
+            userInfo["paymentTheme"] = payload.extraData?.sentOnePaymentTheme
             if let channelId = channelId {
                 userInfo["channelId"] = channelId.description
             }
