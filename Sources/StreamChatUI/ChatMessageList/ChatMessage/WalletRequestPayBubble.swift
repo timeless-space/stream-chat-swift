@@ -23,6 +23,10 @@ class WalletRequestPayBubble: UITableViewCell {
     public private(set) var pickUpButton: UIButton!
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorSender: NSLayoutConstraint?
+    private var leadingAnchorReceiver: NSLayoutConstraint?
+    private var trailingAnchorReceiver: NSLayoutConstraint?
     public var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
@@ -34,8 +38,7 @@ class WalletRequestPayBubble: UITableViewCell {
         
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
@@ -46,8 +49,9 @@ class WalletRequestPayBubble: UITableViewCell {
         return UIScreen.main.bounds.width * 0.3
     }
 
-    func configureCell(isSender: Bool) {
-        self.isSender = isSender
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -57,13 +61,6 @@ class WalletRequestPayBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -102,21 +99,7 @@ class WalletRequestPayBubble: UITableViewCell {
         descriptionLabel.transform = .mirrorY
         descriptionLabel.textAlignment = .center
 
-        walletPaymentType = content?.attachments(payloadType: WalletAttachmentPayload.self).first?.paymentType ?? .pay
-
         lblDetails = createDetailsLabel()
-        if walletPaymentType == .request {
-            let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first
-            descriptionLabel.text = "Payment Requested"
-            if let themeURL = requestedThemeURL(raw: payload?.extraData), let imageUrl = URL(string: themeURL) {
-                if imageUrl.pathExtension == "gif" {
-                    sentThumbImageView.setGifFromURL(imageUrl)
-                } else {
-                    Nuke.loadImage(with: themeURL, into: sentThumbImageView)
-                }
-            }
-            lblDetails.text = "AMOUNT: \(requestedAmount(raw: payload?.extraData) ?? "0") ONE"
-        }
         detailsStack = UIStackView(arrangedSubviews: [lblDetails])
         detailsStack.axis = .vertical
         detailsStack.distribution = .fillEqually
@@ -150,11 +133,9 @@ class WalletRequestPayBubble: UITableViewCell {
         ])
         pickUpButton.transform = .mirrorY
 
-
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
-        timestampLabel.textAlignment = isSender ? .right : .left
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -163,7 +144,45 @@ class WalletRequestPayBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
+
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding)
+        leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding)
+        trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
     }
+
+    func configData(isSender: Bool) {
+        self.isSender = isSender
+        handleBubbleConstraints(isSender)
+        timestampLabel.textAlignment = isSender ? .right : .left
+        walletPaymentType = content?.attachments(payloadType: WalletAttachmentPayload.self).first?.paymentType ?? .pay
+        if walletPaymentType == .request {
+            let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first
+            descriptionLabel.text = "Payment Requested"
+            let themeURL = payload?.extraData?.requestedThemeUrl ?? "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
+            if let imageUrl = URL(string: themeURL) {
+                if imageUrl.pathExtension == "gif" {
+                    sentThumbImageView.setGifFromURL(imageUrl)
+                } else {
+                    Nuke.loadImage(with: themeURL, into: sentThumbImageView)
+                }
+            }
+            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount ?? "0") ONE"
+        }
+        if let createdAt = content?.createdAt {
+            timestampLabel?.text = dateFormatter.string(from: createdAt)
+        } else {
+            timestampLabel?.text = nil
+        }
+    }
+
+    private func handleBubbleConstraints(_ isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        trailingAnchorSender?.isActive = isSender
+        leadingAnchorReceiver?.isActive = !isSender
+        trailingAnchorReceiver?.isActive = !isSender
+    }
+
     private func createTimestampLabel() -> UILabel {
         if timestampLabel == nil {
             timestampLabel = UILabel()
@@ -217,149 +236,21 @@ class WalletRequestPayBubble: UITableViewCell {
         return sentCryptoLabel
     }
 
-    func configData() {
-        if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
-        } else {
-            timestampLabel?.text = nil
-        }
-    }
-
-    func configTopAmountCell() {
-        guard let topAmount = getExtraData(key: "RedPacketTopAmountReceived") else {
-            return
-        }
-        if let receivedAmount = topAmount["receivedAmount"] {
-            let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            let strReceivedAmount = String(format: "%.2f", dblReceivedAmount)
-            if ChatClient.shared.currentUserId ?? "" == getUserId(raw: topAmount) {
-                lblDetails.text = "You just picked up \(strReceivedAmount) ONE!"
-            } else {
-                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(strReceivedAmount) ONE!"
-            }
-        }
-    }
-
-    func configExpiredCell() {
-        guard let expiredData = getExtraData(key: "RedPacketExpired") else {
-            return
-        }
-        if let userName = expiredData["highestAmountUserName"] {
-            let strUserName = fetchRawData(raw: userName) as? String ?? ""
-            lblDetails.text = "\(strUserName) selected the highest amount!"
-        }
-    }
-
-    private func getUserName(raw: [String: RawJSON]) -> String {
-        if let userName = raw["highestAmountUserName"] {
-            return fetchRawData(raw: userName) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func getUserId(raw: [String: RawJSON]) -> String {
-        if let userId = raw["highestAmountUserId"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func requestedUserName(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["recipientName"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedThemeURL(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["paymentTheme"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
-        }
-    }
-
-    private func requestedUserId(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["recipientUserId"] {
-            return fetchRawData(raw: userId) as? String
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedAmount(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let userId = extraData["transferAmount"] {
-            return fetchRawData(raw: userId) as? String
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedImageUrl(raw: [String: RawJSON]?) -> String? {
-        guard let extraData = raw else {
-            return nil
-        }
-        if let imageUrl = extraData["recipientImageUrl"] {
-            return fetchRawData(raw: imageUrl) as? String
-        } else {
-            return nil
-        }
-    }
-
-    private func requestedIsPaid(raw: [String: RawJSON]?) -> Bool {
-        guard let extraData = raw else {
-            return true
-        }
-        if let imageUrl = extraData["isPaid"] {
-            return fetchRawData(raw: imageUrl) as? Bool ?? true
-        } else {
-            return true
-        }
-    }
-
-    private func getExtraData(key: String) -> [String: RawJSON]? {
-        if let extraData = content?.extraData[key] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
-        }
-    }
-
     @objc func btnSendPacketAction() {
         if walletPaymentType == .request {
             guard let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first,
-                  requestedIsPaid(raw: payload.extraData) == false else {
+                  payload.extraData?.requestedIsPaid == false else {
                 return
             }
-            if requestedUserId(raw: payload.extraData) == ChatClient.shared.currentUserId {
+            if payload.extraData?.recipientUserId == ChatClient.shared.currentUserId {
                 Snackbar.show(text: "You can not send one to your own wallet")
                 return
             }
             var userInfo = [String: Any]()
-            userInfo["transferAmount"] = requestedAmount(raw: payload.extraData)
-            userInfo["recipientName"] = requestedUserName(raw: payload.extraData)
-            userInfo["recipientUserId"] = requestedUserId(raw: payload.extraData)
-            userInfo["requestedImageUrl"] = requestedImageUrl(raw: payload.extraData)
+            userInfo["transferAmount"] = payload.extraData?.requestedAmount
+            userInfo["recipientName"] = payload.extraData?.recipientName
+            userInfo["recipientUserId"] = payload.extraData?.recipientUserId
+            userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         } else {
             guard let channelId = channel?.cid else { return }

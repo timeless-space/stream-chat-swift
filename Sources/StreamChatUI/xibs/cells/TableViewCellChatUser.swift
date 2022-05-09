@@ -16,6 +16,7 @@ public class TableViewCellChatUser: _TableViewCell, AppearanceProvider {
         return UINib(nibName: reuseId, bundle: nil)
     }
     public static let reuseId: String = "TableViewCellChatUser"
+    
     // MARK: - OUTLETS
     @IBOutlet public var containerView: UIView!
     @IBOutlet public var nameLabel: UILabel!
@@ -23,21 +24,23 @@ public class TableViewCellChatUser: _TableViewCell, AppearanceProvider {
     @IBOutlet public var avatarView: AvatarView!
     @IBOutlet public var accessoryImageView: UIImageView!
     @IBOutlet public var lblRole: UILabel!
+
     // MARK: - Variables
     private var user: ChatUser?
-    private let shimmerBackgroundColor = Appearance.default.colorPalette.placeHolderBalanceBG
-    private lazy var shimmerGradient = SkeletonGradient(colors: [
-        shimmerBackgroundColor.withAlphaComponent(0.3),
-        shimmerBackgroundColor.withAlphaComponent(0.5),
-        shimmerBackgroundColor.withAlphaComponent(0.3)])
+
     //MARK: - LIFE CYCEL
     public override func awakeFromNib() {
         super.awakeFromNib()
+        setupUI()
+    }
+
+    private func setupUI() {
+        nameLabel.setChatTitleColor()
+        descriptionLabel.setChatSubtitleBigColor()
         lblRole.isHidden = true
         avatarView.layer.cornerRadius = avatarView.bounds.height / 2
         accessoryImageView.layer.cornerRadius = accessoryImageView.bounds.height / 2
         containerView.backgroundColor = .clear
-        SkeletonAppearance.default.gradient = shimmerGradient
         backgroundColor = .clear
         selectionStyle = .none
     }
@@ -129,22 +132,5 @@ extension TableViewCellChatUser {
            lblRole.textColor = Appearance.default.colorPalette.statusColorBlue
            lblRole.isHidden = false
         }
-    }
-}
-//MARK: - SHIMMER EFFECT
-extension TableViewCellChatUser {
-    public func showShimmer() {
-        avatarView.image = UIImage()
-        avatarView.backgroundColor = shimmerBackgroundColor
-        accessoryImageView.image = nil
-        avatarView.showAnimatedGradientSkeleton()
-        nameLabel.showAnimatedGradientSkeleton()
-        descriptionLabel.showAnimatedGradientSkeleton()
-    }
-    public func hideShimmer() {
-        accessoryImageView.hideSkeleton()
-        avatarView.hideSkeleton()
-        nameLabel.hideSkeleton()
-        descriptionLabel.hideSkeleton()
     }
 }
