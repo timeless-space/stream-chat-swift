@@ -56,12 +56,12 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
                 AVPlayerItem(asset: components.videoLoader.videoAsset(at: $0))
             }
             player.replaceCurrentItem(with: playerItem)
-            
             if let url = newAssetURL {
                 components.videoLoader.loadPreviewForVideo(at: url) { [weak self] in
                     switch $0 {
                     case let .success(preview):
                         self?.animationPlaceholderImageView.image = preview
+                        self?.contentView.backgroundColor = UIColor(patternImage: preview)
                     case .failure:
                         self?.animationPlaceholderImageView.image = nil
                     }

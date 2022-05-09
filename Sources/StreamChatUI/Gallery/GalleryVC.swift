@@ -129,6 +129,7 @@ open class GalleryVC:
     /// A constaint videoPlayerHeightConstraint
     open private(set) var textMessageHeightConstraint: NSLayoutConstraint?
     private let inputLinesScrollThreshold = 8
+    private var isCellAlreadyUpdated = false
 
     override open func setUpAppearance() {
         super.setUpAppearance()
@@ -251,7 +252,7 @@ open class GalleryVC:
         textViewMessageContainerView.pin(anchors: [.leading, .trailing], to: view)
         textViewMessageContainerView.bottomAnchor.constraint(equalTo: videoPlaybackBar.topAnchor).isActive = true
 
-        textViewMessageContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        textViewMessageContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
 
         textViewMessageContainerView.addSubview(textViewMessage)
         NSLayoutConstraint.activate([
@@ -284,6 +285,19 @@ open class GalleryVC:
                 )
             }
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: {
+            if !self.isCellAlreadyUpdated {
+                self.topBarTopConstraint?.constant =  -self.topBarView.frame.height
+                self.bottomBarBottomConstraint?.constant = self.bottomBarView.frame.height
+                Animate {
+                    self.textViewMessageContainerView.alpha = 0
+                    self.topBarView.alpha = 0
+                    self.bottomBarView.alpha = 0
+                    self.videoPlaybackBar.backgroundColor = self.bottomBarView.backgroundColor
+                    self.view.layoutIfNeeded()
+                }
+            }
+        })
     }
     
     override open func viewWillDisappear(_ animated: Bool) {
@@ -478,6 +492,7 @@ open class GalleryVC:
     
     /// Triggered when the current image is single tapped.
     open func handleSingleTapOnCell(at indexPath: IndexPath) {
+        isCellAlreadyUpdated = true
         let areBarsHidden = bottomBarBottomConstraint?.constant != 0
         
         topBarTopConstraint?.constant = areBarsHidden ? 0 : -topBarView.frame.height
