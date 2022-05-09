@@ -310,7 +310,7 @@ extension GifViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         if !isSearchEnable {
             let gifVc = GifViewController(with: true)
-            NotificationCenter.default.post(name: .hideKeyboardMenu, object: nil, userInfo: nil)
+            NotificationCenter.default.post(name: .clearTextField, object: nil, userInfo: nil)
             UIApplication.shared.keyWindow?.rootViewController?.present(gifVc, animated: true, completion: nil)
         }
         return isSearchEnable
