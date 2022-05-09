@@ -51,7 +51,8 @@ class GifViewController: UIViewController {
     private var isSearchEnable = false
     private var listenCancellables = Set<AnyCancellable>()
     private var isFetchingApiData = false
-    private var viewModel = GifViewModel()
+    private var cacheMemorySize = 50 * 1000 * 1000
+    private var viewModel = GifViewController.ViewModel()
 
     init(with isSearchEnable: Bool) {
         super.init(nibName: nil, bundle: nil)
@@ -76,7 +77,8 @@ class GifViewController: UIViewController {
     }
 
     private func setUpObservers() {
-        viewModel.$latestTrendingResponse.sink { [weak self] result in
+        viewModel.$latestTrendingResponse
+            .sink { [weak self] result in
             guard let `self` = self else { return }
             if !self.viewModel.isSearchActive {
                 DispatchQueue.main.async {
@@ -85,22 +87,27 @@ class GifViewController: UIViewController {
             }
             self.progressView.isHidden = true
             self.errorLabel.isHidden = !(result?.data.isEmpty ?? false)
-        }.store(in: &listenCancellables)
+        }
+        .store(in: &listenCancellables)
 
-        viewModel.$latestSearchResponse.sink { [weak self] result in
+        viewModel.$latestSearchResponse
+            .sink { [weak self] result in
             guard let `self` = self else { return }
             if self.viewModel.isSearchActive {
                 self.updateSearchGifView(latestSearchResponse: result, isSearch: self.viewModel.isSearch)
             }
             self.progressView.isHidden = true
             self.errorLabel.isHidden = !(result?.data.isEmpty ?? false)
-        }.store(in: &listenCancellables)
+        }
+        .store(in: &listenCancellables)
 
-        viewModel.$apiError.sink { [weak self] isApiError in
+        viewModel.$apiError
+            .sink { [weak self] isApiError in
             guard let `self` = self else { return }
             self.progressView.isHidden = true
             self.errorLabel.isHidden = !(isApiError ?? false)
-        }.store(in: &listenCancellables)
+        }
+        .store(in: &listenCancellables)
 
         viewModel.callSearchApi = { [weak self] in
             guard let `self` = self else { return }
@@ -123,8 +130,8 @@ class GifViewController: UIViewController {
         headerStackView.leadingAnchor.constraint(equalTo: gifView.leadingAnchor, constant: 10).isActive = true
         setUpWithCollectionView()
         // set to 50 mb
-        GPHCache.shared.cache.diskCapacity = 50 * 1000 * 1000
-        GPHCache.shared.cache.memoryCapacity = 50 * 1000 * 1000
+        GPHCache.shared.cache.diskCapacity = cacheMemorySize
+        GPHCache.shared.cache.memoryCapacity = cacheMemorySize
     }
 
     /// Setup Collection View in feed view
@@ -355,7 +362,9 @@ extension GifViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellIdentifier", for: indexPath) as? GiphyCollectionCell else { return UICollectionViewCell() }
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: "cellIdentifier",
+            for: indexPath) as? GiphyCollectionCell else { return UICollectionViewCell() }
         guard let indexData = viewModel.isSearchActive ? viewModel.searchGifs[safe: indexPath.row] : viewModel.trendingGifs[safe: indexPath.row] else {
             return cell
         }

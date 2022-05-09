@@ -61,7 +61,7 @@ extension SwiftyGiphyApiCallClient {
 
         // MARK: Vars & Lets
         var baseURL: String {
-            return "https://api.giphy.com/"
+            return Constants.giphyBaseUrl
         }
 
         var queryItems: [URLQueryItem] {

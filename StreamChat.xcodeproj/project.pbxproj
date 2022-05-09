@@ -1160,7 +1160,7 @@
 		E3D2976128255CB70026B69F /* Dictionary+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2976028255CB70026B69F /* Dictionary+Extensions.swift */; };
 		E3D2976328255CD00026B69F /* GiphyApiServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2976228255CD00026B69F /* GiphyApiServiceProtocol.swift */; };
 		E3D2976528255CF50026B69F /* EndpointProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2976428255CF50026B69F /* EndpointProtocol.swift */; };
-		E3D29767282567570026B69F /* GifViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D29766282567570026B69F /* GifViewModel.swift */; };
+		E3D29767282567570026B69F /* GifViewController+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D29766282567570026B69F /* GifViewController+ViewModel.swift */; };
 		E3DAF49A28198313002CA91C /* GiphyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF4952819726D002CA91C /* GiphyModel.swift */; };
 		E3DAF49B28198315002CA91C /* SwiftyGiphyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */; };
 		E701201E2583EBD50036DACD /* CALayer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70120152583EBC90036DACD /* CALayer+Extensions.swift */; };
@@ -2751,7 +2751,7 @@
 		E3D2976028255CB70026B69F /* Dictionary+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+Extensions.swift"; sourceTree = "<group>"; };
 		E3D2976228255CD00026B69F /* GiphyApiServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyApiServiceProtocol.swift; sourceTree = "<group>"; };
 		E3D2976428255CF50026B69F /* EndpointProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointProtocol.swift; sourceTree = "<group>"; };
-		E3D29766282567570026B69F /* GifViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifViewModel.swift; sourceTree = "<group>"; };
+		E3D29766282567570026B69F /* GifViewController+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GifViewController+ViewModel.swift"; sourceTree = "<group>"; };
 		E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyGiphyAPI.swift; sourceTree = "<group>"; };
 		E3DAF4952819726D002CA91C /* GiphyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyModel.swift; sourceTree = "<group>"; };
 		E3DAF49728197880002CA91C /* GiphyCollectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyCollectionCell.swift; sourceTree = "<group>"; };
@@ -5789,7 +5789,7 @@
 				E3C2DCBB2822BF3C00CA4F0E /* Cell */,
 				E3C2DCBF2822BF3C00CA4F0E /* EmojiContainerViewController.swift */,
 				E3C2DCC22822BF3C00CA4F0E /* GifViewController.swift */,
-				E3D29766282567570026B69F /* GifViewModel.swift */,
+				E3D29766282567570026B69F /* GifViewController+ViewModel.swift */,
 			);
 			path = EmojiMenu;
 			sourceTree = "<group>";
@@ -7564,7 +7564,7 @@
 				CD1C90F0272C417F00A6E85B /* CryptoSentBubble.swift in Sources */,
 				AD43F90926153BAD00F2D4BB /* QuotedChatMessageView.swift in Sources */,
 				ED0D5147275DED8800753692 /* RedPacketAmountBubble.swift in Sources */,
-				E3D29767282567570026B69F /* GifViewModel.swift in Sources */,
+				E3D29767282567570026B69F /* GifViewController+ViewModel.swift in Sources */,
 				6EEFB78E27BB83AD007224C2 /* PanModalPresentable+LayoutHelpers.swift in Sources */,
 				ED5DD0CA27CCAC3A000B3E9A /* AnnouncementTableViewCell.swift in Sources */,
 				847F3CEA2689FDEB00D240E0 /* ChatMessageCell.swift in Sources */,

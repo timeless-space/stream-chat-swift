@@ -42,3 +42,7 @@ public let kPrivateGroupPasscode = "kPrivateGroupPasscode"
 public let kPrivateGroupLat = "kPrivateGroupLat"
 public let kPrivateGroupLon = "kPrivateGroupLon"
 public let kGroupId = "kGroupId"
+
+// MARK: - Base url's
+public let giphyBaseUrl = "https://api.giphy.com/"
+

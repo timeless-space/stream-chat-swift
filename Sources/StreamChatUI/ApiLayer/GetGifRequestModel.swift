@@ -14,7 +14,13 @@ class GetGifRequestModel {
     var rating: String?
     var offset: Int?
 
-    init(apiKey: String = ChatClientConfiguration.shared.giphyApiKey, searchText: String? = nil, limit: Int = 25, rating: String = "pg-13", offset: Int?) {
+    init(
+        apiKey: String = ChatClientConfiguration.shared.giphyApiKey,
+        searchText: String? = nil,
+        limit: Int = 25,
+        rating: String = "pg-13",
+        offset: Int?
+    ) {
         self.apiKey = apiKey
         self.searchText = searchText
         self.limit = limit
