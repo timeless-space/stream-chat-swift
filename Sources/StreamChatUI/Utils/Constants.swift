@@ -21,6 +21,7 @@ public struct Constants {
     public static var decimalSeparator: String {
         return Locale.current.decimalSeparator ?? "."
     }
+    public static let giphyBaseUrl = "https://api.giphy.com/"
 }
 
 public struct UserdefaultKey {
@@ -28,3 +29,4 @@ public struct UserdefaultKey {
     public static let visibleSticker = "visibleSticker"
     public static let recentSticker = "recentSticker"
 }
+
