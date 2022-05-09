@@ -621,6 +621,8 @@ open class ComposerVC: _ViewController,
                 if let emoji = emoji as? EmojiMenuViewController {
                     emoji.didSelectMarketPlace = { [weak self] downloadedSticker in
                         guard let `self` = self else { return }
+                        self.composerView.inputMessageView.textView.tintColor = .clear
+                        self.composerView.inputMessageView.textView.text = nil
                         self.emojiPickerView = EmojiPickerViewController.instantiateController(storyboard: .wallet)
                         if let emojiPickerView = self.emojiPickerView as? EmojiPickerViewController {
                             emojiPickerView.downloadedPackage = downloadedSticker
@@ -776,7 +778,6 @@ open class ComposerVC: _ViewController,
         composerView.inputMessageView.textView.reloadInputViews()
         composerView.inputMessageView.textView.becomeFirstResponder()
         composerView.inputMessageView.textView.tintColor = .clear
-        composerView.inputMessageView.textView.text = nil
     }
 
     private func addWalletAttachment(
