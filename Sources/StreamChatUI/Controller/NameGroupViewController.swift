@@ -178,16 +178,14 @@ extension NameGroupViewController: UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let reuseID = TableViewCellChatUser.reuseId
         guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: reuseID,
+            withIdentifier: TableViewCellChatUser.identifier,
             for: indexPath) as? TableViewCellChatUser else {
             return UITableViewCell()
         }
         let user: ChatUser = selectedUsers[indexPath.row]
-        cell.config(user: user,selectedImage: nil)
+        cell.config(user: user, selectedImage: nil)
         return cell
-
     }
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
