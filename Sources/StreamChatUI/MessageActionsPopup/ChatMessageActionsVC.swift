@@ -70,6 +70,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
             messageActionsContainerStackView.addArrangedSubview(actionView)
         }
+        messageActionsContainerStackView.layoutMarginsDidChange()
     }
 
     /// Array of `ChatMessageActionItem`s - override this to setup your own custom actions

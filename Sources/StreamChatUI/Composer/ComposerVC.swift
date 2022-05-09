@@ -19,13 +19,14 @@ extension Notification.Name {
     public static let disburseFundAction = Notification.Name("kStreamChatDisburseFundTapAction")
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
+    public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
 }
 
 /// The possible errors that can occur in attachment validation
 public enum AttachmentValidationError: Error {
     /// The size of the attachment exceeds the max file size
     case maxFileSizeExceeded
-    
+
     /// The number of attachments reached the limit.
     case maxAttachmentsCountPerMessageExceeded(limit: Int)
 }
@@ -218,7 +219,7 @@ open class ComposerVC: _ViewController,
     public var channelConfig: ChannelConfig? {
         channelController?.channel?.config
     }
-    
+
     /// The component responsible for mention suggestions.
     open lazy var mentionSuggester = TypingSuggester(
         options: TypingSuggestionOptions(
@@ -243,7 +244,7 @@ open class ComposerVC: _ViewController,
     open private(set) lazy var suggestionsVC: ChatSuggestionsVC = components
         .suggestionsVC
         .init()
-    
+
     /// The view controller that shows the suggestions when the user is typing.
     open private(set) lazy var attachmentsVC: AttachmentsPreviewVC = components
         .messageComposerAttachmentsVC
@@ -394,6 +395,7 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.removeObserver(self)
         NotificationCenter.default.addObserver(self, selector: #selector(btnSendSticker(_:)), name: .sendSticker, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
@@ -423,13 +425,14 @@ open class ComposerVC: _ViewController,
             }
         case .quote:
             composerView.titleLabel.text = L10n.Composer.Title.reply
+            composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.headerView.isHidden = false
             }
         case .edit:
             composerView.titleLabel.text = L10n.Composer.Title.edit
+            composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
-                //self.composerView.confirmButton.isHidden = false
                 self.composerView.inputMessageView.sendButton.isHidden = true
                 self.composerView.headerView.isHidden = false
             }
@@ -444,7 +447,7 @@ open class ComposerVC: _ViewController,
         let isCommandsButtonHidden = !content.isEmpty || !isCommandsEnabled || content.hasCommand
         let isMoneyTransferButtonHiddden = !content.isEmpty
         let isShrinkInputButtonHidden = content.isEmpty || (!isCommandsEnabled && !isAttachmentsEnabled) || content.hasCommand
-        
+
         Animate {
             self.composerView.attachmentButton.isHidden = isAttachmentButtonHidden
             self.composerView.commandsButton.isHidden = isCommandsButtonHidden
@@ -456,7 +459,7 @@ open class ComposerVC: _ViewController,
             quotingMessage: content.quotingMessage,
             command: content.command
         )
-        
+
         attachmentsVC.content = content.attachments.map {
             if let provider = $0.payload as? AttachmentPreviewProvider {
                 return provider
@@ -490,7 +493,7 @@ open class ComposerVC: _ViewController,
             showMentionSuggestions(for: typingMention, mentionRange: mentionRange)
             return
         }
-        
+
         // If we have files in attachments, do not allow images to be pasted in the text view.
         // This is due to the limitation of UI(files and images cannot be shown together)
         let filesExistInAttachments = content.attachments.contains(where: { $0.type == .file })
@@ -498,7 +501,7 @@ open class ComposerVC: _ViewController,
 
         dismissSuggestions()
     }
-    
+
     open func setupAttachmentsView() {
         addChildViewController(attachmentsVC, embedIn: composerView.inputMessageView.attachmentsViewContainer)
         attachmentsVC.didTapRemoveItemButton = { [weak self] index in
@@ -585,7 +588,7 @@ open class ComposerVC: _ViewController,
     }
 
     // MARK: - Actions
-    
+
     @objc open func publishMessage(sender: UIButton) {
         let text: String
         if let command = content.command {
@@ -596,7 +599,7 @@ open class ComposerVC: _ViewController,
 
         if let editingMessage = content.editingMessage {
             editMessage(withId: editingMessage.id, newText: text)
-            
+
             // This is just a temporary solution. This will be handled on the LLC level
             // in CIS-883
             channelController?.sendStopTypingEvent()
@@ -637,7 +640,7 @@ open class ComposerVC: _ViewController,
             hideInputView()
         }
     }
-    
+
     /// Shows a photo/media picker.
     open func showMediaPicker() {
         DispatchQueue.main.async { [weak self] in
@@ -645,12 +648,12 @@ open class ComposerVC: _ViewController,
             self.present(self.mediaPickerVC, animated: true)
         }
     }
-    
+
     /// Shows a document picker.
     open func showFilePicker() {
         present(filePickerVC, animated: true)
     }
-    
+
     /// Returns actions for attachments picker.
     open var attachmentsPickerActions: [UIAlertAction] {
         let showFilePickerAction = UIAlertAction(
@@ -658,21 +661,21 @@ open class ComposerVC: _ViewController,
             style: .default,
             handler: { [weak self] _ in self?.showFilePicker() }
         )
-        
+
         let showMediaPickerAction = UIAlertAction(
             title: L10n.Composer.Picker.media,
             style: .default,
             handler: { [weak self] _ in self?.showMediaPicker() }
         )
-        
+
         let cancelAction = UIAlertAction(
             title: L10n.Composer.Picker.cancel,
             style: .cancel
         )
-        
+
         return [showMediaPickerAction, showFilePickerAction, cancelAction]
     }
-    
+
     /// Action that handles tap on attachments button in composer.
     @objc open func showAttachmentsPicker(sender: UIButton = UIButton()) {
         // The UI doesn't support mix of image and file attachments so we are limiting this option.
@@ -691,7 +694,7 @@ open class ComposerVC: _ViewController,
             showMediaPicker()
         }
     }
-    
+
     @objc open func shrinkInput(sender: UIButton) {
         Animate {
             self.composerView.shrinkInputButton.isHidden = true
@@ -707,7 +710,7 @@ open class ComposerVC: _ViewController,
             }
         }
     }
-    
+
     @objc open func showAvailableCommands() {
         if suggestionsVC.isPresented {
             dismissSuggestions()
@@ -715,7 +718,7 @@ open class ComposerVC: _ViewController,
             showCommandSuggestions(for: "")
         }
     }
-    
+
     @objc open func clearContent(sender: UIButton) {
         if content.state == .quote {
             var newContent = Content.initial()
@@ -807,6 +810,12 @@ open class ComposerVC: _ViewController,
         animateMenuButton()
     }
 
+    @objc func hideKeyboardMenuAction(_ notification: Notification) {
+        composerView.inputMessageView.textView.inputView = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        composerView.inputMessageView.textView.tintColor = .white
+    }
+
     @objc func btnSendSticker(_ notification: Notification) {
         if let giphyImage = notification.userInfo?["giphyUrl"] as? String {
             var stickerData = [String: RawJSON]()
@@ -821,7 +830,7 @@ open class ComposerVC: _ViewController,
         }
         guard let sticker = notification.userInfo?["sticker"] as? Sticker,
               let stickerImg = sticker.stickerImg else {
-            return 
+            return
         }
         var stickerData = [String: RawJSON]()
         stickerData["stickerUrl"] = .string(stickerImg)
@@ -882,6 +891,7 @@ open class ComposerVC: _ViewController,
     }
 
     @objc open func toolKitToggleAction(sender: UIButton) {
+        content.clear()
         if !isMenuShowing {
             animateToolkitView(isHide: false)
         } else {
@@ -899,7 +909,7 @@ open class ComposerVC: _ViewController,
     /// - Parameter text: The text content of the message.
     open func createNewMessage(text: String) {
         guard let cid = channelController?.cid else { return }
-        
+
         // If the user included some mentions via suggestions,
         // but then removed them from text, we should remove them from
         // the content we'll send
@@ -934,7 +944,7 @@ open class ComposerVC: _ViewController,
             quotedMessageId: content.quotingMessage?.id
         )
     }
-    
+
     /// Updates an existing message.
     /// - Parameters:
     ///   - id: The id of the editing message.
@@ -1028,7 +1038,7 @@ open class ComposerVC: _ViewController,
         let redPacket = Command(name: "redpacket", description: "Shortcut for redpacket", set: "$ONE", args: "RedPacket")
         return [sendOne, redPacket]
     }
-    
+
     /// Returns the query to be used for searching users for the given typing mention.
     ///
     /// This function is called in `showMentionSuggestions` to retrieve the query
@@ -1058,7 +1068,7 @@ open class ComposerVC: _ViewController,
         guard let currentUserId = channelController?.client.currentUserId else {
             return
         }
-        
+
         var usersCache: [ChatUser] = []
 
         if mentionAllAppUsers {
@@ -1102,7 +1112,7 @@ open class ComposerVC: _ViewController,
 
         showSuggestions()
     }
-    
+
     /// Provides the mention text for composer text field, when the user selects a mention suggestion.
     open func mentionText(for user: ChatUser) -> String {
         if let name = user.name, !name.isEmpty {
@@ -1133,7 +1143,7 @@ open class ComposerVC: _ViewController,
         suggestionsVC.removeFromParent()
         suggestionsVC.view.removeFromSuperview()
     }
-    
+
     /// Creates and adds an attachment from the given URL to the `content`
     /// - Parameters:
     ///   - url: The URL of the attachment
@@ -1143,24 +1153,24 @@ open class ComposerVC: _ViewController,
             log.assertionFailure("Channel controller must be set at this point")
             return
         }
-        
+
         let maxAttachmentsCount = chatConfig.maxAttachmentCountPerMessage
         guard content.attachments.count < maxAttachmentsCount else {
             throw AttachmentValidationError.maxAttachmentsCountPerMessageExceeded(
                 limit: maxAttachmentsCount
             )
         }
-        
+
         let fileSize = try AttachmentFile(url: url).size
         guard fileSize < chatConfig.maxAttachmentSize else {
             throw AttachmentValidationError.maxFileSizeExceeded
         }
-        
+
         let attachment = try AnyAttachmentPayload(localFileURL: url, attachmentType: type)
         content.attachments.append(attachment)
         self.composerView.inputMessageView.sendButton.isHidden = false
     }
-    
+
     /// Shows an alert for the error thrown when adding attachment to a composer.
     /// - Parameters:
     ///   - attachmentURL: The attachment's file URL.
@@ -1203,7 +1213,7 @@ open class ComposerVC: _ViewController,
     }
 
     // MARK: - UIImagePickerControllerDelegate
-    
+
     open func imagePickerController(
         _ picker: UIImagePickerController,
         didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
@@ -1224,7 +1234,7 @@ open class ComposerVC: _ViewController,
                 log.error("Unexpected item selected in image picker")
                 return
             }
-            
+
             do {
                 try self?.addAttachmentToContent(from: urlAndType.0, type: urlAndType.1)
             } catch {
@@ -1236,12 +1246,12 @@ open class ComposerVC: _ViewController,
             }
         }
     }
-    
+
     // MARK: - UIDocumentPickerViewControllerDelegate
-    
+
     open func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         let type: AttachmentType = .file
-        
+
         for fileURL in urls {
             do {
                 try addAttachmentToContent(from: fileURL, type: type)
@@ -1255,25 +1265,25 @@ open class ComposerVC: _ViewController,
             }
         }
     }
-    
+
     /// Shows an alert saying that attachment's size exceeds the limit.
     open func showAttachmentExceedsMaxSizeAlert() {
         presentAlert(message: L10n.Attachment.maxSizeExceeded)
     }
-    
+
     /// Shows an alert saying that the max # of attachments per message is exceeded.
     open func showAttachmentsCountExceedingLimitAlert(_ limit: Int) {
         presentAlert(message: L10n.Attachment.maxCountExceeded(limit))
     }
-    
+
     // MARK: - InputTextViewClipboardAttachmentDelegate
-    
+
     open func inputTextView(_ inputTextView: InputTextView, didPasteImage image: UIImage) {
         guard let imageUrl = try? image.temporaryLocalFileUrl() else {
             log.error("Could not create temporary local file from image")
             return
         }
-        
+
         let type: AttachmentType = .image
         do {
             try addAttachmentToContent(from: imageUrl, type: type)
@@ -1285,9 +1295,9 @@ open class ComposerVC: _ViewController,
             )
         }
     }
-    
+
     // MARK: - Private
-    
+
     private func presentAlert(
         title: String? = nil,
         message: String? = nil,
@@ -1300,7 +1310,7 @@ open class ComposerVC: _ViewController,
         let alert = UIAlertController(title: title, message: message, preferredStyle: preferredStyle)
         alert.popoverPresentationController?.sourceView = sourceView
         actions.forEach(alert.addAction)
-        
+
         present(alert, animated: true)
     }
 }

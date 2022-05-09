@@ -329,15 +329,20 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 .pin(equalTo: reactionsBubbleView.centerYAnchor)
             constraintsToActivate += [
                 reactionsBubbleView.topAnchor.pin(equalTo: topAnchor),
-                bubbleToReactionsConstraint,
-                reactionsBubbleView.centerXAnchor.pin(
-                    equalTo: options.contains(.flipped) ?
-                        (bubbleView ?? bubbleContentContainer).leadingAnchor :
-                        (bubbleView ?? bubbleContentContainer).trailingAnchor,
-                    constant: options.contains(.flipped) ? -8 : 8
-                )
+                bubbleToReactionsConstraint
             ]
             .compactMap { $0 }
+            if options.contains(.flipped) {
+                constraintsToActivate += [
+                    reactionsBubbleView.trailingAnchor.pin(greaterThanOrEqualTo: (bubbleView ?? bubbleContentContainer).leadingAnchor, constant: 20),
+                    reactionsBubbleView.leadingAnchor.pin(greaterThanOrEqualTo: leadingAnchor, constant: 0)
+                ]
+            } else {
+                constraintsToActivate += [
+                    reactionsBubbleView.leadingAnchor.pin(lessThanOrEqualTo: (bubbleView ?? bubbleContentContainer).trailingAnchor, constant: -20),
+                    reactionsBubbleView.trailingAnchor.pin(lessThanOrEqualTo: trailingAnchor, constant: 0)
+                ]
+            }
         } else {
             constraintsToActivate += [
                 mainContainer.topAnchor.pin(equalTo: topAnchor)

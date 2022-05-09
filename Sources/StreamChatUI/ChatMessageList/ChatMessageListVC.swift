@@ -229,7 +229,7 @@ open class ChatMessageListVC:
             gesture.state == .began,
             let indexPath = listView.indexPathForRow(at: location)
         else { return }
-
+        NotificationCenter.default.post(name: .hideKeyboardMenu, object: nil, userInfo: nil)
         didSelectMessageCell(at: indexPath)
     }
 
