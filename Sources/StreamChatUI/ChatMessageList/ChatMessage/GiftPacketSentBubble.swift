@@ -166,6 +166,9 @@ class GiftBubble: UITableViewCell {
         guard let extraData = content?.extraData else {
             return
         }
+        if sentThumbImageView.layer.sublayers != nil {
+            sentThumbImageView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+        }
         if self.isVideoType(extraData.flair ?? "") {
             NotificationCenter.default.removeObserver(self,
                                                       name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
