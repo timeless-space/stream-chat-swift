@@ -12,7 +12,6 @@ public class TableViewCellEmptyChatListData: UITableViewCell {
     static var nib: UINib {
         return UINib(nibName: identifier, bundle: nil)
     }
-    
     // MARK: - @IBOutlet
     @IBOutlet private weak var alertImage: UIImageView?
     @IBOutlet private weak var alertText: UILabel!
