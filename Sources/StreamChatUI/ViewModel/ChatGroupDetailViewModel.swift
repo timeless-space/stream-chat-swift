@@ -89,6 +89,11 @@ class ChatGroupDetailViewModel: NSObject {
         channelMembers.append(contentsOf: alphabetUsers)
         channelMembers.append(contentsOf: otherUsers)
         self.channelMembers = channelMembers
+        if channelController?.channel?.isDirectMessageChannel == true {
+            user = channelMembers.first(where: { userMember in
+                userMember.id != ChatClient.shared.currentUserId
+            })
+        }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
                 return

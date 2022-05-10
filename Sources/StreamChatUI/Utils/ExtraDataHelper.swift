@@ -607,6 +607,73 @@ public extension Dictionary where Key == String, Value == RawJSON {
     }
 }
 
+// MARK: - User detail
+public extension Dictionary where Key == String, Value == RawJSON {
+    var email: String? {
+        if let email = self["email"] {
+            return fetchRawData(raw: email) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var bio: String? {
+        if let bio = self["bio"] {
+            return fetchRawData(raw: bio) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var birthday: String? {
+        if let birthday = self["birthday"] {
+            return fetchRawData(raw: birthday) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var instagramId: String? {
+        if let instagramId = self["instagramId"] {
+            return fetchRawData(raw: instagramId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var tiktokId: String? {
+        if let tiktokId = self["tiktokId"] {
+            return fetchRawData(raw: tiktokId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var twitterId: String? {
+        if let twitterId = self["twitterId"] {
+            return fetchRawData(raw: twitterId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var phoneNumber: String? {
+        if let phoneNumber = self["phoneNumber"] {
+            return fetchRawData(raw: phoneNumber) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var coverImage: String? {
+        if let coverImage = self["coverImage"] {
+            return fetchRawData(raw: coverImage) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
 public func fetchRawData(raw: RawJSON) -> Any? {
     switch raw {
     case .number(let double):
