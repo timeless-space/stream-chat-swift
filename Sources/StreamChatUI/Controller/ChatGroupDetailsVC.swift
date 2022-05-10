@@ -309,7 +309,7 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
             return cell
         case .userList:
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TableViewCellChatUser.reuseId,
+                withIdentifier: TableViewCellChatUser.identifier,
                 for: indexPath) as? TableViewCellChatUser else {
                       return UITableViewCell()
                   }

@@ -70,6 +70,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
             messageActionsContainerStackView.addArrangedSubview(actionView)
         }
+        messageActionsContainerStackView.layoutMarginsDidChange()
     }
 
     /// Array of `ChatMessageActionItem`s - override this to setup your own custom actions
@@ -199,9 +200,12 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         CopyActionItem(
             action: { [weak self] _ in
                 guard let self = self else { return }
+                Snackbar.hide()
                 UIPasteboard.general.string = self.message?.text
-                Snackbar.show(text: "", messageType: StreamChatMessageType.MessageCopied)
-                self.delegate?.chatMessageActionsVCDidFinish(self)
+                DispatchQueue.main.async {
+                    Snackbar.show(text: "", messageType: StreamChatMessageType.MessageCopied)
+                    self.delegate?.chatMessageActionsVCDidFinish(self)
+                }
             },
             appearance: appearance
         )

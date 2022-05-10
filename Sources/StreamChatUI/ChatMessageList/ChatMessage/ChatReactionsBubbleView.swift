@@ -12,7 +12,7 @@ open class ChatReactionBubbleBaseView: _View, AppearanceProvider {
 }
 
 open class ChatReactionsBubbleView: ChatReactionBubbleBaseView {
-    public let tailHeight: CGFloat = 6
+    public let tailHeight: CGFloat = 0
 
     override open func setUpAppearance() {
         super.setUpAppearance()
