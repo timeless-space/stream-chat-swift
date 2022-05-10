@@ -394,8 +394,8 @@ public extension Dictionary where Key == String, Value == RawJSON {
 // MARK: - Wallet request pay bubble
 public extension Dictionary where Key == String, Value == RawJSON {
     var recipientName: String? {
-        if let recipientNames = self["recipientNames"] {
-            return fetchRawData(raw: recipientNames) as? String
+        if let recipientName = self["recipientName"] {
+            return fetchRawData(raw: recipientName) as? String
         } else {
             return nil
         }

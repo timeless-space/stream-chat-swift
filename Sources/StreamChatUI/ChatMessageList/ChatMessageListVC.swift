@@ -444,6 +444,7 @@ open class ChatMessageListVC:
                         return UITableViewCell()
                     }
                 cell.client = client
+                cell.channel = dataSource?.channel(for: self)
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
