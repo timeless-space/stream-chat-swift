@@ -229,7 +229,7 @@ open class ChatMessageListVC:
             gesture.state == .began,
             let indexPath = listView.indexPathForRow(at: location)
         else { return }
-
+        NotificationCenter.default.post(name: .hideKeyboardMenu, object: nil, userInfo: nil)
         didSelectMessageCell(at: indexPath)
     }
 
@@ -431,6 +431,9 @@ open class ChatMessageListVC:
                         for: indexPath) as? WalletRequestPayBubble else {
                             return UITableViewCell()
                         }
+                    if let channel = dataSource?.channel(for: self) {
+                        cell.channelId = channel.cid
+                    }
                     cell.isSender = isMessageFromCurrentUser
                     cell.client = client
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
@@ -443,6 +446,9 @@ open class ChatMessageListVC:
                     for: indexPath) as? TableViewCellWallePayBubbleIncoming else {
                         return UITableViewCell()
                     }
+                if let channel = dataSource?.channel(for: self) {
+                    cell.channelId = channel.cid
+                }
                 cell.client = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
