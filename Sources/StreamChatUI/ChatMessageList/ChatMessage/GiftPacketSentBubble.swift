@@ -179,6 +179,18 @@ class GiftBubble: UITableViewCell {
                                                    selector: #selector(didEndPlayback),
                                                    name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
                                                    object: nil)
+            NotificationCenter.default.addObserver(
+              self,
+              selector: #selector(willEnterForeground(_:)),
+              name: UIApplication.willEnterForegroundNotification,
+              object: nil
+            )
+            NotificationCenter.default.addObserver(
+              self,
+              selector: #selector(didEnterBackground(_:)),
+              name: UIApplication.didEnterBackgroundNotification,
+              object: nil
+            )
             let videoURL = URL(string: extraData.flair ?? "")
             player = AVPlayer(url: videoURL!)
             playerLayer = AVPlayerLayer(player: player)
@@ -325,7 +337,19 @@ class GiftBubble: UITableViewCell {
     }
 
     @objc func didEndPlayback(notification: Notification) {
-        player.seek(to: .zero)
-        player.play()
+        if player != nil {
+            player.seek(to: .zero)
+            player.play()
+        }
+    }
+
+    @objc private func willEnterForeground(_ notification: Notification) {
+        setFlair()
+    }
+
+    @objc private func didEnterBackground(_ notification: Notification) {
+        player = nil
+        playerLayer = nil
+        videoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
     }
 }
