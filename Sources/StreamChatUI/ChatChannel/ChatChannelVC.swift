@@ -34,8 +34,8 @@ open class ChatChannelVC:
     open var isChannelCreated = false
 
     /// Listen to keyboard observer or not
-    open var enableKeyboardObserver = false
-    
+    open var enableKeyboardObserver = true
+
     /// Local variable to toggle channel mute flag
     private var isChannelMuted = false
 
@@ -351,11 +351,17 @@ open class ChatChannelVC:
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        if enableKeyboardObserver {
+            keyboardHandler.start()
+        }
     }
 
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         NotificationCenter.default.post(name: .hideTabbar, object: nil)
+        if enableKeyboardObserver {
+            keyboardHandler.start()
+        }
     }
 
     open override func viewWillDisappear(_ animated: Bool) {
@@ -365,9 +371,7 @@ open class ChatChannelVC:
 
     override open func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if enableKeyboardObserver {
-            keyboardHandler.start()
-        }
+
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
