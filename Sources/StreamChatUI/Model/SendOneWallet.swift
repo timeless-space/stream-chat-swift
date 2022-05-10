@@ -27,7 +27,7 @@ public struct SendOneWallet {
     public init() {
     }
 
-    public func toDictionary() -> [String: RawJSON] {
+   public func toDictionary() -> [String: RawJSON] {
         var dictOut = [String: RawJSON]()
         dictOut["myName"] = .string(myName ?? "")
         dictOut["myWalletAddress"] = .string(myWalletAddress ?? "")
