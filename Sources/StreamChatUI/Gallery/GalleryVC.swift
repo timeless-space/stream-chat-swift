@@ -140,9 +140,9 @@ open class GalleryVC:
         attachmentsCollectionView.showsHorizontalScrollIndicator = false
         attachmentsCollectionView.showsVerticalScrollIndicator = false
         
-        topBarView.backgroundColor = appearance.colorPalette.walletTabbarBackground//appearance.colorPalette.popoverBackground
-        bottomBarView.backgroundColor = appearance.colorPalette.walletTabbarBackground//appearance.colorPalette.popoverBackground
-        videoPlaybackBar.backgroundColor = .black//appearance.colorPalette.popoverBackground
+        topBarView.backgroundColor = .black.withAlphaComponent(0.8)
+        bottomBarView.backgroundColor = .black.withAlphaComponent(0.8)
+        videoPlaybackBar.backgroundColor = .black.withAlphaComponent(0.8)
         
         userLabel.font = appearance.fonts.bodyBold
         userLabel.textColor = .white//appearance.colorPalette.text
@@ -293,7 +293,7 @@ open class GalleryVC:
                     self.textViewMessageContainerView.alpha = 0
                     self.topBarView.alpha = 0
                     self.bottomBarView.alpha = 0
-                    self.videoPlaybackBar.backgroundColor = self.bottomBarView.backgroundColor
+                    self.videoPlaybackBar.backgroundColor = .clear
                     self.view.layoutIfNeeded()
                 }
             }
