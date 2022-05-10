@@ -291,6 +291,6 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             userInfo["paymentTheme"] = requestedThemeURL(raw: payload.extraData)
             userInfo["channelId"] = channelId
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
-        } 
+        }
     }
 }
