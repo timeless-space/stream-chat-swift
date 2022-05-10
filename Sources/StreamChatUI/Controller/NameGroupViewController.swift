@@ -25,8 +25,8 @@ public class NameGroupViewController: ChatBaseVC {
     @IBOutlet private var tableView: UITableView!
     @IBOutlet private var tagView: UIStackView!
     @IBOutlet private var tagViewPlaceHolderView: UIView!
-    @IBOutlet weak var heightSafeAreaView: NSLayoutConstraint!
-    
+    @IBOutlet private weak var heightSafeAreaView: NSLayoutConstraint!
+    @IBOutlet private weak var nextButtonBottomConstraint: NSLayoutConstraint!
     // MARK: - VARIABLES
     public var client: ChatClient?
     public var selectedUsers: [ChatUser]!
@@ -39,6 +39,7 @@ public class NameGroupViewController: ChatBaseVC {
     // MARK: - METHODS
     public func setupUI() {
         heightSafeAreaView.constant = UIView.safeAreaTop
+        nextButtonBottomConstraint.constant = (-20) + (-UIView.safeAreaBottom)
         navigationController?.navigationBar.isHidden = true
         self.btnNext?.isHidden = true
         self.view.backgroundColor = Appearance.default.colorPalette.chatViewBackground
@@ -82,7 +83,7 @@ public class NameGroupViewController: ChatBaseVC {
         }
         let name = self.nameField.text ?? ""
         let description = self.groupDescriptionField.text ?? ""
-        if name.isBlank || name.containsEmoji || description.containsEmoji {
+        if name.isBlank {
             self.btnNext?.isHidden = true
         } else {
             self.btnNext?.isHidden = false
@@ -94,62 +95,45 @@ public class NameGroupViewController: ChatBaseVC {
     }
 
     @IBAction func doneTapped(_ sender: UIButton) {
-        self.view.endEditing(true)
+        view.endEditing(true)
         guard let name = nameField.text, !name.isEmpty else {
             Snackbar.show(text: "Group name cannot be blank")
             return
         }
-        guard name.containsEmoji == false else {
-            Snackbar.show(text: "Please enter valid group name")
-            return
-        }
-        let groupId = String(UUID().uuidString)
-        let encodeGroupId = groupId.base64Encoded.string ?? ""
-        let expiryDate = String(Date().withAddedHours(hours: 24).ticks).base64Encoded.string ?? ""
+        let groupId = UUID().uuidString
         var extraData: [String: RawJSON] = [:]
         extraData[kExtraDataChannelDescription] = RawJSON.string(self.groupDescriptionField.text ?? "")
-        // Deeplink url Callback
-        ChatClientConfiguration.shared.requestedGeneralGroupDynamicLink = { [weak self] url in
-            guard let weakSelf = self else { return }
-            guard let groupInviteLink = url else {
-                return
-            }
-            ChatClientConfiguration.shared.requestedGeneralGroupDynamicLink = nil
-            extraData["joinLink"] = .string(groupInviteLink.absoluteString)
-            do {
-                let channelController = try ChatClient.shared.channelController(
-                    createChannelWithId: .init(type: .messaging, id: groupId),
-                    name: name,
-                    members: Set(weakSelf.selectedUsers.map(\.id)), extraData: extraData)
-                // Channel synchronize
-                channelController.synchronize { [weak self] error in
-                    guard let weakSelf = self , error == nil else {
-                        DispatchQueue.main.async {
-                            Snackbar.show(text: "something went wrong!")
-                        }
-                        return
-                    }
+
+        do {
+            let channelController = try ChatClient.shared.channelController(
+                createChannelWithId: .init(
+                    type: .messaging,
+                    id: groupId), name: name,
+                members: Set(selectedUsers.map(\.id)), extraData: extraData)
+            channelController.synchronize { [weak self] error in
+                guard let weakSelf = self , error == nil else {
                     DispatchQueue.main.async {
-                        let chatChannelVC = ChatChannelVC.init()
-                        chatChannelVC.isChannelCreated = true
-                        chatChannelVC.channelController = channelController
-                        weakSelf.pushWithAnimation(controller: chatChannelVC)
-                        let navControllers = weakSelf.navigationController?.viewControllers ?? []
-                        for (index,navController) in navControllers.enumerated() {
-                            if index == 0 || navController.isKind(of: ChatChannelVC.self) {
-                                continue
-                            }
-                            navController.removeFromParent()
+                        Snackbar.show(text: "something went wrong!")
+                    }
+                    return
+                }
+                DispatchQueue.main.async {
+                    let chatChannelVC = ChatChannelVC.init()
+                    chatChannelVC.isChannelCreated = true
+                    chatChannelVC.channelController = channelController
+                    weakSelf.pushWithAnimation(controller: chatChannelVC)
+                    let navControllers = weakSelf.navigationController?.viewControllers ?? []
+                    for (index,navController) in navControllers.enumerated() {
+                        if index == 0 || navController.isKind(of: ChatChannelVC.self) {
+                            continue
                         }
+                        navController.removeFromParent()
                     }
                 }
-            } catch {
-                Snackbar.show(text: "Error while creating the channel")
             }
+        } catch {
+            Snackbar.show(text: "Error while creating the channel")
         }
-        // Fetching invite link
-        let parameter = [kInviteGroupID: encodeGroupId, kInviteExpiryDate: expiryDate]
-        NotificationCenter.default.post(name: .generalGroupInviteLink, object: nil, userInfo: parameter)
     }
 }
 // MARK: - UITextFieldDelegate
@@ -194,16 +178,14 @@ extension NameGroupViewController: UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let reuseID = TableViewCellChatUser.reuseId
         guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: reuseID,
+            withIdentifier: TableViewCellChatUser.identifier,
             for: indexPath) as? TableViewCellChatUser else {
             return UITableViewCell()
         }
         let user: ChatUser = selectedUsers[indexPath.row]
-        cell.config(user: user,selectedImage: nil)
+        cell.config(user: user, selectedImage: nil)
         return cell
-
     }
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

@@ -24,6 +24,10 @@ public struct Constants {
         static let tiktok = "tiktok.com/@"
         static let twitter = "twitter.com/"
     }
+    public static var decimalSeparator: String {
+        return Locale.current.decimalSeparator ?? "."
+    }
+    public static let giphyBaseUrl = "https://api.giphy.com/"
 }
 
 public struct UserdefaultKey {

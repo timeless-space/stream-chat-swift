@@ -170,7 +170,7 @@ open class ComposerView: _View, ThemeProvider {
         centerContainer.layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
         centerContainer.isLayoutMarginsRelativeArrangement = true
         centerContainer.axis = .horizontal
-        centerContainer.alignment = .center//.bottom
+        centerContainer.alignment = .bottom
         centerContainer.spacing = .auto
         centerContainer.addArrangedSubview(leadingContainer)
         centerContainer.addArrangedSubview(inputMessageView)
@@ -189,8 +189,12 @@ open class ComposerView: _View, ThemeProvider {
         leadingContainer.alignment = .center
         leadingContainer.spacing = .init(0)
         leadingContainer.distribution = .equal
+        let inputViewBottomLayout = inputMessageView.layoutMargins.bottom
+        leadingContainer.layoutMargins = UIEdgeInsets(top: 0,
+                                                      left: 0,
+                                                      bottom: inputViewBottomLayout,
+                                                      right: 0)
         leadingContainer.isLayoutMarginsRelativeArrangement = true
-        leadingContainer.directionalLayoutMargins = .zero
         //leadingContainer.addArrangedSubview(attachmentButton)
         //leadingContainer.addArrangedSubview(commandsButton)
         //leadingContainer.addArrangedSubview(moneyTransferButton)

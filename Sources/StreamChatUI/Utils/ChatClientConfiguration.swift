@@ -31,6 +31,7 @@ open class ChatClientConfiguration {
     // MARK: - Variables
     public static let shared = ChatClientConfiguration()
     open var apiKey = ""
+    open var giphyApiKey = ""
     // streamChat request token
     open var streamChatToken: ((Token) -> Void)?
     open var requestNewChatToken: (() -> Void)?
@@ -39,6 +40,15 @@ open class ChatClientConfiguration {
     open var requestedPrivateGroupDynamicLink: ((URL?) -> Void)?
     // General group invite link
     open var requestedGeneralGroupDynamicLink: callbackGeneralGroupInviteLink?
+    // join group
+    open var joinInviteGroup: ((Bool) -> Void)?
+    // Join private group
+    open var joinPrivateGroup: (() -> Void)?
+    // get private group
+    open var getPrivateGroup: ((ChatInviteInfo?) -> Void)?
+    // create private group
+    open var createPrivateGroup: ((CreatePrivateGroup) -> Void)?
+
     // MARK: - Init
     public init() {}
 }

@@ -930,8 +930,8 @@
                             <constraint firstItem="cA8-gX-qNk" firstAttribute="top" secondItem="rgj-TS-iyu" secondAttribute="top" id="3gf-0B-fN1"/>
                             <constraint firstItem="yc8-ry-hKg" firstAttribute="leading" secondItem="rgj-TS-iyu" secondAttribute="leading" id="DNp-8U-nvo"/>
                             <constraint firstAttribute="bottom" secondItem="oMx-7P-M2h" secondAttribute="bottom" id="IOL-t7-uge"/>
+                            <constraint firstItem="fEY-ac-cIW" firstAttribute="bottom" secondItem="oMx-7P-M2h" secondAttribute="bottom" constant="-20" id="IPa-uF-cKh"/>
                             <constraint firstAttribute="trailing" secondItem="oMx-7P-M2h" secondAttribute="trailing" id="LOb-Ce-H8N"/>
-                            <constraint firstAttribute="bottom" secondItem="fEY-ac-cIW" secondAttribute="bottom" constant="20" id="PVM-LT-XwG"/>
                             <constraint firstAttribute="trailing" secondItem="yc8-ry-hKg" secondAttribute="trailing" id="VP8-aM-D2O"/>
                             <constraint firstItem="oMx-7P-M2h" firstAttribute="top" secondItem="0fQ-Bb-8Nq" secondAttribute="bottom" constant="12" id="XOp-XF-jvi"/>
                             <constraint firstItem="cA8-gX-qNk" firstAttribute="leading" secondItem="rgj-TS-iyu" secondAttribute="leading" id="ZbE-cv-t0r"/>
@@ -959,6 +959,7 @@
                         <outlet property="lblTitle" destination="chY-hF-21v" id="3Tu-ht-8Ji"/>
                         <outlet property="nameContainerView" destination="Rjv-J6-uMx" id="kuV-wZ-dPX"/>
                         <outlet property="nameField" destination="VGn-Kf-YWL" id="PhY-yk-Xhg"/>
+                        <outlet property="nextButtonBottomConstraint" destination="IPa-uF-cKh" id="lJj-Cu-vVq"/>
                         <outlet property="searchFieldStack" destination="Qb3-R4-KcB" id="MXX-nI-6tj"/>
                         <outlet property="tableView" destination="oMx-7P-M2h" id="ghS-nz-ow5"/>
                         <outlet property="tagView" destination="kBB-Lz-016" id="WdO-C3-Tr0"/>
