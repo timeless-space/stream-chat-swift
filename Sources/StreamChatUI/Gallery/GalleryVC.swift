@@ -285,7 +285,8 @@ open class GalleryVC:
                 )
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
+            guard let `self` = self else { return }
             if !self.isCellAlreadyUpdated {
                 self.topBarTopConstraint?.constant =  -self.topBarView.frame.height
                 self.bottomBarBottomConstraint?.constant = self.bottomBarView.frame.height

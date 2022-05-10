@@ -74,10 +74,10 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
     func addGradientLayer(topColor: CGColor?, bottomColor: CGColor?) {
         var gradientLayer = CAGradientLayer()
         gradientLayer = CAGradientLayer()
-        gradientLayer.frame = self.frame
+        gradientLayer.frame = frame
         gradientLayer.colors = [topColor, bottomColor]
         gradientLayer.locations = [0.0, 1.0]
-        self.layer.insertSublayer(gradientLayer, at: 0)
+        layer.insertSublayer(gradientLayer, at: 0)
     }
     
     override open func viewForZooming(in scrollView: UIScrollView) -> UIView? {
