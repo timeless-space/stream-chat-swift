@@ -84,6 +84,7 @@ open class ChatMessageListVC:
         listView.register(ChatMessageStickerBubble.self, forCellReuseIdentifier: "ChatMessageStickerBubble")
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
+        listView.register(PollBubble.self, forCellReuseIdentifier: "PollBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
@@ -473,6 +474,17 @@ open class ChatMessageListVC:
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
+            } else if isPollCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PollBubble",
+                    for: indexPath) as? PollBubble else {
+                        return UITableViewCell()
+                    }
+                cell.client = client
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.configData(isSender: isMessageFromCurrentUser)
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -521,6 +533,10 @@ open class ChatMessageListVC:
 
     private func isRedPacketCell(_ message: ChatMessage?) -> Bool {
         message?.extraData.keys.contains("redPacketPickup") ?? false
+    }
+
+    private func isPollCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("poll") ?? false
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {

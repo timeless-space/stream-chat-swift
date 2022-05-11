@@ -103,6 +103,7 @@ enum MenuType: Int, CaseIterable {
     case polling = 10
     case contact = 11
     case gift = 12
+    case poll = 13
 
     func getTitle() -> String {
         switch self {
@@ -130,6 +131,8 @@ enum MenuType: Int, CaseIterable {
             return "Contact"
         case .gift:
             return "Gift"
+        case .poll:
+            return "Poll"
         }
     }
 
@@ -159,6 +162,8 @@ enum MenuType: Int, CaseIterable {
             return Appearance.default.images.menuContact
         case .gift:
             return Appearance.default.images.menuGiftPacket ?? .init()
+        case .poll:
+            return Appearance.default.images.pollChat
         }
     }
 
@@ -167,7 +172,7 @@ enum MenuType: Int, CaseIterable {
     }
 
     static func getNonDaoMenu() -> [MenuType] {
-        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .gift]
+        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .gift, .poll]
     }
 }
 

@@ -21,6 +21,7 @@ extension Notification.Name {
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
+    public static let selectPoll = Notification.Name("kStreamChatPollTapAction")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -583,6 +584,10 @@ open class ComposerVC: _ViewController,
             case .dao:
                 self.animateToolkitView(isHide: true)
                 break
+            case .poll:
+                self.animateToolkitView(isHide: true)
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                self.pollAction()
             default:
                 break
             }
@@ -862,6 +867,15 @@ open class ComposerVC: _ViewController,
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
         NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
+    }
+
+    @objc open func pollAction() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        guard let channelId = channelController?.channel?.cid else { return }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        NotificationCenter.default.post(name: .selectPoll, object: nil, userInfo: userInfo)
     }
 
     private func animateMenuButton() {
