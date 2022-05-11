@@ -311,7 +311,7 @@ extension GifViewController: UISearchBarDelegate {
         if !isSearchEnable {
             let gifVc = GifViewController(with: true)
             NotificationCenter.default.post(name: .clearTextField, object: nil, userInfo: nil)
-            UIApplication.shared.keyWindow?.rootViewController?.present(gifVc, animated: true, completion: nil)
+            UIApplication.shared.getTopViewController()?.present(gifVc, animated: true, completion: nil)
         }
         return isSearchEnable
     }

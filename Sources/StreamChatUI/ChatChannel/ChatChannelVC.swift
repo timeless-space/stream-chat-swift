@@ -356,12 +356,15 @@ open class ChatChannelVC:
         }
     }
 
+    deinit {
+        if enableKeyboardObserver {
+            keyboardHandler.stop()
+        }
+    }
+
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         NotificationCenter.default.post(name: .hideTabbar, object: nil)
-        if enableKeyboardObserver {
-            keyboardHandler.start()
-        }
     }
 
     open override func viewWillDisappear(_ animated: Bool) {
@@ -369,17 +372,9 @@ open class ChatChannelVC:
         self.navigationController?.isToolbarHidden = true
     }
 
-    override open func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-    }
-
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         resignFirstResponder()
-        if enableKeyboardObserver {
-            keyboardHandler.stop()
-        }
     }
 
     @objc func backAction(_ sender: Any) {
