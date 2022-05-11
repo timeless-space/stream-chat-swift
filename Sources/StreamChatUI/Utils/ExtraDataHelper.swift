@@ -352,7 +352,7 @@ public extension Dictionary where Key == String, Value == RawJSON {
     var sentOneTransferAmount: String? {
         if let transferAmount = sendOneExtraData["transferAmount"] {
             let dblAmount = fetchRawData(raw: transferAmount) as? Double ?? 0
-            return String(format: "%.2f", dblAmount)
+            return "\(dblAmount)"
         } else {
             return nil
         }

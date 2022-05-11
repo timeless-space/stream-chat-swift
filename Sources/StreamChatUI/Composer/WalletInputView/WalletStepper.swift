@@ -250,7 +250,7 @@ class WalletStepper: UIView {
     }
 
     func getAmount() -> Double {
-        return Double(lblAmount.text ?? "0") ?? 0
+        return Double((self.lblAmount.text?.replacingOccurrences(of: decimalSeparator, with: ".").trimmingCharacters(in: .whitespaces) ?? "0")) ?? 0
     }
 
     func insertNumber(numberValue: String?) {

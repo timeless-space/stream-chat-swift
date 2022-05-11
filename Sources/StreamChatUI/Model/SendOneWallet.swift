@@ -35,7 +35,7 @@ public struct SendOneWallet {
         dictOut["recipientAddress"] = .string(recipientAddress ?? "")
         dictOut["recipientImageUrl"] = .string(recipientImageUrl?.absoluteString ?? "")
         dictOut["myImageUrl"] = .string(myImageUrl?.absoluteString ?? "")
-        dictOut["transferAmount"] = .number(Double(transferAmount ?? 0).rounded(toPlaces: 2))
+        dictOut["transferAmount"] = .number(Double(transferAmount ?? 0))
         dictOut["txId"] = .string(txId ?? "")
         dictOut["paymentTheme"] = .string(paymentTheme ?? "")
         return dictOut
