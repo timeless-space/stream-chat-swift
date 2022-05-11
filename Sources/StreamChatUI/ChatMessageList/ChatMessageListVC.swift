@@ -291,6 +291,10 @@ open class ChatMessageListVC:
         dataSource?.numberOfMessages(in: self) ?? 0
     }
 
+    public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        pausePlayVideos()
+    }
+
     open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         let currentUserId = ChatClient.shared.currentUserId

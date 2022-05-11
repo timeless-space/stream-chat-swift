@@ -56,6 +56,11 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
                 AVPlayerItem(asset: components.videoLoader.videoAsset(at: $0))
             }
             player.replaceCurrentItem(with: playerItem)
+
+            NotificationCenter.default.addObserver(self,
+                                                   selector: #selector(playerDidFinishPlaying(note:)),
+                                                   name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                                   object: playerView.player.currentItem)
             
             if let url = newAssetURL {
                 components.videoLoader.loadPreviewForVideo(at: url) { [weak self] in
@@ -66,6 +71,20 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
                         self?.animationPlaceholderImageView.image = nil
                     }
                 }
+            }
+        }
+    }
+
+    // Play video again in case the current player has finished playing
+    @objc func playerDidFinishPlaying(note: NSNotification) {
+        guard let playerItem = note.object as? AVPlayerItem,
+              let currentPlayer = playerView.player as? AVPlayer else {
+                  return
+              }
+        if let currentItem = currentPlayer.currentItem, currentItem == playerItem {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                currentPlayer.seek(to: CMTime.zero)
+                currentPlayer.play()
             }
         }
     }
