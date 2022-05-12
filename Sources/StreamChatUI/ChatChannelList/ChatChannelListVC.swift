@@ -321,6 +321,7 @@ open class ChatChannelListVC: _ViewController,
         }
 
         Animate { self.collectionView.layoutIfNeeded() }
+        ChatSharedObject.shared.isSwipeableViewOpen = true
     }
 
     open func swipeableViewActionViews(for indexPath: IndexPath) -> [UIView] {
@@ -345,6 +346,10 @@ open class ChatChannelListVC: _ViewController,
             deleteView.action = { self.deleteButtonPressedForCell(at: indexPath) }
             return [deleteView]
         }
+    }
+
+    open func swipeableViewHideActionViews(for indexPath: IndexPath) {
+        ChatSharedObject.shared.isSwipeableViewOpen = false
     }
 
     /// This function is called when delete button is pressed from action items of a cell.

@@ -26,6 +26,7 @@
         <!--Private GroupOTPVC-->
         <scene sceneID="s0d-6b-0kx">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <viewController storyboardIdentifier="PrivateGroupOTPVC" id="Y6W-OH-hqX" customClass="PrivateGroupOTPVC" customModule="StreamChatUI" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="5EZ-qb-Rvc">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
@@ -153,7 +154,6 @@
                         <outlet property="viewSafeAreaHeader" destination="Ojq-IW-mI6" id="8P6-d9-p4L"/>
                     </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="118.84057971014494" y="76.339285714285708"/>
         </scene>

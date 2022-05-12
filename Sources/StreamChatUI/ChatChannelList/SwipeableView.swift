@@ -20,6 +20,8 @@ public protocol SwipeableViewDelegate: AnyObject {
     /// - Parameter indexPath: IndexPath of `collectionViewCell` which asks for action buttons.
     /// - Returns array of buttons revealed by swipe deletion.
     func swipeableViewActionViews(for indexPath: IndexPath) -> [UIView]
+
+    func swipeableViewHideActionViews(for indexPath: IndexPath)
 }
 
 /// A view with swipe functionality that is used as action buttons view for channel list item view.
@@ -115,6 +117,7 @@ open class SwipeableView: _View, ComponentsProvider, UIGestureRecognizerDelegate
             startValue = actionStackViewWidthConstraint?.constant ?? 0
         case .cancelled, .failed:
             actionStackViewWidthConstraint?.constant = 0
+            delegate?.swipeableViewHideActionViews(for: indexPath)
         case .changed:
             if swipePosition.x < 0 {
                 swipedValue = startValue + swipePosition.x
@@ -129,10 +132,12 @@ open class SwipeableView: _View, ComponentsProvider, UIGestureRecognizerDelegate
 
             if swipeVelocity.x < -minimumSwipingVelocity {
                 actionStackViewWidthConstraint?.constant = 0
+                delegate?.swipeableViewHideActionViews(for: indexPath)
             } else if swipedValue > idealWidth / 2.0 || swipeVelocity.x > minimumSwipingVelocity {
                 actionStackViewWidthConstraint?.constant = idealWidth
             } else {
                 actionStackViewWidthConstraint?.constant = 0
+                delegate?.swipeableViewHideActionViews(for: indexPath)
             }
 
             Animate { self.superview?.layoutIfNeeded() }
