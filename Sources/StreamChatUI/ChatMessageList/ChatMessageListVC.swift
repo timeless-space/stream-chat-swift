@@ -456,6 +456,9 @@ open class ChatMessageListVC:
                         for: indexPath) as? WalletRequestPayBubble else {
                             return UITableViewCell()
                         }
+                    if let channel = dataSource?.channel(for: self) {
+                        cell.channelId = channel.cid
+                    }
                     cell.isSender = isMessageFromCurrentUser
                     cell.client = client
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
@@ -468,6 +471,9 @@ open class ChatMessageListVC:
                     for: indexPath) as? TableViewCellWallePayBubbleIncoming else {
                         return UITableViewCell()
                     }
+                if let channel = dataSource?.channel(for: self) {
+                    cell.channelId = channel.cid
+                }
                 cell.client = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
