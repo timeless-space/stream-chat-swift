@@ -253,6 +253,7 @@ open class GalleryVC:
         textViewMessageContainerView.bottomAnchor.constraint(equalTo: videoPlaybackBar.topAnchor).isActive = true
 
         textViewMessageContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        textViewMessageContainerView.isUserInteractionEnabled = false
 
         textViewMessageContainerView.addSubview(textViewMessage)
         NSLayoutConstraint.activate([
