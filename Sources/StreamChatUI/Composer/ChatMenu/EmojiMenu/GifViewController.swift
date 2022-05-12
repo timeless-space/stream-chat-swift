@@ -301,7 +301,8 @@ class GifViewController: UIViewController {
     }
 
     @objc func btnBackPressed(sender: UIButton!) {
-        dismiss(animated: true, completion: nil)
+        dismiss(animated: true)
+        NotificationCenter.default.post(name: .updateTextfield, object: nil)
     }
 }
 

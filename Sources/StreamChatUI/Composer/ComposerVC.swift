@@ -21,6 +21,7 @@ extension Notification.Name {
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
+    public static let updateTextfield = Notification.Name("kUpdateTextfield")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -398,6 +399,12 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(clearTextField), name: .clearTextField, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateTextFieldLayout), name: .updateTextfield, object: nil)
+    }
+
+    @objc func updateTextFieldLayout() {
+        composerView.centerContainer.layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: 7, right: 8)
+        composerView.centerContainer.layoutIfNeeded()
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
