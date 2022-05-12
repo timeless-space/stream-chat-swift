@@ -403,7 +403,7 @@ open class ComposerVC: _ViewController,
     }
 
     @objc func updateTextFieldLayout() {
-        composerView.centerContainer.layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: 7, right: 8)
+        composerView.centerContainer.layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: UIScreen.main.bounds.height * 0.015, right: 8)
         composerView.centerContainer.layoutIfNeeded()
     }
 
