@@ -215,7 +215,7 @@ class GifViewController: UIViewController {
         backButton.addTarget(self, action: #selector(btnBackPressed), for: .touchUpInside)
         backButton.isHidden = !isSearchEnable
         searchView.backgroundColor = Appearance.default.colorPalette.stickerBg
-        searchView.placeholder = "Search Gifs"
+        searchView.placeholder = "Search GIFs"
         searchView.backgroundImage = UIImage()
         searchView.delegate = self
         if (isSearchEnable) {
@@ -311,7 +311,7 @@ extension GifViewController: UISearchBarDelegate {
         if !isSearchEnable {
             let gifVc = GifViewController(with: true)
             NotificationCenter.default.post(name: .clearTextField, object: nil, userInfo: nil)
-            UIApplication.shared.keyWindow?.rootViewController?.present(gifVc, animated: true, completion: nil)
+            UIApplication.shared.getTopViewController()?.present(gifVc, animated: true, completion: nil)
         }
         return isSearchEnable
     }
