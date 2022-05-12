@@ -115,6 +115,11 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             return "Red Packet Amount Received"
         } else if lastMessage.extraData.keys.contains("gift") {
             return "Gift"
+        } else if lastMessage.extraData.keys.contains("fallbackMessage") {
+            let extraData = lastMessage.extraData
+            guard let fallbackMessage = extraData["fallbackMessage"] else { return "" }
+            let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
+            return fallbackMessageString
         } else if !lastMessage.text.isEmpty {
             return content.channel.isDirectMessageChannel ? lastMessage.text : "\(authorName) \(lastMessage.text)"
         } else {

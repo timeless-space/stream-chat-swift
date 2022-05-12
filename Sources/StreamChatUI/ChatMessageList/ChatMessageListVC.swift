@@ -504,6 +504,21 @@ open class ChatMessageListVC:
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
+            } else if isFallbackMessage(message) {
+                guard let extraData = message?.extraData,
+                      let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
+                let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
+                let cell: ChatMessageCell = listView.dequeueReusableCell(
+                    contentViewClass: cellContentClassForMessage(at: indexPath),
+                    attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
+                    layoutOptions: cellLayoutOptionsForMessage(at: indexPath),
+                    for: indexPath
+                )
+                var message = message
+                message?.text = fallbackMessageString
+                cell.messageContentView?.delegate = self
+                cell.messageContentView?.content = message
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -555,7 +570,10 @@ open class ChatMessageListVC:
     }
 
     private func isGiftCell(_ message: ChatMessage?) -> Bool {
-        message?.extraData.keys.contains("gift") ?? false
+        guard let extraData = message?.extraData,
+              let messageType = extraData["messageType"] else { return false }
+        let type = fetchRawData(raw: messageType) as? String ?? ""
+        return type == MessageType.giftPacket
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
@@ -599,6 +617,13 @@ open class ChatMessageListVC:
             return true
         }
         return false
+    }
+
+    private func isFallbackMessage(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let fallbackMessage = extraData["fallbackMessage"] else { return false }
+        let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
+        return !message.isBlank
     }
 
     private func isAdminMessage(_ message: ChatMessage?) -> Bool {
