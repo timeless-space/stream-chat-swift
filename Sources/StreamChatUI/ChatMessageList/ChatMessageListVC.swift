@@ -530,6 +530,7 @@ open class ChatMessageListVC:
                 cell.content = message
                 cell.channel = dataSource?.channel(for: self)
                 cell.configData(isSender: isMessageFromCurrentUser)
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
