@@ -21,7 +21,9 @@ extension Notification.Name {
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
-    public static let selectPoll = Notification.Name("kStreamChatPollTapAction")
+    public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
+    public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
+    public static let sendPoll = Notification.Name("kStreamChatSendPollTapAction")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -587,7 +589,7 @@ open class ComposerVC: _ViewController,
             case .poll:
                 self.animateToolkitView(isHide: true)
                 self.composerView.inputMessageView.textView.resignFirstResponder()
-                self.pollAction()
+                self.createNewPoll()
             default:
                 break
             }
@@ -869,13 +871,13 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
     }
 
-    @objc open func pollAction() {
+    @objc open func createNewPoll() {
         composerView.inputMessageView.textView.text = nil
         composerView.inputMessageView.textView.resignFirstResponder()
         guard let channelId = channelController?.channel?.cid else { return }
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
-        NotificationCenter.default.post(name: .selectPoll, object: nil, userInfo: userInfo)
+        NotificationCenter.default.post(name: .createNewPoll, object: nil, userInfo: userInfo)
     }
 
     private func animateMenuButton() {

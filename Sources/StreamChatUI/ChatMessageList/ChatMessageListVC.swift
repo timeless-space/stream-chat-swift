@@ -474,15 +474,15 @@ open class ChatMessageListVC:
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
-            } else if isPollCell(message) {
+            } else if isPollPreviewCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "PollBubble",
                     for: indexPath) as? PollBubble else {
                         return UITableViewCell()
                     }
-                cell.client = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
+                cell.channel = dataSource?.channel(for: self)
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
             } else {
@@ -535,8 +535,8 @@ open class ChatMessageListVC:
         message?.extraData.keys.contains("redPacketPickup") ?? false
     }
 
-    private func isPollCell(_ message: ChatMessage?) -> Bool {
-        message?.extraData.keys.contains("poll") ?? false
+    private func isPollPreviewCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("pollPreview") ?? false
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
