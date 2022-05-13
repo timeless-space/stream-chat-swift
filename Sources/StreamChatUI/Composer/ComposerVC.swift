@@ -586,8 +586,7 @@ open class ComposerVC: _ViewController,
             case .gift:
                 self.animateToolkitView(isHide: true)
                 self.composerView.inputMessageView.textView.resignFirstResponder()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                    guard let `self` = self else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     self.sendGiftAction()
                 }
             case .dao:
