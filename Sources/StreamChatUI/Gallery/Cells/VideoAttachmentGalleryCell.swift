@@ -41,6 +41,11 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
         animationPlaceholderImageView.addSubview(playerView)
         playerView.pin(to: animationPlaceholderImageView)
         playerView.pin(anchors: [.height, .width], to: animationPlaceholderImageView)
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(playerDidFinishPlaying(note:)),
+                                               name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                               object: playerView.player.currentItem)
     }
     
     override open func updateContent() {
@@ -56,11 +61,6 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
                 AVPlayerItem(asset: components.videoLoader.videoAsset(at: $0))
             }
             player.replaceCurrentItem(with: playerItem)
-
-            NotificationCenter.default.addObserver(self,
-                                                   selector: #selector(playerDidFinishPlaying(note:)),
-                                                   name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
-                                                   object: playerView.player.currentItem)
             
             if let url = newAssetURL {
                 components.videoLoader.loadPreviewForVideo(at: url) { [weak self] in
