@@ -351,8 +351,19 @@ open class ChatChannelVC:
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        NotificationCenter.default.addObserver(self, selector: #selector(updateTextFieldLayout), name: .updateTextfield, object: nil)
         if enableKeyboardObserver {
             keyboardHandler.start()
+        }
+    }
+
+    @objc func updateTextFieldLayout() {
+        enableKeyboardObserver.toggle()
+        messageComposerVC?.composerView.inputMessageView.emojiButton.isSelected = true
+        if enableKeyboardObserver {
+            keyboardHandler.start()
+        } else {
+            keyboardHandler.stop()
         }
     }
 

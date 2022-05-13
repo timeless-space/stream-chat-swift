@@ -207,6 +207,12 @@ class GifViewController: UIViewController {
         errorLabel.isHidden = true
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        if isSearchEnable {
+            NotificationCenter.default.post(name: .updateTextfield, object: nil, userInfo: nil)
+        }
+    }
+
     private func setUpBackButton() {
         headerStackView.axis = .horizontal
         headerStackView.distribution = .fill
@@ -302,7 +308,6 @@ class GifViewController: UIViewController {
 
     @objc func btnBackPressed(sender: UIButton!) {
         dismiss(animated: true)
-        NotificationCenter.default.post(name: .updateTextfield, object: nil)
     }
 }
 
@@ -310,9 +315,12 @@ class GifViewController: UIViewController {
 extension GifViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         if !isSearchEnable {
-            let gifVc = GifViewController(with: true)
-            NotificationCenter.default.post(name: .clearTextField, object: nil, userInfo: nil)
-            UIApplication.shared.getTopViewController()?.present(gifVc, animated: true, completion: nil)
+            NotificationCenter.default.post(name: .updateTextfield, object: nil, userInfo: nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                let gifVc = GifViewController(with: true)
+                NotificationCenter.default.post(name: .clearTextField, object: nil, userInfo: nil)
+                UIApplication.shared.getTopViewController()?.present(gifVc, animated: true, completion: nil)
+            })
         }
         return isSearchEnable
     }

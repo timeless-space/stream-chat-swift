@@ -279,7 +279,7 @@ open class ComposerVC: _ViewController,
     private var menuController: ChatMenuViewController?
     private var emoji: UIViewController?
     private var emojiPickerView: UIViewController?
-    private var isMenuShowing = false
+    var isMenuShowing = false
     private var forceKeyboardClose = false {
         didSet {
             if forceKeyboardClose {
@@ -399,12 +399,6 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(clearTextField), name: .clearTextField, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(updateTextFieldLayout), name: .updateTextfield, object: nil)
-    }
-
-    @objc func updateTextFieldLayout() {
-        composerView.centerContainer.layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: UIScreen.main.bounds.height * 0.015, right: 8)
-        composerView.centerContainer.layoutIfNeeded()
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
