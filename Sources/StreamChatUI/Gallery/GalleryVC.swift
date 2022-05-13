@@ -129,6 +129,7 @@ open class GalleryVC:
     /// A constaint videoPlayerHeightConstraint
     open private(set) var textMessageHeightConstraint: NSLayoutConstraint?
     private let inputLinesScrollThreshold = 8
+    private var isCellAlreadyUpdated = false
 
     override open func setUpAppearance() {
         super.setUpAppearance()
@@ -139,9 +140,9 @@ open class GalleryVC:
         attachmentsCollectionView.showsHorizontalScrollIndicator = false
         attachmentsCollectionView.showsVerticalScrollIndicator = false
         
-        topBarView.backgroundColor = appearance.colorPalette.walletTabbarBackground//appearance.colorPalette.popoverBackground
-        bottomBarView.backgroundColor = appearance.colorPalette.walletTabbarBackground//appearance.colorPalette.popoverBackground
-        videoPlaybackBar.backgroundColor = .black//appearance.colorPalette.popoverBackground
+        topBarView.backgroundColor = .black.withAlphaComponent(0.8)
+        bottomBarView.backgroundColor = .black.withAlphaComponent(0.8)
+        videoPlaybackBar.backgroundColor = .black.withAlphaComponent(0.8)
         
         userLabel.font = appearance.fonts.bodyBold
         userLabel.textColor = .white//appearance.colorPalette.text
@@ -251,7 +252,8 @@ open class GalleryVC:
         textViewMessageContainerView.pin(anchors: [.leading, .trailing], to: view)
         textViewMessageContainerView.bottomAnchor.constraint(equalTo: videoPlaybackBar.topAnchor).isActive = true
 
-        textViewMessageContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        textViewMessageContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        textViewMessageContainerView.isUserInteractionEnabled = false
 
         textViewMessageContainerView.addSubview(textViewMessage)
         NSLayoutConstraint.activate([
@@ -284,6 +286,20 @@ open class GalleryVC:
                 )
             }
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
+            guard let `self` = self else { return }
+            if !self.isCellAlreadyUpdated {
+                self.topBarTopConstraint?.constant =  -self.topBarView.frame.height
+                self.bottomBarBottomConstraint?.constant = self.bottomBarView.frame.height
+                Animate {
+                    self.textViewMessageContainerView.alpha = 0
+                    self.topBarView.alpha = 0
+                    self.bottomBarView.alpha = 0
+                    self.videoPlaybackBar.backgroundColor = .clear
+                    self.view.layoutIfNeeded()
+                }
+            }
+        })
     }
     
     override open func viewWillDisappear(_ animated: Bool) {
@@ -478,6 +494,7 @@ open class GalleryVC:
     
     /// Triggered when the current image is single tapped.
     open func handleSingleTapOnCell(at indexPath: IndexPath) {
+        isCellAlreadyUpdated = true
         let areBarsHidden = bottomBarBottomConstraint?.constant != 0
         
         topBarTopConstraint?.constant = areBarsHidden ? 0 : -topBarView.frame.height
