@@ -607,6 +607,185 @@ public extension Dictionary where Key == String, Value == RawJSON {
     }
 }
 
+// MARK: - User detail
+public extension Dictionary where Key == String, Value == RawJSON {
+    var email: String? {
+        if let email = self["email"] {
+            return fetchRawData(raw: email) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var bio: String? {
+        if let bio = self["bio"] {
+            return fetchRawData(raw: bio) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var birthday: String? {
+        if let birthday = self["birthday"] {
+            return fetchRawData(raw: birthday) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var instagramId: String? {
+        if let instagramId = self["instagramId"] {
+            return fetchRawData(raw: instagramId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var tiktokId: String? {
+        if let tiktokId = self["tiktokId"] {
+            return fetchRawData(raw: tiktokId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var twitterId: String? {
+        if let twitterId = self["twitterId"] {
+            return fetchRawData(raw: twitterId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var phoneNumber: String? {
+        if let phoneNumber = self["phoneNumber"] {
+            return fetchRawData(raw: phoneNumber) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var coverImage: String? {
+        if let coverImage = self["coverImage"] {
+            return fetchRawData(raw: coverImage) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
+// MARK: - Gift PickUp Bubble
+public extension Dictionary where Key == String, Value == RawJSON {
+    private var giftExtraData: [String: RawJSON] {
+        if let extraData = self["gift"] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
+    var giftTitle: String? {
+        if let title = giftExtraData["title"] {
+            return fetchRawData(raw: title) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftMyName: String? {
+        if let myName = giftExtraData["myName"] {
+            return fetchRawData(raw: myName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftMyWalletAddress: String? {
+        if let myWalletAddress = giftExtraData["myWalletAddress"] {
+            return fetchRawData(raw: myWalletAddress) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftChannelUsers: String? {
+        if let channelUsers = giftExtraData["channelUsers"] {
+            return fetchRawData(raw: channelUsers) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftAmount: String? {
+        if let amount = giftExtraData["total_amount"] {
+            return fetchRawData(raw: amount) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftChannelId: String? {
+        if let channelId = giftExtraData["channelId"] {
+            return fetchRawData(raw: channelId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftEndTime: String? {
+        if let endTime = giftExtraData["endTime"] {
+            return fetchRawData(raw: endTime) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftID: String? {
+        if let packetId = giftExtraData["id"] {
+            return fetchRawData(raw: packetId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftAddress: String? {
+        if let packetAddress = giftExtraData["packetAddress"] {
+            return fetchRawData(raw: packetAddress) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var flair: String? {
+        if let flair = giftExtraData["flair"] {
+            return fetchRawData(raw: flair) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var tokenAddress: String? {
+        if let symbol = giftExtraData["token_address"] {
+            return fetchRawData(raw: symbol) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var claimedAt: String? {
+        if let claimedAt = self["claimed_at"] {
+            return fetchRawData(raw: claimedAt) as? String
+        } else {
+            return nil
+        }
+    }
+}
+
 public func fetchRawData(raw: RawJSON) -> Any? {
     switch raw {
     case .number(let double):

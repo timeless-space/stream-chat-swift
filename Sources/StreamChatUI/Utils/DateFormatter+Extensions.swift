@@ -25,6 +25,12 @@ extension DateFormatter {
         dateFormatter.dateFormat  = type.rawValue
         return dateFormatter
     }
+
+    static let claimedFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM dd yyyy h:mm a"
+        return dateFormatter
+    }()
     
     /// Formatter that is used to format date for scrolling overlay that should display
     /// day when message below was sent
