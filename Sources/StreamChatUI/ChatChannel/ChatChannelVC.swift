@@ -361,8 +361,10 @@ open class ChatChannelVC:
         enableKeyboardObserver.toggle()
         messageComposerVC?.composerView.inputMessageView.emojiButton.isSelected = true
         if enableKeyboardObserver {
+            messageComposerVC?.shouldToggleEmojiButton = true
             keyboardHandler.start()
         } else {
+            messageComposerVC?.shouldToggleEmojiButton = false
             keyboardHandler.stop()
         }
     }

@@ -305,6 +305,7 @@ open class ComposerVC: _ViewController,
             }
         }
     }
+    var shouldToggleEmojiButton = true
 
     @objc func didTapView() {
         hideInputView()
@@ -316,7 +317,9 @@ open class ComposerVC: _ViewController,
 
     @objc fileprivate func keyboardWillHide(notification: Notification) {
         guard !forceKeyboardClose else { return }
-        composerView.inputMessageView.emojiButton.isSelected = false
+        if shouldToggleEmojiButton {
+            composerView.inputMessageView.emojiButton.isSelected = false
+        }
         isMenuShowing = true
         animateMenuButton()
     }
