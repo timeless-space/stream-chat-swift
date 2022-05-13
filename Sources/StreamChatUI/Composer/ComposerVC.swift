@@ -624,6 +624,10 @@ open class ComposerVC: _ViewController,
     @objc open func showEmojiMenu(_ sender: UIButton) {
         // EMOJI integration
         sender.isSelected.toggle()
+        if !composerView.toolbarBackButton.isHidden {
+            composerView.toolbarBackButton.isHidden.toggle()
+            composerView.toolbarToggleButton.isHidden.toggle()
+        }
         isMenuShowing = true
         animateMenuButton()
         if sender.isSelected {
