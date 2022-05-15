@@ -173,15 +173,15 @@ enum MenuType: Int, CaseIterable {
     }
 
     static func getDaoMenu() -> [MenuType] {
-        return [.media, .disburseFund, .contributeToFund, .polling, .weather, .nft, .contact]
+        return [.media, .disburseFund, .contributeToFund, .polling, .weather, .nft, .contact,  .poll]
     }
 
     static func getNonDaoMenu() -> [MenuType] {
-        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .gift, .poll]
+        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .gift]
     }
 
     static func getNonDaoMenuWithoutGift() -> [MenuType] {
-        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket]
+        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .poll]
     }
 }
 

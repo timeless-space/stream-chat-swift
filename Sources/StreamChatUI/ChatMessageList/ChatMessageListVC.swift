@@ -84,7 +84,9 @@ open class ChatMessageListVC:
         listView.register(ChatMessageStickerBubble.self, forCellReuseIdentifier: "ChatMessageStickerBubble")
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
+        listView.register(PollBubble.self, forCellReuseIdentifier: "PollPreviewBubble")
         listView.register(PollBubble.self, forCellReuseIdentifier: "PollBubble")
+        listView.register(PollBubble.self, forCellReuseIdentifier: "PollSentBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
@@ -505,7 +507,54 @@ open class ChatMessageListVC:
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
-            }  else if isFallbackMessage(message) {
+            } else if isPollCell(message) {
+                var memberImageURL: [String] = []
+                if let channel = dataSource?.channel(for: self) {
+                    let controller = ChatClient.shared.memberListController(query: .init(cid: channel.cid))
+                    controller.synchronize { error in
+                        if error == nil {
+                            controller.members.forEach { member in
+                                memberImageURL.append(member.imageURL?.absoluteString ?? "")
+                            }
+                        }
+                    }
+                }
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "PollBubble",
+                        for: indexPath) as? PollBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.content = message
+                    cell.memberImageURL = memberImageURL
+                    cell.channel = dataSource?.channel(for: self)
+                    cell.configData(isSender: isMessageFromCurrentUser)
+                    return cell
+                }
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PollSentBubble",
+                    for: indexPath) as? PollBubble else {
+                        return UITableViewCell()
+                    }
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.memberImageURL = memberImageURL
+                cell.channel = dataSource?.channel(for: self)
+                cell.configData(isSender: isMessageFromCurrentUser)
+                return cell
+            } else if isPollPreviewCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PollPreviewBubble",
+                    for: indexPath) as? PollBubble else {
+                        return UITableViewCell()
+                    }
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.channel = dataSource?.channel(for: self)
+                cell.configData(isSender: isMessageFromCurrentUser)
+                return cell
+            } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
                       let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
                 let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
@@ -519,17 +568,6 @@ open class ChatMessageListVC:
                 message?.text = fallbackMessageString
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
-                return cell
-            } else if isPollPreviewCell(message) {
-                guard let cell = tableView.dequeueReusableCell(
-                    withIdentifier: "PollBubble",
-                    for: indexPath) as? PollBubble else {
-                        return UITableViewCell()
-                    }
-                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
-                cell.content = message
-                cell.channel = dataSource?.channel(for: self)
-                cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
@@ -586,6 +624,13 @@ open class ChatMessageListVC:
               let messageType = extraData["messageType"] else { return false }
         let type = fetchRawData(raw: messageType) as? String ?? ""
         return type == MessageType.giftPacket
+    }
+
+    private func isPollCell(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let messageType = extraData["messageType"] else { return false }
+        let type = fetchRawData(raw: messageType) as? String ?? ""
+        return type == MessageType.newPoll
     }
 
     private func isPollPreviewCell(_ message: ChatMessage?) -> Bool {

@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import StreamChat
-import StreamChatUI
 import SwiftUI
+import StreamChat
 
 class PollBubble: UITableViewCell {
     public private(set) var viewContainer: UIView!
@@ -21,7 +20,9 @@ class PollBubble: UITableViewCell {
     private var trailingAnchorForReceiver: NSLayoutConstraint?
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
+    var memberImageURL: [String] = []
     var channel: ChatChannel?
+    var pollID = ""
 
     public lazy var dateFormatter: DateFormatter = .makeDefault()
 
@@ -110,45 +111,101 @@ class PollBubble: UITableViewCell {
     }
 
     func configData(isSender: Bool) {
-        viewContainer.isHidden = !isSender
+//        viewContainer.isHidden = !isSender
         setBubbleConstraints(isSender)
+        guard let cid = channel?.cid else {
+            return
+        }
         if #available(iOS 13.0, *) {
-            if let pollData = self.getExtraData(key: "pollPreview"),
-               let questionRaw = pollData["question"],
-               let imageURLStrRaw = pollData["imageURLStr"],
-               let optionListRaw = pollData["optionList"],
-               let anonymousPollingRaw = pollData["anonymousPolling"],
-               let multipleAnswersRaw = pollData["multipleAnswers"],
-               let hideTallyUntilVoteRaw = pollData["hideTallyUntilVote"],
-               let isSendedRaw = pollData["isSended"] {
+            if let pollData = self.getExtraData(key: "poll"),
+               let questionRaw = pollData["question"], let imageUrlRaw = pollData["image_url"],
+               let anonymousRaw = pollData["anonymous"], let multipleChoicesRaw = pollData["multiple_choices"],
+               let hideTallyRaw = pollData["hide_tally"], let answersRaw = pollData["answers"] {
+//               let isSendedRaw = pollData["isSended"] {
                 let question = fetchRawData(raw: questionRaw) as? String ?? ""
-                let imageURLStr = fetchRawData(raw: imageURLStrRaw) as? String ?? ""
-                let optionListStr = fetchRawData(raw: optionListRaw) as? String ?? ""
-                let optionList = optionListStr.components(separatedBy: "-")
-                let anonymousPolling = (fetchRawData(raw: anonymousPollingRaw) as? String ?? "1") == "1" ? true : false
-                let multipleAnswers = (fetchRawData(raw: multipleAnswersRaw) as? String ?? "1") == "1" ? true : false
-                let hideTallyUntilVote = (fetchRawData(raw: hideTallyUntilVoteRaw) as? String ?? "1") == "1" ? true : false
-                let isSended = (fetchRawData(raw: isSendedRaw) as? String ?? "1") == "1" ? true : false
+                let imageUrl = fetchRawData(raw: imageUrlRaw) as? String ?? ""
+                let anonymous = fetchRawData(raw: anonymousRaw) as? Bool ?? true
+                let multipleChoices = fetchRawData(raw: multipleChoicesRaw) as? Bool ?? true
+                let hideTally = fetchRawData(raw: hideTallyRaw) as? Bool ?? true
+                let answersArrayJSON = fetchRawData(raw: answersRaw) as? [RawJSON] ?? []
+                var answersArrayDict: [[String: RawJSON]] = []
+                var answers: [AnswerRes] = []
+                answersArrayJSON.forEach { itemRaw in
+                    let item = fetchRawData(raw: itemRaw) as? [String: RawJSON] ?? [:]
+                    answersArrayDict.append(item)
+                }
+                answersArrayDict.forEach { item in
+                    if let id = item["id"], let content = item["content"], let pollID = item["poll_id"],
+                        let votedCount = item["voted_count"], let createdAt = item["created_at"] {
+                        var wallets: [AnswerWallet] = []
+                        if let walletsRaw = item["wallets"] {
+                            let walletsArrayJSON = fetchRawData(raw: walletsRaw) as? [RawJSON] ?? []
+                            if !walletsArrayJSON.isEmpty {
+                                var walletsArrayDict: [[String: RawJSON]] = []
+                                walletsArrayJSON.forEach { itemRaw in
+                                    let item = fetchRawData(raw: itemRaw) as? [String: RawJSON] ?? [:]
+                                    walletsArrayDict.append(item)
+                                }
+                                walletsArrayDict.forEach { item in
+                                    if let titleRaw = item["title"], let avatarRaw = item["avatar"],
+                                       let bioRaw = item["bio"], let idRaw = item["id"],
+                                       let addressRaw = item["address"], let verifiedRaw = item["verified"] {
+                                        wallets.append(AnswerWallet(
+                                            title: fetchRawData(raw: titleRaw) as? String ?? "",
+                                            avatar: fetchRawData(raw: avatarRaw) as? String ?? "",
+                                            bio: fetchRawData(raw: bioRaw) as? String ?? "",
+                                            id: fetchRawData(raw: idRaw) as? String ?? "",
+                                            address: fetchRawData(raw: addressRaw) as? String ?? "",
+                                            verifies: fetchRawData(raw: verifiedRaw) as? Bool ?? false)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        answers.append(AnswerRes(
+                            id: fetchRawData(raw: id) as? String ?? "",
+                            content: fetchRawData(raw: content) as? String ?? "",
+                            pollID: fetchRawData(raw: pollID) as? String ?? "",
+                            votedCount: fetchRawData(raw: votedCount) as? Int ?? 0,
+                            wallets: wallets,
+                            createdAt: fetchRawData(raw: createdAt) as? String ?? ""
+                        ))
+                    }
+                }
+                if !answers.isEmpty {
+                    pollID = answers[0].pollID
+                }
+
+//                let optionListStr = fetchRawData(raw: optionListRaw) as? String ?? ""
+//                let optionList = optionListStr.components(separatedBy: "-")
+//                let isSended = (fetchRawData(raw: isSendedRaw) as? String ?? "1") == "1" ? true : false
                 subContainer.fit(subview: PollView(
+                    cid: cid,
+                    memberImageURL: memberImageURL,
                     question: question,
-                    imageURLStr: imageURLStr,
-                    optionList: optionList,
-                    multipleAnswers: multipleAnswers,
-                    hideTallyUntilVote: hideTallyUntilVote,
-                    isSended: isSended,
+                    imageUrl: imageUrl,
+                    multipleChoices: true, // multipleChoices,
+                    hideTally: hideTally,
+                    answers: answers,
+//                    isSended: isSended,
                     onTapSend: {
                         self.onTapSend(
                             question: question,
-                            imageURLStr: imageURLStr,
-                            optionList: optionList,
-                            anonymousPolling: anonymousPolling,
-                            multipleAnswers: multipleAnswers,
-                            hideTallyUntilVote: hideTallyUntilVote
+                            imageUrl: "", // imageUrl,
+                            optionList: ["abc"], // optionList,
+                            anonymousPolling: false, // anonymousPolling,
+                            multipleChoices: true, // multipleChoices,
+                            hideTally: false // hideTally
                         )
-                    }, onTapEdit: {
+                    },
+                    onTapEdit: {
                         self.onTapEdit()
-                    }, onTapCancel: {
+                    },
+                    onTapCancel: {
                         self.onTapCancel()
+                    },
+                    onTapSubmit: { listAnswerID in
+                        self.onTapSubmit(listAnswerID)
                     }
                 ))
                 timestampLabel.textAlignment = isSender ? .right : .left
@@ -161,12 +218,13 @@ class PollBubble: UITableViewCell {
                         nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
                     }
                 }
-                timestampLabel?.text = "\(isSended ? "" : "Only visible to you ")\(nameAndTimeString ?? "")"
+                timestampLabel?.text = nameAndTimeString // "\(isSended ? "" : "Only visible to you ")\(nameAndTimeString ?? "")"
             }
         }
     }
 
     private func getExtraData(key: String) -> [String: RawJSON]? {
+        let extra = content?.extraData
         if let extraData = content?.extraData[key] {
             switch extraData {
             case .dictionary(let dictionary):
@@ -181,11 +239,11 @@ class PollBubble: UITableViewCell {
 
     private func onTapSend(
         question: String,
-        imageURLStr: String,
+        imageUrl: String,
         optionList: [String],
         anonymousPolling: Bool,
-        multipleAnswers: Bool,
-        hideTallyUntilVote: Bool
+        multipleChoices: Bool,
+        hideTally: Bool
     ) {
         guard let cid = channel?.cid else {
             return
@@ -193,10 +251,10 @@ class PollBubble: UITableViewCell {
         var userInfo = [String: Any]()
         userInfo["channelId"] = cid
         userInfo["question"] = question
-        userInfo["imageUrl"] = imageURLStr
+        userInfo["imageUrl"] = imageUrl
         userInfo["anonymous"] = anonymousPolling
-        userInfo["multipleChoices"] = multipleAnswers
-        userInfo["hideTally"] = hideTallyUntilVote
+        userInfo["multipleChoices"] = multipleChoices
+        userInfo["hideTally"] = hideTally
         userInfo["groupID"] = cid.description
         var answers: [[String: String]] = []
         optionList.forEach { item in
@@ -212,7 +270,7 @@ class PollBubble: UITableViewCell {
         }
         let editData = self.getExtraData(key: "pollPreview")
         var userInfo = [String: Any]()
-        userInfo["channelId"] = cid
+        userInfo["channelId"] = cid.description
         userInfo["editData"] = editData
         NotificationCenter.default.post(name: .editPoll, object: nil, userInfo: userInfo)
     }
@@ -220,74 +278,186 @@ class PollBubble: UITableViewCell {
     private func onTapCancel() {
         contentView.removeFromSuperview()
     }
+
+    private func onTapSubmit(_ listAnswerID: [String]) {
+        guard let cid = channel?.cid else {
+            return
+        }
+        var userInfo = [String: Any]()
+        userInfo["lst_answer_id"] = listAnswerID
+        userInfo["poll_id"] = pollID
+        userInfo["group_id"] = cid.description
+        NotificationCenter.default.post(name: .submitVote, object: nil, userInfo: userInfo)
+    }
+}
+
+struct AnswerRes {
+    var id = ""
+    var content = ""
+    var pollID = ""
+    var votedCount = 0
+    var wallets: [AnswerWallet] = []
+    var createdAt = ""
+}
+
+struct AnswerWallet {
+    var title = ""
+    var avatar = ""
+    var bio = ""
+    var id = ""
+    var address = ""
+    var verifies = false
 }
 
 @available(iOS 13.0.0, *)
 struct PollView: View {
     // MARK: - Input Paramters
+    var cid: ChannelId
+    var memberImageURL: [String]
     var question = ""
-    var imageURLStr = ""
-    var optionList = [""]
-    var multipleAnswers = true
-    var hideTallyUntilVote = true
+    var imageUrl = ""
+    var multipleChoices = true
+    var hideTally = true
+    var answers: [AnswerRes] = []
     var isSended = false
 
     // MARK: - Properties
-    @State private var selectedOptionIDX = -1
+    @State private var selectedAnswerID = ""
+    @State private var selectedMultiAnswerID: [String] = []
 
     // MARK: - Callback functions
     var onTapSend: () -> Void
     var onTapEdit: () -> Void
     var onTapCancel: () -> Void
+    var onTapSubmit: ([String]) -> Void
 
+    // MARK: Computed Variables
+    private var votedCount: Int {
+        var result = 0
+        answers.forEach { item in
+            result += item.votedCount
+        }
+        return result
+    }
+
+    private var enableSubmitButton: Bool {
+        if multipleChoices {
+            return !selectedMultiAnswerID.isEmpty
+        } else {
+            return !selectedAnswerID.isEmpty
+        }
+    }
+
+    // MARK: - Body view
     var body: some View {
-        VStack(alignment: .trailing, spacing: 12) {
+//        VStack(alignment: .trailing, spacing: 12) {
             VStack(alignment: .leading, spacing: 0) {
-                if #available(iOS 15.0, *), let imageURL = URL(string: imageURLStr) {
+                if #available(iOS 15.0, *), let imageURL = URL(string: imageUrl) {
                     Rectangle()
                         .foregroundColor(Color.black) // TODO
-                        .frame(width: UIScreen.main.bounds.width * 241 / 375,
-                               height: UIScreen.main.bounds.width * 241 / 375)
+                        .frame(width: UIScreen.main.bounds.width * 243 / 375,
+                               height: UIScreen.main.bounds.width * 243 / 375)
                 }
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("YOUR FIRST POLL")
+                        .tracking(-0.4)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(Color.white.opacity(0.8))
+                        .padding(.bottom, 2.5)
                     Text(question)
+                        .tracking(-0.2)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(Color.white)
-                    ForEach(0 ..< optionList.count) { idx in
-                        PollSelectLine(item: optionList[idx],
-                                       idx: idx,
-                                       multipleAnswers: multipleAnswers,
-                                       selectedOptionIDX: $selectedOptionIDX)
+                        .padding(.bottom, 4.5)
+                        .padding(.leading, 1)
+                    HStack(spacing: 3) {
+                        Text("\(votedCount) \(votedCount > 1 ? "Votes" : "Vote")")
+                            .tracking(-0.4)
+                            .font(.system(size: 10))
+                            .foregroundColor(Color.white)
+                            .padding(.leading, 1)
+//                        ForEach(0 ..< (memberImageURL.count <= 5 ? memberImageURL.count : 5)) { idx in
+//                            memberAvatar(memberImageURL[idx])
+//                        }
                     }
-                }
-                .padding(.vertical, 15)
-                .padding(.horizontal, 18)
-            }
-            .frame(minWidth: UIScreen.main.bounds.width * 241 / 375, alignment: .leading)
-            .background(Color.blue)
-            .cornerRadius(12)
-            .disabled(!isSended)
-            if !isSended {
-                HStack(spacing: 33) {
-                    Spacer(minLength: 0)
+                    .padding(.bottom, 14.5)
+                    VStack(alignment: .leading, spacing: 17) {
+                        ForEach(0 ..< answers.count) { idx in
+                            PollSelectLine(item: answers[idx],
+                                           idx: idx,
+                                           multipleChoices: multipleChoices,
+                                           selectedAnswerID: $selectedAnswerID,
+                                           selectedMultiAnswerID: $selectedMultiAnswerID)
+                        }
+                    }
+                    .padding(.bottom, 17)
                     Button(action: {
-                        onTapSend()
+                        if multipleChoices {
+                            onTapSubmit(selectedMultiAnswerID)
+                        } else {
+                            onTapSubmit([selectedAnswerID])
+                        }
                     }) {
-                        Text("Send")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color.blue)
+                        RoundedRectangle(cornerRadius: .infinity)
+                            .foregroundColor(enableSubmitButton ? Color.white.opacity(0.2) : Color.black.opacity(0.25))
+                            .frame(width: UIScreen.main.bounds.width * 184 / 375, height: 29)
+                            .overlay(
+                                Text("Submit Vote")
+                                    .tracking(-0.3)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(Color.white.opacity(enableSubmitButton ? 1 : 0.5))
+                                    .offset(y: 0.5)
+                            )
+                            .padding(.horizontal, 16.5)
+                            .animation(.easeInOut(duration: 0.2), value: enableSubmitButton)
                     }
-                    Button(action: { onTapEdit() }) {
-                        Text("Edit")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.4))
-                    }
-                    Button(action: { onTapCancel() }) {
-                        Text("Cancel")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.4))
-                    }
+                    .padding(.bottom, 4.5)
                 }
+                .padding(.vertical, 8.5)
+                .padding(.horizontal, 12.5)
+            }
+            .frame(minWidth: UIScreen.main.bounds.width * 243 / 375, alignment: .leading)
+            .background(Color.blue)
+            .cornerRadius(15)
+//            .disabled(!isSended)
+//            if !isSended {
+//                HStack(spacing: 33) {
+//                    Spacer(minLength: 0)
+//                    Button(action: {
+//                        onTapSend()
+//                    }) {
+//                        Text("Send")
+//                            .font(.system(size: 14, weight: .medium))
+//                            .foregroundColor(Color.blue)
+//                    }
+//                    Button(action: { onTapEdit() }) {
+//                        Text("Edit")
+//                            .font(.system(size: 14, weight: .medium))
+//                            .foregroundColor(Color.white.opacity(0.4))
+//                    }
+//                    Button(action: { onTapCancel() }) {
+//                        Text("Cancel")
+//                            .font(.system(size: 14, weight: .medium))
+//                            .foregroundColor(Color.white.opacity(0.4))
+//                    }
+//                }
+//            }
+//        }
+    }
+
+    // MARK: - Subview
+    private func memberAvatar(_ avatarURL: String) -> some View {
+        ZStack {
+            if #available(iOS 15.0, *) {
+                AsyncImage(url: URL(string: avatarURL)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Color.black
+                }
+                .frame(width: 16.5, height: 16.5)
+                .cornerRadius(.infinity)
             }
         }
     }
@@ -296,38 +466,47 @@ struct PollView: View {
 @available(iOS 13.0.0, *)
 struct PollSelectLine: View {
     // MARK: - Input Parameter
-    var item = ""
+    var item: AnswerRes
     var idx: Int
-    var multipleAnswers = true
-    @Binding var selectedOptionIDX: Int
-
-    @State private var isSelect = false
+    var multipleChoices = true
+    @Binding var selectedAnswerID: String
+    @Binding var selectedMultiAnswerID: [String]
 
     var body: some View {
         Button(action: {
-            if multipleAnswers {
-                isSelect.toggle()
+            if multipleChoices {
+                if !selectedMultiAnswerID.contains(item.id) {
+                    selectedMultiAnswerID.append(item.id)
+                } else {
+                    selectedMultiAnswerID.removeAll(where: { $0 == item.id })
+                }
             } else {
-                selectedOptionIDX = idx
+                if selectedAnswerID != item.id {
+                    selectedAnswerID = item.id
+                } else {
+                    selectedAnswerID.removeAll()
+                }
             }
         }) {
-            HStack(alignment: .top, spacing: 5) {
-                if multipleAnswers {
-                    Image(systemName: isSelect ? "circle.fill" : "circle")
+            HStack(alignment: .top, spacing: 6) {
+                if multipleChoices {
+                    Image(systemName: selectedMultiAnswerID.contains(item.id) ? "checkmark.circle.fill" : "circle")
                         .resizable()
                         .foregroundColor(Color.white)
-                        .frame(width: 17, height: 17)
+                        .frame(width: 15, height: 15)
                 } else {
-                    Image(systemName: selectedOptionIDX == idx ? "circle.fill" : "circle")
+                    Image(systemName: selectedAnswerID == item.id ? "checkmark.circle.fill" : "circle")
                         .resizable()
                         .foregroundColor(Color.white)
-                        .frame(width: 17, height: 17)
+                        .frame(width: 15, height: 15)
                 }
-                Text(item)
+                Text(item.content)
+                    .tracking(-0.3)
                     .multilineTextAlignment(.leading)
-                    .font(.system(size: 14))
+                    .font(.system(size: 12))
                     .foregroundColor(Color.white)
             }
+            .padding(.leading, 1)
         }
     }
 }
