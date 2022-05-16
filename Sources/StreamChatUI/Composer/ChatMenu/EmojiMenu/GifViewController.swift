@@ -207,10 +207,11 @@ class GifViewController: UIViewController {
         errorLabel.isHidden = true
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         if isSearchEnable {
             NotificationCenter.default.post(name: .updateTextfield, object: nil, userInfo: nil)
         }
+        super.viewDidDisappear(animated)
     }
 
     private func setUpBackButton() {
