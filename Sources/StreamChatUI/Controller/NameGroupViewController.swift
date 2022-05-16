@@ -80,7 +80,8 @@ public class NameGroupViewController: ChatBaseVC {
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
             object: nil
         )
     }

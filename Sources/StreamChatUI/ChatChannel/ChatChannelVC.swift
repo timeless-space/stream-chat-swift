@@ -351,7 +351,11 @@ open class ChatChannelVC:
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        NotificationCenter.default.addObserver(self, selector: #selector(updateTextFieldLayout), name: .updateTextfield, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateTextFieldLayout),
+            name: .updateTextfield, object: nil
+        )
         if enableKeyboardObserver {
             keyboardHandler.start()
         }
