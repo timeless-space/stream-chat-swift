@@ -27,6 +27,7 @@ class WalletRequestPayBubble: UITableViewCell {
     private var trailingAnchorSender: NSLayoutConstraint?
     private var leadingAnchorReceiver: NSLayoutConstraint?
     private var trailingAnchorReceiver: NSLayoutConstraint?
+    private var timestampHeight: NSLayoutConstraint?
     public var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
@@ -141,10 +142,10 @@ class WalletRequestPayBubble: UITableViewCell {
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
             timestampLabel.bottomAnchor.constraint(equalTo: subContainer.topAnchor, constant: -8),
             timestampLabel.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0),
-            timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
-
+        timestampHeight = timestampLabel.heightAnchor.constraint(equalToConstant: 15)
+        timestampHeight?.isActive = true
         leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
         trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding)
         leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding)
@@ -155,6 +156,10 @@ class WalletRequestPayBubble: UITableViewCell {
         self.isSender = isSender
         handleBubbleConstraints(isSender)
         timestampLabel.textAlignment = isSender ? .right : .left
+        if let options = layoutOptions {
+            timestampLabel.isHidden = !options.contains(.timestamp)
+            timestampHeight?.constant = !options.contains(.timestamp) ? 0 : 15
+        }
         walletPaymentType = content?.attachments(payloadType: WalletAttachmentPayload.self).first?.paymentType ?? .pay
         if walletPaymentType == .request {
             let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first
