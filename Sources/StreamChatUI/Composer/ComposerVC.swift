@@ -19,6 +19,7 @@ extension Notification.Name {
     public static let disburseFundAction = Notification.Name("kStreamChatDisburseFundTapAction")
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
+    public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
 }
 
@@ -395,6 +396,7 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.removeObserver(self)
         NotificationCenter.default.addObserver(self, selector: #selector(btnSendSticker(_:)), name: .sendSticker, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(clearTextField), name: .clearTextField, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
     }
 
@@ -632,6 +634,10 @@ open class ComposerVC: _ViewController,
     @objc open func showEmojiMenu(_ sender: UIButton) {
         // EMOJI integration
         sender.isSelected.toggle()
+        if !composerView.toolbarBackButton.isHidden {
+            composerView.toolbarBackButton.isHidden.toggle()
+            composerView.toolbarToggleButton.isHidden.toggle()
+        }
         isMenuShowing = true
         animateMenuButton()
         if sender.isSelected {
@@ -640,6 +646,8 @@ open class ComposerVC: _ViewController,
                 if let emoji = emoji as? EmojiMenuViewController {
                     emoji.didSelectMarketPlace = { [weak self] downloadedSticker in
                         guard let `self` = self else { return }
+                        self.composerView.inputMessageView.textView.tintColor = .clear
+                        self.composerView.inputMessageView.textView.text = nil
                         self.emojiPickerView = EmojiPickerViewController.instantiateController(storyboard: .wallet)
                         if let emojiPickerView = self.emojiPickerView as? EmojiPickerViewController {
                             emojiPickerView.downloadedPackage = downloadedSticker
@@ -795,7 +803,6 @@ open class ComposerVC: _ViewController,
         composerView.inputMessageView.textView.reloadInputViews()
         composerView.inputMessageView.textView.becomeFirstResponder()
         composerView.inputMessageView.textView.tintColor = .clear
-        composerView.inputMessageView.textView.text = nil
     }
 
     private func addWalletAttachment(
@@ -833,6 +840,10 @@ open class ComposerVC: _ViewController,
         composerView.inputMessageView.textView.inputView = nil
         composerView.inputMessageView.textView.resignFirstResponder()
         composerView.inputMessageView.textView.tintColor = .white
+    }
+
+    @objc func clearTextField() {
+        composerView.inputMessageView.textView.text = nil
     }
 
     @objc func btnSendSticker(_ notification: Notification) {

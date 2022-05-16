@@ -129,9 +129,6 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="36" id="bgs-Ib-kAY"/>
-                        </constraints>
                     </stackView>
                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="lPj-8N-4iW">
                         <rect key="frame" x="16" y="216" width="351" height="74"/>
