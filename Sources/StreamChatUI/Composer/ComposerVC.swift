@@ -27,6 +27,8 @@ extension Notification.Name {
     public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
     public static let sendPoll = Notification.Name("kStreamChatSendPollTapAction")
     public static let submitVote = Notification.Name("kStreamChatSubmitVoteTapAction")
+    public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
+    public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
 }
 
 /// The possible errors that can occur in attachment validation
