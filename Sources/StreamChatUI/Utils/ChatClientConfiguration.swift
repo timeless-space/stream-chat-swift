@@ -52,11 +52,3 @@ open class ChatClientConfiguration {
     // MARK: - Init
     public init() {}
 }
-
-open class ChatSharedObject {
-
-    // MARK: - Variables
-    public static let shared = ChatSharedObject()
-
-    open var isSwipeableViewOpen = false
-}
