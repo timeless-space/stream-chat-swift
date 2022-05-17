@@ -11,24 +11,31 @@ import StreamChat
 public struct PollModel {
     // MARK: - Variables
     public var question: String?
-    public var imageURLStr: String?
-    public var optionList: [String] = [""]
-    public var anonymousPolling = true
-    public var multipleAnswers = true
-    public var hideTallyUntilVote = true
-    public var isSended = false
+    public var imageURL: String?
+    public var anonymous = true
+    public var multipleChoices = true
+    public var hideTally = true
+    public var groupID: String?
+    public var answers: [String] = [""]
 
     public init() {}
 
     public func toDictionary() -> [String: RawJSON] {
         var dictOut = [String: RawJSON]()
         dictOut["question"] = .string(question ?? "")
-        dictOut["imageURLStr"] = .string(imageURLStr ?? "")
-        dictOut["optionList"] = .string(optionList.joined(separator: "-"))
-        dictOut["anonymousPolling"] = .string(anonymousPolling ? "1" : "0")
-        dictOut["multipleAnswers"] = .string(multipleAnswers ? "1" : "0")
-        dictOut["hideTallyUntilVote"] = .string(hideTallyUntilVote ? "1" : "0")
-        dictOut["isSended"] = .string(isSended ? "1" : "0")
+        dictOut["image_url"] = .string(imageURL ?? "")
+        dictOut["anonymous"] = .bool(anonymous)
+        dictOut["multiple_choices"] = .bool(multipleChoices)
+        dictOut["hide_tally"] = .bool(hideTally)
+        dictOut["group_id"] = .string(groupID ?? "")
+
+        var answersRaw: [RawJSON] = []
+        answersRaw = answers.map({
+            var answer: [String: RawJSON] = [:]
+            answer["content"] = .string($0 ?? "")
+            return .dictionary(answer)
+        })
+        dictOut["answers"] = .array(answersRaw)
 
         return dictOut
     }

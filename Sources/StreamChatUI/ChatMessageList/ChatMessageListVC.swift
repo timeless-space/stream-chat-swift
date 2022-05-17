@@ -543,17 +543,6 @@ open class ChatMessageListVC:
                 cell.channel = dataSource?.channel(for: self)
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
-            } else if isPollPreviewCell(message) {
-                guard let cell = tableView.dequeueReusableCell(
-                    withIdentifier: "PollPreviewBubble",
-                    for: indexPath) as? PollBubble else {
-                        return UITableViewCell()
-                    }
-                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
-                cell.content = message
-                cell.channel = dataSource?.channel(for: self)
-                cell.configData(isSender: isMessageFromCurrentUser)
-                return cell
             } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
                       let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
@@ -631,10 +620,6 @@ open class ChatMessageListVC:
               let messageType = extraData["messageType"] else { return false }
         let type = fetchRawData(raw: messageType) as? String ?? ""
         return type == MessageType.newPoll
-    }
-
-    private func isPollPreviewCell(_ message: ChatMessage?) -> Bool {
-        message?.extraData.keys.contains("pollPreview") ?? false
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
