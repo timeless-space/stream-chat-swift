@@ -23,6 +23,7 @@ class PollBubble: UITableViewCell {
     var memberImageURL: [String] = []
     var channel: ChatChannel?
     var pollID = ""
+    let chatClient = ChatClient.shared
 
     public lazy var dateFormatter: DateFormatter = .makeDefault()
 
@@ -170,7 +171,7 @@ class PollBubble: UITableViewCell {
                             createdAt: fetchRawData(raw: createdAt) as? String ?? ""
                         ))
                     } else if let content = item["content"] {
-                        isPreview = true
+                        isPreview = self.content?.type == .ephemeral
                         answers.append(AnswerRes(
                             id: "",
                             content: fetchRawData(raw: content) as? String ?? "",
@@ -199,14 +200,15 @@ class PollBubble: UITableViewCell {
                     isSender: isSender,
                     isPreview: isPreview,
                     onTapSend: {
-//                        self.onTapSend(
-//                            question: question,
-//                            imageUrl: imageUrl,
-//                            optionList: optionList,
-//                            anonymousPolling: anonymousPolling,
-//                            multipleChoices: multipleChoices,
-//                            hideTally: hideTally
-//                        )
+                        guard let messageId = self.content?.id else { return }
+                        let action = AttachmentAction(name: "action",
+                                                      value: "submit",
+                                                      style: .primary,
+                                                      type: .button,
+                                                      text: "Send")
+                        self.chatClient.messageController(cid: cid,
+                                                            messageId: messageId)
+                            .dispatchEphemeralMessageAction(action)
                     },
                     onTapEdit: { self.onTapEdit() },
                     onTapCancel: { self.onTapCancel() },
@@ -275,18 +277,40 @@ class PollBubble: UITableViewCell {
     }
 
     private func onTapEdit() {
-//        guard let cid = channel?.cid else {
-//            return
-//        }
-//        let editData = self.getExtraData(key: "pollPreview")
-//        var userInfo = [String: Any]()
-//        userInfo["channelId"] = cid.description
-//        userInfo["editData"] = editData
-//        NotificationCenter.default.post(name: .editPoll, object: nil, userInfo: userInfo)
+        guard let cid = channel?.cid,
+        let messageId = content?.id else {
+            return
+        }
+        let editData = self.getExtraData(key: "poll")
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = cid
+        userInfo["editData"] = editData
+        userInfo["messageId"] = messageId
+        NotificationCenter.default.post(name: .editPoll, object: nil, userInfo: userInfo)
+
+//        guard let messageId = content?.id,
+//              let cid = channel?.cid else { return }
+//        let action = AttachmentAction(name: "action",
+//                                      value: "edit",
+//                                      style: .default,
+//                                      type: .button,
+//                                      text: "Edit")
+//        chatClient.messageController(cid: cid,
+//                                            messageId: messageId)
+//            .dispatchEphemeralMessageAction(action)
     }
 
     private func onTapCancel() {
-//        contentView.removeFromSuperview()
+        guard let messageId = content?.id,
+              let cid = channel?.cid else { return }
+        let action = AttachmentAction(name: "action",
+                                      value: "cancel",
+                                      style: .default,
+                                      type: .button,
+                                      text: "Cancel")
+        chatClient.messageController(cid: cid,
+                                            messageId: messageId)
+            .dispatchEphemeralMessageAction(action)
     }
 
     private func onTapSubmit(_ listAnswerID: [String]) {
