@@ -182,6 +182,7 @@ class PollBubble: UITableViewCell {
                     hideTally: hideTally,
                     answers: answers,
                     pollID: pollID,
+                    isSender: isSender,
                     onTapSend: {
                         self.onTapSend(
                             question: question,
@@ -198,7 +199,7 @@ class PollBubble: UITableViewCell {
                     onTapViewResult: { answersRes in
                         self.onTapViewResult(
                             question: question,
-                            answers: answersRes
+                            answerList: answersRes
                         )
                     }
                 ))
@@ -239,38 +240,38 @@ class PollBubble: UITableViewCell {
         multipleChoices: Bool,
         hideTally: Bool
     ) {
-        guard let cid = channel?.cid else {
-            return
-        }
-        var userInfo = [String: Any]()
-        userInfo["channelId"] = cid
-        userInfo["question"] = question
-        userInfo["imageUrl"] = imageUrl
-        userInfo["anonymous"] = anonymousPolling
-        userInfo["multipleChoices"] = multipleChoices
-        userInfo["hideTally"] = hideTally
-        userInfo["groupID"] = cid.description
-        var answers: [[String: String]] = []
-        optionList.forEach { item in
-            answers.append(["content": item])
-        }
-        userInfo["answers"] = answers
-        NotificationCenter.default.post(name: .sendPoll, object: nil, userInfo: userInfo)
+//        guard let cid = channel?.cid else {
+//            return
+//        }
+//        var userInfo = [String: Any]()
+//        userInfo["channelId"] = cid
+//        userInfo["question"] = question
+//        userInfo["imageUrl"] = imageUrl
+//        userInfo["anonymous"] = anonymousPolling
+//        userInfo["multipleChoices"] = multipleChoices
+//        userInfo["hideTally"] = hideTally
+//        userInfo["groupID"] = cid.description
+//        var answers: [[String: String]] = []
+//        optionList.forEach { item in
+//            answers.append(["content": item])
+//        }
+//        userInfo["answers"] = answers
+//        NotificationCenter.default.post(name: .sendPoll, object: nil, userInfo: userInfo)
     }
 
     private func onTapEdit() {
-        guard let cid = channel?.cid else {
-            return
-        }
-        let editData = self.getExtraData(key: "pollPreview")
-        var userInfo = [String: Any]()
-        userInfo["channelId"] = cid.description
-        userInfo["editData"] = editData
-        NotificationCenter.default.post(name: .editPoll, object: nil, userInfo: userInfo)
+//        guard let cid = channel?.cid else {
+//            return
+//        }
+//        let editData = self.getExtraData(key: "pollPreview")
+//        var userInfo = [String: Any]()
+//        userInfo["channelId"] = cid.description
+//        userInfo["editData"] = editData
+//        NotificationCenter.default.post(name: .editPoll, object: nil, userInfo: userInfo)
     }
 
     private func onTapCancel() {
-        contentView.removeFromSuperview()
+//        contentView.removeFromSuperview()
     }
 
     private func onTapSubmit(_ listAnswerID: [String]) {
@@ -286,10 +287,32 @@ class PollBubble: UITableViewCell {
 
     private func onTapViewResult(
         question: String,
-        answers: [AnswerRes]
+        answerList: [AnswerRes]
     ) {
         var userInfo = [String: Any]()
         userInfo["question"] = question
+        var answers: [[String: Any]] = []
+        answerList.forEach { item in
+            var answer: [String: Any] = [:]
+            answer["id"] = item.id
+            answer["content"] = item.content
+            answer["pollID"] = item.pollID
+            answer["votedCount"] = item.votedCount
+            var wallets: [[String: Any]] = []
+            item.wallets.forEach { itemWallet in
+                var wallet: [String: Any] = [:]
+                wallet["title"] = itemWallet.title
+                wallet["avatar"] = itemWallet.avatar
+                wallet["bio"] = itemWallet.bio
+                wallet["id"] = itemWallet.id
+                wallet["address"] = itemWallet.address
+                wallet["verified"] = itemWallet.verified
+                wallets.append(wallet)
+            }
+            answer["wallets"] = wallets
+            answer["createdAt"] = item.createdAt
+            answers.append(answer)
+        }
         userInfo["answers"] = answers
         NotificationCenter.default.post(name: .viewPollResult, object: nil, userInfo: userInfo)
     }
@@ -324,6 +347,7 @@ struct PollView: View {
     var hideTally = true
     @State var answers: [AnswerRes] = []
     var pollID = ""
+    var isSender: Bool
 
     // MARK: - Properties
     @State private var selectedAnswerID = ""
@@ -357,91 +381,95 @@ struct PollView: View {
     // MARK: - Body view
     var body: some View {
         if #available(iOS 14.0, *) {
-            VStack(alignment: .leading, spacing: 0) {
-                if #available(iOS 15.0, *), let imageURL = URL(string: imageUrl) {
-                    Rectangle()
-                        .foregroundColor(Color.black) // TODO
-                        .frame(width: UIScreen.main.bounds.width * 243 / 375,
-                               height: UIScreen.main.bounds.width * 243 / 375)
-                }
+            VStack(alignment: .trailing, spacing: 12) {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("YOUR FIRST POLL")
-                        .tracking(-0.4)
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(Color.white.opacity(0.8))
-                        .padding(.bottom, 2.5)
-                    Text(question)
-                        .tracking(-0.2)
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(Color.white)
-                        .padding(.bottom, 4.5)
-                        .padding(.leading, 1)
-                    HStack(spacing: 3) {
-                        Text("\(votedCount) \(votedCount > 1 ? "Votes" : "Vote")")
+                    if #available(iOS 15.0, *), let imageURL = URL(string: imageUrl) {
+                        Rectangle()
+                            .foregroundColor(Color.black) // TODO
+                            .frame(width: UIScreen.main.bounds.width * 243 / 375,
+                                   height: UIScreen.main.bounds.width * 243 / 375)
+                    }
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("YOUR FIRST POLL")
                             .tracking(-0.4)
-                            .font(.system(size: 10))
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundColor(Color.white.opacity(0.8))
+                            .padding(.bottom, 2.5)
+                        Text(question)
+                            .tracking(-0.2)
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundColor(Color.white)
+                            .padding(.bottom, 4.5)
                             .padding(.leading, 1)
-                        //                        ForEach(0 ..< (memberImageURL.count <= 5 ? memberImageURL.count : 5)) { idx in
-                        //                            memberAvatar(memberImageURL[idx])
-                        //                        }
-                    }
-                    .padding(.bottom, 14.5)
-                    VStack(alignment: .leading, spacing: 17) {
-                        ForEach(0 ..< answers.count) { idx in
-                            PollSelectLine(item: answers[idx],
-                                           multipleChoices: multipleChoices,
-                                           hideTally: hideTally,
-                                           selectedAnswerID: $selectedAnswerID,
-                                           selectedMultiAnswerID: $selectedMultiAnswerID,
-                                           voted: $voted,
-                                           answers: $answers)
+                        HStack(spacing: 3) {
+                            Text("\(votedCount) \(votedCount > 1 ? "Votes" : "Vote")")
+                                .tracking(-0.4)
+                                .font(.system(size: 10))
+                                .foregroundColor(Color.white)
+                                .padding(.leading, 1)
+                            // ForEach(0 ..< (memberImageURL.count <= 5 ? memberImageURL.count : 5)) { idx in
+                            // memberAvatar(memberImageURL[idx])
+                            // }
                         }
-                    }
-                    .padding(.bottom, 17)
-                    .disabled(voted)
-                    Button(action: {
-                        if voted {
-                            onTapViewResult(answers)
-                        } else {
-                            if multipleChoices {
-                                onTapSubmit(selectedMultiAnswerID)
-                            } else {
-                                onTapSubmit([selectedAnswerID])
+                        .padding(.bottom, 14.5)
+                        VStack(alignment: .leading, spacing: 17) {
+                            ForEach(0 ..< answers.count) { idx in
+                                PollSelectLine(item: answers[idx],
+                                               multipleChoices: multipleChoices,
+                                               hideTally: hideTally,
+                                               selectedAnswerID: $selectedAnswerID,
+                                               selectedMultiAnswerID: $selectedMultiAnswerID,
+                                               voted: $voted,
+                                               answers: $answers)
                             }
                         }
-                    }) {
-                        RoundedRectangle(cornerRadius: .infinity)
-                            .foregroundColor(enableSubmitButton ? Color.white.opacity(0.2) : Color.black.opacity(0.25))
-                            .frame(width: UIScreen.main.bounds.width * 184 / 375, height: 29)
-                            .overlay(
-                                ZStack {
-                                    Text("Submit Vote")
-                                        .tracking(-0.3)
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundColor(Color.white.opacity(enableSubmitButton ? 1 : 0.5))
-                                        .opacity(voted ? 0 : 1)
-                                        .offset(x: voted ? -50 : 0)
-                                    Text("View Results")
-                                        .tracking(-0.3)
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundColor(Color.white)
-                                        .opacity(voted ? 1 : 0)
-                                        .offset(x: voted ? 0 : 50)
+                        .padding(.bottom, 17)
+                        .disabled(voted) // || isPreview
+                        Button(action: {
+                            if voted {
+                                onTapViewResult(answers)
+                            } else {
+                                if multipleChoices {
+                                    onTapSubmit(selectedMultiAnswerID)
+                                } else {
+                                    onTapSubmit([selectedAnswerID])
                                 }
-                                    .offset(y: 0.5)
-                            )
-                            .padding(.horizontal, 16.5)
-                            .animation(.easeInOut(duration: 0.2), value: enableSubmitButton)
+                            }
+                        }) {
+                            RoundedRectangle(cornerRadius: .infinity)
+                                .foregroundColor(enableSubmitButton ? Color.white.opacity(0.2) : Color.black.opacity(0.25))
+                                .frame(width: UIScreen.main.bounds.width * 184 / 375, height: 29)
+                                .overlay(
+                                    ZStack {
+                                        Text("Submit Vote")
+                                            .tracking(-0.3)
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(Color.white.opacity(enableSubmitButton ? 1 : 0.5))
+                                            .opacity(voted ? 0 : 1)
+                                            .offset(x: voted ? -50 : 0)
+                                        Text("View Results")
+                                            .tracking(-0.3)
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(Color.white)
+                                            .opacity(voted ? 1 : 0)
+                                            .offset(x: voted ? 0 : 50)
+                                    }
+                                        .offset(y: 0.5)
+                                )
+                                .padding(.horizontal, 16.5)
+                                .animation(.easeInOut(duration: 0.2), value: enableSubmitButton)
+                        }
+                        .padding(.bottom, 4.5)
                     }
-                    .padding(.bottom, 4.5)
+                    .padding(.vertical, 8.5)
+                    .padding(.horizontal, 12.5)
                 }
-                .padding(.vertical, 8.5)
-                .padding(.horizontal, 12.5)
+                .frame(minWidth: UIScreen.main.bounds.width * 243 / 375, alignment: .leading)
+                .background(isSender ? Color.blue : Color.gray.opacity(0.6))
+                .cornerRadius(15)
+                previewButtons
+                    .opacity(0) // .opacity(isPreview ? 1 : 0)
             }
-            .frame(minWidth: UIScreen.main.bounds.width * 243 / 375, alignment: .leading)
-            .background(Color.blue)
-            .cornerRadius(15)
             .onReceive(NotificationCenter.default.publisher(for: .pollUpdate)) { value in
                 let groupID = value.userInfo?["groupID"] as? String ?? ""
                 let pollID = value.userInfo?["pollID"] as? String ?? ""
@@ -498,6 +526,29 @@ struct PollView: View {
     }
 
     // MARK: - Subview
+    private var previewButtons: some View {
+        HStack(spacing: 0) {
+            Spacer(minLength: 0)
+            Button(action: { onTapSend() }) {
+                Text("Send")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.blue)
+            }
+            .padding(.trailing, 33)
+            Button(action: { onTapEdit() }) {
+                Text("Edit")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.white.opacity(0.4))
+            }
+            .padding(.trailing, 33)
+            Button(action: { onTapCancel() }) {
+                Text("Cancel")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.white.opacity(0.4))
+            }
+        }
+    }
+
     private func memberAvatar(_ avatarURL: String) -> some View {
         ZStack {
             if #available(iOS 15.0, *) {
