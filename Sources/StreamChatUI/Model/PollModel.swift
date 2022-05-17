@@ -12,9 +12,9 @@ public struct PollModel {
     // MARK: - Variables
     public var question: String?
     public var imageURL: String?
-    public var anonymous = true
-    public var multipleChoices = true
-    public var hideTally = true
+    public var anonymous = false
+    public var multipleChoices = false
+    public var hideTally = false
     public var groupID: String?
     public var answers: [String] = [""]
 
