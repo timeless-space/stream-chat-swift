@@ -19,6 +19,8 @@ extension Notification.Name {
     public static let disburseFundAction = Notification.Name("kStreamChatDisburseFundTapAction")
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
+    public static let sendGiftCardTapAction = Notification.Name("kStreamChatSendGiftCardTapAction")
+    public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
 }
@@ -546,6 +548,7 @@ open class ComposerVC: _ViewController,
     func bindMenuController() {
         menuController = ChatMenuViewController.instantiateController(storyboard: .wallet)
         menuController?.extraData = self.channelController?.channel?.extraData ?? [:]
+        menuController?.isChatOnly = self.channelController?.channel?.isDirectMessageChannel ?? false
         menuController?.didTapAction = { [weak self] action in
             guard let `self` = self else { return }
             self.lockInputViewObserver = true
@@ -579,6 +582,12 @@ open class ComposerVC: _ViewController,
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
                     guard let `self` = self else { return }
                     self.sendRedPacketAction()
+                }
+            case .gift:
+                self.animateToolkitView(isHide: true)
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.sendGiftAction()
                 }
             case .dao:
                 self.animateToolkitView(isHide: true)
@@ -866,6 +875,15 @@ open class ComposerVC: _ViewController,
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
         NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
+    }
+
+    @objc open func sendGiftAction() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        guard let channelId = channelController?.channel?.cid else { return }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        NotificationCenter.default.post(name: .sendGiftCardTapAction, object: nil, userInfo: userInfo)
     }
 
     private func animateMenuButton() {
