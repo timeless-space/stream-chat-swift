@@ -21,7 +21,6 @@ public class PollBubble: UITableViewCell {
     private var trailingAnchorForReceiver: NSLayoutConstraint?
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    var memberImageURL: [String] = []
     var channel: ChatChannel?
     var pollID = ""
     let chatClient = ChatClient.shared
@@ -200,7 +199,6 @@ public class PollBubble: UITableViewCell {
                 }
                 subContainer.fit(subview: PollView(
                     cid: cid,
-                    memberImageURL: memberImageURL,
                     question: question,
                     imageUrl: imageUrl,
                     multipleChoices: multipleChoices,
@@ -226,6 +224,7 @@ public class PollBubble: UITableViewCell {
                     onTapViewResult: { answersRes in
                         self.onTapViewResult(
                             question: question,
+                            mediaUrl: imageUrl,
                             answerList: answersRes
                         )
                     }
@@ -336,10 +335,12 @@ public class PollBubble: UITableViewCell {
 
     private func onTapViewResult(
         question: String,
+        mediaUrl: String,
         answerList: [AnswerRes]
     ) {
         var userInfo = [String: Any]()
         userInfo["question"] = question
+        userInfo["mediaUrl"] = mediaUrl
         var answers: [[String: Any]] = []
         answerList.forEach { item in
             var answer: [String: Any] = [:]
@@ -389,7 +390,6 @@ struct AnswerWallet {
 struct PollView: View {
     // MARK: - Input Paramters
     var cid: ChannelId
-    var memberImageURL: [String]
     var question = ""
     var imageUrl = ""
     var multipleChoices = false
@@ -405,6 +405,11 @@ struct PollView: View {
     @State private var voted = false
     @State private var loadingSubmit = false
     @State private var isLoaded = false
+    @State private var uiImageView = UIImageView()
+    @State private var uploadedImage: UIImage?
+    @State private var memberVotedURL: [String] = []
+    @State private var mediaSize: CGSize?
+    private let mediaWidth = UIScreen.main.bounds.width * 243 / 375
 
     // MARK: - Callback functions
     var onTapSend: () -> Void
@@ -431,8 +436,8 @@ struct PollView: View {
         if #available(iOS 14.0, *) {
             VStack(alignment: .trailing, spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
-                    if let imageURL = URL(string: imageUrl) {
-                        mediaView(imageURL)
+                    if !imageUrl.isEmpty {
+                        mediaView(imageUrl)
                     }
                     VStack(alignment: .leading, spacing: 0) {
                         Text("YOUR FIRST POLL")
@@ -453,9 +458,18 @@ struct PollView: View {
                                     .font(.system(size: 10))
                                     .foregroundColor(Color.white)
                                     .padding(.leading, 1)
-                                // ForEach(0 ..< (memberImageURL.count <= 5 ? memberImageURL.count : 5)) { idx in
-                                // memberAvatar(memberImageURL[idx])
-                                // }
+                                    .overlay(
+                                        ZStack {
+                                            if memberVotedURL.count > 0 {
+                                                ForEach(0 ..< 5) { idx in
+                                                    ListMemberAvatar(avatarURL: memberVotedURL[0])
+                                                        .zIndex(Double(-idx))
+                                                        .offset(x: CGFloat(idx * 12 - idx))
+                                                }
+                                            }
+                                        }
+                                        .offset(x: 21), alignment: .trailing
+                                    )
                             }
                             .padding(.bottom, 14.5)
                         }
@@ -481,9 +495,9 @@ struct PollView: View {
                     .padding(.top, 8.5)
                     .padding(.bottom, isPreview ? 1 : 8.5)
                     .padding(.horizontal, 12.5)
+                    .frame(minWidth: mediaWidth, alignment: .leading)
+                    .background(isSender ? Color.blue : Color.gray.opacity(0.6))
                 }
-                .frame(minWidth: UIScreen.main.bounds.width * 243 / 375, alignment: .leading)
-                .background(isSender ? Color.blue : Color.gray.opacity(0.6))
                 .cornerRadius(15)
                 if isPreview {
                     previewButtons
@@ -545,6 +559,12 @@ struct PollView: View {
                     userInfo["poll_id"] = pollID
                     NotificationCenter.default.post(name: .getPollData, object: nil, userInfo: userInfo)
                 }
+                memberVotedURL.removeAll()
+                self.answers.forEach { item in
+                    for wallet in item.wallets where !memberVotedURL.contains(wallet.avatar) {
+                        memberVotedURL.append(wallet.avatar)
+                    }
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: .pollUpdate)) { value in
                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -594,6 +614,12 @@ struct PollView: View {
                             createdAt: item["createdAt"] as? String ?? ""
                         ))
                     }
+                    memberVotedURL.removeAll()
+                    self.answers.forEach { item in
+                        for wallet in item.wallets where !memberVotedURL.contains(wallet.avatar) {
+                            memberVotedURL.append(wallet.avatar)
+                        }
+                    }
                     withAnimation(.easeInOut(duration: 0.2)) {
                         voted = value.userInfo?["voted"] as? Bool ?? false
                     }
@@ -605,35 +631,62 @@ struct PollView: View {
     }
 
     // MARK: - Subview
-    private func mediaView(_ imageURL: URL) -> some View {
-        var avatarView = AvatarView()
-        Nuke.loadImage(with: imageURL, into: avatarView)
+    private func mediaView(_ imageURL: String) -> some View {
+        if uploadedImage == nil {
+            DispatchQueue.main.async {
+                let mediaType = imageURL.split(separator: ".").last ?? ""
+                if mediaType == "gif", let url = URL(string: imageURL) {
 
-        return ZStack {
-            if #available(iOS 15.0, *), let image = avatarView.image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: UIScreen.main.bounds.width * 243 / 375,
-                           height: UIScreen.main.bounds.width * 243 / 375)
+                } else {
+                    Nuke.loadImage(with: imageURL, into: uiImageView) { result in
+                        switch result {
+                        case .success(let imageResult):
+                            uploadedImage = imageResult.image
+                        case .failure: break
+                        }
+                    }
+                }
             }
         }
+        
+        return ZStack {
+            if #available(iOS 15.0, *) {
+                Rectangle()
+                    .foregroundColor(Color.black)
+                    .frame(width: mediaWidth, height: mediaWidth)
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .opacity(uploadedImage == nil ? 1 : 0)
+                if let uiimage = uploadedImage {
+                    Image(uiImage: uiimage)
+                        .resizable()
+                        .scaledToFill()
+                        .blur(radius: 20)
+                        .frame(width: mediaWidth, height: mediaWidth)
+                    Image(uiImage: uiimage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: mediaWidth, height: mediaWidth)
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: uploadedImage)
     }
 
     private var submitResultButton: some View {
         Button(action: {
-            if voted {
+//            if voted {
                 onTapViewResult(answers)
-            } else {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    loadingSubmit = true
-                }
-                if multipleChoices {
-                    onTapSubmit(selectedMultiAnswerID)
-                } else {
-                    onTapSubmit([selectedAnswerID])
-                }
-            }
+//            } else {
+//                withAnimation(.easeInOut(duration: 0.2)) {
+//                    loadingSubmit = true
+//                }
+//                if multipleChoices {
+//                    onTapSubmit(selectedMultiAnswerID)
+//                } else {
+//                    onTapSubmit([selectedAnswerID])
+//                }
+//            }
         }) {
             RoundedRectangle(cornerRadius: .infinity)
                 .foregroundColor(enableSubmitButton ? Color.white.opacity(0.2) : Color.black.opacity(0.25))
@@ -669,6 +722,7 @@ struct PollView: View {
                 .padding(.horizontal, 16.5)
                 .animation(.easeInOut(duration: 0.2), value: enableSubmitButton)
         }
+//        .disabled(!enableSubmitButton)
         .padding(.bottom, 4.5)
     }
 
@@ -696,6 +750,46 @@ struct PollView: View {
         .padding(.top, 12)
     }
 
+    struct ListMemberAvatar: View {
+        var avatarURL = ""
+        @State private var avatarUIImageView = UIImageView()
+        @State private var avatarUIImage: UIImage?
+
+        var body: some View {
+            if avatarUIImage == nil {
+                DispatchQueue.main.async {
+                    Nuke.loadImage(with: avatarURL, into: avatarUIImageView) { result in
+                        switch result {
+                        case .success(let imageResult):
+                            avatarUIImage = imageResult.image
+                        case .failure: break
+                        }
+                    }
+                }
+            }
+            return ZStack {
+                if #available(iOS 15.0, *) {
+                    Rectangle()
+                        .foregroundColor(Color.black)
+                        .frame(width: 16.5, height: 16.5)
+                        .overlay(
+                            ZStack {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .opacity(avatarUIImage == nil ? 1 : 0)
+                                if avatarUIImage != nil {
+                                    Image(uiImage: avatarUIImage!)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 16.5, height: 16.5)
+                                }
+                            }
+                        )
+                        .cornerRadius(.infinity)
+                }
+            }
+        }
+    }
     private func memberAvatar(_ avatarURL: String) -> some View {
         ZStack {
             if #available(iOS 15.0, *) {
@@ -771,19 +865,30 @@ struct PollSelectLine: View {
                                 .foregroundColor(Color.white)
                                 .frame(width: 15, height: 15)
                                 .opacity(voted ? (selectedMultiAnswerID.contains(item.id) ? 1 : 0) : 1)
-                            Text(item.content)
-                                .tracking(-0.3)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .multilineTextAlignment(.leading)
-                                .font(.system(size: 12, weight: selectedMultiAnswerID.contains(item.id) ? .bold : .regular))
-                                .foregroundColor(Color.white)
+                            ZStack(alignment: .topLeading) {
+                                Text(item.content)
+                                    .tracking(-0.3)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .multilineTextAlignment(.leading)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Color.white)
+                                    .opacity(selectedMultiAnswerID.contains(item.id) ? 0 : 1)
+                                Text(item.content)
+                                    .tracking(-0.3)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .multilineTextAlignment(.leading)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(Color.white)
+                                    .opacity(selectedMultiAnswerID.contains(item.id) ? 1 : 0)
+                            }
                         }
                         .padding(.leading, isPreview ? 1 : (!hideTally || voted ? 35 : 1))
                         .overlay(
                             RoundedRectangle(cornerRadius: .infinity)
                                 .foregroundColor(selectedMultiAnswerID.contains(item.id) ?
                                                  Color.white.opacity(0.5) : Color.black.opacity(0.4))
-                                .frame(width: UIScreen.main.bounds.width * chartLength / 375,
+                                .frame(width: chartLength == 0 ?
+                                       2 : (UIScreen.main.bounds.width * chartLength / 375),
                                        height: 2)
                                 .opacity(!hideTally || voted ? 1 : 0)
                                 .padding(.leading, 54)
@@ -798,19 +903,30 @@ struct PollSelectLine: View {
                                 .foregroundColor(Color.white)
                                 .frame(width: 15, height: 15)
                                 .opacity(voted ? (selectedAnswerID == item.id ? 1 : 0) : 1)
-                            Text(item.content)
-                                .tracking(-0.3)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .multilineTextAlignment(.leading)
-                                .font(.system(size: 12, weight: selectedAnswerID == item.id ? .bold : .regular))
-                                .foregroundColor(Color.white)
+                            ZStack(alignment: .topLeading) {
+                                Text(item.content)
+                                    .tracking(-0.3)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .multilineTextAlignment(.leading)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Color.white)
+                                    .opacity(selectedAnswerID == item.id ? 0 : 1)
+                                Text(item.content)
+                                    .tracking(-0.3)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .multilineTextAlignment(.leading)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(Color.white)
+                                    .opacity(selectedAnswerID == item.id ? 1 : 0)
+                            }
                         }
                         .padding(.leading, isPreview ? 1 : (!hideTally || voted ? 35 : 1))
                         .overlay(
                             RoundedRectangle(cornerRadius: .infinity)
                                 .foregroundColor(selectedAnswerID == item.id ?
                                                  Color.white.opacity(0.5) : Color.black.opacity(0.4))
-                                .frame(width: UIScreen.main.bounds.width * chartLength / 375,
+                                .frame(width: chartLength == 0 ?
+                                       2 : (UIScreen.main.bounds.width * chartLength / 375),
                                        height: 2)
                                 .opacity(!hideTally || voted ? 1 : 0)
                                 .padding(.leading, 54)

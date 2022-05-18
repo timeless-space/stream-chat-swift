@@ -137,7 +137,7 @@ enum MenuType: Int, CaseIterable {
         case .gift:
             return "Gift"
         case .poll:
-            return "Poll"
+            return "Polls"
         }
     }
 

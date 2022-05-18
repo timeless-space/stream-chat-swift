@@ -508,17 +508,6 @@ open class ChatMessageListVC:
                 cell.transform = .mirrorY
                 return cell
             } else if isPollCell(message) {
-                var memberImageURL: [String] = []
-                if let channel = dataSource?.channel(for: self) {
-                    let controller = ChatClient.shared.memberListController(query: .init(cid: channel.cid))
-                    controller.synchronize { error in
-                        if error == nil {
-                            controller.members.forEach { member in
-                                memberImageURL.append(member.imageURL?.absoluteString ?? "")
-                            }
-                        }
-                    }
-                }
                 if isMessageFromCurrentUser {
                     guard let cell = tableView.dequeueReusableCell(
                         withIdentifier: "PollBubble",
@@ -527,7 +516,6 @@ open class ChatMessageListVC:
                         }
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
-                    cell.memberImageURL = memberImageURL
                     cell.channel = dataSource?.channel(for: self)
                     cell.configData(isSender: isMessageFromCurrentUser)
                     return cell
@@ -539,7 +527,6 @@ open class ChatMessageListVC:
                     }
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.memberImageURL = memberImageURL
                 cell.channel = dataSource?.channel(for: self)
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
