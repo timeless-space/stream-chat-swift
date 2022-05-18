@@ -9,6 +9,7 @@
 import UIKit
 import SwiftUI
 import StreamChat
+import Nuke
 
 class PollBubble: UITableViewCell {
     public private(set) var viewContainer: UIView!
@@ -396,26 +397,21 @@ struct PollView: View {
         if #available(iOS 14.0, *) {
             VStack(alignment: .trailing, spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
-                    if #available(iOS 15.0, *), let imageURL = URL(string: imageUrl) {
-                        Rectangle()
-                            .foregroundColor(Color.black) // TODO
-                            .frame(width: UIScreen.main.bounds.width * 243 / 375,
-                                   height: UIScreen.main.bounds.width * 243 / 375)
+                    if let imageURL = URL(string: imageUrl) {
+                        mediaView(imageURL)
                     }
                     VStack(alignment: .leading, spacing: 0) {
-                        if !isPreview {
-                            Text("YOUR FIRST POLL")
-                                .tracking(-0.4)
-                                .font(.system(size: 9, weight: .medium))
-                                .foregroundColor(Color.white.opacity(0.8))
-                                .padding(.bottom, 2.5)
-                        }
+                        Text("YOUR FIRST POLL")
+                            .tracking(-0.4)
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundColor(Color.white.opacity(0.8))
+                            .padding(.bottom, 2.5)
                         Text(question)
                             .tracking(-0.2)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(Color.white)
+                            .padding(.leading, 1)
                             .padding(.bottom, isPreview ? 10.5 : 4.5)
-                            .padding(.leading, isPreview ? 5 : 1)
                         if !isPreview {
                             HStack(spacing: 3) {
                                 Text("\(votedCount) \(votedCount > 1 ? "Votes" : "Vote")")
@@ -429,7 +425,7 @@ struct PollView: View {
                             }
                             .padding(.bottom, 14.5)
                         }
-                        VStack(alignment: .leading, spacing: isPreview ? 12 : 17) {
+                        VStack(alignment: .leading, spacing: 17) {
                             ForEach(0 ..< answers.count) { idx in
                                 PollSelectLine(item: answers[idx],
                                                multipleChoices: multipleChoices,
@@ -448,7 +444,7 @@ struct PollView: View {
                             submitResultButton
                         }
                     }
-                    .padding(.top, isPreview ? 12.5 : 8.5)
+                    .padding(.top, 8.5)
                     .padding(.bottom, isPreview ? 1 : 8.5)
                     .padding(.horizontal, 12.5)
                 }
@@ -518,6 +514,21 @@ struct PollView: View {
     }
 
     // MARK: - Subview
+    private func mediaView(_ imageURL: URL) -> some View {
+        var avatarView = AvatarView()
+        Nuke.loadImage(with: imageURL, into: avatarView)
+
+        return ZStack {
+            if #available(iOS 15.0, *), let image = avatarView.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: UIScreen.main.bounds.width * 243 / 375,
+                           height: UIScreen.main.bounds.width * 243 / 375)
+            }
+        }
+    }
+
     private var submitResultButton: some View {
         Button(action: {
             if voted {
@@ -662,7 +673,7 @@ struct PollSelectLine: View {
             if #available(iOS 14.0, *) {
                 ZStack {
                     if multipleChoices {
-                        HStack(alignment: .top, spacing: isPreview ? 6.5 : (!hideTally || voted ? 3.5 : 6)) {
+                        HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
                             Image(systemName: isPreview ? "circle" :
                                     (selectedMultiAnswerID.contains(item.id) ?
                                   "checkmark.circle.fill" : "circle"))
@@ -677,7 +688,7 @@ struct PollSelectLine: View {
                                 .font(.system(size: 12, weight: selectedMultiAnswerID.contains(item.id) ? .bold : .regular))
                                 .foregroundColor(Color.white)
                         }
-                        .padding(.leading, isPreview ? 6 : (!hideTally || voted ? 35 : 1))
+                        .padding(.leading, isPreview ? 1 : (!hideTally || voted ? 35 : 1))
                         .overlay(
                             RoundedRectangle(cornerRadius: .infinity)
                                 .foregroundColor(selectedMultiAnswerID.contains(item.id) ?
@@ -689,7 +700,7 @@ struct PollSelectLine: View {
                                 .offset(y: 7), alignment: .bottomLeading
                         )
                     } else {
-                        HStack(alignment: .top, spacing: isPreview ? 6.5 : (!hideTally || voted ? 3.5 : 6)) {
+                        HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
                             Image(systemName: isPreview ? "circle" :
                                     (selectedAnswerID == item.id ?
                                   "checkmark.circle.fill" : "circle"))
@@ -704,7 +715,7 @@ struct PollSelectLine: View {
                                 .font(.system(size: 12, weight: selectedAnswerID == item.id ? .bold : .regular))
                                 .foregroundColor(Color.white)
                         }
-                        .padding(.leading, isPreview ? 6 : (!hideTally || voted ? 35 : 1))
+                        .padding(.leading, isPreview ? 1 : (!hideTally || voted ? 35 : 1))
                         .overlay(
                             RoundedRectangle(cornerRadius: .infinity)
                                 .foregroundColor(selectedAnswerID == item.id ?
