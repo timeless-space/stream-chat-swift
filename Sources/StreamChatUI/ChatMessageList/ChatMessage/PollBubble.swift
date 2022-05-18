@@ -675,18 +675,18 @@ struct PollView: View {
 
     private var submitResultButton: some View {
         Button(action: {
-//            if voted {
+            if voted {
                 onTapViewResult(answers)
-//            } else {
-//                withAnimation(.easeInOut(duration: 0.2)) {
-//                    loadingSubmit = true
-//                }
-//                if multipleChoices {
-//                    onTapSubmit(selectedMultiAnswerID)
-//                } else {
-//                    onTapSubmit([selectedAnswerID])
-//                }
-//            }
+            } else {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    loadingSubmit = true
+                }
+                if multipleChoices {
+                    onTapSubmit(selectedMultiAnswerID)
+                } else {
+                    onTapSubmit([selectedAnswerID])
+                }
+            }
         }) {
             RoundedRectangle(cornerRadius: .infinity)
                 .foregroundColor(enableSubmitButton ? Color.white.opacity(0.2) : Color.black.opacity(0.25))
@@ -722,7 +722,7 @@ struct PollView: View {
                 .padding(.horizontal, 16.5)
                 .animation(.easeInOut(duration: 0.2), value: enableSubmitButton)
         }
-//        .disabled(!enableSubmitButton)
+        .disabled(!enableSubmitButton)
         .padding(.bottom, 4.5)
     }
 
