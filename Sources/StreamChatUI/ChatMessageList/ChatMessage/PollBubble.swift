@@ -11,7 +11,7 @@ import SwiftUI
 import StreamChat
 import Nuke
 
-class PollBubble: UITableViewCell {
+public class PollBubble: UITableViewCell {
     public private(set) var viewContainer: UIView!
     public private(set) var subContainer: UIView!
     public private(set) var timestampLabel: UILabel!
@@ -25,6 +25,8 @@ class PollBubble: UITableViewCell {
     var channel: ChatChannel?
     var pollID = ""
     let chatClient = ChatClient.shared
+    public static var callback: ((String) -> [String: Any]?)?
+    public static var clearCache: (() -> Void)?
 
     public lazy var dateFormatter: DateFormatter = .makeDefault()
 
@@ -33,6 +35,13 @@ class PollBubble: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setLayout()
+    }
+
+    override open func didMoveToSuperview() {
+        super.didMoveToSuperview()
+        if superview == nil {
+            PollBubble.clearCache?()
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -395,6 +404,7 @@ struct PollView: View {
     @State private var selectedMultiAnswerID: [String] = []
     @State private var voted = false
     @State private var loadingSubmit = false
+    @State private var isLoaded = false
 
     // MARK: - Callback functions
     var onTapSend: () -> Void
@@ -477,6 +487,63 @@ struct PollView: View {
                 .cornerRadius(15)
                 if isPreview {
                     previewButtons
+                }
+            }
+            .onAppear {
+                if let userInfo = PollBubble.callback?(pollID) {
+                    loadingSubmit = false
+                    isLoaded = true
+                    let groupID = userInfo["groupID"] as? String ?? ""
+                    let pollID = userInfo["pollID"] as? String ?? ""
+                    if groupID == cid.description && pollID == self.pollID {
+                        let question = userInfo["question"] as? String ?? ""
+                        let imageURL = userInfo["imageURL"] as? String ?? ""
+                        let anonymous = userInfo["anonymous"] as? Bool ?? false
+                        let multipleChoices = userInfo["multipleChoices"] as? Bool ?? false
+                        let hideTally = userInfo["hideTally"] as? Bool ?? false
+                        let createdAt = userInfo["createdAt"] as? String ?? ""
+                        let creator = userInfo["creator"] as? String ?? ""
+                        let groupID = userInfo["groupID"] as? String ?? ""
+                        let messageID = userInfo["messageID"] as? String ?? ""
+                        let answers = userInfo["answers"] as? [[String: Any]] ?? []
+                        let voteFor = userInfo["voteFor"] as? [String] ?? []
+
+                        self.answers.removeAll()
+                        answers.forEach { item in
+                            var wallets: [AnswerWallet] = []
+                            let walletItems = item["wallets"] as? [[String: Any]] ?? []
+                            walletItems.forEach { wallet in
+                                let title = wallet["title"] as? String ?? ""
+                                let avatar = wallet["avatar"] as? String ?? ""
+                                let bio = wallet["bio"] as? String ?? ""
+                                let id = wallet["id"] as? String ?? ""
+                                let address = wallet["address"] as? String ?? ""
+                                let verified = wallet["verified"] as? Bool ?? false
+                                wallets.append(AnswerWallet(
+                                    title: wallet["title"] as? String ?? "",
+                                    avatar: wallet["avatar"] as? String ?? "",
+                                    bio: wallet["bio"] as? String ?? "",
+                                    id: wallet["id"] as? String ?? "",
+                                    address: wallet["address"] as? String ?? "",
+                                    verified: wallet["verified"] as? Bool ?? false
+                                ))
+                            }
+                            self.answers.append(AnswerRes(
+                                id: item["id"] as? String ?? "",
+                                content: item["content"] as? String ?? "",
+                                pollID: pollID,
+                                votedCount: item["votedCount"] as? Int ?? 0,
+                                wallets: wallets,
+                                createdAt: item["createdAt"] as? String ?? ""
+                            ))
+                        }
+                        voted = userInfo["voted"] as? Bool ?? false
+                    }
+                } else {
+                    var userInfo = [String: Any]()
+                    userInfo["group_id"] = cid.description
+                    userInfo["poll_id"] = pollID
+                    NotificationCenter.default.post(name: .getPollData, object: nil, userInfo: userInfo)
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: .pollUpdate)) { value in
@@ -664,7 +731,6 @@ struct PollSelectLine: View {
 
     // MARK: - Computed Variables
     private var percent: CGFloat {
-        guard voted else { return 0 }
         var result: CGFloat = 0
         let test = answers
         answers.forEach { item in
@@ -673,7 +739,7 @@ struct PollSelectLine: View {
         }
         let answer = answers.first(where: { $0.id == item.id })
         let vote = CGFloat(answer?.votedCount ?? 0)
-        let rate = vote / result
+        let rate = result == 0 ? 0 : (vote / result)
         return rate * 100
     }
 
@@ -761,9 +827,9 @@ struct PollSelectLine: View {
                 )
                 .onChange(of: percent) { value in
                     chartLength = 0
-                    withAnimation(.easeInOut(duration: 0.3)) {
+//                    withAnimation(.easeInOut(duration: 0.3)) {
                         chartLength = CGFloat(value * 150 / 100)
-                    }
+//                    }
                 }
             } else {
                 EmptyView()
