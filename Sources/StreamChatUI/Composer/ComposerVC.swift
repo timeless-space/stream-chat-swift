@@ -184,7 +184,7 @@ open class ComposerVC: _ViewController,
     /// SendMessageType.
     private enum SendMessageType {
         case publishMessage
-        case sendOne
+        case sendOne(Double, WalletAttachmentPayload.PaymentType, WalletAttachmentPayload.PaymentTheme)
         case sendSticker(Notification)
         case sendRedPacket
     }
@@ -545,16 +545,12 @@ open class ComposerVC: _ViewController,
             } else {
                 self.composerView.inputMessageView.textView.text = nil
                 self.composerView.inputMessageView.textView.resignFirstResponder()
-                guard let channelId = self.channelController?.channel?.cid else { return }
-                var userInfo = [String: Any]()
-                userInfo["channelId"] = channelId
-                userInfo["currencyValue"] = "\(amount)"
-                userInfo["currencyDisplay"] = "\(amount)"
-                userInfo["paymentTheme"] = theme.getPaymentThemeUrl()
-                NotificationCenter.default.post(name: .sendOneAction, object: nil, userInfo: userInfo)
-                self.hideInputView()
-                self.composerView.leadingContainer.isHidden = false
-                self.animateToolkitView(isHide: true)
+                guard let channelId = self.channelController?.channel?.cid else {
+                    self.sendMessageType = .sendOne(amount, type, theme)
+                    self.callbackInitiateChannel?()
+                    return
+                }
+                self.showSendOnePaymentDialog(amount: amount, type: type, theme: theme)
             }
         }
     }
@@ -619,8 +615,8 @@ open class ComposerVC: _ViewController,
         case .publishMessage:
             publishMessage(sender: composerView.inputMessageView.sendButton)
             break
-        case .sendOne:
-
+        case .sendOne(let amount, let type, let theme):
+            showSendOnePaymentDialog(amount: amount, type: type, theme: theme)
             break
         case .sendSticker(let notification):
             btnSendSticker(notification)
@@ -860,6 +856,21 @@ open class ComposerVC: _ViewController,
         composerView.inputMessageView.textView.text = ""
         showPayment()
         animateMenuButton()
+    }
+
+    private func showSendOnePaymentDialog(amount: Double, type: WalletAttachmentPayload.PaymentType, theme: WalletAttachmentPayload.PaymentTheme) {
+        guard let channelId = self.channelController?.channel?.cid else {
+            return
+        }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        userInfo["currencyValue"] = "\(amount)"
+        userInfo["currencyDisplay"] = "\(amount)"
+        userInfo["paymentTheme"] = theme.getPaymentThemeUrl()
+        NotificationCenter.default.post(name: .sendOneAction, object: nil, userInfo: userInfo)
+        self.hideInputView()
+        self.composerView.leadingContainer.isHidden = false
+        self.animateToolkitView(isHide: true)
     }
 
     @objc func hideKeyboardMenuAction(_ notification: Notification) {
