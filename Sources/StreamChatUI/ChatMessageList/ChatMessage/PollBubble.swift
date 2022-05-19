@@ -409,6 +409,7 @@ struct PollView: View {
     @State private var uploadedImage: UIImage?
     @State private var memberVotedURL: [String] = []
     @State private var mediaSize: CGSize?
+    @State private var isGifMedia = false
     private let mediaWidth = UIScreen.main.bounds.width * 243 / 375
 
     // MARK: - Callback functions
@@ -501,6 +502,7 @@ struct PollView: View {
                     .padding(.horizontal, 12.5)
                     .frame(minWidth: mediaWidth, alignment: .leading)
                     .background(isSender ? Color.blue : Color.gray.opacity(0.6))
+                    .background(Color.black)
                 }
                 .cornerRadius(15)
                 if isPreview {
@@ -636,8 +638,7 @@ struct PollView: View {
 
     // MARK: - Subview
     private func mediaView(_ imageURL: String) -> some View {
-        var isGif = false
-        if !isGif, uploadedImage == nil {
+        if !isGifMedia, uploadedImage == nil {
             DispatchQueue.main.async {
                 let pathExtension = imageURL.components(separatedBy: "?")
                 var path = ""
@@ -646,7 +647,7 @@ struct PollView: View {
                 }
                 let mediaType = path.split(separator: ".").last ?? ""
                 if mediaType == "gif" {
-                    isGif = true
+                    isGifMedia = true
                 } else {
                     Nuke.loadImage(with: imageURL, into: uiImageView) { result in
                         switch result {
@@ -666,19 +667,14 @@ struct PollView: View {
                     .frame(width: mediaWidth, height: mediaWidth)
                 ProgressView()
                     .progressViewStyle(.circular)
-                    .opacity(uploadedImage == nil ? 1 : 0)
-                if isGif, let url = URL(string: imageURL) {
-                    SwiftyGif(url: url)
+                    .opacity(!isGifMedia || uploadedImage == nil ? 1 : 0)
+                if isGifMedia, let url = URL(string: imageURL) {
+                    SwiftyGifView(url: url, frame: mediaWidth)
                         .frame(width: mediaWidth, height: mediaWidth)
                 } else if let uiimage = uploadedImage {
                     Image(uiImage: uiimage)
                         .resizable()
                         .scaledToFill()
-                        .blur(radius: 20)
-                        .frame(width: mediaWidth, height: mediaWidth)
-                    Image(uiImage: uiimage)
-                        .resizable()
-                        .scaledToFit()
                         .frame(width: mediaWidth, height: mediaWidth)
                 }
             }
@@ -686,18 +682,29 @@ struct PollView: View {
         .animation(.easeInOut(duration: 0.2), value: uploadedImage)
     }
 
-    struct SwiftyGif: UIViewRepresentable {
+    struct SwiftyGifView: UIViewRepresentable {
         var url: URL
-        
-        func makeUIView(context: Context) -> UIImageView {
-            let imageview = UIImageView()
-            let loader = UIActivityIndicatorView(style: .white)
-            imageview.setGifFromURL(url)
-            return imageview
+        var frame: CGFloat
+        var scaleToFit = true
+
+        func makeUIView(context: Context) -> UIView {
+            let view = UIView()
+
+            let gifImageView = UIImageView()
+            gifImageView.contentMode = .scaleAspectFill
+            gifImageView.translatesAutoresizingMaskIntoConstraints = false
+            gifImageView.setGifFromURL(url)
+            gifImageView.startAnimatingGif()
+
+            view.addSubview(gifImageView)
+            NSLayoutConstraint.activate([
+                gifImageView.heightAnchor.constraint(equalTo: view.heightAnchor),
+                gifImageView.widthAnchor.constraint(equalTo: view.widthAnchor)
+            ])
+            return view
         }
 
-        func updateUIView(_ gifImageView: UIImageView, context: Context) {
-            gifImageView.startAnimatingGif()
+        func updateUIView(_ contentView: UIView, context: Context) {
         }
     }
 
@@ -727,7 +734,7 @@ struct PollView: View {
                                 .font(.system(size: 12, weight: .bold))
                                 .foregroundColor(Color.white.opacity(enableSubmitButton ? 1 : 0.5))
                                 .opacity(voted ? 0 : 1)
-                                .offset(x: voted ? -50 : 0)
+                                .offset(x: voted ? 50 : 0)
                                 .overlay(
                                     ProgressView()
                                         .progressViewStyle(.circular)
@@ -743,7 +750,7 @@ struct PollView: View {
                             .font(.system(size: 12, weight: .bold))
                             .foregroundColor(Color.white)
                             .opacity(voted ? 1 : 0)
-                            .offset(x: voted ? 0 : 50)
+                            .offset(x: voted ? 0 : -50)
                     }
                         .offset(y: 0.5)
                 )
@@ -798,7 +805,7 @@ struct PollView: View {
             return ZStack {
                 if #available(iOS 15.0, *) {
                     Rectangle()
-                        .foregroundColor(Color.black)
+                        .foregroundColor(Color.clear)
                         .frame(width: 16.5, height: 16.5)
                         .overlay(
                             ZStack {
