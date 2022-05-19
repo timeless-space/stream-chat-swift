@@ -114,10 +114,10 @@ public extension AnyAttachmentPayload {
         )
     }
 
-    init(extraData: [String: RawJSON]?, paymentType: WalletAttachmentPayload.PaymentType) {
+    init(extraData: [String: RawJSON]?, paymentType: WalletAttachmentPayload.PaymentType, requestId: String = "") {
         self.init(
             type: .wallet,
-            payload: WalletAttachmentPayload(paymentType: paymentType, extraData: extraData),
+            payload: WalletAttachmentPayload(paymentType: paymentType, extraData: extraData, requestId: requestId),
             localFileURL: nil
         )
     }

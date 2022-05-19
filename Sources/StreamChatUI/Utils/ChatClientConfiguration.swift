@@ -30,6 +30,7 @@ open class ChatClientConfiguration {
 
     // MARK: - Variables
     public static let shared = ChatClientConfiguration()
+
     open var apiKey = ""
     open var giphyApiKey = ""
     // streamChat request token

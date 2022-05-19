@@ -593,8 +593,7 @@ open class ComposerVC: _ViewController,
             case .gift:
                 self.animateToolkitView(isHide: true)
                 self.composerView.inputMessageView.textView.resignFirstResponder()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                    guard let `self` = self else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     self.sendGiftAction()
                 }
             case .dao:
@@ -636,6 +635,10 @@ open class ComposerVC: _ViewController,
     @objc open func showEmojiMenu(_ sender: UIButton) {
         // EMOJI integration
         sender.isSelected.toggle()
+        if !composerView.toolbarBackButton.isHidden {
+            composerView.toolbarBackButton.isHidden.toggle()
+            composerView.toolbarToggleButton.isHidden.toggle()
+        }
         isMenuShowing = true
         animateMenuButton()
         if sender.isSelected {
@@ -982,13 +985,22 @@ open class ComposerVC: _ViewController,
             return
         }
 
-        channelController?.createNewMessage(
-            text: text,
-            pinning: nil,
-            attachments: content.attachments,
-            mentionedUserIds: content.mentionedUsers.map(\.id),
-            quotedMessageId: content.quotingMessage?.id
-        )
+        if let walletRequest = content.attachments.filter( { $0.type == .wallet} ).first?.payload as? WalletAttachmentPayload {
+            let parameter: [String: Any] = [
+                kAmount: walletRequest.extraData?.requestedAmount ?? "0",
+                kChannelId: cid.description,
+                kFlair: walletRequest.extraData?.requestedThemeUrl
+            ]
+            NotificationCenter.default.post(name: .sendPaymentRequest, object: nil, userInfo: parameter)
+        } else {
+            channelController?.createNewMessage(
+                text: text,
+                pinning: nil,
+                attachments: content.attachments,
+                mentionedUserIds: content.mentionedUsers.map(\.id),
+                quotedMessageId: content.quotingMessage?.id
+            )
+        }
     }
 
     /// Updates an existing message.

@@ -174,6 +174,13 @@ class WalletRequestPayBubble: UITableViewCell {
         } else {
             timestampLabel?.text = nil
         }
+        if walletPaymentType == .request {
+            pickUpButton.isEnabled = false
+            pickUpButton.alpha = 0.5
+        } else {
+            pickUpButton.isEnabled = true
+            pickUpButton.alpha = 1.0
+        }
     }
 
     private func handleBubbleConstraints(_ isSender: Bool) {

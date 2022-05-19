@@ -197,6 +197,7 @@ class GiftBubble: UITableViewCell {
             playerLayer.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width * 0.667, height: 250)
             playerLayer.videoGravity = .resizeAspect
             playerLayer.needsDisplayOnBoundsChange = true
+            playerLayer.removeFromSuperlayer()
             videoView.layer.addSublayer(playerLayer)
             stickerContainer.addArrangedSubview(videoView)
             player.play()

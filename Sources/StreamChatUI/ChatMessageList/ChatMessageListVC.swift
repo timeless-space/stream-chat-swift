@@ -474,10 +474,8 @@ open class ChatMessageListVC:
                     for: indexPath) as? TableViewCellWallePayBubbleIncoming else {
                         return UITableViewCell()
                     }
-                if let channel = dataSource?.channel(for: self) {
-                    cell.channelId = channel.cid
-                }
                 cell.client = client
+                cell.channel = dataSource?.channel(for: self)
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
