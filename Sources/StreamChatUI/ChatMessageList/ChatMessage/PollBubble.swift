@@ -450,13 +450,14 @@ struct PollView: View {
                         mediaView(imageUrl)
                     }
                     VStack(alignment: .leading, spacing: 0) {
-                        if !isPreview {
-                            Text("YOUR FIRST POLL")
-                                .tracking(-0.4)
-                                .font(.system(size: 9, weight: .medium))
-                                .foregroundColor(Color.white.opacity(0.8))
-                                .padding(.bottom, 2.5)
-                        }
+                        //TODO
+//                        if !isPreview {
+//                            Text("YOUR FIRST POLL")
+//                                .tracking(-0.4)
+//                                .font(.system(size: 9, weight: .medium))
+//                                .foregroundColor(Color.white.opacity(0.8))
+//                                .padding(.bottom, 2.5)
+//                        }
                         Text(question)
                             .tracking(-0.2)
                             .font(.system(size: 14, weight: .bold))
@@ -520,7 +521,6 @@ struct PollView: View {
             .onAppear {
                 if let userInfo = PollBubble.callback?(pollID) {
                     loadingSubmit = false
-                    isLoaded = true
                     let groupID = userInfo["groupID"] as? String ?? ""
                     let pollID = userInfo["pollID"] as? String ?? ""
                     if groupID == cid.description && pollID == self.pollID {
@@ -568,6 +568,7 @@ struct PollView: View {
                         voted = userInfo["voted"] as? Bool ?? false
                         self.listVotedAnswer = voteFor
                     }
+                    isLoaded = true
                 } else {
                     var userInfo = [String: Any]()
                     userInfo["group_id"] = cid.description
@@ -640,6 +641,7 @@ struct PollView: View {
                     }
                     self.listVotedAnswer = voteFor
                 }
+                isLoaded = true
             }
         } else {
             EmptyView()
@@ -678,14 +680,16 @@ struct PollView: View {
                 ProgressView()
                     .progressViewStyle(.circular)
                     .opacity(!isGifMedia || uploadedImage == nil ? 1 : 0)
-                if isGifMedia, let url = URL(string: imageURL) {
-                    SwiftyGifView(url: url, frame: mediaWidth)
-                        .frame(width: mediaWidth, height: mediaWidth)
-                } else if let uiimage = uploadedImage {
-                    Image(uiImage: uiimage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: mediaWidth, height: mediaWidth)
+                if isLoaded {
+                    if isGifMedia, let url = URL(string: imageURL) {
+                        SwiftyGifView(url: url, frame: mediaWidth)
+                            .frame(width: mediaWidth, height: mediaWidth)
+                    } else if let uiimage = uploadedImage {
+                        Image(uiImage: uiimage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: mediaWidth, height: mediaWidth)
+                    }
                 }
             }
         } 
