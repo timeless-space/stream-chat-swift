@@ -428,7 +428,11 @@ struct PollView: View {
     }
 
     private var enableSubmitButton: Bool {
-        return multipleChoices ? !selectedMultiAnswerID.isEmpty : !selectedAnswerID.isEmpty
+        if voted {
+            return true
+        } else {
+            return multipleChoices ? !selectedMultiAnswerID.isEmpty : !selectedAnswerID.isEmpty
+        }
     }
 
     // MARK: - Body view
@@ -461,7 +465,7 @@ struct PollView: View {
                                     .overlay(
                                         ZStack {
                                             if memberVotedURL.count > 0 {
-                                                ForEach(0 ..< 5) { idx in
+                                                ForEach(0 ..< (memberVotedURL.count <= 5 ? memberVotedURL.count : 5)) { idx in
                                                     ListMemberAvatar(avatarURL: memberVotedURL[0])
                                                         .zIndex(Double(-idx))
                                                         .offset(x: CGFloat(idx * 12 - idx))
@@ -632,11 +636,17 @@ struct PollView: View {
 
     // MARK: - Subview
     private func mediaView(_ imageURL: String) -> some View {
-        if uploadedImage == nil {
+        var isGif = false
+        if !isGif, uploadedImage == nil {
             DispatchQueue.main.async {
-                let mediaType = imageURL.split(separator: ".").last ?? ""
-                if mediaType == "gif", let url = URL(string: imageURL) {
-
+                let pathExtension = imageURL.components(separatedBy: "?")
+                var path = ""
+                if pathExtension.count > 0 {
+                    path = pathExtension[0]
+                }
+                let mediaType = path.split(separator: ".").last ?? ""
+                if mediaType == "gif" {
+                    isGif = true
                 } else {
                     Nuke.loadImage(with: imageURL, into: uiImageView) { result in
                         switch result {
@@ -657,7 +667,10 @@ struct PollView: View {
                 ProgressView()
                     .progressViewStyle(.circular)
                     .opacity(uploadedImage == nil ? 1 : 0)
-                if let uiimage = uploadedImage {
+                if isGif, let url = URL(string: imageURL) {
+                    SwiftyGif(url: url)
+                        .frame(width: mediaWidth, height: mediaWidth)
+                } else if let uiimage = uploadedImage {
                     Image(uiImage: uiimage)
                         .resizable()
                         .scaledToFill()
@@ -671,6 +684,21 @@ struct PollView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: uploadedImage)
+    }
+
+    struct SwiftyGif: UIViewRepresentable {
+        var url: URL
+        
+        func makeUIView(context: Context) -> UIImageView {
+            let imageview = UIImageView()
+            let loader = UIActivityIndicatorView(style: .white)
+            imageview.setGifFromURL(url)
+            return imageview
+        }
+
+        func updateUIView(_ gifImageView: UIImageView, context: Context) {
+            gifImageView.startAnimatingGif()
+        }
     }
 
     private var submitResultButton: some View {
@@ -776,6 +804,7 @@ struct PollView: View {
                             ZStack {
                                 ProgressView()
                                     .progressViewStyle(.circular)
+                                    .scaleEffect(0.5)
                                     .opacity(avatarUIImage == nil ? 1 : 0)
                                 if avatarUIImage != nil {
                                     Image(uiImage: avatarUIImage!)
@@ -882,7 +911,7 @@ struct PollSelectLine: View {
                                     .opacity(selectedMultiAnswerID.contains(item.id) ? 1 : 0)
                             }
                         }
-                        .padding(.leading, isPreview ? 1 : (!hideTally || voted ? 35 : 1))
+                        .padding(.leading, !hideTally || voted ? 35 : 1)
                         .overlay(
                             RoundedRectangle(cornerRadius: .infinity)
                                 .foregroundColor(selectedMultiAnswerID.contains(item.id) ?
@@ -920,7 +949,7 @@ struct PollSelectLine: View {
                                     .opacity(selectedAnswerID == item.id ? 1 : 0)
                             }
                         }
-                        .padding(.leading, isPreview ? 1 : (!hideTally || voted ? 35 : 1))
+                        .padding(.leading, !hideTally || voted ? 35 : 1)
                         .overlay(
                             RoundedRectangle(cornerRadius: .infinity)
                                 .foregroundColor(selectedAnswerID == item.id ?
@@ -938,7 +967,7 @@ struct PollSelectLine: View {
                     Text("\(String(format: "%.0f", percent))%")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(Color.white)
-                        .opacity(isPreview ? 0 : (!hideTally || voted ? 1 : 0))
+                        .opacity(!hideTally || voted ? 1 : 0)
                         .padding(.leading, 1.5), alignment: .topLeading
                 )
                 .onChange(of: percent) { value in
