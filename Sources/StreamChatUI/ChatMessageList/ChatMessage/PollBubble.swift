@@ -236,7 +236,11 @@ public class PollBubble: UITableViewCell {
                         nameAndTimeString?.append("\(name)   ")
                     }
                     if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                        nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+                        if isSender && isPreview {
+                            nameAndTimeString?.append("Only visible to you \(dateFormatter.string(from: createdAt))")
+                        } else {
+                            nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+                        }
                     }
                 }
                 timestampLabel?.text = nameAndTimeString
@@ -410,6 +414,7 @@ struct PollView: View {
     @State private var memberVotedURL: [String] = []
     @State private var mediaSize: CGSize?
     @State private var isGifMedia = false
+    @State private var listVotedAnswer: [String] = []
     private let mediaWidth = UIScreen.main.bounds.width * 243 / 375
 
     // MARK: - Callback functions
@@ -445,11 +450,13 @@ struct PollView: View {
                         mediaView(imageUrl)
                     }
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("YOUR FIRST POLL")
-                            .tracking(-0.4)
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.8))
-                            .padding(.bottom, 2.5)
+                        if !isPreview {
+                            Text("YOUR FIRST POLL")
+                                .tracking(-0.4)
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(Color.white.opacity(0.8))
+                                .padding(.bottom, 2.5)
+                        }
                         Text(question)
                             .tracking(-0.2)
                             .font(.system(size: 14, weight: .bold))
@@ -485,6 +492,7 @@ struct PollView: View {
                                                hideTally: hideTally,
                                                isPreview: isPreview,
                                                isSender: isSender,
+                                               listVotedAnswer: listVotedAnswer,
                                                selectedAnswerID: $selectedAnswerID,
                                                selectedMultiAnswerID: $selectedMultiAnswerID,
                                                voted: $voted,
@@ -558,6 +566,7 @@ struct PollView: View {
                             ))
                         }
                         voted = userInfo["voted"] as? Bool ?? false
+                        self.listVotedAnswer = voteFor
                     }
                 } else {
                     var userInfo = [String: Any]()
@@ -629,6 +638,7 @@ struct PollView: View {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         voted = value.userInfo?["voted"] as? Bool ?? false
                     }
+                    self.listVotedAnswer = voteFor
                 }
             }
         } else {
@@ -851,6 +861,7 @@ struct PollSelectLine: View {
     var hideTally = false
     var isPreview = false
     var isSender: Bool
+    var listVotedAnswer: [String]
     @Binding var selectedAnswerID: String
     @Binding var selectedMultiAnswerID: [String]
     @Binding var voted: Bool
@@ -895,12 +906,12 @@ struct PollSelectLine: View {
                     if multipleChoices {
                         HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
                             Image(systemName: isPreview ? "circle" :
-                                    (selectedMultiAnswerID.contains(item.id) ?
+                                    (selectedMultiAnswerID.contains(item.id) || listVotedAnswer.contains(item.id) ?
                                   "checkmark.circle.fill" : "circle"))
                                 .resizable()
                                 .foregroundColor(Color.white)
                                 .frame(width: 15, height: 15)
-                                .opacity(voted ? (selectedMultiAnswerID.contains(item.id) ? 1 : 0) : 1)
+                                .opacity(voted ? (selectedMultiAnswerID.contains(item.id) || listVotedAnswer.contains(item.id) ? 1 : 0) : 1)
                             ZStack(alignment: .topLeading) {
                                 Text(item.content)
                                     .tracking(-0.3)
@@ -933,12 +944,12 @@ struct PollSelectLine: View {
                     } else {
                         HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
                             Image(systemName: isPreview ? "circle" :
-                                    (selectedAnswerID == item.id ?
+                                    (selectedAnswerID == item.id || listVotedAnswer.contains(item.id) ?
                                   "checkmark.circle.fill" : "circle"))
                                 .resizable()
                                 .foregroundColor(Color.white)
                                 .frame(width: 15, height: 15)
-                                .opacity(voted ? (selectedAnswerID == item.id ? 1 : 0) : 1)
+                                .opacity(voted ? ((selectedAnswerID == item.id || listVotedAnswer.contains(item.id)) ? 1 : 0) : 1)
                             ZStack(alignment: .topLeading) {
                                 Text(item.content)
                                     .tracking(-0.3)
