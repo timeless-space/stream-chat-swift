@@ -678,7 +678,7 @@ struct PollView: View {
                         .frame(width: mediaWidth, height: mediaWidth)
                 }
             }
-        }
+        } 
         .animation(.easeInOut(duration: 0.2), value: uploadedImage)
     }
 
