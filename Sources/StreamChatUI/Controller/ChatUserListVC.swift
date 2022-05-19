@@ -446,29 +446,36 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
         }
         //
         do {
-            let controller = try client
-                .channelController(
-                    createDirectMessageChannelWith: [selectedUserId, currentUserId],
-                    name: nil,
-                    imageURL: nil,
-                    extraData: [:]
-                )
-            controller.synchronize { [weak self] error in
-                guard let weakSelf = self else {
-                    return
+            var controller: ChatChannelController?
+            let channelListController = ChatClient.shared.channelListController(
+                query: .init(
+                    filter: .or([
+                        .containMembers(userIds: [ChatClient.shared.currentUserId!]),
+                        .and([
+                            .equal(.type, to: .custom("announcement")),
+                            //.equal("muted", to: true)
+                        ])
+
+                    ])
+                ))
+            for channel in channelListController.channels {
+                guard channel.isDirectMessageChannel,
+                      channel.lastActiveMembers.contains(where: { $0.id == selectedUserId }) else {
+                    continue
                 }
-                if error == nil {
-                    let chatChannelVC = ChatChannelVC()
-                    chatChannelVC.channelController = controller
-                    if let firstVC = weakSelf.navigationController?.viewControllers.first {
-                        NotificationCenter.default.post(name: .hideTabbar, object: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                            guard let self = self else {
-                                return
-                            }
-                            self.navigationController?.setViewControllers([firstVC, chatChannelVC], animated: true)
-                        }
+                controller = ChatClient.shared.channelController(for: channel.cid)
+            }
+
+            let chatChannelVC = ChatChannelVC()
+            chatChannelVC.channelController = controller
+            chatChannelVC.selectedChatUser = user
+            if let firstVC = navigationController?.viewControllers.first {
+                NotificationCenter.default.post(name: .hideTabbar, object: nil)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    guard let self = self else {
+                        return
                     }
+                    self.navigationController?.setViewControllers([firstVC, chatChannelVC], animated: true)
                 }
             }
         } catch {

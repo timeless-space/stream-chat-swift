@@ -30,6 +30,9 @@ open class ChatChannelVC:
     /// Controller for observing data changes within the channel.
     open var channelController: ChatChannelController?
 
+    /// selectedChatUser for chat initiate.
+    open var selectedChatUser: ChatUser?
+
     /// boolean flag for first time navigate here after creating new channel
     open var isChannelCreated = false
 
@@ -196,6 +199,10 @@ open class ChatChannelVC:
         }
         messageComposerVC?.channelController = channelController
         messageComposerVC?.userSearchController = userSuggestionSearchController
+        messageComposerVC?.callbackInitiateChannel = { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.createChannel()
+        }
 
         channelController?.delegate = self
         channelController?.synchronize { [weak self] _ in
@@ -490,6 +497,32 @@ open class ChatChannelVC:
         }
     }
 
+    private func createChannel() {
+        guard let selectedUserId = selectedChatUser?.id else { return }
+        guard let currentUserId = ChatClient.shared.currentUserId else { return }
+        do {
+            channelController = try ChatClient.shared
+                .channelController(
+                    createDirectMessageChannelWith: [selectedUserId, currentUserId],
+                    name: nil,
+                    imageURL: nil,
+                    extraData: [:]
+                )
+            channelController?.synchronize { [weak self] error in
+                guard let weakSelf = self , error == nil else {
+                    Snackbar.show(text: "Operation could not be completed")
+                    return
+                }
+                weakSelf.setUp()
+                weakSelf.setUpLayout()
+                weakSelf.setupUI()
+                weakSelf.messageComposerVC?.channelCreatedAndSendMessage()
+            }
+        } catch {
+            fatalError("Error while create chat controller 'Chat Channel VC' - line no: 500 ")
+        }
+    }
+
     private func setupUI() {
         isChannelMuted = channelController?.channel?.isMuted ?? false
         reloadMenu()
@@ -503,6 +536,14 @@ open class ChatChannelVC:
             }
         }
         channelController?.markRead()
+        moreButton.isEnabled = true
+        if let selectedChatUser = selectedChatUser, channelController == nil {
+            moreButton.isEnabled = false
+            headerView.setupHeaderForChatUser(member: selectedChatUser)
+            if let avatarUrl = selectedChatUser.imageURL {
+                channelAvatarView.loadChannelAvatar(from: avatarUrl)
+            }
+        }
     }
 
     private func showPinViewButton() {

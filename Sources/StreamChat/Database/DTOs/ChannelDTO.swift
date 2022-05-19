@@ -275,7 +275,7 @@ extension ChannelDTO {
         
         let matchingQuery = NSPredicate(format: "ANY queries.filterHash == %@", query.filter.filterHash)
         let notDeleted = NSPredicate(format: "deletedAt == nil")
-
+        let lastMessageDate = NSPredicate(format: "lastMessageAt != nil")
         // If the query contains a filter for the `isHidden` property,
         // we use the filter here
         // This is safe to do since backend appends a `hidden: false` filter when it's not specified
@@ -284,7 +284,7 @@ extension ChannelDTO {
         let isHidden = NSPredicate(format: "isHidden == %i", query.filter.hiddenFilterValue == true ? 1 : 0)
         
         let subpredicates = [
-            matchingQuery, notDeleted, isHidden
+            matchingQuery, notDeleted, isHidden, lastMessageDate
         ]
         
         request.predicate = NSCompoundPredicate(type: .and, subpredicates: subpredicates)

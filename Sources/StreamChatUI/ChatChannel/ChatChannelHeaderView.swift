@@ -187,6 +187,18 @@ open class ChatChannelHeaderView:
         return L10n.Message.Title.group(channel.memberCount, activeMembers)
     }
 
+    /// Setting Title and Subtitle for direct channel .
+    open func setupHeaderForChatUser(member: ChatUser) {
+        var memberStatus = L10n.Message.Title.offline
+        if member.isOnline {
+            memberStatus = L10n.Message.Title.online
+        } else if let lastActiveAt = member.lastActiveAt, let timeAgo = lastSeenDateFormatter(lastActiveAt) {
+            memberStatus = timeAgo
+        }
+        titleContainerView.content = (member.name?.trimStringBy(count: 25), memberStatus, false, false)
+        self.titleContainerView.setUpLayout()
+    }
+
     /// Create the timer to repeatedly update the online status of the members.
     open func makeTimer() {
         // Only create the timer if is not created yet and if the interval is not zero.

@@ -181,12 +181,26 @@ open class ComposerVC: _ViewController,
         }
     }
 
+    /// SendMessageType.
+    private enum SendMessageType {
+        case publishMessage
+        case sendOne
+        case sendSticker(Notification)
+        case sendRedPacket
+    }
+
     /// The content of the composer.
     public var content: Content = .initial() {
         didSet {
             updateContentIfNeeded()
         }
     }
+
+    /// callbackInitiateChannel used to create channel if channel controller is nil .
+    public var callbackInitiateChannel: (() -> Void)?
+
+    /// sendMessageType used to send message after creating channel if channel controller is nil.
+    private var sendMessageType: SendMessageType = .publishMessage
 
     /// A symbol that is used to recognise when the user is mentioning a user.
     open var mentionSymbol = "@"
@@ -600,7 +614,29 @@ open class ComposerVC: _ViewController,
 
     // MARK: - Actions
 
+    open func channelCreatedAndSendMessage() {
+        switch sendMessageType {
+        case .publishMessage:
+            publishMessage(sender: composerView.inputMessageView.sendButton)
+            break
+        case .sendOne:
+
+            break
+        case .sendSticker(let notification):
+            btnSendSticker(notification)
+            break
+        case .sendRedPacket:
+            sendRedPacketAction()
+            break
+        }
+    }
+
     @objc open func publishMessage(sender: UIButton) {
+        guard channelController != nil else {
+            sendMessageType = .publishMessage
+            callbackInitiateChannel?()
+            return
+        }
         let text: String
         if let command = content.command {
             text = "/\(command.name) " + content.text
@@ -837,6 +873,11 @@ open class ComposerVC: _ViewController,
     }
 
     @objc func btnSendSticker(_ notification: Notification) {
+        guard channelController != nil else {
+            sendMessageType = .sendSticker(notification)
+            callbackInitiateChannel?()
+            return
+        }
         if let giphyImage = notification.userInfo?["giphyUrl"] as? String {
             var stickerData = [String: RawJSON]()
             stickerData["giphyUrl"] = .string(giphyImage)
@@ -871,7 +912,11 @@ open class ComposerVC: _ViewController,
     @objc open func sendRedPacketAction() {
         composerView.inputMessageView.textView.text = nil
         composerView.inputMessageView.textView.resignFirstResponder()
-        guard let channelId = channelController?.channel?.cid else { return }
+        guard let channelId = channelController?.channel?.cid else {
+            sendMessageType = .sendRedPacket
+            callbackInitiateChannel?()
+            return
+        }
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
         NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
