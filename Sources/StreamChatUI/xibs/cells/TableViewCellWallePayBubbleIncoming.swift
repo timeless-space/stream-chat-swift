@@ -16,6 +16,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
     @IBOutlet private weak var viewContainer: UIView!
     @IBOutlet private weak var subContainer: UIView!
     @IBOutlet private weak var sentThumbImageView: UIImageView!
+    @IBOutlet private weak var payRequestImageView: UIImageView!
     @IBOutlet private weak var timestampLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var pickUpButton: UIButton!
@@ -74,6 +75,9 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
         sentThumbImageView.backgroundColor = Appearance.default.colorPalette.background6
         sentThumbImageView.contentMode = .scaleAspectFill
         sentThumbImageView.clipsToBounds = true
+        payRequestImageView.backgroundColor = Appearance.default.colorPalette.background6
+        payRequestImageView.contentMode = .scaleAspectFill
+        payRequestImageView.clipsToBounds = true
         // lblDetails
         lblDetails.textAlignment = .center
         lblDetails.numberOfLines = 0
@@ -107,9 +111,11 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             }
             if let themeURL = payload?.extraData?.requestedThemeUrl, let imageUrl = URL(string: themeURL) {
                 if imageUrl.pathExtension == "gif" {
+                    sentThumbImageView.isHidden = false
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
-                    Nuke.loadImage(with: themeURL, into: sentThumbImageView)
+                    sentThumbImageView.isHidden = true
+                    Nuke.loadImage(with: themeURL, into: payRequestImageView)
                 }
             }
             lblDetails.text = "REQUEST: \(payload?.extraData?.requestedAmount ?? "0") ONE"
@@ -124,6 +130,15 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             pickUpButton.alpha = 1.0
             pickUpButton.isEnabled = true
         }
+        payRequestImageView.isHidden = !sentThumbImageView.isHidden
+        // pickUpButton
+        pickUpButton.setTitle("Pay", for: .normal)
+        pickUpButton.addTarget(self, action: #selector(btnSendPacketAction), for: .touchUpInside)
+        pickUpButton.setTitleColor(.white, for: .normal)
+        pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        pickUpButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
+        pickUpButton.clipsToBounds = true
+        pickUpButton.layer.cornerRadius = 20
         // Avatar
         let placeholder = Appearance.default.images.userAvatarPlaceholder1
         if let imageURL = content?.author.imageURL {

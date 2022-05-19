@@ -18,7 +18,7 @@ public struct ChatMessage {
     public let cid: ChannelId?
     
     /// The text of the message.
-    public let text: String
+    public var text: String
     
     /// A type of the message.
     public let type: MessageType

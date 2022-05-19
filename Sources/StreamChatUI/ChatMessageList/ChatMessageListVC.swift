@@ -88,6 +88,8 @@ open class ChatMessageListVC:
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
+        listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
+        listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -364,6 +366,29 @@ open class ChatMessageListVC:
                 cell.content = message
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
+            } else if isGiftCell(message) {
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "GiftBubble",
+                        for: indexPath) as? GiftBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.content = message
+                    cell.configureCell(isSender: isMessageFromCurrentUser)
+                    cell.configData()
+                    return cell
+                }
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "GiftSentBubble",
+                    for: indexPath) as? GiftBubble else {
+                        return UITableViewCell()
+                    }
+                cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.configData()
+                return cell
             }
             else if isRedPacketNoPickUpCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
@@ -431,6 +456,9 @@ open class ChatMessageListVC:
                         for: indexPath) as? WalletRequestPayBubble else {
                             return UITableViewCell()
                         }
+                    if let channel = dataSource?.channel(for: self) {
+                        cell.channelId = channel.cid
+                    }
                     cell.isSender = isMessageFromCurrentUser
                     cell.client = client
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
@@ -473,6 +501,21 @@ open class ChatMessageListVC:
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
+                return cell
+            } else if isFallbackMessage(message) {
+                guard let extraData = message?.extraData,
+                      let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
+                let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
+                let cell: ChatMessageCell = listView.dequeueReusableCell(
+                    contentViewClass: cellContentClassForMessage(at: indexPath),
+                    attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
+                    layoutOptions: cellLayoutOptionsForMessage(at: indexPath),
+                    for: indexPath
+                )
+                var message = message
+                message?.text = fallbackMessageString
+                cell.messageContentView?.delegate = self
+                cell.messageContentView?.content = message
                 return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
@@ -524,6 +567,13 @@ open class ChatMessageListVC:
         message?.extraData.keys.contains("redPacketPickup") ?? false
     }
 
+    private func isGiftCell(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let messageType = extraData["messageType"] else { return false }
+        let type = fetchRawData(raw: messageType) as? String ?? ""
+        return type == MessageType.giftPacket
+    }
+
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
         return (message?.extraData.keys.contains("stickerUrl") ?? false) || (message?.extraData.keys.contains("giphyUrl") ?? false)
     }
@@ -565,6 +615,13 @@ open class ChatMessageListVC:
             return true
         }
         return false
+    }
+
+    private func isFallbackMessage(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let fallbackMessage = extraData["fallbackMessage"] else { return false }
+        let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
+        return !message.isBlank
     }
 
     private func isAdminMessage(_ message: ChatMessage?) -> Bool {
