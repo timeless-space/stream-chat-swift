@@ -694,6 +694,7 @@ struct PollView: View {
             }
         } 
         .animation(.easeInOut(duration: 0.2), value: uploadedImage)
+        .animation(.easeInOut(duration: 0.2), value: isLoaded)
     }
 
     struct SwiftyGifView: UIViewRepresentable {
