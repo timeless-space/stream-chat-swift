@@ -90,6 +90,7 @@ open class ChatMessageListVC:
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        listView.register(PhotoCollectionBubble.self, forCellReuseIdentifier: "PhotoCollectionBubble")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -517,6 +518,17 @@ open class ChatMessageListVC:
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
+            } else if isImagePreview(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PhotoCollectionBubble",
+                    for: indexPath) as? PhotoCollectionBubble else {
+                        return UITableViewCell()
+                    }
+                cell.content = message
+                cell.configureCell(isSender: true)
+                cell.transform = .mirrorY
+                return cell
+
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -622,6 +634,13 @@ open class ChatMessageListVC:
               let fallbackMessage = extraData["fallbackMessage"] else { return false }
         let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
         return !message.isBlank
+    }
+
+    private func isImagePreview(_ message: ChatMessage?) -> Bool {
+        if !(message?.imageAttachments.isEmpty ?? false) {
+            return true
+        }
+        return false
     }
 
     private func isAdminMessage(_ message: ChatMessage?) -> Bool {

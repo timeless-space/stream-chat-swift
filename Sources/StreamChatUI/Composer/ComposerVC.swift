@@ -920,7 +920,7 @@ open class ComposerVC: _ViewController,
     }
 
     @objc open func toolKitToggleAction(sender: UIButton) {
-        content.clear()
+//        content.clear(
         if !isMenuShowing {
             animateToolkitView(isHide: false)
         } else {
