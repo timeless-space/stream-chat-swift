@@ -871,7 +871,7 @@ struct PollSelectLine: View {
 
     // MARK: - Computed Variables
     private var percent: CGFloat {
-        return CGFloat(item.votedCount) / CGFloat(pollVotedCount) * 100
+        return pollVotedCount <= 0 ? 0 : CGFloat(item.votedCount) / CGFloat(pollVotedCount) * 100
     }
 
     private var checkMarkIcon: String {
