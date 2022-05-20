@@ -494,8 +494,8 @@ struct PollView: View {
                                                listVotedAnswer: listVotedAnswer,
                                                selectedMultiAnswerID: $selectedMultiAnswerID,
                                                voted: $voted,
-                                               pollVotedCount: pollVotedCount,
-                                               answers: $answers)
+                                               answers: $answers,
+                                               pollVotedCount: $pollVotedCount)
                             }
                         }
                         .padding(.bottom, 17)
@@ -972,14 +972,14 @@ struct PollSelectLine: View {
                             .multilineTextAlignment(.leading)
                             .font(.system(size: 12))
                             .foregroundColor(Color.white)
-                            .opacity(opacityUnselectedText ? 0 : 1)
+                            .opacity(opacityUnselectedText == 1 ? 0 : 1)
                         Text(item.content)
                             .tracking(-0.3)
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundColor(Color.white)
-                            .opacity(opacitySelectedText ? 1 : 0)
+                            .opacity(opacitySelectedText == 1 ? 1 : 0)
                     }
                 }
                 .padding(.leading, paddingLeading)
