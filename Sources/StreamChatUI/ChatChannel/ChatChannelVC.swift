@@ -410,12 +410,37 @@ open class ChatChannelVC:
     }
     
     @objc func headerViewAction(_ sender: Any) {
-        guard let channelController = channelController,
-              let controller: ChatGroupDetailsVC = ChatGroupDetailsVC.instantiateController(storyboard: .GroupChat) else {
+        guard let controller: ChatGroupDetailsVC = ChatGroupDetailsVC.instantiateController(storyboard: .GroupChat) else {
             return
         }
-        controller.viewModel = .init(controller: channelController)
-        self.pushWithAnimation(controller: controller)
+        if let channelController = channelController {
+            controller.viewModel = .init(controller: channelController)
+            self.pushWithAnimation(controller: controller)
+        } else if let selectedChatUser = selectedChatUser{
+            let user = ChatChannelMember.init(id: selectedChatUser.id,
+                                              name: selectedChatUser.name,
+                                              imageURL: selectedChatUser.imageURL,
+                                              isOnline: selectedChatUser.isOnline,
+                                              isBanned: selectedChatUser.isBanned,
+                                              isFlaggedByCurrentUser: selectedChatUser.isFlaggedByCurrentUser,
+                                              userRole: selectedChatUser.userRole,
+                                              userCreatedAt: selectedChatUser.userCreatedAt,
+                                              userUpdatedAt: selectedChatUser.userUpdatedAt,
+                                              lastActiveAt: selectedChatUser.lastActiveAt,
+                                              teams: selectedChatUser.teams,
+                                              extraData: selectedChatUser.extraData,
+                                              memberRole: MemberRole.member,
+                                              memberCreatedAt: Date(),
+                                              memberUpdatedAt: Date(),
+                                              isInvited: false,
+                                              inviteAcceptedAt: nil,
+                                              inviteRejectedAt: nil,
+                                              isBannedFromChannel: false,
+                                              banExpiresAt: nil,
+                                              isShadowBannedFromChannel: false)
+            controller.viewModel = .init(controller: nil, channelMember: user)
+            self.pushWithAnimation(controller: controller)
+        }
     }
 
     @objc func avatarViewAction(_ sender: Any) {
@@ -498,6 +523,10 @@ open class ChatChannelVC:
     }
 
     private func createChannel() {
+        guard ChatClient.shared.connectionStatus == .connected else {
+            Snackbar.show(text: "", messageType: StreamChatMessageType.NoInternetConnection)
+            return
+        }
         guard let selectedUserId = selectedChatUser?.id else { return }
         guard let currentUserId = ChatClient.shared.currentUserId else { return }
         do {

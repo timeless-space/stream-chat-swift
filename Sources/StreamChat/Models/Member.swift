@@ -43,7 +43,7 @@ public class ChatChannelMember: ChatUser {
     // TODO: Make public when working on CIS-720
     internal let isShadowBannedFromChannel: Bool
 
-    init(
+    public init(
         id: String,
         name: String?,
         imageURL: URL?,

@@ -189,7 +189,7 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
     }
 
     func configCell(
-        controller: ChatChannelController,
+        controller: ChatChannelController?,
         screenType: ChatGroupDetailViewModel.ScreenType,
         members: Int,
         channelMember: ChatChannelMember?) {
@@ -201,11 +201,8 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
         }
 
     private func setupChannelContent() {
-        guard let channelController = channelController else {
-            return
-        }
         setTitleAndChannelAction()
-        isChannelMuted = channelController.channel?.isMuted ?? false
+        isChannelMuted = channelController?.channel?.isMuted ?? false
         toggleChannelActionView()
         setAvatar()
         setSubTitle()
@@ -335,12 +332,14 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
     }
 
     private func setTitleAndChannelAction() {
+        if screenType == .userdetail {
+            lblTitle.text = user?.name ?? "-"
+            return
+        }
         guard let channelController = channelController else {
             return
         }
-        if screenType == .userdetail {
-            lblTitle.text = user?.name ?? "-"
-        } else if isDirectMessageChannel() {
+        if isDirectMessageChannel() {
             lblTitle.attributedText = getTitle(
                 name: createChannelTitle(for: channelController.channel,
                                             ChatClient.shared.currentUserId ?? ""))
@@ -356,8 +355,7 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
         if screenType == .userdetail {
             channelAvatar.isHidden = true
             userAvatar.isHidden = false
-            guard let member = user,
-                  let channelController = channelController else {
+            guard let member = user else {
                 return
             }
             userAvatar.content = member

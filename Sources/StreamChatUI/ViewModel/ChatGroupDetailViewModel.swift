@@ -40,7 +40,7 @@ class ChatGroupDetailViewModel: NSObject {
     }
 
     /// for member detail
-    init(controller: ChatChannelController, channelMember: ChatChannelMember) {
+    init(controller: ChatChannelController?, channelMember: ChatChannelMember) {
         super.init()
         channelController = controller
         screenType = .userdetail

@@ -13,6 +13,7 @@ public struct StreamChatMessageType {
     public static let ChatGroupUnMute = 101
     public static let RedPacketExpired = 102
     public static let MessageCopied = 103
+    public static let NoInternetConnection = 104
 }
 class Snackbar {
     static func show(text: String, messageType: Int? = nil) {

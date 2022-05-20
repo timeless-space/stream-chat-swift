@@ -444,42 +444,32 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
         default:
             break
         }
-        //
-        do {
-            var controller: ChatChannelController?
-            let channelListController = ChatClient.shared.channelListController(
-                query: .init(
-                    filter: .or([
-                        .containMembers(userIds: [ChatClient.shared.currentUserId!]),
-                        .and([
-                            .equal(.type, to: .custom("announcement")),
-                            //.equal("muted", to: true)
-                        ])
-
-                    ])
-                ))
+        // Initialising one to one chat
+        var controller: ChatChannelController?
+        let channelListController = client
+            .channelListController(query: .init(filter: .containMembers(userIds: [currentUserId])))
+        channelListController.synchronize { [weak self] error in
+            guard let `self` = self else { return }
             for channel in channelListController.channels {
                 guard channel.isDirectMessageChannel,
-                      channel.lastActiveMembers.contains(where: { $0.id == selectedUserId }) else {
+                      channel.lastActiveMembers
+                        .contains(where: { $0.id == selectedUserId }) else {
                     continue
                 }
                 controller = ChatClient.shared.channelController(for: channel.cid)
             }
-
             let chatChannelVC = ChatChannelVC()
             chatChannelVC.channelController = controller
             chatChannelVC.selectedChatUser = user
-            if let firstVC = navigationController?.viewControllers.first {
-                NotificationCenter.default.post(name: .hideTabbar, object: nil)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                    guard let self = self else {
-                        return
-                    }
-                    self.navigationController?.setViewControllers([firstVC, chatChannelVC], animated: true)
+            self.navigationController?.pushViewController(chatChannelVC, animated: true)
+            let navControllerArray = self.navigationController?.viewControllers ?? []
+            for (i,navController) in navControllerArray.enumerated() {
+                if navController.isKind(of: ChatChannelListVC.self) ||
+                    navController.isKind(of: ChatChannelVC.self) {
+                    continue
                 }
+                self.navigationController?.viewControllers.remove(at: i)
             }
-        } catch {
-            debugPrint(error.localizedDescription)
         }
     }
 

@@ -202,7 +202,7 @@ open class ChatChannelHeaderView:
     /// Create the timer to repeatedly update the online status of the members.
     open func makeTimer() {
         // Only create the timer if is not created yet and if the interval is not zero.
-        guard timer == nil, statusUpdateInterval > 0 else {
+        guard timer == nil, statusUpdateInterval > 0 && channelController != nil else {
             return
         }
 

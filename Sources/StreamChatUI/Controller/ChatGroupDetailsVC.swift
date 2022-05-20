@@ -322,13 +322,12 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
         case .profile:
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: "ChannelDetailHeaderTVCell",
-                for: indexPath) as? ChannelDetailHeaderTVCell,
-                  let controller = viewModel.channelController else {
+                for: indexPath) as? ChannelDetailHeaderTVCell else {
                 return UITableViewCell()
             }
             cell.cellDelegate = self
             cell.configCell(
-                controller: controller,
+                controller: viewModel.channelController,
                 screenType: viewModel.screenType,
                 members: viewModel.channelController?.channel?.memberCount ?? 0,
                 channelMember: viewModel.user)
