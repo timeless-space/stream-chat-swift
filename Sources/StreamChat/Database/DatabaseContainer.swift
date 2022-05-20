@@ -6,7 +6,7 @@ import CoreData
 import Foundation
 
 /// Convenience subclass of `NSPersistentContainer` allowing easier setup of the database stack.
-class DatabaseContainer: NSPersistentContainer {
+public class DatabaseContainer: NSPersistentContainer {
     enum Kind: Equatable {
         /// The database lives only in memory. This option is used typically for anonymous users, when the local
         /// persistence is not enabled, or in tests.
@@ -212,7 +212,7 @@ class DatabaseContainer: NSPersistentContainer {
     /// messages pedning sent. You can use this option to warn a user about potential data loss.
     ///   - completion: Called when the operation is completed. If the error is present, the operation failed.
     ///
-    func removeAllData(force: Bool = true) throws {
+    public func removeAllData(force: Bool = true) throws {
         if !force {
             fatalError("Non-force flush is not implemented yet.")
         }
