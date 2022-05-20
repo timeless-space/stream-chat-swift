@@ -74,6 +74,7 @@ open class ChatMessageListVC:
 
     var viewEmptyState: UIView = UIView()
     var isKeyboardVisible = false
+    let v2 = UITextField(frame: CGRect(x: 50, y: 50, width: 100, height: 50))
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -127,10 +128,12 @@ open class ChatMessageListVC:
     }
 
     @objc func keyboardWillShow() {
+        debugPrint("#### Will show called")
         isKeyboardVisible = true
     }
 
     @objc func keyboardWillHide() {
+        debugPrint("#### Will Hide called")
         isKeyboardVisible = false
     }
     
@@ -246,7 +249,6 @@ open class ChatMessageListVC:
             gesture.state == .began,
             let indexPath = listView.indexPathForRow(at: location)
         else { return }
-        NotificationCenter.default.post(name: .hideKeyboardMenu, object: nil, userInfo: nil)
         didSelectMessageCell(at: indexPath)
     }
 

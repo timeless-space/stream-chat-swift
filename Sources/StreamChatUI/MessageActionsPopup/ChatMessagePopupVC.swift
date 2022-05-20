@@ -82,9 +82,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     }
 
     override open func setUpLayout() {
-        if (messageViewFrame == nil) {
-            messageViewFrame = .init(x: 0.0, y: 83.0, width: 414.0, height: 142.0)
-        }
         guard messageViewFrame != nil else { return }
         view.embed(blurView)
         view.embed(scrollView)
@@ -259,10 +256,15 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         let isGestureInActionsView = actionsController.view.frame.contains(actionsLocation)
         let isGestureInReactionsView = reactionsController?.view.frame.contains(reactionsLocation) == true
 
-        if isGestureInActionsView || isGestureInReactionsView {
-            return
-        }
-
-        dismiss(animated: false)
+//        if isGestureInActionsView || isGestureInReactionsView {
+//            debugPrint("### In Gesture ")
+//            return
+//        }
+//        UIApplication.shared.windows.first?.rootViewController?.dismiss(animated: true)
+//        UIApplication.shared.getTopViewController()?.dismiss(animated: true)
+//        UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true)
+//        self.view.window!.rootViewController?.dismiss(animated: false, completion: nil)
+//
+        dismiss(animated: true)
     }
 }

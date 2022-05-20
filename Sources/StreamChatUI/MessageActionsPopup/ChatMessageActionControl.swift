@@ -84,6 +84,8 @@ open class ChatMessageActionControl: _Control, AppearanceProvider {
     /// Triggered when `_ChatMessageActionControl` is tapped.
     @objc open func touchUpInsideHandler(_ sender: Any) {
         guard let content = content else { return log.assertionFailure("Content is unexpectedly nil") }
+//        UIApplication.shared.windows.first?.rootViewController?.dismiss(animated: true)
+//        UIApplication.shared.getTopViewController()?.dismiss(animated: true)
         content.action(content)
     }
 }
