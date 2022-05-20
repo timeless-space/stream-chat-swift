@@ -73,9 +73,11 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
+    var isKeyboardVisible = false
 
     open override func viewDidLoad() {
         super.viewDidLoad()
+        addKeyBoardListener()
         listView.register(CryptoSentBubble.self, forCellReuseIdentifier: "CryptoSentBubble")
         listView.register(CryptoReceiveBubble.self, forCellReuseIdentifier: "CryptoReceiveBubble")
         listView.register(RedPacketSentBubble.self, forCellReuseIdentifier: "RedPacketSentBubble")
@@ -117,6 +119,19 @@ open class ChatMessageListVC:
         navigationController?.presentationController?.delegate = self
         
         scrollToLatestMessageButton.addTarget(self, action: #selector(scrollToLatestMessage), for: .touchUpInside)
+    }
+
+    func addKeyBoardListener() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
+    }
+
+    @objc func keyboardWillShow() {
+        isKeyboardVisible = true
+    }
+
+    @objc func keyboardWillHide() {
+        isKeyboardVisible = false
     }
     
     override open func setUpLayout() {

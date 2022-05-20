@@ -65,12 +65,26 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         view.addGestureRecognizer(tapRecognizer)
     }
 
+    open override func viewDidLoad() {
+        super.viewDidLoad()
+        debugPrint("View didload")
+        setUpLayout()
+    }
+
+    open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        debugPrint("View did appear")
+    }
+
     override open func setUpAppearance() {
         super.setUpAppearance()
         view.backgroundColor = .clear
     }
 
     override open func setUpLayout() {
+        if (messageViewFrame == nil) {
+            messageViewFrame = .init(x: 0.0, y: 83.0, width: 414.0, height: 142.0)
+        }
         guard messageViewFrame != nil else { return }
         view.embed(blurView)
         view.embed(scrollView)
@@ -249,6 +263,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             return
         }
 
-        dismiss(animated: true)
+        dismiss(animated: false)
     }
 }

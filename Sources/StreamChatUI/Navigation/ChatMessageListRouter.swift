@@ -54,7 +54,29 @@ open class ChatMessageListRouter:
 
         messagePopUpTransitionController.selectedMessageId = messageContentView.content?.id
 
-        rootViewController.present(popup, animated: true)
+        popup.view.frame = UIScreen.main.bounds
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        popup.view.addGestureRecognizer(tap)
+
+        popup.view.isUserInteractionEnabled = true
+        popup.view.tag = 121
+
+        UIApplication.shared.windows.first?.rootViewController?.present(popup, animated: true)
+        let currentWindow = UIApplication.shared.windows.last
+        currentWindow?.addSubview(popup.view)
+//        rootViewController.present(popup, animated: true)
+//        if true {
+//            let fixedView = UIApplication.shared.windows.last//self.view.window
+//            let fakeTextField = fixedView?.subviews.last as? UITextField ?? UITextField()
+//            fakeTextField.backgroundColor = .red
+//            fakeTextField.center = CGPoint(x: -100, y: -100)
+//            fixedView?.addSubview(fakeTextField)
+//            fakeTextField.becomeFirstResponder()
+//        }
+    }
+
+    @objc func handleTap() {
+        UIApplication.shared.windows.last?.viewWithTag(121)?.removeFromSuperview()
     }
 
     /// Handles opening of a link URL.
