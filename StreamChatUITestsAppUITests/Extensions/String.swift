@@ -15,11 +15,22 @@ extension String {
     func replace(_ target: String, to: String) -> String {
         replacingOccurrences(of: target,
                              with: to,
-                             options: NSString.CompareOptions.literal, range: nil)
+                             options: NSString.CompareOptions.literal,
+                             range: nil)
     }
     
     var html: Self {
         "<p>\(self)</p>\n"
     }
     
+}
+
+extension Substring {
+    func capitalizingFirstLetter() -> Substring {
+        prefix(1).capitalized + dropFirst()
+    }
+
+    mutating func capitalizeFirstLetter() {
+        self = self.capitalizingFirstLetter()
+    }
 }

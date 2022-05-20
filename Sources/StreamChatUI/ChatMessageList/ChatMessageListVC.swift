@@ -7,8 +7,7 @@ import UIKit
 
 /// Controller that shows list of messages and composer together in the selected channel.
 @available(iOSApplicationExtension, unavailable)
-open class ChatMessageListVC:
-    _ViewController,
+open class ChatMessageListVC: _ViewController,
     ThemeProvider,
     ChatMessageListScrollOverlayDataSource,
     ChatMessageActionsVCDelegate,
@@ -23,7 +22,7 @@ open class ChatMessageListVC:
     /// The object that acts as the data source of the message list.
     public weak var dataSource: ChatMessageListVCDataSource? {
         didSet {
-            updateContent()
+            updateContentIfNeeded()
         }
     }
 
@@ -119,6 +118,8 @@ open class ChatMessageListVC:
     override open func setUp() {
         super.setUp()
         
+        components.messageLayoutOptionsResolver.config = client.config
+        
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         longPress.minimumPressDuration = 0.33
         listView.addGestureRecognizer(longPress)
@@ -196,19 +197,7 @@ open class ChatMessageListVC:
     /// By default there is one message with all possible layout and layout options
     /// determines which parts of the message are visible for the given message.
     open func cellLayoutOptionsForMessage(at indexPath: IndexPath) -> ChatMessageLayoutOptions {
-        guard let dataSource = self.dataSource else {
-            return ChatMessageLayoutOptions()
-        }
-
-        var options = dataSource.chatMessageListVC(self, messageLayoutOptionsAt: indexPath)
-
-        // Ideally this would be part of the `ChatMessageLayoutOptionsResolver`, but currently
-        // it is a bit odd to pass the `ChatClientConfig` to the resolver.
-        if client.config.deletedMessagesVisibility != .visibleForCurrentUser {
-            options.remove(.onlyVisibleForYouIndicator)
-        }
-
-        return options
+        dataSource?.chatMessageListVC(self, messageLayoutOptionsAt: indexPath) ?? .init()
     }
 
     /// Returns the content view class for the message at given `indexPath`
@@ -301,7 +290,7 @@ open class ChatMessageListVC:
         actionsController.channelConfig = dataSource?.channel(for: self)?.config
         actionsController.delegate = self
 
-        let reactionsController: ChatMessageReactionsVC? = {
+        let reactionsController: ChatMessageReactionsPickerVC? = {
             guard message.localState == nil else { return nil }
             guard dataSource?.channel(for: self)?.config.reactionsEnabled == true else {
                 return nil
@@ -394,11 +383,15 @@ open class ChatMessageListVC:
             for: indexPath
         )
 
-        guard let message = dataSource?.chatMessageListVC(self, messageAt: indexPath) else {
+        guard
+            let message = dataSource?.chatMessageListVC(self, messageAt: indexPath),
+            let channel = dataSource?.channel(for: self)
+        else {
             return cell
         }
 
         cell.messageContentView?.delegate = self
+        cell.messageContentView?.channel = channel
         cell.messageContentView?.content = message
 
         cell.dateSeparatorView.isHidden = !shouldShowDateSeparator(forMessage: message, at: indexPath)
@@ -477,6 +470,19 @@ open class ChatMessageListVC:
             .info(
                 "Tapped an avatarView. To customize the behavior, override messageContentViewDidTapOnAvatarView. Path: \(indexPath)"
             )
+    }
+    
+    /// This method is triggered when delivery status indicator on the message at the given index path is tapped.
+    /// - Parameter indexPath: The index path of the message cell.
+    open func messageContentViewDidTapOnDeliveryStatusIndicator(_ indexPath: IndexPath?) {
+        guard let indexPath = indexPath else { return log.error("IndexPath is not available") }
+        
+        log.info(
+            """
+            Tapped an delivery status view. To customize the behavior, override
+            messageContentViewDidTapOnDeliveryStatusIndicator. Path: \(indexPath)"
+            """
+        )
     }
 
     // MARK: - GalleryContentViewDelegate

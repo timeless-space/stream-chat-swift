@@ -54,9 +54,7 @@ public extension Appearance {
         public var shrinkInputArrow: UIImage = loadImageSafely(with: "arrow_shrink_input")
         public var sendArrow: UIImage = loadImageSafely(with: "arrow_send")
         public var scrollDownArrow: UIImage = loadImageSafely(with: "arrow_down")
-        public var messageSent: UIImage = loadImageSafely(with: "checkmark_grey")
         public var whiteCheckmark: UIImage = loadImageSafely(with: "checkmark_white")
-        public var readByAll: UIImage = loadImageSafely(with: "checkmark_double")
         public var confirmCheckmark: UIImage = loadImageSafely(with: "checkmark_confirm")
         public var bigConfirmCheckmark: UIImage = loadImageSafely(with: "checkmark_confirm_big")
         public var folder: UIImage = loadImageSafely(with: "folder")
@@ -69,6 +67,13 @@ public extension Appearance {
             }
         }()
 
+        // MARK: - Message Receipts
+        
+        public var messageDeliveryStatusSending: UIImage = loadImageSafely(with: "message_receipt_sending")
+        public var messageDeliveryStatusSent: UIImage = loadImageSafely(with: "message_receipt_sent")
+        public var messageDeliveryStatusRead: UIImage = loadImageSafely(with: "message_receipt_read")
+        public var messageDeliveryStatusFailed: UIImage = loadImageSafely(with: "message_receipt_failed")
+        
         // MARK: - Reactions
 
         public var reactionLoveSmall: UIImage = loadImageSafely(with: "reaction_love_small")
@@ -87,23 +92,23 @@ public extension Appearance {
             get {
                 _availableReactions ??
                     [
-                        .init(rawValue: "love"): ChatMessageReactionAppearance(
+                        "love": ChatMessageReactionAppearance(
                             smallIcon: reactionLoveSmall,
                             largeIcon: reactionLoveBig
                         ),
-                        .init(rawValue: "haha"): ChatMessageReactionAppearance(
+                        "haha": ChatMessageReactionAppearance(
                             smallIcon: reactionLolSmall,
                             largeIcon: reactionLolBig
                         ),
-                        .init(rawValue: "like"): ChatMessageReactionAppearance(
+                        "like": ChatMessageReactionAppearance(
                             smallIcon: reactionThumgsUpSmall,
                             largeIcon: reactionThumgsUpBig
                         ),
-                        .init(rawValue: "sad"): ChatMessageReactionAppearance(
+                        "sad": ChatMessageReactionAppearance(
                             smallIcon: reactionThumgsDownSmall,
                             largeIcon: reactionThumgsDownBig
                         ),
-                        .init(rawValue: "wow"): ChatMessageReactionAppearance(
+                        "wow": ChatMessageReactionAppearance(
                             smallIcon: reactionWutSmall,
                             largeIcon: reactionWutBig
                         )

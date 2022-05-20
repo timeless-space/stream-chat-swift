@@ -66,25 +66,28 @@ public class ChatClient {
 
     // MARK: Repositories
 
-    private(set) lazy var messageRepository = MessageRepository(database: databaseContainer, apiClient: apiClient)
-    private(set) lazy var offlineRequestsRepository = OfflineRequestsRepository(
-        messageRepository: messageRepository,
-        database: databaseContainer,
-        apiClient: apiClient
+    private(set) lazy var messageRepository = environment.messageRepositoryBuilder(
+        databaseContainer,
+        apiClient
+    )
+    
+    private(set) lazy var offlineRequestsRepository = environment.offlineRequestsRepositoryBuilder(
+        messageRepository,
+        databaseContainer,
+        apiClient
     )
 
     /// A repository that handles all the executions needed to keep the Database in sync with remote.
     private(set) lazy var syncRepository: SyncRepository = {
         let channelRepository = ChannelListUpdater(database: databaseContainer, apiClient: apiClient)
-        return SyncRepository(
-            config: config,
-            activeChannelControllers: activeChannelControllers,
-            activeChannelListControllers: activeChannelListControllers,
-            channelRepository: channelRepository,
-            offlineRequestsRepository: offlineRequestsRepository,
-            eventNotificationCenter: eventNotificationCenter,
-            database: databaseContainer,
-            apiClient: apiClient
+        return environment.syncRepositoryBuilder(
+            config,
+            activeChannelControllers,
+            activeChannelListControllers,
+            offlineRequestsRepository,
+            eventNotificationCenter,
+            databaseContainer,
+            apiClient
         )
     }()
     
@@ -160,7 +163,7 @@ public class ChatClient {
                 )
                 
                 let dbFileURL = storeURL.appendingPathComponent(config.apiKey.apiKeyString)
-                return try environment.databaseContainerBuilder(
+                return environment.databaseContainerBuilder(
                     .onDisk(databaseFileURL: dbFileURL),
                     config.shouldFlushLocalStorageOnStart,
                     config.isClientInActiveMode, // Only reset Ephemeral values in active mode
@@ -174,21 +177,17 @@ public class ChatClient {
             log.assertionFailure("The URL provided in ChatClientConfig can't be `nil`. Falling back to the in-memory option.")
             
         } catch {
-            log.error("Failed to initalized the local storage with error: \(error). Falling back to the in-memory option.")
+            log.error("Failed to initialize the local storage with error: \(error). Falling back to the in-memory option.")
         }
         
-        do {
-            return try environment.databaseContainerBuilder(
-                .inMemory,
-                config.shouldFlushLocalStorageOnStart,
-                config.isClientInActiveMode, // Only reset Ephemeral values in active mode
-                config.localCaching,
-                config.deletedMessagesVisibility,
-                config.shouldShowShadowedMessages
-            )
-        } catch {
-            fatalError("Failed to initialize the in-memory storage with error: \(error). This is a non-recoverable error.")
-        }
+        return environment.databaseContainerBuilder(
+            .inMemory,
+            config.shouldFlushLocalStorageOnStart,
+            config.isClientInActiveMode, // Only reset Ephemeral values in active mode
+            config.localCaching,
+            config.deletedMessagesVisibility,
+            config.shouldShowShadowedMessages
+        )
     }()
     
     private(set) lazy var clientUpdater = environment.clientUpdaterBuilder(self)
@@ -276,23 +275,29 @@ public class ChatClient {
         self.tokenProvider = tokenProvider
         self.environment = environment
 
-        if let webSocketClient = webSocketClient {
-            connectionRecoveryHandler = environment.connectionRecoveryHandlerBuilder(
-                webSocketClient,
-                eventNotificationCenter,
-                syncRepository,
-                environment.backgroundTaskSchedulerBuilder(),
-                environment.internetConnection(eventNotificationCenter),
-                config.staysConnectedInBackground
-            )
-        }
-
+        setupConnectionRecoveryHandler(with: environment)
         currentUserId = fetchCurrentUserIdFromDatabase()
     }
     
     deinit {
         completeConnectionIdWaiters(connectionId: nil)
         completeTokenWaiters(token: nil)
+    }
+
+    func setupConnectionRecoveryHandler(with environment: Environment) {
+        guard let webSocketClient = webSocketClient else {
+            return
+        }
+
+        connectionRecoveryHandler = nil
+        connectionRecoveryHandler = environment.connectionRecoveryHandlerBuilder(
+            webSocketClient,
+            eventNotificationCenter,
+            syncRepository,
+            environment.backgroundTaskSchedulerBuilder(),
+            environment.internetConnection(eventNotificationCenter, environment.internetMonitor),
+            config.staysConnectedInBackground
+        )
     }
     
     /// Connects authorized user
@@ -348,7 +353,6 @@ public class ChatClient {
     public func disconnect() {
         clientUpdater.disconnect()
         userConnectionProvider = nil
-        apiClient.flushRequestsQueue()
     }
 
     func fetchCurrentUserIdFromDatabase() -> UserId? {
@@ -456,8 +460,8 @@ extension ChatClient {
             _ localCachingSettings: ChatClientConfig.LocalCaching?,
             _ deletedMessageVisibility: ChatClientConfig.DeletedMessageVisibility?,
             _ shouldShowShadowedMessages: Bool?
-        ) throws -> DatabaseContainer = {
-            try DatabaseContainer(
+        ) -> DatabaseContainer = {
+            DatabaseContainer(
                 kind: $0,
                 shouldFlushOnStart: $1,
                 shouldResetEphemeralValuesOnStart: $2,
@@ -474,12 +478,24 @@ extension ChatClient {
         
         var notificationCenterBuilder = EventNotificationCenter.init
         
-        var internetConnection: (_ center: NotificationCenter) -> InternetConnection = {
-            InternetConnection(notificationCenter: $0)
+        var internetConnection: (_ center: NotificationCenter, _ monitor: InternetConnectionMonitor) -> InternetConnection = {
+            InternetConnection(notificationCenter: $0, monitor: $1)
         }
 
+        var internetMonitor: InternetConnectionMonitor {
+            if let monitor = monitor {
+                return monitor
+            } else if #available(iOS 12, *) {
+                return InternetConnection.Monitor()
+            } else {
+                return InternetConnection.LegacyMonitor()
+            }
+        }
+
+        var monitor: InternetConnectionMonitor?
+
         var clientUpdaterBuilder = ChatClientUpdater.init
-        
+
         var backgroundTaskSchedulerBuilder: () -> BackgroundTaskScheduler? = {
             if Bundle.main.isAppExtension {
                 // No background task scheduler exists for app extensions.
@@ -515,6 +531,45 @@ extension ChatClient {
                 reconnectionStrategy: DefaultRetryStrategy(),
                 reconnectionTimerType: DefaultTimer.self,
                 keepConnectionAliveInBackground: $5
+            )
+        }
+        
+        var syncRepositoryBuilder: (
+            _ config: ChatClientConfig,
+            _ activeChannelControllers: NSHashTable<ChatChannelController>,
+            _ activeChannelListControllers: NSHashTable<ChatChannelListController>,
+            _ offlineRequestsRepository: OfflineRequestsRepository,
+            _ eventNotificationCenter: EventNotificationCenter,
+            _ database: DatabaseContainer,
+            _ apiClient: APIClient
+        ) -> SyncRepository = {
+            SyncRepository(
+                config: $0,
+                activeChannelControllers: $1,
+                activeChannelListControllers: $2,
+                offlineRequestsRepository: $3,
+                eventNotificationCenter: $4,
+                database: $5,
+                apiClient: $6
+            )
+        }
+        
+        var messageRepositoryBuilder: (
+            _ database: DatabaseContainer,
+            _ apiClient: APIClient
+        ) -> MessageRepository = {
+            MessageRepository(database: $0, apiClient: $1)
+        }
+        
+        var offlineRequestsRepositoryBuilder: (
+            _ messageRepository: MessageRepository,
+            _ database: DatabaseContainer,
+            _ apiClient: APIClient
+        ) -> OfflineRequestsRepository = {
+            OfflineRequestsRepository(
+                messageRepository: $0,
+                database: $1,
+                apiClient: $2
             )
         }
     }
@@ -616,7 +671,7 @@ extension ChatClient: ConnectionStateDelegate {
             ) { [clientUpdater] in
                 clientUpdater.reloadUserIfNeeded(
                     userConnectionProvider: .closure { _, completion in
-                        tokenProvider() { result in
+                        tokenProvider { result in
                             if case .success = result {
                                 self.tokenExpirationRetryStrategy.resetConsecutiveFailures()
                             }

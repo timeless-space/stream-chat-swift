@@ -2,6 +2,7 @@
 // Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
+import Sentry
 import StreamChat
 import UIKit
 
@@ -11,7 +12,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        true
+        #if RELEASE
+        // We're tracking Crash Reports / Issues from the Demo App to keep improving the SDK
+        SentrySDK.start { options in
+            options.dsn = "https://75b1074a38704dc0923d9de56fe1e1d4@o389650.ingest.sentry.io/6379288"
+            options.tracesSampleRate = 1.0
+        }
+        #endif
+        return true
     }
 
     func application(
@@ -23,7 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return
         }
 
-        ChatClient.shared.currentUserController().addDevice(token: deviceToken) { error in
+        ChatClient.shared.currentUserController().addDevice(.apn(token: deviceToken)) { error in
             if let error = error {
                 log.error("adding a device failed with an error \(error)")
                 return

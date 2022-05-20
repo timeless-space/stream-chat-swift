@@ -38,17 +38,23 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     /// `ContainerView` for showing message's actions.
     open private(set) lazy var messageActionsContainerStackView = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "messageActionsContainerStackView")
     
     /// Class used for buttons in `messageActionsContainerView`.
     open var actionButtonClass: ChatMessageActionControl.Type { ChatMessageActionControl.self }
 
     override open func setUpLayout() {
         super.setUpLayout()
-        
+
+        view.embed(messageActionsContainerStackView)
         messageActionsContainerStackView.axis = .vertical
         messageActionsContainerStackView.alignment = .fill
         messageActionsContainerStackView.spacing = 1
-        view.embed(messageActionsContainerStackView)
+
+        // Fix safe area layout issue when message actions go below scroll view
+        messageActionsContainerStackView.insetsLayoutMarginsFromSafeArea = false
+        messageActionsContainerStackView.isLayoutMarginsRelativeArrangement = true
+        messageActionsContainerStackView.layoutMargins = .zero
     }
     
     override open func setUpAppearance() {
@@ -59,15 +65,14 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     }
 
     override open func updateContent() {
-        messageActionsContainerStackView.subviews.forEach {
-            messageActionsContainerStackView.removeArrangedSubview($0)
-        }
+        messageActionsContainerStackView.removeAllArrangedSubviews()
 
         messageActions.forEach {
             let actionView = actionButtonClass.init()
             actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
             actionView.content = $0
             messageActionsContainerStackView.addArrangedSubview(actionView)
+            actionView.accessibilityIdentifier = "\(type(of: $0))"
         }
     }
 
@@ -81,9 +86,11 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
 
         switch message.localState {
         case nil:
-            var actions: [ChatMessageActionItem] = [
-                inlineReplyActionItem()
-            ]
+            var actions: [ChatMessageActionItem] = []
+            
+            if channelConfig.quotesEnabled {
+                actions.append(inlineReplyActionItem())
+            }
 
             if channelConfig.repliesEnabled && !message.isPartOfThread {
                 actions.append(threadReplyActionItem())
@@ -132,7 +139,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
                 self.alertsRouter.showMessageDeletionConfirmationAlert { confirmed in
                     guard confirmed else { return }
 
-                    self.messageController.deleteMessage() { _ in
+                    self.messageController.deleteMessage { _ in
                         self.delegate?.chatMessageActionsVCDidFinish(self)
                     }
                 }

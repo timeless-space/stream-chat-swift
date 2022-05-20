@@ -31,17 +31,7 @@ class DemoChatChannelListRouter: ChatChannelListRouter {
         rootViewController.presentAlert(title: nil, actions: [
             .init(title: "Logout", style: .destructive, handler: { _ in
                 let window = self.rootViewController.view.window!
-                guard let navigationController = UIStoryboard(name: "Main", bundle: Bundle.main)
-                    .instantiateInitialViewController() as? UINavigationController else {
-                    return
-                }
-                guard let sceneDelegate = window.windowScene?.delegate as? SceneDelegate else {
-                    return
-                }
-                sceneDelegate.coordinator = DemoAppCoordinator(navigationController: navigationController)
-                UIView.transition(with: window, duration: 0.3, options: .transitionFlipFromLeft, animations: {
-                    window.rootViewController = navigationController
-                })
+                DemoAppCoordinator.logout(window: window)
             })
         ])
     }
@@ -74,6 +64,7 @@ class DemoChatChannelListRouter: ChatChannelListRouter {
         }
     }
     
+    // swiftlint:disable function_body_length
     override func didTapMoreButton(for cid: ChannelId) {
         let channelController = rootViewController.controller.client.channelController(for: cid)
         rootViewController.presentAlert(title: "Select an action", actions: [
@@ -260,7 +251,7 @@ class DemoChatChannelListRouter: ChatChannelListRouter {
                         }
                     }) :
                     .init(title: "Show channel", style: .default, handler: { [unowned self] _ in
-                        channelController.showChannel() { error in
+                        channelController.showChannel { error in
                             if let error = error {
                                 self.rootViewController.presentAlert(
                                     title: "Couldn't unhide channel \(cid)",
@@ -298,6 +289,8 @@ class DemoChatChannelListRouter: ChatChannelListRouter {
             })
         ])
     }
+
+    // swiftlint:enable function_body_length
     
     override func didTapDeleteButton(for cid: ChannelId) {
         rootViewController.controller.client.channelController(for: cid).deleteChannel { error in

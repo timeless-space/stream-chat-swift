@@ -215,7 +215,7 @@ public class Logger {
     public func callAsFunction(
         _ level: LogLevel,
         functionName: StaticString = #function,
-        fileName: StaticString = #file,
+        fileName: StaticString = #filePath,
         lineNumber: UInt = #line,
         message: @autoclosure () -> Any,
         subsystems: LogSubsystem = .other
@@ -378,7 +378,9 @@ public class Logger {
         lineNumber: UInt = #line
     ) {
         guard !condition() else { return }
-        Swift.assert(condition(), String(describing: message()), file: fileName, line: lineNumber)
+        if StreamRuntimeCheck.assertionsEnabled {
+            Swift.assert(condition(), String(describing: message()), file: fileName, line: lineNumber)
+        }
         log(
             .error,
             functionName: functionName,
@@ -401,7 +403,9 @@ public class Logger {
         fileName: StaticString = #file,
         lineNumber: UInt = #line
     ) {
-        Swift.assertionFailure(String(describing: message()), file: fileName, line: lineNumber)
+        if StreamRuntimeCheck.assertionsEnabled {
+            Swift.assertionFailure(String(describing: message()), file: fileName, line: lineNumber)
+        }
         log(
             .error,
             functionName: functionName,

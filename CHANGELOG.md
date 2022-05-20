@@ -3,6 +3,78 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 # Upcoming
 
+### 🔄 Changed
+
+# [4.15.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.15.0)
+_May 11, 2022_
+## StreamChat
+### ✅ Added
+- Expose `readBy/readByCount` on `ChatMessage` containing info about users who has seen this message. These fields are populated only for messages sent by the current user [#1887](https://github.com/GetStream/stream-chat-swift/issues/1887)
+- Expose preview message on `ChatChannel` [#1935](https://github.com/GetStream/stream-chat-swift/issues/1935)
+### 🐞 Fixed
+- Fix unread messages count bumping logic [#1978](https://github.com/GetStream/stream-chat-swift/issues/1978)
+    - respect muted channels
+    - respect muted users
+    - decrement when message is hard deleted
+- Fix paginated channels in channel list were left without messages when sync is executed [#1985](https://github.com/GetStream/stream-chat-swift/issues/1985)
+- Fix `deletedMessagesVisibility == .alwaysVisible` shows deleted ephemeral messages in message list [#1991](https://github.com/GetStream/stream-chat-swift/issues/1991)
+### 🔄 Changed
+- Rename `mentionedMessages` to `mentions` in `ChannelUnreadCount` [#1978](https://github.com/GetStream/stream-chat-swift/issues/1978)
+- Changes `.team` filter `FilterKey` to accept `nil` as a parameter  [#1968](https://github.com/GetStream/stream-chat-swift/pull/1968)
+
+## StreamChatUI
+### 🔄 Changed
+- Deprecate `ChatMessage.isOnlyVisibleForCurrentUser` as it does not account deleted messages visability setting [#1948](https://github.com/GetStream/stream-chat-swift/pull/1948)
+- Rename components related to message footnote content in `ChatMessageContentView` [#1948](https://github.com/GetStream/stream-chat-swift/pull/1948)
+### ✅ Added
+- Show delivery status indicator for messages sent by the current user [#1887](https://github.com/GetStream/stream-chat-swift/issues/1887)
+- Show delivery status indicator for messages sent by the current user in channel preview [#1935](https://github.com/GetStream/stream-chat-swift/issues/1935)
+- Add support for custom reactions sorting [#1944](https://github.com/GetStream/stream-chat-swift/pull/1944)
+- Add `nonEmpty` filter for channel list query [#1960](https://github.com/GetStream/stream-chat-swift/pull/1960)
+### 🐞 Fixed
+- Fix `onlyVisibleForYouIndicator` not being shown for ephemeral messages [#1948](https://github.com/GetStream/stream-chat-swift/pull/1948)
+- Fix message popup UI glitch for bigger messages and iPad/Landscape [#1975](https://github.com/GetStream/stream-chat-swift/pull/1975)
+- Fix footnote being hidden for the message followed by `ephemeral` message [#1956](https://github.com/GetStream/stream-chat-swift/issues/1956)
+- Fix footnote being hidden for the message followed by `system` message [#1956](https://github.com/GetStream/stream-chat-swift/issues/1956)
+
+# [4.14.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.14.0)
+_April 26, 2022_
+## StreamChat
+### ✅ Added
+- `quotesEnabled` property is added to the `ChannelConfig` [#1891](https://github.com/GetStream/stream-chat-swift/issues/1891)
+
+### 🔄 Changed
+- Assertions are no longer thrown by default. Check `StreamRuntimeCheck` to enable them [#1885](https://github.com/GetStream/stream-chat-swift/pull/1885)
+- Local Storage is enabled by default. You can read more [here](https://getstream.io/chat/docs/sdk/ios/guides/offline-support) [#1890](https://github.com/GetStream/stream-chat-swift/pull/1890)
+- Mark all read has been relocated to `CurrentUserController` to have parity with other platforms [#1927](https://github.com/GetStream/stream-chat-swift/pull/1927)
+- New `CurrentUserController.addDevice(_pushDevice:)` replaces `CurrentUserController.addDevice(token:pushProvider:)` [#1934](https://github.com/GetStream/stream-chat-swift/pull/1934)
+   - How to use the new addDevice API: `currentUserController.addDevice(.apn(token: apnDeviceToken))`
+
+### 🐞 Fixed
+- Fix support for multiple active channel lists at the same time [#1879](https://github.com/GetStream/stream-chat-swift/pull/1879)
+- Fix channels linked to the channel list not being watched [#1924](https://github.com/GetStream/stream-chat-swift/pull/1924)
+- Fix connection recovery flow being triggered after the first connection [#1925](https://github.com/GetStream/stream-chat-swift/pull/1925)
+- Fix connection recovery flow not being cancelled on disconnect [#1925](https://github.com/GetStream/stream-chat-swift/pull/1925)
+- Fix cooldown being applied to /sync endpoint in connection recovery flow [#1925](https://github.com/GetStream/stream-chat-swift/pull/1925)
+- Fix active components not being reset when another user is connected [#1925](https://github.com/GetStream/stream-chat-swift/pull/1925)
+- Fix unusable firebase push provider [#1934](https://github.com/GetStream/stream-chat-swift/pull/1934)
+- Fix DB errors happening when logging in after a logout / user switch [#1926](https://github.com/GetStream/stream-chat-swift/issues/1926)
+
+## StreamChatUI
+### 💥 Removed
+- The `toVCSnapshot`, `fromVCSnapshot` and `containerTransitionImageView` properties were removed `ZoomAnimator` because they were the root cause of animation issues when presenting the popup actions [#1899](https://github.com/GetStream/stream-chat-swift/issues/1899)
+### 🔄 Changed
+- The time interval between 2 messages so they are grouped in the UI is changed from `30 sec` to `60 sec` [#1893](https://github.com/GetStream/stream-chat-swift/issues/1893)
+### ✅ Added
+- Quote message action visibility can be controlled from the dashboard [#1891](https://github.com/GetStream/stream-chat-swift/issues/1891)
+### 🐞 Fixed
+- Fix full screen live photos weird flicker when presented / dismissed to / from full screen [#1899](https://github.com/GetStream/stream-chat-swift/issues/1899)
+- Timestamp not being shown for the message when the next message is error [#1893](https://github.com/GetStream/stream-chat-swift/issues/1893)
+- Another user's avatar not being shown for deleted message last in a group [#1893](https://github.com/GetStream/stream-chat-swift/issues/1893)
+- Fix audio files not rendering previews [#1907](https://github.com/GetStream/stream-chat-swift/issues/1907)
+- Fix message sender name is not shown in channel with > 2 members if member identifiers were passed on channel creation [#1931](https://github.com/GetStream/stream-chat-swift/issues/1931)
+- Fix incorrectly called viewWillAppear inside viewWillDissapear [#1938](https://github.com/GetStream/stream-chat-swift/pull/1938)
+
 # [4.13.1](https://github.com/GetStream/stream-chat-swift/releases/tag/4.13.1)
 _April 04, 2022_
 

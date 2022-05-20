@@ -120,6 +120,7 @@ public class ContainerStackView: UIView {
     
     override public init(frame: CGRect) {
         super.init(frame: frame)
+
         addLayoutGuide(sizeLayoutGuide)
     }
     

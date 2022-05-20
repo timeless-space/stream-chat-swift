@@ -6,8 +6,7 @@ import StreamChat
 import UIKit
 
 /// The view that displays channel information on the message list header
-open class ChatChannelHeaderView:
-    _View,
+open class ChatChannelHeaderView: _View,
     ThemeProvider,
     ChatChannelControllerDelegate {
     /// Controller for observing data changes within the channel.
@@ -117,7 +116,7 @@ open class ChatChannelHeaderView:
     ) {
         switch channel {
         case .update, .create:
-            updateContentIfNeeded()
+            updateContent()
         default:
             break
         }

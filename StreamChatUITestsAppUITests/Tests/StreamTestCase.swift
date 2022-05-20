@@ -10,7 +10,8 @@ let app = XCUIApplication()
 class StreamTestCase: XCTestCase {
 
     let deviceRobot = DeviceRobot()
-    var userRobot = UserRobot()
+    let userRobot = UserRobot()
+    var backendRobot: BackendRobot!
     var participantRobot: ParticipantRobot!
     var server: StreamMockServer!
 
@@ -20,6 +21,7 @@ class StreamTestCase: XCTestCase {
         server.configure()
         server.start(port: in_port_t(MockServerConfiguration.port))
         participantRobot = ParticipantRobot(server)
+        backendRobot = BackendRobot(server)
 
         try super.setUpWithError()
 
@@ -29,7 +31,6 @@ class StreamTestCase: XCTestCase {
 
     override func tearDownWithError() throws {
         app.terminate()
-        server.clearMessageDetails()
         server.stop()
         server = nil
         
@@ -41,6 +42,16 @@ class StreamTestCase: XCTestCase {
 }
 
 extension StreamTestCase {
+    
+    enum Tags: String {
+        case coreFeatures = "Core Features"
+        case offlineSupport = "Offline Support"
+        case messageReceipts = "Message Receipts"
+    }
+    
+    func addTags(_ tags: [Tags]) {
+        addTagsToScenario(tags.map{ $0.rawValue })
+    }
 
     private func useMockServer() {
         // Leverage web socket server

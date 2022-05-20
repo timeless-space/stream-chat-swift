@@ -6,19 +6,19 @@
 @testable import StreamChatTestTools
 import XCTest
 
-class EventDataProcessorMiddleware_Tests: XCTestCase {
+final class EventDataProcessorMiddleware_Tests: XCTestCase {
     var middleware: EventDataProcessorMiddleware!
-    fileprivate var database: DatabaseContainerMock!
+    fileprivate var database: DatabaseContainer_Spy!
     
     override func setUp() {
         super.setUp()
-        database = DatabaseContainerMock()
+        database = DatabaseContainer_Spy()
         middleware = EventDataProcessorMiddleware()
     }
     
     override func tearDown() {
-        middleware = nil
         AssertAsync.canBeReleased(&database)
+        database = nil
         super.tearDown()
     }
     
@@ -45,13 +45,13 @@ class EventDataProcessorMiddleware_Tests: XCTestCase {
         
         // Assert the channel data is saved and the event is forwarded
         var loadedChannel: ChatChannel? {
-            database.viewContext.channel(cid: channelId)!.asModel()
+            try? database.viewContext.channel(cid: channelId)?.asModel()
         }
         XCTAssertEqual(loadedChannel?.cid, channelId)
         XCTAssertEqual(outputEvent?.asEquatable, testEvent.asEquatable)
     }
     
-    func tests_middleware_handlesReactionDeletedEvent() throws {
+    func test_middleware_handlesReactionDeletedEvent() throws {
         let cid: ChannelId = .unique
         let messageId: MessageId = .unique
 
@@ -100,7 +100,7 @@ class EventDataProcessorMiddleware_Tests: XCTestCase {
         XCTAssertTrue(message.latestReactions.isEmpty)
     }
 
-    func tests_middleware_handlesReactionUpdated() throws {
+    func test_middleware_handlesReactionUpdated() throws {
         let cid: ChannelId = .unique
         let messageId: MessageId = .unique
         let messagePayload: MessagePayload = .dummy(messageId: messageId, authorUserId: .unique)
@@ -149,10 +149,10 @@ class EventDataProcessorMiddleware_Tests: XCTestCase {
         )
 
         XCTAssertTrue(forwardedEvent is ReactionUpdatedEventDTO)
-        XCTAssertEqual(message.asModel().latestReactions, [reaction])
+        try XCTAssertEqual(message.asModel().latestReactions, [reaction])
     }
 
-    func tests_middleware_handlesReactionNewEvent() throws {
+    func test_middleware_handlesReactionNewEvent() throws {
         let cid: ChannelId = .unique
         let messageId: MessageId = .unique
         let messagePayload: MessagePayload = .dummy(messageId: messageId, authorUserId: .unique)
@@ -200,7 +200,7 @@ class EventDataProcessorMiddleware_Tests: XCTestCase {
         )
         
         XCTAssertTrue(forwardedEvent is ReactionNewEventDTO)
-        XCTAssertEqual(message.asModel().latestReactions, [reaction])
+        try XCTAssertEqual(message.asModel().latestReactions, [reaction])
     }
 
     func test_eventWithInvalidPayload_isNotForwarded() throws {
@@ -214,7 +214,7 @@ class EventDataProcessorMiddleware_Tests: XCTestCase {
         let testEvent = TestEvent(payload: eventPayload)
         
         // Simulate the DB fails to save the payload
-        let session = DatabaseSessionMock(underlyingSession: database.viewContext)
+        let session = DatabaseSession_Mock(underlyingSession: database.viewContext)
         session.errorToReturn = TestError()
         
         // Let the middleware handle the event

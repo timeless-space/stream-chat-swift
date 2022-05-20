@@ -4,6 +4,9 @@
 
 import Foundation
 import XCTest
+import StreamChat
+
+// swiftlint:disable convenience_type
 
 class MessageListPage {
     
@@ -26,6 +29,30 @@ class MessageListPage {
         static var participants: XCUIElement {
             app.staticTexts.lastMatch!
         }
+
+        static var debugMenu: XCUIElement {
+            app.buttons["debug"].firstMatch
+        }
+    }
+
+    enum Alert {
+        enum Debug {
+            // Add member
+            static var alert: XCUIElement { app.alerts["Select an action"] }
+            static var addMember: XCUIElement { alert.buttons["Add member"] }
+            static var addMemberTextField: XCUIElement {app.textFields["debug_alert_textfield"] }
+            static var addMemberOKButton: XCUIElement {app.alerts["Enter user id"].buttons["OK"] }
+
+            // Remove member
+            static var removeMember: XCUIElement { alert.buttons["Remove a member"] }
+            static func selectMember(withUserId userId: String) -> XCUIElement {
+                app.alerts["Select a member"].buttons[userId]
+            }
+
+            // Show member info
+            static var showMemberInfo: XCUIElement { alert.buttons["Show Members"] }
+            static var dismissMemberInfo: XCUIElement { app.alerts["Members"].buttons["Cancel"] }
+        }
     }
     
     enum Composer {
@@ -35,7 +62,6 @@ class MessageListPage {
         static var commandButton: XCUIElement { app.buttons["CommandButton"] }
         static var inputField: XCUIElement { app.otherElements["InputChatMessageView"] }
     }
-    
     
     enum Reactions {
         static var lol: XCUIElement { reaction(label: "reaction lol big") }
@@ -55,32 +81,71 @@ class MessageListPage {
     }
     
     enum ContextMenu {
-        static var reply: XCUIElement { action(label: "Reply") }
-        static var threadReply: XCUIElement { action(label: "Thread Reply") }
-        static var copy: XCUIElement { action(label: "Copy Message") }
-        static var flag: XCUIElement { action(label: "Flag Message") }
-        static var muteUser: XCUIElement { action(label: "Mute User") }
-        static var edit: XCUIElement { action(label: "Edit Message") }
-        static var delete: XCUIElement { action(label: "Delete Message") }
-        
-        private static var id = "ChatMessageActionControl"
-        
-        private static func action(label: String) -> XCUIElement {
-            let predicate = NSPredicate(format: "label LIKE '\(label)'")
-            return app.otherElements[id].staticTexts.matching(predicate).firstMatch
+        case reactions
+        case reply
+        case threadReply
+        case copy
+        case flag
+        case mute
+        case edit
+        case delete
+        case resend
+        case block
+        case unblock
+
+        var element: XCUIElement {
+            switch self {
+            case .reactions:
+                return Element.reactionsView
+            case .reply:
+                return Element.reply
+            case .threadReply:
+                return Element.threadReply
+            case .copy:
+                return Element.copy
+            case .flag:
+                return Element.flag
+            case .mute:
+                return Element.mute
+            case .edit:
+                return Element.edit
+            case .delete:
+                return Element.delete
+            case .resend:
+                return Element.resend
+            case .block:
+                return Element.block
+            case .unblock:
+                return Element.unblock
+            }
+        }
+
+        struct Element {
+            static var reactionsView: XCUIElement { app.otherElements["ChatReactionPickerReactionsView"] }
+            static var reply: XCUIElement { app.otherElements["InlineReplyActionItem"] }
+            static var threadReply: XCUIElement { app.otherElements["ThreadReplyActionItem"] }
+            static var copy: XCUIElement { app.otherElements["CopyActionItem"] }
+            static var flag: XCUIElement { app.otherElements["FlagActionItem"] }
+            static var mute: XCUIElement { app.otherElements["MuteUserActionItem"] }
+            static var unmute: XCUIElement { app.otherElements["UnmuteUserActionItem"] }
+            static var edit: XCUIElement { app.otherElements["EditActionItem"] }
+            static var delete: XCUIElement { app.otherElements["DeleteActionItem"] }
+            static var resend: XCUIElement { app.otherElements["ResendActionItem"] }
+            static var block: XCUIElement { app.otherElements["BlockUserActionItem"] }
+            static var unblock: XCUIElement { app.otherElements["UnblockUserActionItem"] }
         }
     }
     
     enum Attributes {
-        static func reactionButton(messageCell: XCUIElement) -> XCUIElement {
+        static func reactionButton(in messageCell: XCUIElement) -> XCUIElement {
             messageCell.buttons["ChatMessageReactionItemView"]
         }
         
-        static func threadButton(messageCell: XCUIElement) -> XCUIElement {
+        static func threadButton(in messageCell: XCUIElement) -> XCUIElement {
             messageCell.buttons["threadReplyCountButton"]
         }
         
-        static func time(messageCell: XCUIElement) -> XCUIElement {
+        static func time(in messageCell: XCUIElement) -> XCUIElement {
             messageCell.staticTexts["timestampLabel"]
         }
         
@@ -88,18 +153,37 @@ class MessageListPage {
             messageCell.staticTexts["authorNameLabel"]
         }
         
-        static func text(messageCell: XCUIElement) -> XCUIElement {
+        static func text(in messageCell: XCUIElement) -> XCUIElement {
             messageCell.textViews["textView"]
         }
         
-        static func deletedIcon(messageCell: XCUIElement) -> XCUIElement {
-            messageCell.images["onlyVisibleForYouIconImageView"]
+        static func quotedText(_ text: String, in messageCell: XCUIElement) -> XCUIElement {
+            messageCell.textViews.matching(NSPredicate(format: "value LIKE '\(text)'")).firstMatch
         }
         
-        static func deletedLabel(messageCell: XCUIElement) -> XCUIElement {
-            messageCell.staticTexts["onlyVisibleForYouLabel"]
+        static func deletedIcon(in messageCell: XCUIElement) -> XCUIElement {
+            messageCell.images["onlyVisibleToYouImageView"]
         }
         
+        static func deletedLabel(in messageCell: XCUIElement) -> XCUIElement {
+            messageCell.staticTexts["onlyVisibleToYouLabel"]
+        }
+
+        static func errorButton(in messageCell: XCUIElement) -> XCUIElement {
+            messageCell.buttons["error indicator"]
+        }
+
+        static func readCount(in messageCell: XCUIElement) -> XCUIElement {
+            messageCell.staticTexts["messageReadСountsLabel"]
+        }
+
+        static func statusCheckmark(for status: MessageDeliveryStatus?, in messageCell: XCUIElement) -> XCUIElement {
+            var identifier = "imageView"
+            if let status = status {
+                identifier = "\(identifier)_\(status.rawValue)"
+            }
+            return messageCell.images[identifier]
+        }
     }
     
     enum PopUpButtons {

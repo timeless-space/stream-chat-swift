@@ -101,7 +101,7 @@ class EntityDatabaseObserver<Item, DTO: NSManagedObject> {
     /// Used for observing the changes in the DB.
     private(set) var frc: NSFetchedResultsController<DTO>!
     
-    let itemCreator: (DTO) -> Item?
+    let itemCreator: (DTO) throws -> Item
     let request: NSFetchRequest<DTO>
     let context: NSManagedObjectContext
     
@@ -124,7 +124,7 @@ class EntityDatabaseObserver<Item, DTO: NSManagedObject> {
     init(
         context: NSManagedObjectContext,
         fetchRequest: NSFetchRequest<DTO>,
-        itemCreator: @escaping (DTO) -> Item?,
+        itemCreator: @escaping (DTO) throws -> Item,
         fetchedResultsControllerType: NSFetchedResultsController<DTO>.Type = NSFetchedResultsController<DTO>.self
     ) {
         self.context = context
@@ -137,21 +137,8 @@ class EntityDatabaseObserver<Item, DTO: NSManagedObject> {
             cacheName: nil
         )
         
-        _item.computeValue = { [weak frc] in
-            guard let fetchedObjects = frc?.fetchedObjects else { return nil }
-            log.assert(
-                fetchedObjects.count <= 1,
-                "EntityDatabaseObserver predicate must match exactly 0 or 1 entities. Matched: \(fetchedObjects)"
-            )
-            
-            return fetchedObjects.first.flatMap { dto in
-                var result: Item?
-                context.performAndWait {
-                    result = itemCreator(dto)
-                }
-                return result
-            }
-        }
+        // We want item to report nil until `startObserving` is called
+        _item.computeValue = { nil }
         
         listenForRemoveAllDataNotifications()
     }
@@ -165,11 +152,27 @@ class EntityDatabaseObserver<Item, DTO: NSManagedObject> {
     ///
     /// - Throws: An error if the provided fetch request fails.
     func startObserving() throws {
+        _item.computeValue = { [weak self] in
+            guard let fetchedObjects = self?.frc.fetchedObjects, let context = self?.context,
+                  let itemCreator = self?.itemCreator else { return nil }
+            log.assert(
+                fetchedObjects.count <= 1,
+                "EntityDatabaseObserver predicate must match exactly 0 or 1 entities. Matched: \(fetchedObjects)"
+            )
+            
+            return fetchedObjects.first.flatMap { dto in
+                var result: Item?
+                context.performAndWait {
+                    result = try? itemCreator(dto)
+                }
+                return result
+            }
+        }
+        
         try frc.performFetch()
+        frc.delegate = changeAggregator
         
         _item.reset()
-        
-        frc.delegate = changeAggregator
     }
     
     /// Listens for `Will/DidRemoveAllData` notifications from the context and simulates the callback when the notifications
@@ -201,12 +204,20 @@ class EntityDatabaseObserver<Item, DTO: NSManagedObject> {
                     newIndexPath: nil
                 )
             }
+            
+            // Publish the changes
+            self.changeAggregator.controllerDidChangeContent(self.frc as! NSFetchedResultsController<NSFetchRequestResult>)
+            
+            // Remove delegate so it doesn't get further removal updates
+            self.frc.delegate = nil
+            
+            // Remove the cached item since it's now deleted, technically
+            self._item.computeValue = { nil }
+            self._item.reset()
         }
         
         // When `DidRemoveAllDataNotification` is received, we need to reset the FRC. At this point, the entities are removed but
-        // the FRC doesn't know about it yet. Resetting the FRC removes the content of `FRC.fetchedObjects`. We also need to
-        // call `controllerDidChangeContent` on the change aggregator to finish reporting about the removed object which started
-        // in the `WillRemoveAllDataNotification` handler above.
+        // the FRC doesn't know about it yet. Resetting the FRC removes the content of `FRC.fetchedObjects`.
         let didRemoveAllDataNotificationObserver = notificationCenter.addObserver(
             forName: DatabaseContainer.DidRemoveAllDataNotification,
             object: context,
@@ -217,10 +228,11 @@ class EntityDatabaseObserver<Item, DTO: NSManagedObject> {
             guard let self = self else { return }
             
             // Reset FRC which causes the current `frc.fetchedObjects` to be reloaded
-            try! self.startObserving()
-            
-            // Publish the changes started in `WillRemoveAllDataNotification`
-            self.changeAggregator.controllerDidChangeContent(self.frc as! NSFetchedResultsController<NSFetchRequestResult>)
+            do {
+                try self.startObserving()
+            } catch {
+                log.error("Error when starting observing: \(error)")
+            }
         }
         
         releaseNotificationObservers = { [weak notificationCenter] in

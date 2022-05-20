@@ -7,16 +7,17 @@ import CoreData
 @testable import StreamChatTestTools
 import XCTest
 
-class CurrentUserModelDTO_Tests: XCTestCase {
+final class CurrentUserModelDTO_Tests: XCTestCase {
     var database: DatabaseContainer!
     
     override func setUp() {
         super.setUp()
-        database = DatabaseContainerMock()
+        database = DatabaseContainer_Spy()
     }
     
     override func tearDown() {
         AssertAsync.canBeReleased(&database)
+        database = nil
         super.tearDown()
     }
     
@@ -104,7 +105,7 @@ class CurrentUserModelDTO_Tests: XCTestCase {
         
         // Assert the data saved to DB
         var currentUser: CurrentChatUser? {
-            database.viewContext.currentUser?.asModel()
+            try? database.viewContext.currentUser?.asModel()
         }
         
         // Assert only 1 device exists
@@ -127,47 +128,55 @@ class CurrentUserModelDTO_Tests: XCTestCase {
         XCTAssertEqual(currentUser?.currentDevice, nil)
     }
     
-    func test_savingCurrentUser_removesPreviousChannelMutes() throws {
+    func test_saveCurrentUser_removesChannelMutesNotInPayload() throws {
+        // GIVEN
         let userPayload: UserPayload = .dummy(userId: .unique)
-        let payloadWithMutes: CurrentUserPayload = .dummy(
-            userPayload: userPayload,
-            mutedChannels: [
-                .init(
-                    mutedChannel: .dummy(cid: .unique),
-                    user: userPayload,
-                    createdAt: .unique,
-                    updatedAt: .unique
-                ),
-                .init(
-                    mutedChannel: .dummy(cid: .unique),
-                    user: userPayload,
-                    createdAt: .unique,
-                    updatedAt: .unique
-                )
-            ]
+        let mute1 = MutedChannelPayload(
+            mutedChannel: .dummy(cid: .unique),
+            user: userPayload,
+            createdAt: .unique,
+            updatedAt: .unique
+        )
+        let mute2 = MutedChannelPayload(
+            mutedChannel: .dummy(cid: .unique),
+            user: userPayload,
+            createdAt: .unique,
+            updatedAt: .unique
         )
         
-        // Asynchronously save the payload to the db
+        let payloadWithMutes: CurrentUserPayload = .dummy(
+            userPayload: userPayload,
+            mutedChannels: [mute1, mute2]
+        )
+        
         try database.writeSynchronously { session in
             try session.saveCurrentUser(payload: payloadWithMutes)
         }
         
-        // Check the are 2 mutes in the DB
         let allMutesRequest = NSFetchRequest<ChannelMuteDTO>(entityName: ChannelMuteDTO.entityName)
         XCTAssertEqual(try! database.viewContext.count(for: allMutesRequest), 2)
         
-        let payloadWithNoMutes: CurrentUserPayload = .dummy(
-            userPayload: userPayload,
-            mutedChannels: []
+        // WHEN
+        let mute3 = MutedChannelPayload(
+            mutedChannel: .dummy(cid: .unique),
+            user: userPayload,
+            createdAt: .unique,
+            updatedAt: .unique
         )
-
-        // Asynchronously save the payload to the db
+        let payloadWithUpdatedMutes: CurrentUserPayload = .dummy(
+            userPayload: userPayload,
+            mutedChannels: [mute1, mute3]
+        )
         try database.writeSynchronously { session in
-            try session.saveCurrentUser(payload: payloadWithNoMutes)
+            try session.saveCurrentUser(payload: payloadWithUpdatedMutes)
         }
         
-        // Check the are no mutes in the DB
-        XCTAssertEqual(try! database.viewContext.count(for: allMutesRequest), 0)
+        // THEN
+        XCTAssertEqual(try! database.viewContext.count(for: allMutesRequest), 2)
+        XCTAssertEqual(
+            Set(database.viewContext.currentUser?.channelMutes.map(\.channel.cid) ?? []),
+            Set(payloadWithUpdatedMutes.mutedChannels.map(\.mutedChannel.cid.rawValue))
+        )
     }
     
     func test_defaultExtraDataIsUsed_whenExtraDataDecodingFails() throws {
@@ -182,7 +191,7 @@ class CurrentUserModelDTO_Tests: XCTestCase {
             userDTO.user.extraData = #"{"invalid": json}"#.data(using: .utf8)!
         }
         
-        let loadedUser: CurrentChatUser? = database.viewContext.currentUser?.asModel()
+        let loadedUser: CurrentChatUser? = try? database.viewContext.currentUser?.asModel()
         XCTAssertEqual(loadedUser?.extraData, [:])
     }
     
@@ -204,8 +213,15 @@ class CurrentUserModelDTO_Tests: XCTestCase {
         
         XCTAssertNotNil(database.viewContext.currentUser)
         
-        try database.removeAllData()
+        let expectation = expectation(description: "removeAllData completion")
+        database.removeAllData { error in
+            if let error = error {
+                XCTFail("removeAllData failed with \(error)")
+            }
+            expectation.fulfill()
+        }
         
+        wait(for: [expectation], timeout: 1)
         XCTAssertNil(database.viewContext.currentUser)
     }
     
@@ -232,7 +248,15 @@ class CurrentUserModelDTO_Tests: XCTestCase {
             XCTAssertNotNil(context.currentUser)
         }
         
-        try database.removeAllData()
+        let expectation = expectation(description: "removeAllData completion")
+        database.removeAllData { error in
+            if let error = error {
+                XCTFail("removeAllData failed with \(error)")
+            }
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 1)
         
         context.performAndWait {
             XCTAssertNil(context.currentUser)

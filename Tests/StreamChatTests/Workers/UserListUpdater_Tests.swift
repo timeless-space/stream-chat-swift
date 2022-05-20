@@ -6,9 +6,9 @@
 @testable import StreamChatTestTools
 import XCTest
 
-class UserListUpdater_Tests: XCTestCase {
-    var webSocketClient: WebSocketClientMock!
-    var apiClient: APIClientMock!
+final class UserListUpdater_Tests: XCTestCase {
+    var webSocketClient: WebSocketClient_Mock!
+    var apiClient: APIClient_Spy!
     var database: DatabaseContainer!
     
     var listUpdater: UserListUpdater!
@@ -16,21 +16,28 @@ class UserListUpdater_Tests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        webSocketClient = WebSocketClientMock()
-        apiClient = APIClientMock()
-        database = DatabaseContainerMock()
+        webSocketClient = WebSocketClient_Mock()
+        apiClient = APIClient_Spy()
+        database = DatabaseContainer_Spy()
         
         listUpdater = UserListUpdater(database: database, apiClient: apiClient)
     }
     
     override func tearDown() {
         apiClient.cleanUp()
-        
+
         AssertAsync {
+            Assert.canBeReleased(&apiClient)
             Assert.canBeReleased(&listUpdater)
             Assert.canBeReleased(&database)
+            Assert.canBeReleased(&webSocketClient)
         }
-        
+
+        apiClient = nil
+        listUpdater = nil
+        database = nil
+        webSocketClient = nil
+
         super.tearDown()
     }
     
@@ -61,12 +68,8 @@ class UserListUpdater_Tests: XCTestCase {
         apiClient.test_simulateResponse(.success(payload))
         
         // Assert the data is stored in the DB
-        var user: ChatUser? {
-            database.viewContext.user(id: id)?.asModel()
-        }
-        
         AssertAsync {
-            Assert.willBeTrue(user != nil)
+            Assert.willBeTrue((try? self.user(with: id)) != nil)
             Assert.willBeTrue(completionCalled)
         }
     }
@@ -116,14 +119,10 @@ class UserListUpdater_Tests: XCTestCase {
         let userId = UserId.unique
         let payload = UserListPayload(users: [.dummy(userId: userId)])
         apiClient.test_simulateResponse(.success(payload))
-        
-        // Assert the data is stored in the DB
-        var user: ChatUser? {
-            database.viewContext.user(id: userId)?.asModel()
-        }
-        
+
         // Assert user is inserted into DB
-        AssertAsync.willBeTrue(user != nil)
+        AssertAsync.willBeTrue((try? self.user(with: userId)) != nil)
+        let user = try self.user(with: userId)
         
         // Simulate consequent `update` call with new users and `.merge` policy
         // We don't pass the `policy` argument since we expect it's `merge` by default
@@ -134,16 +133,12 @@ class UserListUpdater_Tests: XCTestCase {
         let newPayload = UserListPayload(users: [.dummy(userId: newUserId)])
         apiClient.test_simulateResponse(.success(newPayload))
         
-        // Assert the data is stored in the DB
-        var newUser: ChatUser? {
-            database.viewContext.user(id: newUserId)?.asModel()
-        }
-        
         // Assert new user is inserted into DB
-        AssertAsync.willBeTrue(newUser != nil)
-        
+        AssertAsync.willBeTrue((try? self.user(with: newUserId)) != nil)
+        let newUser = try self.user(with: newUserId)
+
         let userIds = [user!, newUser!].map(\.id)
-        
+
         // Assert both users are linked to the same query now
         try database.writeSynchronously { session in
             do {
@@ -172,11 +167,10 @@ class UserListUpdater_Tests: XCTestCase {
         let payload = UserListPayload(users: [.dummy(userId: userId)])
         apiClient.test_simulateResponse(.success(payload))
         
-        // Assert the data is stored in the DB
-        var user: ChatUser? {
-            database.viewContext.user(id: userId)?.asModel()
-        }
-        
+        // Assert user is inserted into DB
+        AssertAsync.willBeTrue((try? self.user(with: userId)) != nil)
+        let user = try self.user(with: userId)
+
         // Assert user is inserted into DB
         AssertAsync.willBeTrue(user != nil)
         
@@ -188,14 +182,10 @@ class UserListUpdater_Tests: XCTestCase {
         let newPayload = UserListPayload(users: [.dummy(userId: newUserId)])
         apiClient.test_simulateResponse(.success(newPayload))
         
-        // Assert the data is stored in the DB
-        var newUser: ChatUser? {
-            database.viewContext.user(id: newUserId)?.asModel()
-        }
-        
         // Assert new user is inserted into DB
-        AssertAsync.willBeTrue(newUser != nil)
-        
+        AssertAsync.willBeTrue((try? self.user(with: newUserId)) != nil)
+        let newUser = try self.user(with: newUserId)
+
         // Assert first user is not linked to the query anymore
         var queryDTO: UserListQueryDTO? {
             database.viewContext.userListQuery(filterHash: query.filter!.filterHash)
@@ -219,7 +209,7 @@ class UserListUpdater_Tests: XCTestCase {
             // Assert the data is stored in the DB
             // We call this block in `main` queue since we need to access `viewContext`
             DispatchQueue.main.sync {
-                let user: ChatUser? = self.database.viewContext.user(id: dummyUserId)?.asModel()
+                let user: ChatUser? = try? self.user(with: dummyUserId)
             
                 XCTAssert(user != nil)
                 
@@ -286,5 +276,11 @@ class UserListUpdater_Tests: XCTestCase {
         
         // Assert updater can be released
         AssertAsync.canBeReleased(&listUpdater)
+    }
+}
+
+private extension UserListUpdater_Tests {
+    func user(with id: UserId) throws -> ChatUser? {
+        try database.viewContext.user(id: id)?.asModel()
     }
 }
