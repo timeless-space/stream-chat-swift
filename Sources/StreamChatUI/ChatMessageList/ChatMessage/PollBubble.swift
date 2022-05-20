@@ -972,7 +972,7 @@ struct PollSelectLine: View {
                             .multilineTextAlignment(.leading)
                             .font(.system(size: 12))
                             .foregroundColor(Color.white)
-                            .opacity(opacityUnselectedText == 1 ? 0 : 1)
+                            .opacity(opacityUnselectedText == 0 ? 0 : 1)
                         Text(item.content)
                             .tracking(-0.3)
                             .fixedSize(horizontal: false, vertical: true)
