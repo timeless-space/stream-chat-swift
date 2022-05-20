@@ -194,6 +194,10 @@ public class PollBubble: UITableViewCell {
                 if !answers.isEmpty {
                     pollID = answers[0].pollID
                 }
+                var pollVotedCount: Double = 0
+                if let pollVotedCountRaw = pollData["poll_voted_count"] {
+                    pollVotedCount = fetchRawData(raw: pollVotedCountRaw) as? Double ?? 0
+                }
                 subContainer.subviews.forEach {
                     $0.removeFromSuperview()
                 }
@@ -204,6 +208,7 @@ public class PollBubble: UITableViewCell {
                     multipleChoices: multipleChoices,
                     hideTally: hideTally,
                     answers: answers,
+                    pollVotedCount: pollVotedCount,
                     pollID: pollID,
                     isSender: isSender,
                     isPreview: isPreview,
@@ -399,12 +404,12 @@ struct PollView: View {
     var multipleChoices = false
     var hideTally = false
     @State var answers: [AnswerRes] = []
+    @State var pollVotedCount: Double = 0
     var pollID = ""
     var isSender: Bool
     var isPreview = false
 
     // MARK: - Properties
-    @State private var selectedAnswerID = ""
     @State private var selectedMultiAnswerID: [String] = []
     @State private var voted = false
     @State private var loadingSubmit = false
@@ -425,19 +430,12 @@ struct PollView: View {
     var onTapViewResult: ([AnswerRes]) -> Void
 
     // MARK: Computed Variables
-    private var votedCount: Int {
-        var result = 0
-        answers.forEach { item in
-            result += item.votedCount
-        }
-        return result
-    }
 
     private var enableSubmitButton: Bool {
         if voted {
             return true
         } else {
-            return multipleChoices ? !selectedMultiAnswerID.isEmpty : !selectedAnswerID.isEmpty
+            return !selectedMultiAnswerID.isEmpty
         }
     }
 
@@ -466,7 +464,7 @@ struct PollView: View {
                             .padding(.bottom, isPreview ? 10.5 : 4.5)
                         if !isPreview {
                             HStack(spacing: 3) {
-                                Text("\(votedCount) \(votedCount > 1 ? "Votes" : "Vote")")
+                                Text("\(Int(pollVotedCount)) \(pollVotedCount > 1 ? "Votes" : "Vote")")
                                     .tracking(-0.4)
                                     .font(.system(size: 10))
                                     .foregroundColor(Color.white)
@@ -475,7 +473,7 @@ struct PollView: View {
                                         ZStack {
                                             if memberVotedURL.count > 0 {
                                                 ForEach(0 ..< (memberVotedURL.count <= 5 ? memberVotedURL.count : 5)) { idx in
-                                                    ListMemberAvatar(avatarURL: memberVotedURL[0])
+                                                    ListMemberAvatar(avatarURL: memberVotedURL[idx])
                                                         .zIndex(Double(-idx))
                                                         .offset(x: CGFloat(idx * 12 - idx))
                                                 }
@@ -494,9 +492,9 @@ struct PollView: View {
                                                isPreview: isPreview,
                                                isSender: isSender,
                                                listVotedAnswer: listVotedAnswer,
-                                               selectedAnswerID: $selectedAnswerID,
                                                selectedMultiAnswerID: $selectedMultiAnswerID,
                                                voted: $voted,
+                                               pollVotedCount: pollVotedCount,
                                                answers: $answers)
                             }
                         }
@@ -535,7 +533,6 @@ struct PollView: View {
                         let messageID = userInfo["messageID"] as? String ?? ""
                         let answers = userInfo["answers"] as? [[String: Any]] ?? []
                         let voteFor = userInfo["voteFor"] as? [String] ?? []
-
                         self.answers.removeAll()
                         answers.forEach { item in
                             var wallets: [AnswerWallet] = []
@@ -566,7 +563,8 @@ struct PollView: View {
                             ))
                         }
                         voted = userInfo["voted"] as? Bool ?? false
-                        self.listVotedAnswer = voteFor
+                        listVotedAnswer = voteFor
+                        pollVotedCount = userInfo["pollVotedCount"] as? Double ?? 0
                     }
                     isLoaded = true
                 } else {
@@ -600,7 +598,6 @@ struct PollView: View {
                     let messageID = value.userInfo?["messageID"] as? String ?? ""
                     let answers = value.userInfo?["answers"] as? [[String: Any]] ?? []
                     let voteFor = value.userInfo?["voteFor"] as? [String] ?? []
-
                     self.answers.removeAll()
                     answers.forEach { item in
                         var wallets: [AnswerWallet] = []
@@ -640,6 +637,7 @@ struct PollView: View {
                         voted = value.userInfo?["voted"] as? Bool ?? false
                     }
                     self.listVotedAnswer = voteFor
+                    pollVotedCount = value.userInfo?["pollVotedCount"] as? Double ?? 0
                 }
                 isLoaded = true
             }
@@ -731,11 +729,7 @@ struct PollView: View {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     loadingSubmit = true
                 }
-                if multipleChoices {
-                    onTapSubmit(selectedMultiAnswerID)
-                } else {
-                    onTapSubmit([selectedAnswerID])
-                }
+                onTapSubmit(selectedMultiAnswerID)
             }
         }) {
             RoundedRectangle(cornerRadius: .infinity)
@@ -867,135 +861,148 @@ struct PollSelectLine: View {
     var isPreview = false
     var isSender: Bool
     var listVotedAnswer: [String]
-    @Binding var selectedAnswerID: String
     @Binding var selectedMultiAnswerID: [String]
     @Binding var voted: Bool
     @Binding var answers: [AnswerRes]
+    @Binding var pollVotedCount: Double
 
     // MARK: - Properties
-    @State private var chartLength: CGFloat = 0 // 118
+    @State private var chartLength: CGFloat = 0
 
     // MARK: - Computed Variables
     private var percent: CGFloat {
-        var result: CGFloat = 0
-        let test = answers
-        answers.forEach { item in
-            let test = item
-            result += CGFloat(item.votedCount)
+        return CGFloat(item.votedCount) / CGFloat(pollVotedCount) * 100
+    }
+
+    private var checkMarkIcon: String {
+        if isPreview {
+            return "circle"
+        } else {
+            if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
+                return "checkmark.circle.fill"
+            } else {
+                return "circle"
+            }
         }
-        let answer = answers.first(where: { $0.id == item.id })
-        let vote = CGFloat(answer?.votedCount ?? 0)
-        let rate = result == 0 ? 0 : (vote / result)
-        return rate * 100
+    }
+
+    private var checkMarkOpacity: CGFloat {
+        if voted, !selectedMultiAnswerID.contains(item.id) && !listVotedAnswer.contains(item.id) {
+            return 0
+        } else {
+            return 1
+        }
+    }
+
+    private var percentOpacity: CGFloat {
+        if isPreview {
+            return 0
+        } else {
+            return !hideTally || voted ? 1 : 0
+        }
+    }
+
+    private var paddingLeading: CGFloat {
+        if isPreview {
+            return 1
+        } else {
+            return !hideTally || voted ? 35 : 1
+        }
+    }
+
+    private var progressBarColor: Color {
+        if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
+            return Color.white.opacity(0.5)
+        } else {
+            return Color.black.opacity(0.4)
+        }
+    }
+
+    private var progressBarOpacity: CGFloat {
+        if isPreview {
+            return 0
+        } else {
+            return !hideTally || voted ? 1 : 0
+        }
+    }
+
+    private var opacityUnselectedText: CGFloat {
+        if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
+            return 0
+        } else {
+            return 1
+        }
+    }
+
+    private var opacitySelectedText: CGFloat {
+        if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
+            return 1
+        } else {
+            return 0
+        }
     }
 
     // MARK: - Body view
     var body: some View {
         Button(action: {
-            if multipleChoices {
-                if !selectedMultiAnswerID.contains(item.id) {
-                    selectedMultiAnswerID.append(item.id)
-                } else {
+            if selectedMultiAnswerID.contains(item.id) {
+                if multipleChoices {
                     selectedMultiAnswerID.removeAll(where: { $0 == item.id })
+                } else {
+                    selectedMultiAnswerID.removeAll()
                 }
             } else {
-                if selectedAnswerID != item.id {
-                    selectedAnswerID = item.id
-                } else {
-                    selectedAnswerID.removeAll()
+                if !multipleChoices {
+                    selectedMultiAnswerID.removeAll()
                 }
+                selectedMultiAnswerID.append(item.id)
             }
         }) {
             if #available(iOS 14.0, *) {
-                ZStack {
-                    if multipleChoices {
-                        HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
-                            Image(systemName: isPreview ? "circle" :
-                                    (selectedMultiAnswerID.contains(item.id) || listVotedAnswer.contains(item.id) ?
-                                  "checkmark.circle.fill" : "circle"))
-                                .resizable()
-                                .foregroundColor(Color.white)
-                                .frame(width: 15, height: 15)
-                                .opacity(voted ? (selectedMultiAnswerID.contains(item.id) || listVotedAnswer.contains(item.id) ? 1 : 0) : 1)
-                            ZStack(alignment: .topLeading) {
-                                Text(item.content)
-                                    .tracking(-0.3)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .multilineTextAlignment(.leading)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(Color.white)
-                                    .opacity(selectedMultiAnswerID.contains(item.id) ? 0 : 1)
-                                Text(item.content)
-                                    .tracking(-0.3)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .multilineTextAlignment(.leading)
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundColor(Color.white)
-                                    .opacity(selectedMultiAnswerID.contains(item.id) ? 1 : 0)
-                            }
-                        }
-                        .padding(.leading, !hideTally || voted ? 35 : 1)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: .infinity)
-                                .foregroundColor(selectedMultiAnswerID.contains(item.id) ?
-                                                 Color.white.opacity(0.5) : Color.black.opacity(0.4))
-                                .frame(width: chartLength == 0 ?
-                                       2 : (UIScreen.main.bounds.width * chartLength / 375),
-                                       height: 2)
-                                .opacity(!hideTally || voted ? 1 : 0)
-                                .padding(.leading, 54)
-                                .offset(y: 7), alignment: .bottomLeading
-                        )
-                    } else {
-                        HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
-                            Image(systemName: isPreview ? "circle" :
-                                    (selectedAnswerID == item.id || listVotedAnswer.contains(item.id) ?
-                                  "checkmark.circle.fill" : "circle"))
-                                .resizable()
-                                .foregroundColor(Color.white)
-                                .frame(width: 15, height: 15)
-                                .opacity(voted ? ((selectedAnswerID == item.id || listVotedAnswer.contains(item.id)) ? 1 : 0) : 1)
-                            ZStack(alignment: .topLeading) {
-                                Text(item.content)
-                                    .tracking(-0.3)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .multilineTextAlignment(.leading)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(Color.white)
-                                    .opacity(selectedAnswerID == item.id ? 0 : 1)
-                                Text(item.content)
-                                    .tracking(-0.3)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .multilineTextAlignment(.leading)
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundColor(Color.white)
-                                    .opacity(selectedAnswerID == item.id ? 1 : 0)
-                            }
-                        }
-                        .padding(.leading, !hideTally || voted ? 35 : 1)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: .infinity)
-                                .foregroundColor(selectedAnswerID == item.id ?
-                                                 Color.white.opacity(0.5) : Color.black.opacity(0.4))
-                                .frame(width: chartLength == 0 ?
-                                       2 : (UIScreen.main.bounds.width * chartLength / 375),
-                                       height: 2)
-                                .opacity(!hideTally || voted ? 1 : 0)
-                                .padding(.leading, 54)
-                                .offset(y: 7), alignment: .bottomLeading
-                        )
+                HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
+                    Image(systemName: checkMarkIcon)
+                        .resizable()
+                        .foregroundColor(Color.white)
+                        .frame(width: 15, height: 15)
+                        .opacity(checkMarkOpacity)
+                    ZStack(alignment: .topLeading) {
+                        Text(item.content)
+                            .tracking(-0.3)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .multilineTextAlignment(.leading)
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.white)
+                            .opacity(opacityUnselectedText ? 0 : 1)
+                        Text(item.content)
+                            .tracking(-0.3)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .multilineTextAlignment(.leading)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.white)
+                            .opacity(opacitySelectedText ? 1 : 0)
                     }
                 }
+                .padding(.leading, paddingLeading)
+                .overlay(
+                    RoundedRectangle(cornerRadius: .infinity)
+                        .foregroundColor(progressBarColor)
+                        .frame(width: chartLength == 0 ?
+                               2 : (UIScreen.main.bounds.width * chartLength / 375),
+                               height: 2)
+                        .opacity(progressBarOpacity)
+                        .padding(.leading, 54)
+                        .offset(y: 7), alignment: .bottomLeading
+                )
                 .overlay(
                     Text("\(String(format: "%.0f", percent))%")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(Color.white)
-                        .opacity(!hideTally || voted ? 1 : 0)
+                        .opacity(percentOpacity)
                         .padding(.leading, 1.5), alignment: .topLeading
                 )
                 .onChange(of: percent) { value in
                     chartLength = 0
-//                    withAnimation(.easeInOut(duration: 0.3)) {
+//                    withAnimation(.easeInOut(duration: !voted ? 0.3 : 0)) {
                         chartLength = CGFloat(value * 150 / 100)
 //                    }
                 }
