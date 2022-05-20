@@ -33,7 +33,9 @@ open class ChatMessageReactionAuthorViewCell: _CollectionViewCell, ThemeProvider
     }
 
     /// The container stack that composes the author avatar view and the author name label.
-    open lazy var containerStack = ContainerStackView().withoutAutoresizingMaskConstraints
+    open lazy var containerStack = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "containerStack")
 
     /// The author's avatar view.
     open lazy var authorAvatarView: ChatAvatarView = components
@@ -132,8 +134,8 @@ open class ChatMessageReactionAuthorViewCell: _CollectionViewCell, ThemeProvider
         let reactionAuthor = content.reaction.author
         let isCurrentUser = content.currentUserId == reactionAuthor.id
 
-        authorNameLabel.text = isCurrentUser ? L10n.Reaction.Authors.Cell.you : reactionAuthor.name
-
+        authorNameLabel.text = isCurrentUser ? L10n.you : reactionAuthor.name
+        
         reactionBubbleView.tailDirection = isCurrentUser ? .toTrailing : .toLeading
         reactionItemView.content = .init(
             useBigIcon: false,

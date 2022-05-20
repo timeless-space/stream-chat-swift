@@ -6,16 +6,17 @@
 @testable import StreamChatTestTools
 import XCTest
 
-class MemberModelDTO_Tests: XCTestCase {
+final class MemberModelDTO_Tests: XCTestCase {
     var database: DatabaseContainer!
     
     override func setUp() {
         super.setUp()
-        database = DatabaseContainerMock()
+        database = DatabaseContainer_Spy()
     }
     
     override func tearDown() {
         AssertAsync.canBeReleased(&database)
+        database = nil
         super.tearDown()
     }
     
@@ -55,7 +56,7 @@ class MemberModelDTO_Tests: XCTestCase {
         
         // Load the member from the db and check it's the same member
         var loadedMember: ChatChannelMember? {
-            database.viewContext.member(userId: userId, cid: channelId)?.asModel()
+            try? database.viewContext.member(userId: userId, cid: channelId)?.asModel()
         }
 
         AssertAsync {
@@ -110,7 +111,7 @@ class MemberModelDTO_Tests: XCTestCase {
             memberDTO.user.extraData = #"{"invalid": json}"#.data(using: .utf8)!
         }
         
-        let loadedMember: ChatChannelMember? = database.viewContext.member(userId: userId, cid: channelId)?.asModel()
+        let loadedMember: ChatChannelMember? = try? database.viewContext.member(userId: userId, cid: channelId)?.asModel()
         XCTAssertEqual(loadedMember?.extraData, [:])
     }
     

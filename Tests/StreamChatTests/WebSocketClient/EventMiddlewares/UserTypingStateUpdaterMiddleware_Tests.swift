@@ -7,7 +7,7 @@
 import XCTest
 
 final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
-    var database: DatabaseContainerMock!
+    var database: DatabaseContainer_Spy!
     var middleware: UserTypingStateUpdaterMiddleware!
     
     // MARK: - Set up
@@ -15,20 +15,19 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        database = DatabaseContainerMock()
+        database = DatabaseContainer_Spy()
         middleware = UserTypingStateUpdaterMiddleware()
     }
     
     override func tearDown() {
-        middleware = nil
         AssertAsync.canBeReleased(&database)
-
+        database = nil
         super.tearDown()
     }
     
     // MARK: - Tests
     
-    func tests_middleware_forwardsNonTypingEvents() throws {
+    func test_middleware_forwardsNonTypingEvents() throws {
         let event = TestEvent()
         
         // Handle non-typing event
@@ -38,7 +37,7 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
         XCTAssertEqual(forwardedEvent as! TestEvent, event)
     }
     
-    func tests_middleware_forwardsTypingEvent_ifDatabaseWriteGeneratesError() throws {
+    func test_middleware_forwardsTypingEvent_ifDatabaseWriteGeneratesError() throws {
         let cid: ChannelId = .unique
         let userId: UserId = .unique
         
@@ -60,7 +59,7 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
         XCTAssertEqual(forwardedEvent as! TypingEventDTO, event)
     }
     
-    func tests_middleware_handlesTypingStartedEventCorrectly() throws {
+    func test_middleware_handlesTypingStartedEventCorrectly() throws {
         let cid: ChannelId = .unique
         let userId: UserId = .unique
         
@@ -71,17 +70,16 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
         try database.createUser(id: userId)
         
         // Load the channel
-        var channel: ChatChannel {
-            database.viewContext.channel(cid: cid)!.asModel()
-        }
-        
+        var channel = try self.channel(with: cid)
+
         // Assert there is no typing users so far
         XCTAssertTrue(channel.currentlyTypingUsers.isEmpty)
         
         // Simulate start typing event
         let event = TypingEventDTO.startTyping(cid: cid, userId: userId)
         let forwardedEvent = middleware.handle(event: event, session: database.viewContext)
-        
+
+        channel = try self.channel(with: cid)
         // Assert `TypingEvent` is forwarded as it is
         XCTAssertEqual(forwardedEvent as! TypingEventDTO, event)
         // Assert channel's currentlyTypingUsers are updated correctly
@@ -89,7 +87,7 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
         XCTAssertEqual(channel.currentlyTypingUsers.count, 1)
     }
     
-    func tests_middleware_handlesTypingFinishedEventCorrectly() throws {
+    func test_middleware_handlesTypingFinishedEventCorrectly() throws {
         let cid: ChannelId = .unique
         let userId: UserId = .unique
         
@@ -105,10 +103,8 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
         }
         
         // Load the channel
-        var channel: ChatChannel {
-            database.viewContext.channel(cid: cid)!.asModel()
-        }
-        
+        let channel = try self.channel(with: cid)
+
         // Simulate stop typing events
         let event = TypingEventDTO.stopTyping(cid: cid, userId: userId)
         let forwardedEvent = middleware.handle(event: event, session: database.viewContext)
@@ -119,7 +115,7 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
         XCTAssertTrue(channel.currentlyTypingUsers.isEmpty)
     }
     
-    func tests_middleware_handlesCleanUpTypingEventCorrectly() throws {
+    func test_middleware_handlesCleanUpTypingEventCorrectly() throws {
         let cid: ChannelId = .unique
         let userId: UserId = .unique
         
@@ -135,10 +131,8 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
         }
         
         // Load the channel
-        var channel: ChatChannel {
-            database.viewContext.channel(cid: cid)!.asModel()
-        }
-        
+        let channel = try self.channel(with: cid)
+
         // Simulate CleanUpTypingEvent
         let event = CleanUpTypingEvent(cid: cid, userId: userId)
         let forwardedEvent = middleware.handle(event: event, session: database.viewContext)
@@ -150,52 +144,8 @@ final class ChannelUserTypingStateUpdaterMiddleware_Tests: XCTestCase {
     }
 }
 
-private struct TestEvent: Event, Equatable {
-    let id = UUID()
-}
-
-extension TypingEventDTO: Equatable {
-    static var unique: TypingEventDTO = try!
-        .init(
-            from: EventPayload(
-                eventType: .userStartTyping,
-                user: .dummy(userId: .unique),
-                channel: .dummy(cid: .unique)
-            )
-        )
-    
-    static func startTyping(
-        cid: ChannelId = .unique,
-        userId: UserId = .unique
-    ) -> TypingEventDTO {
-        let payload = EventPayload(
-            eventType: .userStartTyping,
-            cid: cid,
-            user: .dummy(userId: userId),
-            createdAt: .unique
-        )
-        
-        return try! .init(from: payload)
-    }
-    
-    static func stopTyping(cid: ChannelId = .unique, userId: UserId = .unique) -> TypingEventDTO {
-        let payload = EventPayload(
-            eventType: .userStopTyping,
-            cid: cid,
-            user: .dummy(userId: userId),
-            createdAt: .unique
-        )
-        
-        return try! .init(from: payload)
-    }
-    
-    public static func == (lhs: TypingEventDTO, rhs: TypingEventDTO) -> Bool {
-        lhs.isTyping == rhs.isTyping && lhs.cid == rhs.cid && lhs.user.id == rhs.user.id
-    }
-}
-
-extension CleanUpTypingEvent: Equatable {
-    public static func == (lhs: CleanUpTypingEvent, rhs: CleanUpTypingEvent) -> Bool {
-        lhs.cid == rhs.cid && lhs.userId == rhs.userId
+private extension ChannelUserTypingStateUpdaterMiddleware_Tests {
+    func channel(with cid: ChannelId) throws -> ChatChannel {
+        try XCTUnwrap(database.viewContext.channel(cid: cid)).asModel()
     }
 }

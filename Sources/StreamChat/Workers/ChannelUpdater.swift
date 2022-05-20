@@ -87,7 +87,7 @@ class ChannelUpdater: Worker {
     ///   - completion: Called when the API call is finished. Called with `Error` if the remote update fails.
     func deleteChannel(cid: ChannelId, completion: ((Error?) -> Void)? = nil) {
         apiClient.request(endpoint: .deleteChannel(cid: cid)) { [weak self] result in
-            switch (result) {
+            switch result {
             case .success:
                 self?.database.write {
                     if let channel = $0.channel(cid: cid) {
@@ -483,8 +483,8 @@ class ChannelUpdater: Worker {
                 var pinnedMessages: [ChatMessage] = []
                 self?.database.write { (session) in
                     payload.messages.forEach {
-                        if let dto = try? session.saveMessage(payload: $0, for: cid, syncOwnReactions: false) {
-                            pinnedMessages.append(dto.asModel())
+                        if let model = try? session.saveMessage(payload: $0, for: cid, syncOwnReactions: false)?.asModel() {
+                            pinnedMessages.append(model)
                         }
                     }
                 } completion: { _ in

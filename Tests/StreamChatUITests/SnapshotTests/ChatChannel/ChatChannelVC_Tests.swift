@@ -2,8 +2,8 @@
 // Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
-import StreamChat
-import StreamChatTestTools
+@testable import StreamChat
+@testable import StreamChatTestTools
 @testable import StreamChatUI
 import XCTest
 
@@ -14,7 +14,7 @@ final class ChatChannelVC_Tests: XCTestCase {
     override func setUp() {
         super.setUp()
         var components = Components.mock
-        components.channelHeaderView = ChatChannelHeaderView_Mock.self
+        components.channelHeaderView = ChatChannelHeaderViewMock.self
         vc = ChatChannelVC()
         vc.components = components
         channelControllerMock = ChatChannelController_Mock.mock()
@@ -165,11 +165,6 @@ final class ChatChannelVC_Tests: XCTestCase {
     }
 
     func test_onlyEmojiMessageAppearance() {
-        let imageAttachment = ChatMessageImageAttachment.mock(
-            id: .unique,
-            imageURL: TestImages.yoda.url
-        ).asAnyAttachment
-        
         channelControllerMock.simulateInitial(
             channel: .mock(cid: .unique),
             messages: [
@@ -181,7 +176,6 @@ final class ChatChannelVC_Tests: XCTestCase {
                     cid: .unique,
                     text: "🚀",
                     author: .mock(id: .unique),
-                    attachments: [imageAttachment],
                     isSentByCurrentUser: false
                 )
             ],
@@ -233,6 +227,284 @@ final class ChatChannelVC_Tests: XCTestCase {
             variants: [.defaultLight]
         )
     }
+    
+    // MARK: - Message grouping
+    
+    private var maxTimeInterval: TimeInterval { 60 }
+    
+    func test_whenTimeIntervalBetween2MessagesFromTheCurrentUserIs1minOrLess_messagesAreGrouped() {
+        let channel: ChatChannel = .mock(cid: .unique)
+        let user: ChatUser = .mock(id: .unique)
+        
+        let closingGroupMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Closes the group",
+            author: user,
+            isSentByCurrentUser: true
+        )
+        let groupMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Included into the group",
+            author: user,
+            createdAt: closingGroupMessage.createdAt.addingTimeInterval(-maxTimeInterval / 2),
+            isSentByCurrentUser: true
+        )
+        let openingGroupMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Opens the group",
+            author: user,
+            createdAt: groupMessage.createdAt.addingTimeInterval(-maxTimeInterval),
+            isSentByCurrentUser: true
+        )
+        
+        channelControllerMock.simulateInitial(
+            channel: channel,
+            messages: [
+                closingGroupMessage,
+                groupMessage,
+                openingGroupMessage
+            ],
+            state: .localDataFetched
+        )
+
+        AssertSnapshot(vc, variants: [.defaultLight])
+    }
+    
+    func test_whenTimeIntervalBetween2MessagesFromTheCurrentUserIsMoreThan1min_messagesAreNotGrouped() {
+        let channel: ChatChannel = .mock(cid: .unique)
+        let user: ChatUser = .mock(id: .unique)
+        
+        let message1: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Separate message 1",
+            author: user,
+            isSentByCurrentUser: true
+        )
+        let message2: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Separate message 2",
+            author: user,
+            createdAt: message1.createdAt.addingTimeInterval(-2 * maxTimeInterval),
+            isSentByCurrentUser: true
+        )
+        
+        channelControllerMock.simulateInitial(
+            channel: channel,
+            messages: [
+                message1,
+                message2
+            ],
+            state: .localDataFetched
+        )
+
+        AssertSnapshot(vc, variants: [.defaultLight])
+    }
+    
+    func test_whenTimeIntervalBetween2MessagesFromAnotherUserIs1minOrLess_messagesAreGrouped() {
+        let channel: ChatChannel = .mock(cid: .unique)
+        let user: ChatUser = .mock(id: .unique)
+        
+        let closingGroupMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Closes the group",
+            author: user
+        )
+        let groupMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Included into the group",
+            author: user,
+            createdAt: closingGroupMessage.createdAt.addingTimeInterval(-maxTimeInterval / 2)
+        )
+        let openingGroupMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Opens the group",
+            author: user,
+            createdAt: groupMessage.createdAt.addingTimeInterval(-maxTimeInterval)
+        )
+        
+        channelControllerMock.simulateInitial(
+            channel: channel,
+            messages: [
+                closingGroupMessage,
+                groupMessage,
+                openingGroupMessage
+            ],
+            state: .localDataFetched
+        )
+        
+        AssertSnapshot(vc, variants: [.defaultLight])
+    }
+    
+    func test_whenTimeIntervalBetween2MessagesFromAnotherUserIsMoreThan1min_messagesAreNotGrouped() {
+        let channel: ChatChannel = .mock(cid: .unique)
+        let user: ChatUser = .mock(id: .unique)
+        
+        let message1: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Separate message 1",
+            author: user
+        )
+        let message2: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Separate message 2",
+            author: user,
+            createdAt: message1.createdAt.addingTimeInterval(-2 * maxTimeInterval)
+        )
+        
+        channelControllerMock.simulateInitial(
+            channel: channel,
+            messages: [
+                message1,
+                message2
+            ],
+            state: .localDataFetched
+        )
+
+        AssertSnapshot(vc, variants: [.defaultLight])
+    }
+    
+    func test_whenMessageFromCurrentUserIsFollowedByErrorMessage_messagesAreNotGrouped() {
+        let channel: ChatChannel = .mock(cid: .unique)
+        let user: ChatUser = .mock(id: .unique)
+        
+        let errorMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Message didn't pass moderation",
+            type: .error,
+            author: user,
+            isSentByCurrentUser: true
+        )
+        let message: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "When the message is followed by error message, it ends the group",
+            author: user,
+            createdAt: errorMessage.createdAt.addingTimeInterval(-(maxTimeInterval / 2)),
+            isSentByCurrentUser: true
+        )
+        
+        channelControllerMock.simulateInitial(
+            channel: channel,
+            messages: [
+                errorMessage,
+                message
+            ],
+            state: .localDataFetched
+        )
+
+        AssertSnapshot(vc, variants: [.defaultLight])
+    }
+    
+    func test_whenMessageFromCurrentUserIsFollowedBySystemMessage_messagesAreNotGrouped() {
+        let channel: ChatChannel = .mock(cid: .unique)
+        let user: ChatUser = .mock(id: .unique)
+        
+        let systemMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "Cooldown was changed to 10 sec",
+            type: .system,
+            author: user,
+            isSentByCurrentUser: true
+        )
+        let message: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "When the message is followed by system message, it ends the group",
+            author: user,
+            createdAt: systemMessage.createdAt.addingTimeInterval(-(maxTimeInterval / 2)),
+            isSentByCurrentUser: true
+        )
+        
+        channelControllerMock.simulateInitial(
+            channel: channel,
+            messages: [
+                systemMessage,
+                message
+            ],
+            state: .localDataFetched
+        )
+
+        AssertSnapshot(vc, variants: [.defaultLight])
+    }
+    
+    func test_whenMessageFromCurrentUserIsFollowedByEphemeralMessage_messagesAreNotGrouped() {
+        let channel: ChatChannel = .mock(cid: .unique)
+        let user: ChatUser = .mock(id: .unique)
+        
+        let ephemeralMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "/giffy wow",
+            type: .ephemeral,
+            author: user,
+            attachments: [
+                ChatMessageGiphyAttachment(
+                    id: .unique,
+                    type: .giphy,
+                    payload: GiphyAttachmentPayload(
+                        title: "wow",
+                        previewURL: .localYodaImage,
+                        actions: [
+                            .init(
+                                name: "Send",
+                                value: "Send",
+                                style: .primary,
+                                type: .button,
+                                text: "Send"
+                            ),
+                            .init(
+                                name: "Shuffle",
+                                value: "Shuffle",
+                                style: .default,
+                                type: .button,
+                                text: "Shuffle"
+                            ),
+                            .init(
+                                name: "Cancel",
+                                value: "Cancel",
+                                style: .default,
+                                type: .button,
+                                text: "Cancel"
+                            )
+                        ]
+                    ),
+                    uploadingState: nil
+                ).asAnyAttachment
+            ],
+            isSentByCurrentUser: true
+        )
+        let message: ChatMessage = .mock(
+            id: .unique,
+            cid: channel.cid,
+            text: "When the message is followed by ephemeral message, it ends the group",
+            author: user,
+            createdAt: ephemeralMessage.createdAt.addingTimeInterval(-(maxTimeInterval / 2)),
+            isSentByCurrentUser: true
+        )
+        
+        channelControllerMock.simulateInitial(
+            channel: channel,
+            messages: [
+                ephemeralMessage,
+                message
+            ],
+            state: .localDataFetched
+        )
+
+        AssertSnapshot(vc, variants: [.defaultLight])
+    }
 }
 
 private extension ChatChannelVC_Tests {
@@ -266,6 +538,7 @@ private extension ChatChannelVC_Tests {
             id: .unique,
             cid: .unique,
             text: text,
+            type: .deleted,
             author: .mock(id: .unique),
             deletedAt: Date(),
             isSentByCurrentUser: isSentByCurrentUser
@@ -273,7 +546,7 @@ private extension ChatChannelVC_Tests {
     }
 }
 
-private class ChatChannelHeaderView_Mock: ChatChannelHeaderView {
+private class ChatChannelHeaderViewMock: ChatChannelHeaderView {
     override var currentUserId: UserId? {
         .unique
     }

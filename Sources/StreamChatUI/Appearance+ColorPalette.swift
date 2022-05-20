@@ -83,6 +83,7 @@ public extension Appearance {
         public var groupDetailBackground: UIColor = .groupDetailBackground
         public var groupDetailContainerBG: UIColor = .groupDetailContainerBG
         public var showMoreButtonBg: UIColor = .init(rgb: 0x38383A)
+        public var accentPrimary: UIColor = .streamAccentPrimary
     }
 }
 
@@ -103,6 +104,7 @@ private extension UIColor {
     static let incommingMessageColor = mode(0x3B3B3D, lightAlpha: 1.0, 0x3B3B3D, darkAlpha: 1.0)
     static let searchPlaceHolder = mode(0x878B95, lightAlpha: 1.0, 0x878B95, darkAlpha: 1.0)
     static let placeHolderBalanceBG = mode(0x37393C, lightAlpha: 1.0, 0x37393C, darkAlpha: 1.0)
+    static let streamAccentPrimary = mode(0x005fff, 0x337eff)
     
     static let streamBlack = mode(0x000000, 0xffffff)
     static let streamGray = mode(0x7a7a7a, 0x7a7a7a)

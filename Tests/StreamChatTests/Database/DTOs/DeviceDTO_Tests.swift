@@ -6,16 +6,17 @@
 @testable import StreamChatTestTools
 import XCTest
 
-class DeviceDTO_Tests: XCTestCase {
+final class DeviceDTO_Tests: XCTestCase {
     var database: DatabaseContainer!
     
     override func setUp() {
         super.setUp()
-        database = DatabaseContainerMock()
+        database = DatabaseContainer_Spy()
     }
     
     override func tearDown() {
         AssertAsync.canBeReleased(&database)
+        database = nil
         super.tearDown()
     }
     
@@ -31,7 +32,7 @@ class DeviceDTO_Tests: XCTestCase {
         }
         
         // Get current user from DB
-        let loadedCurrentUser: CurrentChatUser? = database.viewContext.currentUser?.asModel()
+        let loadedCurrentUser: CurrentChatUser? = try database.viewContext.currentUser?.asModel()
         
         // Check if fields are correct
         XCTAssertEqual(loadedCurrentUser?.devices.count, 2)

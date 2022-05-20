@@ -5,7 +5,6 @@
 import Foundation
 
 enum SyncError: Error {
-    case localStorageDisabled
     case noNeedToSync
     case tooManyEvents(Error)
     case syncEndpointFailed(Error)
@@ -14,7 +13,7 @@ enum SyncError: Error {
 
     var shouldRetry: Bool {
         switch self {
-        case .localStorageDisabled, .noNeedToSync, .tooManyEvents, .couldNotUpdateUserValue:
+        case .noNeedToSync, .tooManyEvents, .couldNotUpdateUserValue:
             return false
         case .syncEndpointFailed, .failedFetchingChannels:
             return true
@@ -34,7 +33,6 @@ class SyncRepository {
     private let apiClient: APIClient
     let activeChannelControllers: NSHashTable<ChatChannelController>
     let activeChannelListControllers: NSHashTable<ChatChannelListController>
-    let channelRepository: ChannelListUpdater
     let offlineRequestsRepository: OfflineRequestsRepository
     let eventNotificationCenter: EventNotificationCenter
 
@@ -49,7 +47,6 @@ class SyncRepository {
         config: ChatClientConfig,
         activeChannelControllers: NSHashTable<ChatChannelController>,
         activeChannelListControllers: NSHashTable<ChatChannelListController>,
-        channelRepository: ChannelListUpdater,
         offlineRequestsRepository: OfflineRequestsRepository,
         eventNotificationCenter: EventNotificationCenter,
         database: DatabaseContainer,
@@ -58,11 +55,36 @@ class SyncRepository {
         self.config = config
         self.activeChannelControllers = activeChannelControllers
         self.activeChannelListControllers = activeChannelListControllers
-        self.channelRepository = channelRepository
         self.offlineRequestsRepository = offlineRequestsRepository
         self.eventNotificationCenter = eventNotificationCenter
         self.database = database
         self.apiClient = apiClient
+    }
+    
+    deinit {
+        cancelRecoveryFlow()
+    }
+    
+    func syncLocalState(completion: @escaping () -> Void) {
+        cancelRecoveryFlow()
+        
+        getUser { [weak self] in
+            guard let currentUser = $0 else {
+                log.error("Current user must exist", subsystems: .offlineSupport)
+                completion()
+                return
+            }
+            
+            guard let lastSyncAt = currentUser.lastSynchedEventDate else {
+                log.info("It's the first session of the current user, skipping recovery flow", subsystems: .offlineSupport)
+                self?.updateUserValue({ $0?.lastSynchedEventDate = Date() }) { _ in
+                    completion()
+                }
+                return
+            }
+            
+            self?.syncLocalState(lastSyncAt: lastSyncAt, completion: completion)
+        }
     }
 
     /// Syncs the local state with the server to make sure the local database is up to date.
@@ -72,15 +94,13 @@ class SyncRepository {
     /// 1. Call `/sync` endpoint and get missing events for all locally existed channels
     /// 2. Start watching open channels
     /// 3. Refetch channel lists queries, link only what backend returns (the 1st page)
-    /// 4. Clean up local message history for channels that are outdated/will get outdated
+    /// 4. Clean up unwanted channels
     /// 5. Run offline actions requests
     ///
     /// - Parameter completion: A block that will get executed upon completion of the synchronization
-    func syncLocalState(completion: @escaping () -> Void) {
-        operationQueue.cancelAllOperations()
-
+    private func syncLocalState(lastSyncAt: Date, completion: @escaping () -> Void) {
         log.info("Starting to recover offline state", subsystems: .offlineSupport)
-        let context = SyncContext()
+        let context = SyncContext(lastSyncAt: lastSyncAt)
         var operations: [Operation] = []
 
         // Enter recovery mode so no other requests are triggered.
@@ -99,18 +119,19 @@ class SyncRepository {
         operations.append(contentsOf: watchChannelOperations)
 
         // 3. Refetch channel lists queries, link only what backend returns (the 1st page)
-        // 4. Clean up local message history for channels that are outdated/will get outdated
         // We use `context.synchedChannelIds` to keep track of the channels that were synched both in the previous step and
         // after each ChannelListController recovery.
         let refetchChannelListQueryOperations: [AsyncOperation] = activeChannelListControllers.allObjects
             .map { controller in
                 RefetchChannelListQueryOperation(
                     controller: controller,
-                    channelRepository: channelRepository,
                     context: context
                 )
             }
         operations.append(contentsOf: refetchChannelListQueryOperations)
+
+        // 4. Clean up unwanted channels
+        operations.append(DeleteUnwantedChannelsOperation(database: database, context: context))
 
         // 5. Run offline actions requests
         if config.isLocalStorageEnabled {
@@ -140,9 +161,26 @@ class SyncRepository {
     /// Syncs the events for the active chat channels using the last sync date.
     /// - Parameter completion: A block that will get executed upon completion of the synchronization
     func syncExistingChannelsEvents(completion: @escaping (Result<[ChannelId], SyncError>) -> Void) {
-        getChannelIds { [weak self] channelIds in
-            self?.syncChannelsEvents(channelIds: channelIds, isRecovery: false, completion: completion)
+        getUser { [weak self] currentUser in
+            guard let lastSyncAt = currentUser?.lastSynchedEventDate else {
+                completion(.failure(.noNeedToSync))
+                return
+            }
+            
+            self?.getChannelIds { channelIds in
+                self?.syncChannelsEvents(
+                    channelIds: channelIds,
+                    lastSyncAt: lastSyncAt,
+                    isRecovery: false,
+                    completion: completion
+                )
+            }
         }
+    }
+    
+    func cancelRecoveryFlow() {
+        operationQueue.cancelAllOperations()
+        apiClient.exitRecoveryMode()
     }
 
     private func getChannelIds(completion: @escaping ([ChannelId]) -> Void) {
@@ -157,38 +195,23 @@ class SyncRepository {
 
     func syncChannelsEvents(
         channelIds: [ChannelId],
+        lastSyncAt: Date,
         isRecovery: Bool,
         completion: @escaping (Result<[ChannelId], SyncError>) -> Void
     ) {
-        guard !channelIds.isEmpty else {
-            completion(.success([]))
+        // In recovery mode, `/sync` should always be called.
+        // Otherwise, the cooldown is checked.
+        guard isRecovery || Date().timeIntervalSince(lastSyncAt) > syncCooldown else {
+            completion(.failure(.noNeedToSync))
             return
         }
 
-        let syncCooldown = self.syncCooldown
-        getUser { [weak self] user in
-            guard let lastSyncAt = user?.lastSynchedEventDate else {
-                // That's the first session of the current user. Bump `lastSyncAt` with current time and return.
-                self?.updateUserValue({
-                    $0?.lastSynchedEventDate = Date()
-                }, completion: { _ in
-                    completion(.failure(.noNeedToSync))
-                })
-                return
-            }
-
-            guard Date().timeIntervalSince(lastSyncAt) > syncCooldown else {
-                completion(.failure(.noNeedToSync))
-                return
-            }
-
-            self?.syncMissingEvents(
-                using: lastSyncAt,
-                channelIds: channelIds,
-                isRecoveryRequest: isRecovery,
-                completion: completion
-            )
-        }
+        syncMissingEvents(
+            using: lastSyncAt,
+            channelIds: channelIds,
+            isRecoveryRequest: isRecovery,
+            completion: completion
+        )
     }
 
     private func getUser(completion: @escaping (CurrentUserDTO?) -> Void) {
@@ -206,6 +229,12 @@ class SyncRepository {
         completion: @escaping (Result<[ChannelId], SyncError>) -> Void
     ) {
         log.info("Synching events for existing channels since \(date)", subsystems: .offlineSupport)
+        
+        guard !channelIds.isEmpty else {
+            completion(.success([]))
+            return
+        }
+        
         let endpoint: Endpoint<MissingEventsPayload> = .missingEvents(since: date, cids: channelIds)
         let requestCompletion: (Result<MissingEventsPayload, Error>) -> Void = { [weak self] result in
             switch result {

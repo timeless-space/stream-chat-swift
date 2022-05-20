@@ -34,6 +34,15 @@ public protocol ChatMessageContentViewDelegate: AnyObject {
     /// - Parameter indexPath: The index path of the cell displaying the content view. Equals to `nil` when
     /// the content view is displayed outside the collection/table view.
     func messageContentViewDidTapOnReactionsView(_ indexPath: IndexPath?)
+    
+    /// Gets called when delivery status indicator is tapped.
+    /// - Parameter indexPath: The index path of the cell displaying the content view. Equals to `nil` when
+    /// the content view is displayed outside the collection/table view.
+    func messageContentViewDidTapOnDeliveryStatusIndicator(_ indexPath: IndexPath?)
+}
+
+public extension ChatMessageContentViewDelegate {
+    func messageContentViewDidTapOnDeliveryStatusIndicator(_ indexPath: IndexPath?) {}
 }
 
 /// A view that displays the message content.
@@ -51,8 +60,14 @@ open class ChatMessageContentView: _View, ThemeProvider {
     /// The delegate responsible for action handling.
     public weak var delegate: ChatMessageContentViewDelegate?
 
+    // TODO: Aggregate message and channel under one `struct Content` roof in v5
     /// The message this view displays.
     public var content: ChatMessage? {
+        didSet { updateContentIfNeeded() }
+    }
+    
+    /// The channel the message is sent to.
+    open var channel: ChatChannel? {
         didSet { updateContentIfNeeded() }
     }
 
@@ -95,13 +110,13 @@ open class ChatMessageContentView: _View, ThemeProvider {
 
     /// Shows the icon part of the indicator saying the message is visible for current user only.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options
-    /// containing `.onlyVisibleForYouIndicator`.
-    public private(set) var onlyVisibleForYouIconImageView: UIImageView?
+    /// containing `.onlyVisibleToYouIndicator`.
+    public private(set) var onlyVisibleToYouImageView: UIImageView?
 
     /// Shows the text part of the indicator saying the message is visible for current user only.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options
-    /// containing `.onlyVisibleForYouIndicator`
-    public private(set) var onlyVisibleForYouLabel: UILabel?
+    /// containing `.onlyVisibleToYouIndicator`
+    public private(set) var onlyVisibleToYouLabel: UILabel?
 
     /// Shows error indicator.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options containing `.errorIndicator`.
@@ -131,6 +146,11 @@ open class ChatMessageContentView: _View, ThemeProvider {
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options containing `.threadInfo`.
     public private(set) var threadArrowView: ChatThreadArrowView?
 
+    /// Shows message delivery status.
+    /// Exists if `layout(options: ChatMessageLayoutOption)` was invoked with the options
+    /// containing `.messageDeliveryStatus`.
+    public private(set) var deliveryStatusView: ChatMessageDeliveryStatusView?
+    
     /// An object responsible for injecting the views needed to display the attachments content.
     public private(set) var attachmentViewInjector: AttachmentViewInjector?
 
@@ -139,26 +159,29 @@ open class ChatMessageContentView: _View, ThemeProvider {
     /// The root container which holds `authorAvatarView` (or the avatar padding) and `bubbleThreadMetaContainer`.
     public lazy var mainContainer = ContainerStackView(axis: .horizontal)
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "mainContainer")
 
-    /// The container which holds `bubbleView` (or `bubbleContentContainer` directly), `threadInfoContainer`, and `metadataView`
-    public private(set) lazy var bubbleThreadMetaContainer = ContainerStackView(axis: .vertical, spacing: 4)
+    /// The container which holds `bubbleView` (or `bubbleContentContainer` directly), `threadInfoContainer`, and `footnoteContainer`
+    public private(set) lazy var bubbleThreadFootnoteContainer = ContainerStackView(axis: .vertical, spacing: 4)
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "bubbleThreadFootnoteContainer")
 
     /// The container which holds `quotedMessageView` and `textView`. It will be added as a subview to `bubbleView` if it exists
     /// otherwise it will be added to `bubbleThreadMetaContainer`.
     public private(set) lazy var bubbleContentContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "bubbleContentContainer")
 
     /// The container which holds `threadArrowView`, `threadAvatarView`, and `threadReplyCountButton`
     public private(set) var threadInfoContainer: ContainerStackView?
 
-    /// The container which holds `timestampLabel`, `authorNameLabel`, and `onlyVisibleForYouContainer`.
+    /// The container which holds `timestampLabel`, `authorNameLabel`, and `onlyVisibleToYouContainer`.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with any of
-    /// `.timestamp/.authorName/.onlyVisibleForYouIndicator` options
-    public private(set) var metadataContainer: ContainerStackView?
+    /// `.timestamp/.authorName/.onlyVisibleToYouIndicator` options
+    public private(set) var footnoteContainer: ContainerStackView?
 
-    /// The container which holds `onlyVisibleForYouIconImageView` and `onlyVisibleForYouLabel`
-    public private(set) var onlyVisibleForYouContainer: ContainerStackView?
+    /// The container which holds `onlyVisibleToYouImageView` and `onlyVisibleToYouLabel`
+    public private(set) var onlyVisibleToYouContainer: ContainerStackView?
 
     /// The container which holds `errorIndicatorView`
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options containing `.errorIndicator`.
@@ -184,6 +207,8 @@ open class ChatMessageContentView: _View, ThemeProvider {
         attachmentViewInjector = attachmentViewInjectorType?.init(self)
         layoutOptions = options
     }
+    
+    // swiftlint:disable function_body_length
 
     /// Instantiates the subviews and laid them out based on the received options.
     /// - Parameter options: The options describing the layout of the content view.
@@ -212,7 +237,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
         }
 
         // Bubble - Thread - Metadata
-        bubbleThreadMetaContainer.alignment = attachmentViewInjector?.fillAllAvailableWidth == true
+        bubbleThreadFootnoteContainer.alignment = attachmentViewInjector?.fillAllAvailableWidth == true
             ? .fill
             : options.contains(.flipped) ? .trailing : .leading
 
@@ -225,15 +250,15 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 mainContainer.layoutMargins.bottom = 4
             }
 
-            bubbleThreadMetaContainer.addArrangedSubview(bubbleView)
+            bubbleThreadFootnoteContainer.addArrangedSubview(bubbleView)
         } else {
-            bubbleThreadMetaContainer.addArrangedSubview(bubbleContentContainer)
+            bubbleThreadFootnoteContainer.addArrangedSubview(bubbleContentContainer)
         }
 
         // Thread info
         if options.contains(.threadInfo) {
-            threadInfoContainer = ContainerStackView()
-            bubbleThreadMetaContainer.addArrangedSubview(threadInfoContainer!)
+            threadInfoContainer = ContainerStackView().withAccessibilityIdentifier(identifier: "threadInfoContainer")
+            bubbleThreadFootnoteContainer.addArrangedSubview(threadInfoContainer!)
 
             let arrowView = createThreadArrowView()
             let threadAvatarView = createThreadAvatarView()
@@ -267,29 +292,34 @@ open class ChatMessageContentView: _View, ThemeProvider {
         }
 
         // Metadata
-        if options.hasMetadata {
-            var metadataSubviews: [UIView] = []
+        if options.hasFootnoteOptions {
+            var footnoteSubviews: [UIView] = []
             
             if options.contains(.authorName) {
-                metadataSubviews.append(createAuthorNameLabel())
+                footnoteSubviews.append(createAuthorNameLabel())
             }
             if options.contains(.timestamp) {
-                metadataSubviews.append(createTimestampLabel())
+                footnoteSubviews.append(createTimestampLabel())
             }
-            if options.contains(.onlyVisibleForYouIndicator) {
-                onlyVisibleForYouContainer = ContainerStackView()
-                onlyVisibleForYouContainer!.addArrangedSubview(createOnlyVisibleForYouIconImageView())
-                onlyVisibleForYouContainer!.addArrangedSubview(createOnlyVisibleForYouLabel())
-                metadataSubviews.append(onlyVisibleForYouContainer!)
+            if options.contains(.onlyVisibleToYouIndicator) {
+                onlyVisibleToYouContainer = ContainerStackView()
+                    .withAccessibilityIdentifier(identifier: "onlyVisibleToYouContainer")
+                onlyVisibleToYouContainer!.addArrangedSubview(createOnlyVisibleToYouImageView())
+                onlyVisibleToYouContainer!.addArrangedSubview(createOnlyVisibleToYouLabel())
+                footnoteSubviews.append(onlyVisibleToYouContainer!)
+            }
+            if options.contains(.deliveryStatusIndicator) {
+                footnoteSubviews.append(createDeliveryStatusView())
             }
             if attachmentViewInjector?.fillAllAvailableWidth == true {
-                metadataSubviews.append(.spacer(axis: .horizontal))
+                footnoteSubviews.append(.spacer(axis: .horizontal))
             }
-
-            metadataContainer = ContainerStackView(
-                arrangedSubviews: options.contains(.flipped) ? metadataSubviews.reversed() : metadataSubviews
-            )
-            bubbleThreadMetaContainer.addArrangedSubview(metadataContainer!)
+            
+            footnoteContainer = ContainerStackView(
+                spacing: 4,
+                arrangedSubviews: options.contains(.flipped) ? footnoteSubviews.reversed() : footnoteSubviews
+            ).withAccessibilityIdentifier(identifier: "footnoteContainer")
+            bubbleThreadFootnoteContainer.addArrangedSubview(footnoteContainer!)
         }
 
         // Error
@@ -359,11 +389,11 @@ open class ChatMessageContentView: _View, ThemeProvider {
         let mainContainerSubviews = [
             authorAvatarView ?? authorAvatarSpacer,
             errorIndicatorContainer,
-            bubbleThreadMetaContainer
+            bubbleThreadFootnoteContainer
         ].compactMap { $0 }
 
         if options.contains(.centered) {
-            mainContainer.addArrangedSubviews([bubbleThreadMetaContainer])
+            mainContainer.addArrangedSubviews([bubbleThreadFootnoteContainer])
             
             constraintsToActivate += [
                 mainContainer.centerXAnchor
@@ -375,7 +405,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
             if let errorIndicator = errorIndicatorView {
                 mainContainer.setCustomSpacing(
                     .init(-errorIndicator.intrinsicContentSize.width / 2),
-                    after: bubbleThreadMetaContainer
+                    after: bubbleThreadFootnoteContainer
                 )
             }
 
@@ -415,6 +445,8 @@ open class ChatMessageContentView: _View, ThemeProvider {
 
         NSLayoutConstraint.activate(constraintsToActivate)
     }
+    
+    // swiftlint:enable function_body_length
 
     // When the content is updated, we want to make sure there
     // are no unwanted animations caused by the ContainerStackView.
@@ -505,7 +537,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
         }
 
         // Metadata
-        onlyVisibleForYouContainer?.isVisible = content?.isOnlyVisibleForCurrentUser == true
+        onlyVisibleToYouContainer?.isVisible = layoutOptions?.contains(.onlyVisibleToYouIndicator) == true
 
         authorNameLabel?.isVisible = layoutOptions?.contains(.authorName) == true
         authorNameLabel?.text = content?.author.name
@@ -548,10 +580,16 @@ open class ChatMessageContentView: _View, ThemeProvider {
         reactionsView?.content = content.map {
             .init(
                 useBigIcons: false,
-                reactions: $0.reactions,
+                reactions: $0.reactionsData,
                 didTapOnReaction: nil
             )
         }
+        
+        // Delivery status
+        deliveryStatusView?.content = {
+            guard let channel = channel, let message = content else { return nil }
+            return .init(message: message, channel: channel)
+        }()
     }
 
     override open func tintColorDidChange() {
@@ -595,6 +633,11 @@ open class ChatMessageContentView: _View, ThemeProvider {
 
     @objc open func handleTapOnReactionsView() {
         delegate?.messageContentViewDidTapOnReactionsView(indexPath?())
+    }
+    
+    /// Handles tap on `deliveryStatusView` and forwards the action to the delegate.
+    @objc open func handleTapOnDeliveryStatusView() {
+        delegate?.messageContentViewDidTapOnDeliveryStatusIndicator(indexPath?())
     }
 	
     // MARK: - Setups
@@ -792,57 +835,74 @@ open class ChatMessageContentView: _View, ThemeProvider {
         return authorNameLabel!
     }
 
-    /// Instantiates, configures and assigns `onlyVisibleForYouIconImageView` when called for the first time.
-    /// - Returns: The `onlyVisibleForYouIconImageView` subview.
-    open func createOnlyVisibleForYouIconImageView() -> UIImageView {
-        if onlyVisibleForYouIconImageView == nil {
-            onlyVisibleForYouIconImageView = UIImageView()
+    /// Instantiates, configures and assigns `onlyVisibleToYouImageView` when called for the first time.
+    /// - Returns: The `onlyVisibleToYouImageView` subview.
+    open func createOnlyVisibleToYouImageView() -> UIImageView {
+        if onlyVisibleToYouImageView == nil {
+            onlyVisibleToYouImageView = UIImageView()
                 .withoutAutoresizingMaskConstraints
-                .withAccessibilityIdentifier(identifier: "onlyVisibleForYouIconImageView")
-
-            onlyVisibleForYouIconImageView!.tintColor = appearance.colorPalette.subtitleText
-            onlyVisibleForYouIconImageView!.image = appearance.images.onlyVisibleToCurrentUser
-            onlyVisibleForYouIconImageView!.contentMode = .scaleAspectFit
+                .withAccessibilityIdentifier(identifier: "onlyVisibleToYouImageView")
+            onlyVisibleToYouImageView!.tintColor = appearance.colorPalette.subtitleText
+            onlyVisibleToYouImageView!.image = appearance.images.onlyVisibleToCurrentUser
+            onlyVisibleToYouImageView!.contentMode = .scaleAspectFit
         }
-        return onlyVisibleForYouIconImageView!
+        return onlyVisibleToYouImageView!
     }
 
-    /// Instantiates, configures and assigns `onlyVisibleForYouLabel` when called for the first time.
-    /// - Returns: The `onlyVisibleForYouLabel` subview.
-    open func createOnlyVisibleForYouLabel() -> UILabel {
-        if onlyVisibleForYouLabel == nil {
-            onlyVisibleForYouLabel = UILabel()
+    /// Instantiates, configures and assigns `onlyVisibleToYouLabel` when called for the first time.
+    /// - Returns: The `onlyVisibleToYouLabel` subview.
+    open func createOnlyVisibleToYouLabel() -> UILabel {
+        if onlyVisibleToYouLabel == nil {
+            onlyVisibleToYouLabel = UILabel()
                 .withAdjustingFontForContentSizeCategory
                 .withBidirectionalLanguagesSupport
                 .withoutAutoresizingMaskConstraints
-                .withAccessibilityIdentifier(identifier: "onlyVisibleForYouLabel")
+                .withAccessibilityIdentifier(identifier: "onlyVisibleToYouLabel")
 
-            onlyVisibleForYouLabel!.textColor = appearance.colorPalette.subtitleText
-            onlyVisibleForYouLabel!.text = L10n.Message.onlyVisibleToYou
-            onlyVisibleForYouLabel!.font = appearance.fonts.footnote
+            onlyVisibleToYouLabel!.textColor = appearance.colorPalette.subtitleText
+            onlyVisibleToYouLabel!.text = L10n.Message.onlyVisibleToYou
+            onlyVisibleToYouLabel!.font = appearance.fonts.footnote
         }
-        return onlyVisibleForYouLabel!
+        return onlyVisibleToYouLabel!
+    }
+    
+    /// Instantiates, configures and assigns `deliveryStatusView` when called for the first time.
+    /// - Returns: The `deliveryStatusView` subview.
+    open func createDeliveryStatusView() -> ChatMessageDeliveryStatusView {
+        if deliveryStatusView == nil {
+            deliveryStatusView = components
+                .messageDeliveryStatusView
+                .init()
+                .withAccessibilityIdentifier(identifier: "deliveryStatusView")
+            
+            deliveryStatusView!.addTarget(self, action: #selector(handleTapOnDeliveryStatusView), for: .touchUpInside)
+        }
+        return deliveryStatusView!
     }
 }
 
 private extension ChatMessage {
-    var reactions: [ChatMessageReactionData] {
+    var reactionsData: [ChatMessageReactionData] {
         let userReactionIDs = Set(currentUserReactions.map(\.type))
         return reactionScores
-            .sorted { $0.key.rawValue < $1.key.rawValue }
-            .map { .init(type: $0.key, score: $0.value, isChosenByCurrentUser: userReactionIDs.contains($0.key)) }
+            .map { ChatMessageReactionData(
+                type: $0.key,
+                score: $0.value,
+                isChosenByCurrentUser: userReactionIDs.contains($0.key)
+            ) }
     }
 }
 
 private extension ChatMessageLayoutOptions {
-    static let metadata: Self = [
-        .onlyVisibleForYouIndicator,
+    static let footnote: Self = [
+        .onlyVisibleToYouIndicator,
         .authorName,
-        .timestamp
+        .timestamp,
+        .deliveryStatusIndicator
     ]
     
-    var hasMetadata: Bool {
-        !intersection(.metadata).isEmpty
+    var hasFootnoteOptions: Bool {
+        !isDisjoint(with: .footnote)
     }
 }
 
@@ -855,5 +915,42 @@ extension ChatMessageLayoutOptions {
         } else {
             return CACornerMask.all.subtracting(.layerMinXMaxYCorner)
         }
+    }
+}
+
+extension ChatMessageContentView {
+    @available(*, deprecated, renamed: "onlyVisibleToYouImageView")
+    public var onlyVisibleForYouIconImageView: UIImageView? {
+        onlyVisibleToYouImageView
+    }
+    
+    @available(*, deprecated, renamed: "onlyVisibleToYouLabel")
+    public var onlyVisibleForYouLabel: UILabel? {
+        onlyVisibleToYouLabel
+    }
+    
+    @available(*, deprecated, renamed: "onlyVisibleToYouContainer")
+    public var onlyVisibleForYouContainer: ContainerStackView? {
+        onlyVisibleToYouContainer
+    }
+    
+    @available(*, deprecated, renamed: "footnoteContainer")
+    public var metadataContainer: ContainerStackView? {
+        footnoteContainer
+    }
+    
+    @available(*, deprecated, renamed: "bubbleThreadFootnoteContainer")
+    public var bubbleThreadMetaContainer: ContainerStackView? {
+        bubbleThreadFootnoteContainer
+    }
+    
+    @available(*, deprecated, renamed: "createOnlyVisibleToYouImageView")
+    open func createOnlyVisibleForYouIconImageView() -> UIImageView {
+        createOnlyVisibleToYouImageView()
+    }
+    
+    @available(*, deprecated, renamed: "createOnlyVisibleToYouLabel")
+    open func createOnlyVisibleForYouLabel() -> UILabel {
+        createOnlyVisibleToYouLabel()
     }
 }

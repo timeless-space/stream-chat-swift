@@ -6,27 +6,29 @@
 @testable import StreamChatTestTools
 import XCTest
 
-class ChannelUpdater_Tests: XCTestCase {
-    var apiClient: APIClientMock!
-    var database: DatabaseContainerMock!
+final class ChannelUpdater_Tests: XCTestCase {
+    var apiClient: APIClient_Spy!
+    var database: DatabaseContainer_Spy!
     
     var channelUpdater: ChannelUpdater!
     
     override func setUp() {
         super.setUp()
 
-        apiClient = APIClientMock()
-        database = DatabaseContainerMock()
+        apiClient = APIClient_Spy()
+        database = DatabaseContainer_Spy()
         
         channelUpdater = ChannelUpdater(database: database, apiClient: apiClient)
     }
     
     override func tearDown() {
         apiClient.cleanUp()
+        apiClient = nil
         channelUpdater = nil
+
         AssertAsync.canBeReleased(&database)
         database = nil
-        
+
         super.tearDown()
     }
     
@@ -66,7 +68,7 @@ class ChannelUpdater_Tests: XCTestCase {
         
         // Assert the data is stored in the DB
         var channel: ChatChannel? {
-            database.viewContext.channel(cid: cid)?.asModel()
+            try? database.viewContext.channel(cid: cid)?.asModel()
         }
         AssertAsync {
             Assert.willBeTrue(channel != nil)
@@ -90,7 +92,7 @@ class ChannelUpdater_Tests: XCTestCase {
 
         // Assert the data is stored in the DB
         var channel: ChatChannel? {
-            database.viewContext.channel(cid: cid)?.asModel()
+            try? database.viewContext.channel(cid: cid)?.asModel()
         }
         AssertAsync {
             Assert.willBeTrue(channel != nil)
@@ -132,7 +134,7 @@ class ChannelUpdater_Tests: XCTestCase {
         var cid: ChannelId = .unique
 
         var channel: ChatChannel? {
-            database.viewContext.channel(cid: cid)?.asModel()
+            try? database.viewContext.channel(cid: cid)?.asModel()
         }
 
         let callback: (ChannelId) -> Void = {
@@ -160,7 +162,7 @@ class ChannelUpdater_Tests: XCTestCase {
         var cid: ChannelId = .unique
 
         var channel: ChatChannel? {
-            database.viewContext.channel(cid: cid)?.asModel()
+            try? database.viewContext.channel(cid: cid)?.asModel()
         }
 
         let callback: (ChannelId) -> Void = {
@@ -1320,7 +1322,7 @@ class ChannelUpdater_Tests: XCTestCase {
         try database.createChannel(cid: cid, withMessages: false)
         
         var channel: ChatChannel? {
-            database.viewContext.channel(cid: cid)?.asModel()
+            try? database.viewContext.channel(cid: cid)?.asModel()
         }
         
         // Assert that the dummy channel has a watcher

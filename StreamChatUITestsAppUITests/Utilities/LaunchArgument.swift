@@ -3,8 +3,9 @@
 //
 
 import Foundation
+import XCTest
 
-struct MockServerConfiguration {
+enum MockServerConfiguration {
     static var port = Int.random(in: 61000..<62000)
     static var websocketHost = "ws://localhost"
     static var httpHost = "http://localhost"
@@ -32,5 +33,17 @@ extension ProcessInfo {
 
     static subscript(_ environmentVariable: EnvironmentVariable) -> String? {
         processInfo.environment[environmentVariable.rawValue]
+    }
+}
+
+extension XCUIApplication {
+    func setLaunchArguments(_ args: LaunchArgument...) {
+        launchArguments.append(contentsOf: args.map { $0.rawValue })
+    }
+
+    func setEnvironmentVariables(_ envVars: [EnvironmentVariable: String]) {
+        envVars.forEach { envVar in
+            launchEnvironment[envVar.key.rawValue] = envVar.value
+        }
     }
 }

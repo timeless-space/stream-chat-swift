@@ -340,7 +340,7 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
             let observer = EntityDatabaseObserver(
                 context: self.client.databaseContainer.viewContext,
                 fetchRequest: ChannelDTO.fetchRequest(for: cid),
-                itemCreator: { $0.asModel() as ChatChannel }
+                itemCreator: { try $0.asModel() as ChatChannel }
             ).onChange { [weak self] change in
                 self?.delegateCallback { [weak self] in
                     guard let self = self else {
@@ -391,7 +391,7 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
                     deletedMessagesVisibility: deletedMessageVisibility ?? .visibleForCurrentUser,
                     shouldShowShadowedMessages: shouldShowShadowedMessages ?? false
                 ),
-                itemCreator: { $0.asModel() as ChatMessage }
+                itemCreator: { try $0.asModel() as ChatMessage }
             )
             observer.onChange = { [weak self] changes in
                 self?.delegateCallback { [weak self] in
@@ -544,6 +544,9 @@ public extension ChatChannelController {
     
     /// `true` if the channel has replies enabled. Defaults to `false` if the channel doesn't exist yet.
     var areRepliesEnabled: Bool { channel?.config.repliesEnabled == true }
+    
+    /// `true` if the channel has quotes enabled. Defaults to `false` if the channel doesn't exist yet.
+    var areQuotesEnabled: Bool { channel?.config.quotesEnabled == true }
     
     /// `true` if the channel has read events enabled. Defaults to `false` if the channel doesn't exist yet.
     var areReadEventsEnabled: Bool { channel?.config.readEventsEnabled == true }
@@ -1062,7 +1065,7 @@ public extension ChatChannelController {
     ///
     func markRead(completion: ((Error?) -> Void)? = nil) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
-        guard let cid = cid, isChannelAlreadyCreated else {
+        guard let channel = channel else {
             channelModificationFailed(completion)
             return
         }
@@ -1072,15 +1075,13 @@ public extension ChatChannelController {
             channelFeatureDisabled(feature: "read events", completion: completion)
             return
         }
-        
-        guard channel?.isUnread == true else {
-            callback {
-                completion?(nil)
-            }
-            return
-        }
 
-        guard let currentUserId = client.currentUserId else {
+        guard
+            let currentUserId = client.currentUserId,
+            let currentUserRead = channel.reads.first(where: { $0.user.id == currentUserId }),
+            let lastMessageAt = channel.lastMessageAt,
+            currentUserRead.lastReadAt < lastMessageAt
+        else {
             callback {
                 completion?(nil)
             }
@@ -1093,7 +1094,7 @@ public extension ChatChannelController {
 
         markingRead = true
 
-        updater.markRead(cid: cid, userId: currentUserId) { error in
+        updater.markRead(cid: channel.cid, userId: currentUserId) { error in
             self.callback {
                 self.markingRead = false
                 completion?(error)

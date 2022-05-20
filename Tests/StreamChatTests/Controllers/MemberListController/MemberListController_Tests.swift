@@ -39,6 +39,10 @@ final class MemberListController_Tests: XCTestCase {
             Assert.canBeReleased(&client)
             Assert.canBeReleased(&env)
         }
+
+        controller = nil
+        client = nil
+        env = nil
         
         super.tearDown()
     }
@@ -369,7 +373,14 @@ final class MemberListController_Tests: XCTestCase {
         }
         
         // Simulate database flush
-        try client.databaseContainer.removeAllData()
+        let exp = expectation(description: "removeAllData called")
+        client.databaseContainer.removeAllData { error in
+            if let error = error {
+                XCTFail("removeAllData failed with \(error)")
+            }
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1)
 
         // Assert `remove` entity changes are received by the delegate.
         AssertAsync {
@@ -457,8 +468,8 @@ final class MemberListController_Tests: XCTestCase {
 }
 
 private class TestEnvironment {
-    @Atomic var memberListUpdater: ChannelMemberListUpdaterMock?
-    @Atomic var memberListObserver: ListDatabaseObserverMock<ChatChannelMember, MemberDTO>?
+    @Atomic var memberListUpdater: ChannelMemberListUpdater_Mock?
+    @Atomic var memberListObserver: ListDatabaseObserver_Mock<ChatChannelMember, MemberDTO>?
     @Atomic var memberListObserverSynchronizeError: Error?
     
     lazy var environment: ChatChannelMemberListController.Environment = .init(

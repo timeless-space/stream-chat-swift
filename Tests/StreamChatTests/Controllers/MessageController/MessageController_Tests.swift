@@ -1380,7 +1380,7 @@ final class MessageController_Tests: XCTestCase {
         ]
         env.messageUpdater.loadReactions_result = .success(mockedReactions)
 
-        controller.loadNextReactions() { error in
+        controller.loadNextReactions { error in
             XCTAssertNil(error)
             exp.fulfill()
         }
@@ -1412,7 +1412,7 @@ final class MessageController_Tests: XCTestCase {
             .mock(type: "wow", author: .unique)
         ]
 
-        controller.loadNextReactions() { error in
+        controller.loadNextReactions { error in
             XCTAssertNil(error)
             exp.fulfill()
         }
@@ -1456,7 +1456,7 @@ final class MessageController_Tests: XCTestCase {
         ]
         env.messageUpdater.loadReactions_result = .success(mockedReactions)
 
-        controller.loadNextReactions() { error in
+        controller.loadNextReactions { error in
             XCTAssertNil(error)
             exp.fulfill()
         }
@@ -1969,9 +1969,9 @@ private class TestDelegate: QueueAwareDelegate, ChatMessageControllerDelegate {
 }
 
 private class TestEnvironment {
-    var messageUpdater: MessageUpdaterMock!
-    var messageObserver: EntityDatabaseObserverMock<ChatMessage, MessageDTO>!
-    var repliesObserver: ListDatabaseObserverMock<ChatMessage, MessageDTO>!
+    var messageUpdater: MessageUpdater_Mock!
+    var messageObserver: EntityDatabaseObserver_Mock<ChatMessage, MessageDTO>!
+    var repliesObserver: ListDatabaseObserver_Mock<ChatMessage, MessageDTO>!
 
     var messageObserver_synchronizeError: Error?
     
@@ -1987,7 +1987,7 @@ private class TestEnvironment {
                 return self.repliesObserver!
             },
             messageUpdaterBuilder: { [unowned self] in
-                self.messageUpdater = MessageUpdaterMock(
+                self.messageUpdater = MessageUpdater_Mock(
                     isLocalStorageEnabled: $0,
                     messageRepository: $1,
                     database: $2,

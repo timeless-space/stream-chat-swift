@@ -37,7 +37,7 @@ extension ListChange: CustomStringConvertible {
 
 extension ListChange {
     /// Returns the underlaying item that was changed.
-    var item: Item {
+    public var item: Item {
         switch self {
         case let .insert(item, _):
             return item
@@ -112,7 +112,7 @@ class ListDatabaseObserver<Item, DTO: NSManagedObject> {
     /// Used for observing the changes in the DB.
     private(set) var frc: NSFetchedResultsController<DTO>!
     
-    let itemCreator: (DTO) -> Item
+    let itemCreator: (DTO) throws -> Item
     let request: NSFetchRequest<DTO>
     let context: NSManagedObjectContext
     
@@ -135,7 +135,7 @@ class ListDatabaseObserver<Item, DTO: NSManagedObject> {
     init(
         context: NSManagedObjectContext,
         fetchRequest: NSFetchRequest<DTO>,
-        itemCreator: @escaping (DTO) -> Item,
+        itemCreator: @escaping (DTO) throws -> Item,
         fetchedResultsControllerType: NSFetchedResultsController<DTO>.Type = NSFetchedResultsController<DTO>.self
     ) {
         self.context = context
@@ -148,19 +148,9 @@ class ListDatabaseObserver<Item, DTO: NSManagedObject> {
             cacheName: nil
         )
         
-        _items.computeValue = { [weak frc] in
-            var result = LazyCachedMapCollection<Item>()
-            result = (frc?.fetchedObjects ?? []).lazyCachedMap { dto in
-                // `itemCreator` returns non-optional value, so we can use implicitly uwrapped optional
-                var result: Item!
-                context.performAndWait {
-                    result = itemCreator(dto)
-                }
-                return result
-            }
-            return result
-        }
-
+        // We want items to report empty until `startObserving` is called
+        _items.computeValue = { [] }
+        
         listenForRemoveAllDataNotifications()
     }
     
@@ -173,8 +163,29 @@ class ListDatabaseObserver<Item, DTO: NSManagedObject> {
     ///
     /// - Throws: An error if the provided fetch request fails.
     func startObserving() throws {
+        _items.computeValue = { [weak self] in
+            guard let frc = self?.frc,
+                  let itemCreator = self?.itemCreator,
+                  let context = self?.context else { return [] }
+            var result = LazyCachedMapCollection<Item>()
+            result = (frc.fetchedObjects ?? []).lazyCachedMap { dto in
+                // `itemCreator` returns non-optional value, so we can use implicitly unwrapped optional
+                var result: Item!
+                context.performAndWait {
+                    do {
+                        result = try itemCreator(dto)
+                    } catch {
+                        log.assertionFailure("Unable to convert a DB entity to model: \(error.localizedDescription)")
+                    }
+                }
+                return result
+            }
+            return result
+        }
+        
         try frc.performFetch()
         frc.delegate = changeAggregator
+        
         _items.reset()
         
         // This is a workaround for the situation when someone wants to observe only the `items` array without
@@ -213,12 +224,21 @@ class ListDatabaseObserver<Item, DTO: NSManagedObject> {
                     newIndexPath: nil
                 )
             }
+
+            // Remove the cached items since they're now deleted, technically. It is important for it to be reset before
+            // calling `controllerDidChangeContent` so it properly reflects the state
+            self._items.computeValue = { [] }
+            self._items.reset()
+
+            // Publish the changes
+            self.changeAggregator.controllerDidChangeContent(self.frc as! NSFetchedResultsController<NSFetchRequestResult>)
+            
+            // Remove delegate so it doesn't get further removal updates
+            self.frc.delegate = nil
         }
         
         // When `DidRemoveAllDataNotification` is received, we need to reset the FRC. At this point, the entities are removed but
-        // the FRC doesn't know about it yet. Resetting the FRC removes the content of `FRC.fetchedObjects`. We also need to
-        // call `controllerDidChangeContent` on the change aggregator to finish reporting about the removed object which started
-        // in the `WillRemoveAllDataNotification` handler above.
+        // the FRC doesn't know about it yet. Resetting the FRC removes the content of `FRC.fetchedObjects`.
         let didRemoveAllDataNotificationObserver = notificationCenter.addObserver(
             forName: DatabaseContainer.DidRemoveAllDataNotification,
             object: context,
@@ -229,10 +249,11 @@ class ListDatabaseObserver<Item, DTO: NSManagedObject> {
             guard let self = self else { return }
 
             // Reset FRC which causes the current `frc.fetchedObjects` to be reloaded
-            try! self.startObserving()
-            
-            // Publish the changes started in `WillRemoveAllDataNotification`
-            self.changeAggregator.controllerDidChangeContent(self.frc as! NSFetchedResultsController<NSFetchRequestResult>)
+            do {
+                try self.startObserving()
+            } catch {
+                log.error("Error when starting observing: \(error)")
+            }
         }
         
         releaseNotificationObservers = { [weak notificationCenter] in
@@ -248,7 +269,7 @@ class ListChangeAggregator<DTO: NSManagedObject, Item>: NSObject, NSFetchedResul
     // TODO: Extend this to also provide `CollectionDifference` and `NSDiffableDataSourceSnapshot`
     
     /// Used for converting the `DTO`s provided by `FetchResultsController` to the resulting `Item`.
-    let itemCreator: (DTO) -> Item?
+    let itemCreator: (DTO) throws -> Item
 
     /// Called when the aggregator is about to change the current content. It gets called when the `FetchedResultsController`
     /// calls `controllerWillChangeContent` on its delegate.
@@ -265,7 +286,7 @@ class ListChangeAggregator<DTO: NSManagedObject, Item>: NSObject, NSFetchedResul
     ///
     /// - Parameter itemCreator: Used for converting the `NSManagedObject`s provided by `FetchResultsController`
     /// to the resulting `Item`.
-    init(itemCreator: @escaping (DTO) -> Item?) {
+    init(itemCreator: @escaping (DTO) throws -> Item) {
         self.itemCreator = itemCreator
     }
     
@@ -285,7 +306,7 @@ class ListChangeAggregator<DTO: NSManagedObject, Item>: NSObject, NSFetchedResul
         for type: NSFetchedResultsChangeType,
         newIndexPath: IndexPath?
     ) {
-        guard let dto = anObject as? DTO, let item = itemCreator(dto) else {
+        guard let dto = anObject as? DTO, let item = try? itemCreator(dto) else {
             log.warning("Skipping the update from DB because the DTO can't be converted to the model object.")
             return
         }

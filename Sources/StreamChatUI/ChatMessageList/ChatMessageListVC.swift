@@ -8,8 +8,7 @@ import SafariServices
 
 /// Controller that shows list of messages and composer together in the selected channel.
 @available(iOSApplicationExtension, unavailable)
-open class ChatMessageListVC:
-    _ViewController,
+open class ChatMessageListVC: _ViewController,
     ThemeProvider,
     ChatMessageListScrollOverlayDataSource,
     ChatMessageActionsVCDelegate,
@@ -24,7 +23,7 @@ open class ChatMessageListVC:
     /// The object that acts as the data source of the message list.
     public weak var dataSource: ChatMessageListVCDataSource? {
         didSet {
-            updateContent()
+            updateContentIfNeeded()
         }
     }
 
@@ -132,6 +131,8 @@ open class ChatMessageListVC:
     override open func setUp() {
         super.setUp()
         
+        components.messageLayoutOptionsResolver.config = client.config
+        
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         longPress.minimumPressDuration = 0.33
         listView.addGestureRecognizer(longPress)
@@ -203,19 +204,7 @@ open class ChatMessageListVC:
     /// By default there is one message with all possible layout and layout options
     /// determines which parts of the message are visible for the given message.
     open func cellLayoutOptionsForMessage(at indexPath: IndexPath) -> ChatMessageLayoutOptions {
-        guard let dataSource = self.dataSource else {
-            return ChatMessageLayoutOptions()
-        }
-
-        var options = dataSource.chatMessageListVC(self, messageLayoutOptionsAt: indexPath)
-
-        // Ideally this would be part of the `ChatMessageLayoutOptionsResolver`, but currently
-        // it is a bit odd to pass the `ChatClientConfig` to the resolver.
-        if client.config.deletedMessagesVisibility != .visibleForCurrentUser {
-            options.remove(.onlyVisibleForYouIndicator)
-        }
-
-        return options
+        dataSource?.chatMessageListVC(self, messageLayoutOptionsAt: indexPath) ?? .init()
     }
 
     /// Returns the content view class for the message at given `indexPath`
@@ -309,7 +298,7 @@ open class ChatMessageListVC:
         actionsController.channelConfig = dataSource?.channel(for: self)?.config
         actionsController.delegate = self
 
-        let reactionsController: ChatMessageReactionsVC? = {
+        let reactionsController: ChatMessageReactionsPickerVC? = {
             guard message.localState == nil else { return nil }
             guard dataSource?.channel(for: self)?.config.reactionsEnabled == true else {
                 return nil
@@ -377,14 +366,13 @@ open class ChatMessageListVC:
         let currentUserId = ChatClient.shared.currentUserId
         let isMessageFromCurrentUser = message?.author.id == currentUserId
         if channelType == .announcement {
-            guard let cell = tableView.dequeueReusableCell(
+            guard let cell = listView.dequeueReusableCell(
                 withIdentifier: "AnnouncementTableViewCell",
                 for: indexPath) as? AnnouncementTableViewCell else {
                     return UITableViewCell()
                 }
-            cell.imageLoader = components.imageLoader
             cell.delegate = self
-            cell.streamVideoLoader = streamVideoLoader
+            cell.cacheVideoThumbnail = components.cacheVideoThumbnail
             cell.message = message
             cell.configureCell(message)
             cell.transform = .mirrorY
@@ -397,7 +385,6 @@ open class ChatMessageListVC:
                         for: indexPath) as? CryptoSentBubble else {
                             return UITableViewCell()
                         }
-                    cell.imageLoader = components.imageLoader
                     cell.options = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
                     cell.configData()
@@ -414,7 +401,6 @@ open class ChatMessageListVC:
                         for: indexPath) as? CryptoReceiveBubble else {
                             return UITableViewCell()
                         }
-                    cell.imageLoader = components.imageLoader
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
                     cell.client = client
@@ -436,8 +422,7 @@ open class ChatMessageListVC:
                         }
                     cell.options = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
-                    cell.configureCell(isSender: isMessageFromCurrentUser)
-                    cell.configData()
+                    cell.configData(isSender: isMessageFromCurrentUser)
                     return cell
                 }
                 guard let cell = tableView.dequeueReusableCell(
@@ -446,6 +431,28 @@ open class ChatMessageListVC:
                         return UITableViewCell()
                     }
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.configData(isSender: isMessageFromCurrentUser)
+                return cell
+            } else if isGiftCell(message) {
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "GiftBubble",
+                        for: indexPath) as? GiftBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.options = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.content = message
+                    cell.configureCell(isSender: isMessageFromCurrentUser)
+                    cell.configData()
+                    return cell
+                }
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "GiftSentBubble",
+                    for: indexPath) as? GiftBubble else {
+                        return UITableViewCell()
+                    }
+                cell.options = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
@@ -463,8 +470,7 @@ open class ChatMessageListVC:
                 cell.client = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
             }
             else if isRedPacketExpiredCell(message) {
@@ -479,8 +485,7 @@ open class ChatMessageListVC:
                 cell.chatClient = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser, with: .EXPIRED)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser, with: .EXPIRED)
                 return cell
             } else if isRedPacketReceivedCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
@@ -493,8 +498,7 @@ open class ChatMessageListVC:
                 }
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser, with: .RECEIVED)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser, with: .RECEIVED)
                 return cell
             } else if isRedPacketAmountCell(message) {
                 guard let cell = tableView.dequeueReusableCell(
@@ -505,8 +509,7 @@ open class ChatMessageListVC:
                 cell.client = client
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.configData()
+                cell.configData(isSender: isMessageFromCurrentUser)
                 cell.blockExpAction = { blockExpUrl in
                     let svc = SFSafariViewController(url: blockExpUrl)
                     let nav = UINavigationController(rootViewController: svc)
@@ -521,11 +524,14 @@ open class ChatMessageListVC:
                         for: indexPath) as? WalletRequestPayBubble else {
                             return UITableViewCell()
                         }
+                    if let channel = dataSource?.channel(for: self) {
+                        cell.channelId = channel.cid
+                    }
                     cell.isSender = isMessageFromCurrentUser
                     cell.client = client
+                    cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
-                    cell.configureCell(isSender: isMessageFromCurrentUser)
-                    cell.configData()
+                    cell.configData(isSender: isMessageFromCurrentUser)
                     return cell
                 }
                 guard let cell = tableView.dequeueReusableCell(
@@ -533,8 +539,8 @@ open class ChatMessageListVC:
                     for: indexPath) as? TableViewCellWallePayBubbleIncoming else {
                         return UITableViewCell()
                     }
-                cell.imageLoader = components.imageLoader
                 cell.client = client
+                cell.channel = dataSource?.channel(for: self)
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
@@ -551,6 +557,34 @@ open class ChatMessageListVC:
                 cell.configCell(messageCount: messagesCont)
                 cell.transform = .mirrorY
                 return cell
+            } else if isStickerCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "ChatMessageStickerBubble",
+                    for: indexPath) as? ChatMessageStickerBubble else {
+                        return UITableViewCell()
+                    }
+                let messagesCont = dataSource?.numberOfMessages(in: self) ?? 0
+                cell.content = message
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
+            } else if isFallbackMessage(message) {
+                guard let extraData = message?.extraData,
+                      let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
+                let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
+                let cell: ChatMessageCell = listView.dequeueReusableCell(
+                    contentViewClass: cellContentClassForMessage(at: indexPath),
+                    attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
+                    layoutOptions: cellLayoutOptionsForMessage(at: indexPath),
+                    for: indexPath
+                )
+                var message = message
+                message?.text = fallbackMessageString
+                cell.messageContentView?.delegate = self
+                cell.messageContentView?.content = message
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -558,8 +592,19 @@ open class ChatMessageListVC:
                     layoutOptions: cellLayoutOptionsForMessage(at: indexPath),
                     for: indexPath
                 )
+                guard
+                    let message = dataSource?.chatMessageListVC(self, messageAt: indexPath),
+                    let channel = dataSource?.channel(for: self)
+                else {
+                    return cell
+                }
                 cell.messageContentView?.delegate = self
+                cell.messageContentView?.channel = channel
                 cell.messageContentView?.content = message
+
+                cell.dateSeparatorView.isHidden = !shouldShowDateSeparator(forMessage: message, at: indexPath)
+                cell.dateSeparatorView.content = dateSeparatorFormatter.format(message.createdAt)
+
                 return cell
             }
         }
@@ -601,6 +646,17 @@ open class ChatMessageListVC:
         message?.extraData.keys.contains("redPacketPickup") ?? false
     }
 
+    private func isGiftCell(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let messageType = extraData["messageType"] else { return false }
+        let type = fetchRawData(raw: messageType) as? String ?? ""
+        return type == MessageType.giftPacket
+    }
+
+    private func isStickerCell(_ message: ChatMessage?) -> Bool {
+        return (message?.extraData.keys.contains("stickerUrl") ?? false) || (message?.extraData.keys.contains("giphyUrl") ?? false)
+    }
+
     private func isRedPacketExpiredCell(_ message: ChatMessage?) -> Bool {
         guard let extraData = message?.extraData, let redPacket = getExtraData(message: message, key: "RedPacketExpired") else {
             return false
@@ -638,6 +694,13 @@ open class ChatMessageListVC:
             return true
         }
         return false
+    }
+
+    private func isFallbackMessage(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let fallbackMessage = extraData["fallbackMessage"] else { return false }
+        let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
+        return !message.isBlank
     }
 
     private func isAdminMessage(_ message: ChatMessage?) -> Bool {
@@ -726,6 +789,19 @@ open class ChatMessageListVC:
             .info(
                 "Tapped an avatarView. To customize the behavior, override messageContentViewDidTapOnAvatarView. Path: \(indexPath)"
             )
+    }
+    
+    /// This method is triggered when delivery status indicator on the message at the given index path is tapped.
+    /// - Parameter indexPath: The index path of the message cell.
+    open func messageContentViewDidTapOnDeliveryStatusIndicator(_ indexPath: IndexPath?) {
+        guard let indexPath = indexPath else { return log.error("IndexPath is not available") }
+        
+        log.info(
+            """
+            Tapped an delivery status view. To customize the behavior, override
+            messageContentViewDidTapOnDeliveryStatusIndicator. Path: \(indexPath)"
+            """
+        )
     }
 
     // MARK: - GalleryContentViewDelegate

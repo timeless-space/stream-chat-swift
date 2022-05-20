@@ -6,16 +6,17 @@
 @testable import StreamChatTestTools
 import XCTest
 
-class UserDTO_Tests: XCTestCase {
-    var database: DatabaseContainerMock!
+final class UserDTO_Tests: XCTestCase {
+    var database: DatabaseContainer_Spy!
     
     override func setUp() {
         super.setUp()
-        database = DatabaseContainerMock()
+        database = DatabaseContainer_Spy()
     }
     
     override func tearDown() {
         AssertAsync.canBeReleased(&database)
+        database = nil
         super.tearDown()
     }
     
@@ -75,7 +76,7 @@ class UserDTO_Tests: XCTestCase {
             userDTO.extraData = #"{"invalid": json}"#.data(using: .utf8)!
         }
         
-        let loadedUser: ChatUser? = database.viewContext.user(id: userId)?.asModel()
+        let loadedUser: ChatUser? = try? database.viewContext.user(id: userId)?.asModel()
         XCTAssertEqual(loadedUser?.extraData, [:])
     }
     

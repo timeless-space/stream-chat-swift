@@ -82,6 +82,7 @@ extension ChannelId: FilterValue {}
 extension ChannelType: FilterValue {}
 extension UserRole: FilterValue {}
 extension AttachmentType: FilterValue {}
+extension Optional: FilterValue where Wrapped == TeamId {}
 
 /// Filter is used to specify the details about which elements should be returned from a specific query.
 ///
@@ -111,7 +112,7 @@ public struct Filter<Scope: FilterScope> {
     ///   - value: The "right-hand" side of the filter. Specifies the value the filter should match.
     ///
     public init(operator: String, key: String?, value: FilterValue) {
-        assert(`operator`.hasPrefix("$"), "A filter operator must have `$` prefix.")
+        log.assert(`operator`.hasPrefix("$"), "A filter operator must have `$` prefix.")
         self.operator = `operator`
         self.key = key
         self.value = value

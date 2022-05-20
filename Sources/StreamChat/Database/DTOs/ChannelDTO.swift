@@ -12,7 +12,7 @@ class ChannelDTO: NSManagedObject {
     @NSManaged var imageURL: URL?
     @NSManaged var typeRawValue: String
     @NSManaged var extraData: Data
-    @NSManaged var config: Data
+    @NSManaged var config: ChannelConfigDTO
     
     @NSManaged var createdAt: Date
     @NSManaged var deletedAt: Date?
@@ -55,10 +55,13 @@ class ChannelDTO: NSManagedObject {
     @NSManaged var messages: Set<MessageDTO>
     @NSManaged var pinnedMessages: Set<MessageDTO>
     @NSManaged var reads: Set<ChannelReadDTO>
-    @NSManaged var attachments: Set<AttachmentDTO>
     @NSManaged var watchers: Set<UserDTO>
     @NSManaged var memberListQueries: Set<ChannelMemberListQueryDTO>
-
+    @NSManaged var previewMessage: MessageDTO?
+    
+    /// If the current channel is muted by the current user, `mute` contains details.
+    @NSManaged var mute: ChannelMuteDTO?
+    
     override func willSave() {
         super.willSave()
 
@@ -99,6 +102,13 @@ class ChannelDTO: NSManagedObject {
     static func load(cid: ChannelId, context: NSManagedObjectContext) -> ChannelDTO? {
         let request = fetchRequest(for: cid)
         return load(by: request, context: context).first
+    }
+
+    static func load(cids: [ChannelId], context: NSManagedObjectContext) -> [ChannelDTO] {
+        guard !cids.isEmpty else { return [] }
+        let request = NSFetchRequest<ChannelDTO>(entityName: ChannelDTO.entityName)
+        request.predicate = NSPredicate(format: "cid IN %@", cids)
+        return load(by: request, context: context)
     }
     
     static func loadOrCreate(cid: ChannelId, context: NSManagedObjectContext) -> ChannelDTO {
@@ -159,7 +169,7 @@ extension NSManagedObjectContext {
         }
         dto.extraData = try JSONEncoder.default.encode(payload.extraData)
         dto.typeRawValue = payload.typeRawValue
-        dto.config = try JSONEncoder().encode(payload.config)
+        dto.config = payload.config.asDTO(context: self, cid: dto.cid)
         dto.createdAt = payload.createdAt
         dto.deletedAt = payload.deletedAt
         dto.updatedAt = payload.updatedAt
@@ -202,16 +212,26 @@ extension NSManagedObjectContext {
         query: ChannelListQuery?
     ) throws -> ChannelDTO {
         let dto = try saveChannel(payload: payload.channel, query: query)
-
+                
+        let reads = Set(
+            try payload.channelReads.map {
+                try saveChannelRead(payload: $0, for: payload.channel.cid)
+            }
+        )
+        dto.reads.subtracting(reads).forEach { delete($0) }
+        dto.reads = reads
+        
         try payload.messages.forEach { _ = try saveMessage(payload: $0, channelDTO: dto, syncOwnReactions: true) }
+        
+        if dto.needsPreviewUpdate(payload) {
+            dto.previewMessage = preview(for: payload.channel.cid)
+        }
 
         dto.updateOldestMessageAt(payload: payload)
 
         try payload.pinnedMessages.forEach {
             _ = try saveMessage(payload: $0, channelDTO: dto, syncOwnReactions: true)
         }
-        
-        try payload.channelReads.forEach { _ = try saveChannelRead(payload: $0, for: payload.channel.cid) }
         
         // Sometimes, `members` are not part of `ChannelDetailPayload` so they need to be saved here too.
         try payload.members.forEach {
@@ -251,6 +271,22 @@ extension NSManagedObjectContext {
         guard let dto = channelListQuery(filterHash: query.filter.filterHash) else { return }
         
         delete(dto)
+    }
+
+    func cleanChannels(cids: Set<ChannelId>) {
+        let channels = ChannelDTO.load(cids: Array(cids), context: self)
+        for channelDTO in channels {
+            channelDTO.resetEphemeralValues()
+            channelDTO.messages.removeAll()
+            channelDTO.members.removeAll()
+            channelDTO.pinnedMessages.removeAll()
+            channelDTO.reads.removeAll()
+        }
+    }
+
+    func removeChannels(cids: Set<ChannelId>) {
+        let channels = ChannelDTO.load(cids: Array(cids), context: self)
+        channels.forEach(delete)
     }
 }
 
@@ -299,12 +335,16 @@ extension ChannelDTO {
 
 extension ChannelDTO {
     /// Snapshots the current state of `ChannelDTO` and returns an immutable model object from it.
-    func asModel() -> ChatChannel { .create(fromDTO: self) }
+    func asModel() throws -> ChatChannel { try .create(fromDTO: self) }
 }
 
 extension ChatChannel {
     /// Create a ChannelModel struct from its DTO
-    fileprivate static func create(fromDTO dto: ChannelDTO) -> ChatChannel {
+    fileprivate static func create(fromDTO dto: ChannelDTO) throws -> ChatChannel {
+        guard dto.isValid, let cid = try? ChannelId(cid: dto.cid), let context = dto.managedObjectContext else {
+            throw InvalidModel(dto)
+        }
+
         let extraData: [String: RawJSON]
         do {
             extraData = try JSONDecoder.default.decode([String: RawJSON].self, from: dto.extraData)
@@ -316,11 +356,7 @@ extension ChatChannel {
             extraData = [:]
         }
 
-        let cid = try! ChannelId(cid: dto.cid)
-        
-        let context = dto.managedObjectContext!
-        
-        let reads: [ChatChannelRead] = dto.reads.map { $0.asModel() }
+        let reads: [ChatChannelRead] = try dto.reads.map { try $0.asModel() }
         
         let unreadCount: () -> ChannelUnreadCount = {
             guard let currentUser = context.currentUser else { return .noUnread }
@@ -331,8 +367,8 @@ extension ChatChannel {
             
             // Fetch count of all mentioned messages after last read
             // (this is not 100% accurate but it's the best we have)
-            let mentionedUnreadMessagesRequest = NSFetchRequest<MessageDTO>(entityName: MessageDTO.entityName)
-            mentionedUnreadMessagesRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            let unreadMentionsRequest = NSFetchRequest<MessageDTO>(entityName: MessageDTO.entityName)
+            unreadMentionsRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
                 MessageDTO.channelMessagesPredicate(
                     for: dto.cid,
                     deletedMessagesVisibility: context.deletedMessagesVisibility ?? .visibleForCurrentUser,
@@ -345,7 +381,7 @@ extension ChatChannel {
             do {
                 return ChannelUnreadCount(
                     messages: allUnreadMessages,
-                    mentionedMessages: try context.count(for: mentionedUnreadMessagesRequest)
+                    mentions: try context.count(for: unreadMentionsRequest)
                 )
             } catch {
                 log.error("Failed to fetch unread counts for channel `\(cid)`. Error: \(error)")
@@ -358,36 +394,35 @@ extension ChatChannel {
                 .load(
                     for: dto.cid,
                     limit: dto.managedObjectContext?.localCachingSettings?.chatChannel.latestMessagesLimit ?? 25,
+                    deletedMessagesVisibility: dto.managedObjectContext?.deletedMessagesVisibility ?? .visibleForCurrentUser,
+                    shouldShowShadowedMessages: dto.managedObjectContext?.shouldShowShadowedMessages ?? false,
                     context: context
                 )
-                .map { $0.asModel() }
+                .compactMap { try? $0.asModel() }
         }
         
         let fetchWatchers: () -> [ChatUser] = {
             UserDTO
                 .loadLastActiveWatchers(cid: cid, context: context)
-                .map { $0.asModel() }
+                .compactMap { try? $0.asModel() }
         }
         
         let fetchMembers: () -> [ChatChannelMember] = {
             MemberDTO
                 .loadLastActiveMembers(cid: cid, context: context)
-                .map { $0.asModel() }
+                .compactMap { try? $0.asModel() }
         }
 
         let fetchMuteDetails: () -> MuteDetails? = {
-            guard
-                let currentUser = context.currentUser,
-                let mute = ChannelMuteDTO.load(cid: cid, userId: currentUser.user.id, context: context)
-            else { return nil }
-
+            guard let mute = dto.mute else { return nil }
+            
             return .init(
                 createdAt: mute.createdAt,
                 updatedAt: mute.updatedAt
             )
         }
         
-        return ChatChannel(
+        return try ChatChannel(
             cid: cid,
             name: dto.name,
             imageURL: dto.imageURL,
@@ -398,11 +433,11 @@ extension ChatChannel {
             truncatedAt: dto.truncatedAt,
             isHidden: dto.isHidden,
             createdBy: dto.createdBy?.asModel(),
-            config: try! JSONDecoder().decode(ChannelConfig.self, from: dto.config),
+            config: dto.config.asModel(),
             isFrozen: dto.isFrozen,
             lastActiveMembers: { fetchMembers() },
-            membership: dto.membership.map { $0.asModel() },
-            currentlyTypingUsers: { Set(dto.currentlyTypingUsers.map { $0.asModel() }) },
+            membership: dto.membership.map { try $0.asModel() },
+            currentlyTypingUsers: { Set(dto.currentlyTypingUsers.compactMap { try? $0.asModel() }) },
             lastActiveWatchers: { fetchWatchers() },
             team: dto.team,
             unreadCount: { unreadCount() },
@@ -413,8 +448,9 @@ extension ChatChannel {
             extraData: extraData,
             //            invitedMembers: [],
             latestMessages: { fetchMessages() },
-            pinnedMessages: { dto.pinnedMessages.map { $0.asModel() } },
+            pinnedMessages: { dto.pinnedMessages.compactMap { try? $0.asModel() } },
             muteDetails: fetchMuteDetails,
+            previewMessage: { try? dto.previewMessage?.asModel() },
             underlyingContext: dto.managedObjectContext
         )
     }
@@ -432,5 +468,18 @@ private extension ChannelDTO {
                 oldestMessageAt = payloadOldestMessageAt
             }
         }
+    }
+    
+    /// Returns `true` if the payload holds messages sent after the current channel preview.
+    func needsPreviewUpdate(_ payload: ChannelPayload) -> Bool {
+        guard let preview = previewMessage else {
+            return true
+        }
+        
+        guard let newestMessage = payload.newestMessage else {
+            return false
+        }
+        
+        return newestMessage.createdAt > preview.createdAt
     }
 }

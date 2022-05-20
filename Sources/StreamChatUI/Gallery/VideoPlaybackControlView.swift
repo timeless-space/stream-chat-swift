@@ -100,6 +100,7 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
     /// A container for playback button and time labels.
     open private(set) lazy var rootContainer: ContainerStackView = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "rootContainer")
 
     /// A formatter to convert video duration to textual representation.
     open lazy var videoDurationFormatter: VideoDurationFormatter = appearance.formatters.videoDuration
@@ -258,7 +259,6 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
                 self?.content.videoDuration = item.duration.isNumeric ? item.duration.seconds : 0
             }
             
-            NotificationCenter.default.removeObserver(self)
             NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(self.handleItemDidPlayToEndTime),
@@ -269,6 +269,7 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
         unsubscribeFromPlayerNotifications(player)
     }
 }

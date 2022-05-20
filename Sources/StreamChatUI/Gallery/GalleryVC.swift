@@ -8,8 +8,7 @@ import UIKit
 
 /// A viewcontroller to showcase and slide through multiple attachments
 /// (images and videos by default).
-open class GalleryVC:
-    _ViewController,
+open class GalleryVC: _ViewController,
     UIGestureRecognizerDelegate,
     AppearanceProvider,
     UICollectionViewDataSource,
@@ -63,48 +62,73 @@ open class GalleryVC:
     .withoutAutoresizingMaskConstraints
     
     /// Bar view displayed at the top.
-    open private(set) lazy var topBarView: UIView = UIView()
+    open private(set) lazy var topBarView = UIView()
         .withoutAutoresizingMaskConstraints
-    
+        .withAccessibilityIdentifier(identifier: "topBarView")
+
+    /// Stack view inside the `topBarView`'s view hierarchy
+    open private(set) lazy var topBarContainerStackView = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "topBarContainerStackView")
+
+    /// Stack view that displays user and date label.
+    open private(set) lazy var infoContainerStackView = ContainerStackView()
+        .withAccessibilityIdentifier(identifier: "infoContainerStackView")
+
     /// Label to show information about the user that sent the message.
-    open private(set) lazy var userLabel: UILabel = UILabel()
+    open private(set) lazy var userLabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
         .withAdjustingFontForContentSizeCategory
+        .withAccessibilityIdentifier(identifier: "userLabel")
     
     /// Label to show information about the date the message was sent at.
-    open private(set) lazy var dateLabel: UILabel = UILabel()
+    open private(set) lazy var dateLabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
         .withAdjustingFontForContentSizeCategory
+        .withAccessibilityIdentifier(identifier: "dateLabel")
     
     /// Bar view displayed at the bottom.
-    open private(set) lazy var bottomBarView: UIView = UIView()
+    open private(set) lazy var bottomBarView = UIView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "bottomBarView")
+
+    /// Stack view inside the `bottomBarView`'s view hierarchy
+    open private(set) lazy var bottomBarContainerStackView = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "bottomBarContainerStackView")
     
     /// Label to show which photo is currently being displayed.
-    open private(set) lazy var currentPhotoLabel: UILabel = UILabel()
+    open private(set) lazy var currentPhotoLabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
         .withAdjustingFontForContentSizeCategory
+        .withAccessibilityIdentifier(identifier: "currentPhotoLabel")
     
     /// Button for closing this view controller.
-    open private(set) lazy var closeButton: UIButton = components
+    open private(set) lazy var closeButton = components
         .closeButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "closeButton")
     
     /// View that controls the video player of currently visible cell.
     open private(set) lazy var videoPlaybackBar: VideoPlaybackControlView = components
         .videoPlaybackControlView.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "videoPlaybackBar")
 
-    open private(set) lazy var lblMessage: UILabel = UILabel()
+    open private(set) lazy var textViewMessageContainerView: UIView = UIView()
+        .withoutAutoresizingMaskConstraints
+
+    open private(set) lazy var textViewMessage: UITextView = UITextView()
         .withoutAutoresizingMaskConstraints
     
     /// Button for sharing content.
-    open private(set) lazy var shareButton: UIButton = components
+    open private(set) lazy var shareButton = components
         .shareButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "shareButton")
     
     /// A constaint between `topBarView.topAnchor` and `view.topAnchor`.
     open private(set) var topBarTopConstraint: NSLayoutConstraint?
@@ -181,16 +205,13 @@ open class GalleryVC:
         topBarView.pin(anchors: [.leading, .trailing], to: view)
         topBarTopConstraint = topBarView.topAnchor.constraint(equalTo: view.topAnchor)
         topBarTopConstraint?.isActive = true
-        
-        let topBarContainerStackView = ContainerStackView()
-            .withoutAutoresizingMaskConstraints
+
         topBarView.embed(topBarContainerStackView)
         topBarContainerStackView.preservesSuperviewLayoutMargins = true
         topBarContainerStackView.isLayoutMarginsRelativeArrangement = true
         
         topBarContainerStackView.addArrangedSubview(closeButton)
-        
-        let infoContainerStackView = ContainerStackView()
+
         infoContainerStackView.axis = .vertical
         infoContainerStackView.alignment = .center
         infoContainerStackView.spacing = 4
@@ -208,9 +229,7 @@ open class GalleryVC:
         bottomBarView.pin(anchors: [.leading, .trailing], to: view)
         bottomBarBottomConstraint = bottomBarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         bottomBarBottomConstraint?.isActive = true
-        
-        let bottomBarContainerStackView = ContainerStackView()
-            .withoutAutoresizingMaskConstraints
+
         bottomBarContainerStackView.preservesSuperviewLayoutMargins = true
         bottomBarContainerStackView.isLayoutMarginsRelativeArrangement = true
         bottomBarView.embed(bottomBarContainerStackView)
@@ -229,15 +248,28 @@ open class GalleryVC:
         videoPlaybackBar.pin(anchors: [.leading, .trailing], to: view)
         videoPlaybackBar.bottomAnchor.constraint(equalTo: bottomBarView.topAnchor).isActive = true
 
-        view.addSubview(lblMessage)
+        view.addSubview(textViewMessageContainerView)
+        textViewMessageContainerView.pin(anchors: [.leading, .trailing], to: view)
+        textViewMessageContainerView.bottomAnchor.constraint(equalTo: videoPlaybackBar.topAnchor).isActive = true
+
+        textViewMessageContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        textViewMessageContainerView.isUserInteractionEnabled = false
+
+        textViewMessageContainerView.addSubview(textViewMessage)
         NSLayoutConstraint.activate([
-            lblMessage.leadingAnchor.constraint(equalTo: videoPlaybackBar.leadingAnchor, constant: 10),
-            lblMessage.trailingAnchor.constraint(equalTo: videoPlaybackBar.trailingAnchor, constant: -10),
-            lblMessage.bottomAnchor.constraint(equalTo: videoPlaybackBar.topAnchor)
+            textViewMessage.leadingAnchor.constraint(equalTo: textViewMessageContainerView.leadingAnchor, constant: 10),
+            textViewMessage.trailingAnchor.constraint(equalTo: textViewMessageContainerView.trailingAnchor, constant: -10),
+            textViewMessage.bottomAnchor.constraint(equalTo: textViewMessageContainerView.bottomAnchor, constant: -5),
+            textViewMessage.topAnchor.constraint(equalTo: textViewMessageContainerView.topAnchor, constant: 5)
         ])
-        lblMessage.numberOfLines = 3
-        lblMessage.text = content.message.text
-        lblMessage.textColor = .white
+        textViewMessageContainerView.isHidden = content.message.text.count == 0
+        textViewMessage.isHidden = content.message.text.count == 0
+        textViewMessage.backgroundColor = .clear
+        textViewMessage.text = content.message.text
+        textViewMessage.textColor = .white
+        textViewMessage.font = UIFont.systemFont(ofSize: 16)
+        textViewMessage.isEditable = false
+        textViewMessage.showsVerticalScrollIndicator = false
     }
     
     override open func viewDidLoad() {
@@ -257,7 +289,7 @@ open class GalleryVC:
     }
     
     override open func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+        super.viewWillDisappear(animated)
         
         videoPlaybackBar.player?.pause()
     }
@@ -290,8 +322,7 @@ open class GalleryVC:
     }
     
     /// Called whenever user pans with a given `gestureRecognizer`.
-    @objc
-    open func handlePan(with gestureRecognizer: UIPanGestureRecognizer) {
+    @objc open func handlePan(with gestureRecognizer: UIPanGestureRecognizer) {
         switch gestureRecognizer.state {
         case .began:
             transitionController.isInteractive = true
@@ -307,14 +338,12 @@ open class GalleryVC:
     }
     
     /// Called when `closeButton` is tapped.
-    @objc
-    open func closeButtonTapped() {
+    @objc open func closeButtonTapped() {
         dismiss(animated: true, completion: nil)
     }
     
     /// Called when `shareButton` is tapped.
-    @objc
-    open func shareButtonTapped() {
+    @objc open func shareButtonTapped() {
         guard let shareItem = shareItem(at: currentItemIndexPath) else {
             log.assertionFailure("Share item is missing for item at \(currentItemIndexPath).")
             return

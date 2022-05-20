@@ -1195,7 +1195,12 @@ open class ComposerVC: _ViewController,
     
     open func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         for fileURL in urls {
-            let attachmentType = AttachmentType(fileExtension: fileURL.pathExtension)
+            var attachmentType = AttachmentType(fileExtension: fileURL.pathExtension)
+            // Remove this condition when doing: https://stream-io.atlassian.net/browse/CIS-1740
+            // This is a fallback right now to treat audios as files until we actually support audios
+            if attachmentType == .audio {
+                attachmentType = .file
+            }
             do {
                 try addAttachmentToContent(from: fileURL, type: attachmentType)
             } catch {
@@ -1270,7 +1275,7 @@ func searchUsers(_ users: [ChatUser], by searchInput: String, excludingId: Strin
     let searchInput = normalize(searchInput)
 
     let matchingUsers = users.filter { $0.id != excludingId }
-        .filter { searchInput == "" || $0.id.contains(searchInput) || (normalize($0.name ?? "").contains(searchInput)) }
+        .filter { searchInput.isEmpty || $0.id.contains(searchInput) || (normalize($0.name ?? "").contains(searchInput)) }
 
     let distance: (ChatUser) -> Int = {
         min($0.id.levenshtein(searchInput), $0.name?.levenshtein(searchInput) ?? 1000)

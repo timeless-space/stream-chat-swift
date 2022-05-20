@@ -362,7 +362,6 @@ open class ChatChannelListVC: _ViewController,
     }
 
     open func swipeableViewActionViews(for indexPath: IndexPath) -> [UIView] {
-
         let controller = self.controller.client.channelController(for: self.controller.channels[indexPath.row].cid)
         if controller.channelQuery.type == .announcement {
             let muteAction = CellActionView().withoutAutoresizingMaskConstraints
@@ -472,19 +471,24 @@ open class ChatChannelListVC: _ViewController,
             completion: { _ in
                 // Move changes from NSFetchController also can mean an update of the content.
                 // Since a `moveItem` in collections do not update the content of the cell, we need to reload those cells.
-                self.collectionView.reloadItems(at: Array(indices.move.map(\.toIndex)))
+                let moveIndexes = Array(indices.move.map(\.toIndex))
+                if !moveIndexes.isEmpty {
+                    self.collectionView.reloadItems(at: moveIndexes)
+                }
             }
         )
     }
-    
+
+    @available(*, deprecated, message: "Please use `filter` when initializing a `ChatChannelListController`")
     open func controller(_ controller: ChatChannelListController, shouldAddNewChannelToList channel: ChatChannel) -> Bool {
         channel.membership != nil
     }
-    
+
+    @available(*, deprecated, message: "Please use `filter` when initializing a `ChatChannelListController`")
     open func controller(_ controller: ChatChannelListController, shouldListUpdatedChannel channel: ChatChannel) -> Bool {
         channel.membership != nil
     }
-    
+
     // MARK: - DataControllerStateDelegate
     
     open func controller(_ controller: DataController, didChangeState state: DataController.State) {
