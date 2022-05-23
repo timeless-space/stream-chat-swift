@@ -86,6 +86,8 @@ internal enum L10n {
       internal static var edit: String { L10n.tr("Localizable", "composer.title.edit") }
       /// Reply to Message
       internal static var reply: String { L10n.tr("Localizable", "composer.title.reply") }
+      /// Edit Caption
+      internal static var editCaption: String { L10n.tr("Localizable", "composer.title.editCaption") }
     }
   }
 
