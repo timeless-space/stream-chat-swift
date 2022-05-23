@@ -65,17 +65,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         view.addGestureRecognizer(tapRecognizer)
     }
 
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        debugPrint("View didload")
-        setUpLayout()
-    }
-
-    open override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        debugPrint("View did appear")
-    }
-
     override open func setUpAppearance() {
         super.setUpAppearance()
         view.backgroundColor = .clear
@@ -256,15 +245,9 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         let isGestureInActionsView = actionsController.view.frame.contains(actionsLocation)
         let isGestureInReactionsView = reactionsController?.view.frame.contains(reactionsLocation) == true
 
-//        if isGestureInActionsView || isGestureInReactionsView {
-//            debugPrint("### In Gesture ")
-//            return
-//        }
-//        UIApplication.shared.windows.first?.rootViewController?.dismiss(animated: true)
-//        UIApplication.shared.getTopViewController()?.dismiss(animated: true)
-//        UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true)
-//        self.view.window!.rootViewController?.dismiss(animated: false, completion: nil)
-//
+        if isGestureInActionsView || isGestureInReactionsView {
+            return
+        }
         dismiss(animated: true)
     }
 }

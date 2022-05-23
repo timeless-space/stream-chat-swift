@@ -73,12 +73,9 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
-    var isKeyboardVisible = false
-    let v2 = UITextField(frame: CGRect(x: 50, y: 50, width: 100, height: 50))
 
     open override func viewDidLoad() {
         super.viewDidLoad()
-        addKeyBoardListener()
         listView.register(CryptoSentBubble.self, forCellReuseIdentifier: "CryptoSentBubble")
         listView.register(CryptoReceiveBubble.self, forCellReuseIdentifier: "CryptoReceiveBubble")
         listView.register(RedPacketSentBubble.self, forCellReuseIdentifier: "RedPacketSentBubble")
@@ -120,21 +117,6 @@ open class ChatMessageListVC:
         navigationController?.presentationController?.delegate = self
         
         scrollToLatestMessageButton.addTarget(self, action: #selector(scrollToLatestMessage), for: .touchUpInside)
-    }
-
-    func addKeyBoardListener() {
-        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
-    }
-
-    @objc func keyboardWillShow() {
-        debugPrint("#### Will show called")
-        isKeyboardVisible = true
-    }
-
-    @objc func keyboardWillHide() {
-        debugPrint("#### Will Hide called")
-        isKeyboardVisible = false
     }
     
     override open func setUpLayout() {
@@ -698,7 +680,7 @@ open class ChatMessageListVC:
     }
 
     open func chatMessageActionsVCDidFinish(_ vc: ChatMessageActionsVC) {
-        dismiss(animated: true)
+        UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true)
     }
 
     // MARK: - ChatMessageContentViewDelegate

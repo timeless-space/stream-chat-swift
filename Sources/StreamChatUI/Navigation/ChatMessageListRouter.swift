@@ -37,7 +37,6 @@ open class ChatMessageListRouter:
         messageActionsController: ChatMessageActionsVC,
         messageReactionsController: ChatMessageReactionsVC?
     ) {
-
         let popup = components.messagePopupVC.init()
         popup.messageContentView = messageContentView
         popup.actionsController = messageActionsController
@@ -54,67 +53,7 @@ open class ChatMessageListRouter:
         popup.transitioningDelegate = messagePopUpTransitionController
 
         messagePopUpTransitionController.selectedMessageId = messageContentView.content?.id
-
-//        rootViewController.present(popup, animated: true)
         UIApplication.shared.windows.last?.rootViewController?.present(popup, animated: true)
-//                rootViewController.present(popup, animated: true)
-
-//        let windows = UIApplication.shared.windows
-//        let keyboardWindow = windows.first(where: { NSStringFromClass($0.classForCoder) == "UIRemoteKeyboardWindow" })
-//
-//        guard keyboardWindow != nil else { return }
-//
-////        let fixedView = self.view.window
-////            let fakeTextField = fixedView?.subviews.last as? UITextField ?? UITextField()
-////            fakeTextField.autocapitalizationType = textField.autocapitalizationType
-////            fakeTextField.autocorrectionType = textField.autocorrectionType
-////            fakeTextField.center = CGPoint(x: -100, y: -100)
-////            fixedView?.addSubview(fakeTextField)
-////            fakeTextField.becomeFirstResponder()
-//
-//        debugPrint("##### \(keyboardWindow!.isVisible)")
-//        let popup = components.messagePopupVC.init()
-//        popup.messageContentView = messageContentView
-//        popup.actionsController = messageActionsController
-//        popup.reactionsController = messageReactionsController
-//        let bubbleView = messageContentView.bubbleView ?? messageContentView.bubbleContentContainer
-//        let bubbleViewFrame = bubbleView.superview!.convert(bubbleView.frame, to: nil)
-//        popup.messageBubbleViewInsets = UIEdgeInsets(
-//            top: bubbleViewFrame.origin.y,
-//            left: bubbleViewFrame.origin.x,
-//            bottom: messageContentView.frame.height - bubbleViewFrame.height,
-//            right: messageContentView.frame.width - bubbleViewFrame.origin.x - bubbleViewFrame.width
-//        )
-//        popup.modalPresentationStyle = .overCurrentContext
-//        popup.transitioningDelegate = messagePopUpTransitionController
-//
-//        messagePopUpTransitionController.selectedMessageId = messageContentView.content?.id
-//
-//        debugPrint("##### \(keyboardWindow?.isVisible)")
-//
-////        popup.view.frame = UIScreen.main.bounds
-////        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-////        popup.view.addGestureRecognizer(tap)
-////
-////        popup.view.isUserInteractionEnabled = true
-////        popup.view.tag = 121
-////
-////        UIApplication.shared.windows.first?.rootViewController?.present(popup, animated: true)
-////        let currentWindow = UIApplication.shared.windows.last
-////        currentWindow?.addSubview(popup.view)
-//        rootViewController.present(popup, animated: true)
-//        if true {
-//            let fixedView = UIApplication.shared.windows.last//self.view.window
-//            let fakeTextField = fixedView?.subviews.last as? UITextField ?? UITextField()
-//            fakeTextField.backgroundColor = .red
-//            fakeTextField.center = CGPoint(x: -100, y: -100)
-//            fixedView?.addSubview(fakeTextField)
-//            fakeTextField.becomeFirstResponder()
-//        }
-    }
-
-    @objc func handleTap() {
-        UIApplication.shared.windows.last?.viewWithTag(121)?.removeFromSuperview()
     }
 
     /// Handles opening of a link URL.
