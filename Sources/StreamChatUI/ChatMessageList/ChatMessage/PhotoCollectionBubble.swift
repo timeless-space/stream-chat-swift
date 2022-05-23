@@ -93,15 +93,10 @@ class PhotoCollectionBubble: UITableViewCell {
                 cell.cornerRadius = 20
             }
             stackedItemsView.selectionHandler = { [weak self] type, selectedIndex in
-                guard let `self` = self else { return }
-                if self.stackedItemsView.isExpand {
-                    guard let cell = self.stackedItemsView.cell(at: selectedIndex) else {
-                        return
-                    }
-                    self.delegate?.didSelectAttachment(self.content, view: cell, type.id)
-                } else {
-                    self.stackedItemsView.expandView(index: selectedIndex)
+                guard let `self` = self, let cell = self.stackedItemsView.cell(at: selectedIndex) else {
+                    return
                 }
+                self.delegate?.didSelectAttachment(self.content, view: cell, type.id)
             }
             imgPreview.isHidden = true
             stackedItemsView.isHidden = false

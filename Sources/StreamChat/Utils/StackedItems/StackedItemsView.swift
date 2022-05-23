@@ -124,7 +124,11 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             selectionHandler?(items[indexPath.row], indexPath.row)
         } else if indexPath.row == currentlyFocusedItemIndex {
             collectionView.deselectItem(at: indexPath, animated: true)
-            selectionHandler?(items[indexPath.row], indexPath.row)
+            if !isExpand {
+                expandView(index: indexPath.row)
+            } else {
+                selectionHandler?(items[indexPath.row], indexPath.row)
+            }
         } else if indexPath.row < currentlyFocusedItemIndex {
             return scrollToItem(at: currentlyFocusedItemIndex - 1, animated: true)
         } else {
@@ -147,7 +151,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     }
 
     private var stackedItemsLayout: StackedItemsLayout! {
-        return collectionView.collectionViewLayout as? StackedItemsLayout
+        return collectionView.collectionViewLayout as? StackedItemsLayout ?? .init()
     }
 
     // MARK: - UIView
