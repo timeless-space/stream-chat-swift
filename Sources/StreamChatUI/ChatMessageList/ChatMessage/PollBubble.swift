@@ -762,13 +762,14 @@ struct PollView: View {
                             .opacity(voted ? 1 : 0)
                             .offset(x: voted ? 0 : -50)
                     }
-                        .offset(y: 0.5)
+                    .offset(y: 0.5)
                 )
                 .padding(.horizontal, 16.5)
                 .animation(.easeInOut(duration: 0.2), value: enableSubmitButton)
         }
         .disabled(!enableSubmitButton)
         .padding(.bottom, 4.5)
+        .id("\(answers)")
     }
 
     private var previewButtons: some View {
