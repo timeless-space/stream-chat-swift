@@ -19,46 +19,29 @@ class NumberUtils {
         }
     }
     
-    public class func formatCurrency(_ number: Double?,
+    class func formatCurrency(
+        _ number: Double,
         minimumFractionDigits: Int = Constant.currency.minimumFractionDigits,
-        maximumFractionDigits: Int = Constant.currency.maximumFractionDigits
+        maximumFractionDigits: Int = Constant.currency.maximumFractionDigits,
+        removeLastZero: Bool = false
     ) -> String {
-        if let number = number {
-            let formatter = NumberUtils.getNumberFormatter(minimumFractionDigits: minimumFractionDigits, maximumFractionDigits: maximumFractionDigits)
-            if let formattedBalance = formatter.string(from: number as NSNumber) {
-                return formattedBalance
-            }
-            return "0.00"
-        }
-        return "0.00"
+        return number.formatNumber(
+            minimumFractionDigits: minimumFractionDigits,
+            maximumFractionDigits: maximumFractionDigits,
+            removeLastZero: removeLastZero
+        ).formattedString
     }
 
-    public class func formatONE(_ number: Double?,
+    class func formatONE(
+        _ number: Double,
         minimumFractionDigits: Int = Constant.coin.minimumFractionDigits,
-        maximumFractionDigits: Int = Constant.coin.maximumFractionDigits
+        maximumFractionDigits: Int = Constant.coin.maximumFractionDigits,
+        removeLastZero: Bool = false
     ) -> String {
-        if let number = number {
-            if let formattedBalance = getNumberFormatter(
-                minimumFractionDigits: minimumFractionDigits,
-                maximumFractionDigits: maximumFractionDigits
-            ).string(from: number as NSNumber)
-            {
-                return formattedBalance
-            }
-        }
-        return "0.000"
-    }
-
-    private static func getNumberFormatter(
-        minimumFractionDigits: Int = 4,
-        maximumFractionDigits: Int = 4
-    ) -> NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = minimumFractionDigits
-        formatter.maximumFractionDigits = maximumFractionDigits
-        formatter.roundingMode = .down
-        return formatter
+        return number.formatNumber(
+            minimumFractionDigits: minimumFractionDigits,
+            maximumFractionDigits: maximumFractionDigits,
+            removeLastZero: removeLastZero
+        ).formattedString
     }
 }
