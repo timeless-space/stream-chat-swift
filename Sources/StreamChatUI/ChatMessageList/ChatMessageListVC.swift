@@ -525,7 +525,8 @@ open class ChatMessageListVC:
                         return UITableViewCell()
                     }
                 cell.content = message
-                cell.configureCell(isSender: true)
+                cell.delegate = self
+                cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
 
@@ -873,5 +874,18 @@ extension ChatMessageListVC: AnnouncementAction {
         else { return }
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         cell.configureCell(message)
+    }
+}
+
+extension ChatMessageListVC: PhotoCollectionAction {
+    func didSelectAttachment(_ message: ChatMessage?, view: MediaPreviewCollectionCell, _ id: AttachmentId) {
+        guard let chatMessage = message else {
+            return
+        }
+        router.showGallery(
+            message: chatMessage,
+            initialAttachmentId: id,
+            previews: [view]
+        )
     }
 }

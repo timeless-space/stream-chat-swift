@@ -21,7 +21,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     public var selectionHandler: SelectionHandler?
     public typealias SelectionHandler = (ItemType, Int) -> Void
 
-    private var isExpand = false
+    public var isExpand = false
 
     /// The items this view displays
     public var items = [ItemType]() {
@@ -120,7 +120,9 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
     // MARK: UICollectionViewDelegate
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.row == currentlyFocusedItemIndex {
+        if isExpand {
+            selectionHandler?(items[indexPath.row], indexPath.row)
+        } else if indexPath.row == currentlyFocusedItemIndex {
             collectionView.deselectItem(at: indexPath, animated: true)
             selectionHandler?(items[indexPath.row], indexPath.row)
         } else if indexPath.row < currentlyFocusedItemIndex {
