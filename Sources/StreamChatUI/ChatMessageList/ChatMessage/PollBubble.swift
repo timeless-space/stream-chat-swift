@@ -479,7 +479,8 @@ struct PollView: View {
                                                 }
                                             }
                                         }
-                                        .offset(x: 21), alignment: .trailing
+                                        .offset(x: 21)
+                                        .id("\(memberVotedURL.count)"), alignment: .trailing
                                     )
                             }
                             .padding(.bottom, 14.5)
@@ -575,7 +576,7 @@ struct PollView: View {
                 }
                 memberVotedURL.removeAll()
                 self.answers.forEach { item in
-                    for wallet in item.wallets where !memberVotedURL.contains(wallet.avatar) {
+                    for wallet in item.wallets where !memberVotedURL.contains(wallet.address) {
                         memberVotedURL.append(wallet.avatar)
                     }
                 }
@@ -629,7 +630,7 @@ struct PollView: View {
                     }
                     memberVotedURL.removeAll()
                     self.answers.forEach { item in
-                        for wallet in item.wallets where !memberVotedURL.contains(wallet.avatar) {
+                        for wallet in item.wallets where !memberVotedURL.contains(wallet.address) {
                             memberVotedURL.append(wallet.avatar)
                         }
                     }
