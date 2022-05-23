@@ -26,6 +26,7 @@ public class PollBubble: UITableViewCell {
     let chatClient = ChatClient.shared
     public static var callback: ((String) -> [String: Any]?)?
     public static var clearCache: (() -> Void)?
+    public static var getWalletImageURL: ((String) -> String)?
 
     public lazy var dateFormatter: DateFormatter = .makeDefault()
 
@@ -136,6 +137,7 @@ public class PollBubble: UITableViewCell {
                 let anonymous = fetchRawData(raw: anonymousRaw) as? Bool ?? false
                 let multipleChoices = fetchRawData(raw: multipleChoicesRaw) as? Bool ?? false
                 let hideTally = fetchRawData(raw: hideTallyRaw) as? Bool ?? false
+
                 let answersArrayJSON = fetchRawData(raw: answersRaw) as? [RawJSON] ?? []
                 var answersArrayDict: [[String: RawJSON]] = []
                 var answers: [AnswerRes] = []
@@ -198,6 +200,26 @@ public class PollBubble: UITableViewCell {
                 if let pollVotedCountRaw = pollData["poll_voted_count"] {
                     pollVotedCount = fetchRawData(raw: pollVotedCountRaw) as? Double ?? 0
                 }
+
+                var orderedWallets: [OrderedWallet] = []
+                var orderedArrayJSON: [RawJSON] = []
+                if let orderedWalletRaw = pollData["ordered_wallets"] {
+                    let orderedWalletArrayJSON = fetchRawData(raw: orderedWalletRaw) as? [RawJSON] ?? []
+                    var orderedWalletArrayDict: [[String: RawJSON]] = []
+                    orderedWalletArrayJSON.forEach { itemRaw in
+                        let item = fetchRawData(raw: itemRaw) as? [String: RawJSON] ?? [:]
+                        orderedWalletArrayDict.append(item)
+                    }
+                    orderedWalletArrayDict.forEach { item in
+                        if let walletAddress = item["wallet_address"], let createdAt = item["created_at"] {
+                            orderedWallets.append(OrderedWallet(
+                                walletAddress: fetchRawData(raw: walletAddress) as? String ?? "",
+                                createdAt: fetchRawData(raw: createdAt) as? String ?? ""
+                            ))
+                        }
+                    }
+                }
+
                 subContainer.subviews.forEach {
                     $0.removeFromSuperview()
                 }
@@ -209,6 +231,7 @@ public class PollBubble: UITableViewCell {
                     hideTally: hideTally,
                     answers: answers,
                     pollVotedCount: pollVotedCount,
+                    orderedWallets: orderedWallets,
                     pollID: pollID,
                     isSender: isSender,
                     isPreview: isPreview,
@@ -395,6 +418,11 @@ struct AnswerWallet {
     var verified = false
 }
 
+struct OrderedWallet {
+    var walletAddress = ""
+    var createdAt = ""
+}
+
 @available(iOS 13.0.0, *)
 struct PollView: View {
     // MARK: - Input Paramters
@@ -405,6 +433,7 @@ struct PollView: View {
     var hideTally = false
     @State var answers: [AnswerRes] = []
     @State var pollVotedCount: Double = 0
+    @State var orderedWallets: [OrderedWallet] = []
     var pollID = ""
     var isSender: Bool
     var isPreview = false
@@ -533,7 +562,8 @@ struct PollView: View {
                         let groupID = userInfo["groupID"] as? String ?? ""
                         let messageID = userInfo["messageID"] as? String ?? ""
                         let answers = userInfo["answers"] as? [[String: Any]] ?? []
-                        let voteFor = userInfo["voteFor"] as? [String] ?? []
+                        let voteFor = userInfo["vote_for"] as? [String] ?? []
+                        let orderedWallets = userInfo["ordered_wallets"] as? [[String: Any]] ?? []
                         self.answers.removeAll()
                         answers.forEach { item in
                             var wallets: [AnswerWallet] = []
@@ -566,6 +596,13 @@ struct PollView: View {
                         voted = userInfo["voted"] as? Bool ?? false
                         listVotedAnswer = voteFor
                         pollVotedCount = userInfo["pollVotedCount"] as? Double ?? 0
+                        self.orderedWallets.removeAll()
+                        orderedWallets.forEach { item in
+                            self.orderedWallets.append(OrderedWallet(
+                                walletAddress: item["wallet_address"] as? String ?? "",
+                                createdAt: item["created_at"] as? String ?? ""
+                            ))
+                        }
                     }
                     isLoaded = true
                 } else {
@@ -575,9 +612,9 @@ struct PollView: View {
                     NotificationCenter.default.post(name: .getPollData, object: nil, userInfo: userInfo)
                 }
                 memberVotedURL.removeAll()
-                self.answers.forEach { item in
-                    for wallet in item.wallets where !memberVotedURL.contains(wallet.address) {
-                        memberVotedURL.append(wallet.avatar)
+                self.orderedWallets.forEach { item in
+                    if let walletImageURL = PollBubble.getWalletImageURL?(item.walletAddress) {
+                        memberVotedURL.append(walletImageURL)
                     }
                 }
             }
@@ -598,7 +635,8 @@ struct PollView: View {
                     let groupID = value.userInfo?["groupID"] as? String ?? ""
                     let messageID = value.userInfo?["messageID"] as? String ?? ""
                     let answers = value.userInfo?["answers"] as? [[String: Any]] ?? []
-                    let voteFor = value.userInfo?["voteFor"] as? [String] ?? []
+                    let orderedWallets = value.userInfo?["ordered_wallets"] as? [[String: Any]] ?? []
+                    let voteFor = value.userInfo?["vote_for"] as? [String] ?? []
                     self.answers.removeAll()
                     answers.forEach { item in
                         var wallets: [AnswerWallet] = []
@@ -628,10 +666,17 @@ struct PollView: View {
                             createdAt: item["createdAt"] as? String ?? ""
                         ))
                     }
+                    self.orderedWallets.removeAll()
+                    orderedWallets.forEach { item in
+                        self.orderedWallets.append(OrderedWallet(
+                            walletAddress: item["wallet_address"] as? String ?? "",
+                            createdAt: item["created_at"] as? String ?? ""
+                        ))
+                    }
                     memberVotedURL.removeAll()
-                    self.answers.forEach { item in
-                        for wallet in item.wallets where !memberVotedURL.contains(wallet.address) {
-                            memberVotedURL.append(wallet.avatar)
+                    self.orderedWallets.forEach { item in
+                        if let walletImageURL = PollBubble.getWalletImageURL?(item.walletAddress) {
+                            memberVotedURL.append(walletImageURL)
                         }
                     }
                     withAnimation(.easeInOut(duration: 0.2)) {
