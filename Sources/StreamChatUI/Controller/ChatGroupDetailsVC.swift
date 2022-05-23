@@ -177,7 +177,18 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
         let nickName = UIAction(title: "Nickname", image: appearance.images.rectanglePencil) { _ in
         }
         if isDirectMessageChannel() {
-            return [addContact, reportAction]
+            var arrActions: [UIAction] = []
+            if let channel = viewModel.channelController?.channel,
+               let otherMember = Array(channel.lastActiveMembers).first(where: { member in member.id != ChatClient.shared.currentUserId }) {
+                if let contactList = contacts {
+                    let selectedUser = contactList.filter{ $0.walletAddress == otherMember.id }
+                    if selectedUser.isEmpty {
+                        arrActions.append(addContact)
+                    }
+                }
+            }
+            arrActions.append(reportAction)
+            return arrActions
         } else if viewModel.screenType == .channelDetail {
             return [reportAction]
         } else if viewModel.screenType == .userdetail {
@@ -206,11 +217,7 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
         }
     }
 
-    private func addToContact() {
-        guard viewModel.screenType == .userdetail,
-              let member = viewModel.user else {
-            return
-        }
+    private func addMemberToContact(member: ChatChannelMember) {
         if contacts == nil {
             var tempModel = [ContactModel]()
             tempModel.append(ContactModel(name: member.name ?? "",
@@ -231,6 +238,25 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
                                             created: Date(),
                                             updated: Date()))
             Snackbar.show(text: "Contact added successfully!")
+        }
+    }
+
+    private func addToContact() {
+        guard viewModel.screenType == .userdetail || isDirectMessageChannel() else {
+            return
+        }
+        if isDirectMessageChannel() {
+            guard let channel = viewModel.channelController?.channel,
+                  let otherMember = Array(channel.lastActiveMembers)
+                    .first(where: { member in member.id != ChatClient.shared.currentUserId }) else {
+                        return
+                    }
+            addMemberToContact(member: otherMember)
+        } else {
+            guard let member = viewModel.user else {
+                return
+            }
+            addMemberToContact(member: member)
         }
         addMenuToMoreButton()
     }

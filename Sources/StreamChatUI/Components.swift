@@ -107,6 +107,10 @@ public struct Components {
     @available(iOSApplicationExtension, unavailable)
     public var messageListVC: ChatMessageListVC.Type = ChatMessageListVC.self
 
+    /// The controller that handles `ChatMessageListVC <-> ChatMessagePopUp` transition.
+    public var messageActionsTransitionController: MessageActionsTransitionController.Type =
+        MessageActionsTransitionController.self
+
     /// The view that shows the message list.
     public var messageListView: ChatMessageListView.Type = ChatMessageListView
         .self

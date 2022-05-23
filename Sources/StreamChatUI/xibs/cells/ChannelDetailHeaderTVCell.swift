@@ -133,15 +133,39 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
     }
 
     @IBAction func btnEmailAction(_ sender: UIButton) {
+        guard let email = user?.extraData.email,
+              !email.isEmpty,
+              let url = URL(string: "mailto:\(email)") else {
+            return
+        }
+        UIApplication.shared.open(url)
     }
 
     @IBAction func btnTwitterAction(_ sender: UIButton) {
+        guard let twitterId = user?.extraData.twitterId,
+              !twitterId.isEmpty,
+              let url = URL(string: "https://www.\(Constants.SocialMediaProfilePrefix.twitter)\(twitterId)") else {
+            return
+        }
+        UIApplication.shared.open(url)
     }
 
     @IBAction func btnInstaAction(_ sender: UIButton) {
+        guard let instagramId = user?.extraData.instagramId,
+              !instagramId.isEmpty,
+              let url = URL(string: "https://www.\(Constants.SocialMediaProfilePrefix.instagram)\(instagramId)") else {
+            return
+        }
+        UIApplication.shared.open(url)
     }
 
     @IBAction func btnTiktokAction(_ sender: UIButton) {
+        guard let tiktokId = user?.extraData.tiktokId,
+              !tiktokId.isEmpty,
+              let url = URL(string: "https://www.\(Constants.SocialMediaProfilePrefix.tiktok)\(tiktokId)") else {
+            return
+        }
+        UIApplication.shared.open(url)
     }
 
     // MARK: - functions
@@ -188,6 +212,54 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
         setMuteButton()
         setMiddleButton()
         addChannelDescViews()
+        handleSocialMediaLinks()
+    }
+
+    private func handleSocialMediaLinks() {
+        if isDirectMessageChannel() || screenType == .userdetail {
+            socialLinks(isHidden: false)
+            enableSocialBtnBasedOnData()
+        } else if screenType == .channelDetail {
+            socialLinks(isHidden: true)
+        }
+    }
+
+    private func socialLinks(isHidden: Bool) {
+        for btn in socialButtons {
+            btn.isHidden = isHidden
+        }
+    }
+
+    private func socialBtn(btn: UIButton, isDisable: Bool) {
+        btn.alpha = isDisable ? 0.2 : 1.0
+        btn.isEnabled = !isDisable
+    }
+
+    private func enableSocialBtnBasedOnData() {
+        // mail
+        if let email = user?.extraData.email, !email.isEmpty {
+            socialBtn(btn: btnEmail, isDisable: false)
+        } else {
+            socialBtn(btn: btnEmail, isDisable: true)
+        }
+        // twitter
+        if let twitter = user?.extraData.twitterId, !twitter.isEmpty {
+            socialBtn(btn: btnTwitter, isDisable: false)
+        } else {
+            socialBtn(btn: btnTwitter, isDisable: true)
+        }
+        // instagram
+        if let instagram = user?.extraData.instagramId, !instagram.isEmpty  {
+            socialBtn(btn: btnInsta, isDisable: false)
+        } else {
+            socialBtn(btn: btnInsta, isDisable: true)
+        }
+        //tiktok
+        if let tiktok = user?.extraData.tiktokId, !tiktok.isEmpty  {
+            socialBtn(btn: btnTikTok, isDisable: false)
+        } else {
+            socialBtn(btn: btnTikTok, isDisable: true)
+        }
     }
 
     private func addChannelDescViews() {
@@ -423,7 +495,7 @@ class ChannelDetailHeaderTVCell: _TableViewCell, AppearanceProvider {
             return
         }
         stackSubView.lblTitle.text = "bio"
-        stackSubView.lblDesc.text = "-"
+        stackSubView.lblDesc.text = user?.extraData.bio ?? "-"
         stackSubView.viewQRCode.isHidden = true
         stackSubView.viewSeparator.isHidden = true
         descStackView.addArrangedSubview(stackSubView)
