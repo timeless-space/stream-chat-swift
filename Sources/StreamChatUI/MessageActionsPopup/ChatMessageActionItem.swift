@@ -45,7 +45,7 @@ public struct InlineReplyActionItem: ChatMessageActionItem {
         appearance: Appearance = .default
     ) {
         self.action = action
-        icon = appearance.images.messageActionInlineReply
+        icon = appearance.images.messageActionInlineReply ?? UIImage()
     }
 }
 
@@ -83,7 +83,7 @@ public struct EditActionItem: ChatMessageActionItem {
         appearance: Appearance = .default
     ) {
         self.action = action
-        icon = appearance.images.messageActionEdit
+        icon = appearance.images.messageActionEdit ?? UIImage()
     }
 }
 
@@ -102,7 +102,7 @@ public struct CopyActionItem: ChatMessageActionItem {
         appearance: Appearance = .default
     ) {
         self.action = action
-        icon = appearance.images.messageActionCopy
+        icon = appearance.images.messageActionCopy ?? UIImage()
     }
 }
 
@@ -260,12 +260,41 @@ public struct ResendActionItem: ChatMessageActionItem {
     }
 }
 
+
+/// Instance of `ChatMessageActionItem` for pin message action.
+public struct PinMessageActionItem: ChatMessageActionItem {
+    public var title: String { L10n.Message.Actions.pin }
+    public let icon: UIImage
+    public let action: (ChatMessageActionItem) -> Void
+    public init(
+        action: @escaping (ChatMessageActionItem) -> Void,
+        appearance: Appearance = .default
+    ) {
+        self.action = action
+        icon = appearance.images.messageActionPin ?? UIImage()
+    }
+}
+
+/// Instance of `ChatMessageActionItem` for pin message action.
+public struct ForwardMessageActionItem: ChatMessageActionItem {
+    public var title: String { L10n.Message.Actions.forward }
+    public let icon: UIImage
+    public let action: (ChatMessageActionItem) -> Void
+    public init(
+        action: @escaping (ChatMessageActionItem) -> Void,
+        appearance: Appearance = .default
+    ) {
+        self.action = action
+        icon = appearance.images.messageActionForward ?? UIImage()
+    }
+}
+
 /// Instance of `FlagActionItem` for flagging a message action.
 public struct FlagActionItem: ChatMessageActionItem {
     public var title: String { L10n.Message.Actions.flag }
     public let icon: UIImage
     public let action: (ChatMessageActionItem) -> Void
-    
+
     /// Init of `FlagActionItem`.
     /// - Parameters:
     ///     - action: Action to be triggered when `FlagActionItem` is tapped.

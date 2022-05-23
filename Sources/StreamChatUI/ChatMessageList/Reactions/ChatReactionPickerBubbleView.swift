@@ -42,7 +42,7 @@ open class ChatReactionPickerBubbleView: _View, ThemeProvider {
         isHidden = false
         contentView.content = content.flatMap {
             .init(
-                useBigIcons: $0.style.isBig,
+                useAnimatedIcons: $0.style.isBig,
                 reactions: $0.reactions,
                 didTapOnReaction: $0.didTapOnReaction
             )

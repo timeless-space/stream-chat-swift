@@ -86,15 +86,6 @@ final class NewUserQueryUpdater: Worker {
                     // Modify original query filter
                     try $0.asUserListQueryWithUpdatedFilter(filterToAdd: .equal("id", to: userDTO.id))
                 }
-
-                // Send `update(userListQuery:` requests so corresponding queries will be linked to the user
-                updatedQueries?.forEach {
-                    self?.userListUpdater.update(userListQuery: $0) { error in
-                        if let error = error {
-                            log.error("Internal error. Failed to update UserListQueries for the new user: \(error)")
-                        }
-                    }
-                }
             } catch {
                 log.error("Internal error. Failed to update UserListQueries for the new user: \(error)")
             }

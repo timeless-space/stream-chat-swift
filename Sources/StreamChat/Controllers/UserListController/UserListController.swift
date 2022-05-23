@@ -41,6 +41,8 @@ public class ChatUserListController: DataController, DelegateCallable, DataStore
             client.databaseContainer,
             client.apiClient
         )
+    /// A Boolean value that returns wether pagination is finished
+    public private(set) var hasLoadedAllPreviousChannels: Bool = false
 
     /// A type-erased delegate.
     var multicastDelegate: MulticastDelegate<ChatUserListControllerDelegate> = .init() {
@@ -99,9 +101,19 @@ public class ChatUserListController: DataController, DelegateCallable, DataStore
     override public func synchronize(_ completion: ((_ error: Error?) -> Void)? = nil) {
         startUserListObserverIfNeeded()
         
-        worker.update(userListQuery: query) { error in
-            self.state = error == nil ? .remoteDataFetched : .remoteDataFetchFailed(ClientError(with: error))
-            self.callback { completion?(error) }
+        worker.update(userListQuery: query) { [weak self] result in
+            guard let weakSelf = self else {
+                completion?(nil)
+                return
+            }
+            switch result {
+            case .success:
+                weakSelf.state = .remoteDataFetched
+                weakSelf.callback { completion?(nil) }
+            case let .failure(error):
+                weakSelf.state = .remoteDataFetchFailed(ClientError(with: error))
+                weakSelf.callback { completion?(error) }
+            }
         }
     }
     
@@ -135,12 +147,28 @@ public extension ChatUserListController {
     ///
     func loadNextUsers(
         limit: Int = 25,
-        completion: ((Error?) -> Void)? = nil
+        completion: ((Error?,Bool) -> Void)? = nil
     ) {
+        if hasLoadedAllPreviousChannels {
+            completion?(nil,hasLoadedAllPreviousChannels)
+            return
+        }
         var updatedQuery = query
         updatedQuery.pagination = Pagination(pageSize: limit, offset: users.count)
-        worker.update(userListQuery: updatedQuery) { error in
-            self.callback { completion?(error) }
+        worker.update(userListQuery: updatedQuery) { [weak self] result in
+            guard let weakSelf = self else {
+                completion?(nil,false)
+                return
+            }
+            switch result {
+            case let .success(payload):
+                weakSelf.hasLoadedAllPreviousChannels = payload.users.count < limit
+                weakSelf.callback {
+                    completion?(nil,weakSelf.hasLoadedAllPreviousChannels) }
+            case let .failure(error):
+                weakSelf.callback { completion?(error,weakSelf.hasLoadedAllPreviousChannels)
+                }
+            }
         }
     }
 }

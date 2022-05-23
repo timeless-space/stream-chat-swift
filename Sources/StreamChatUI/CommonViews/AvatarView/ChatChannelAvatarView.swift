@@ -4,6 +4,7 @@
 
 import StreamChat
 import UIKit
+import SkeletonView
 
 /// A view that shows a channel avatar including an online indicator if any user is online.
 open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
@@ -11,7 +12,11 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     open private(set) lazy var presenceAvatarView: ChatPresenceAvatarView = components
         .presenceAvatarView.init()
         .withoutAutoresizingMaskConstraints
-
+    // Shimmer effect View
+    open private(set) lazy var shimmerView: UIView = UIView()
+        .withoutAutoresizingMaskConstraints
+    // avatar corner radius
+    open var avatarCornerRadius: CGFloat = 24
     /// The data this view component shows.
     open var content: (channel: ChatChannel?, currentUserId: UserId?) {
         didSet { updateContentIfNeeded() }
@@ -25,29 +30,58 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     open var imageMerger: ImageMerging = {
         DefaultImageMerger()
     }()
+    private lazy var imageProcessor: ImageProcessor = {
+        return NukeImageProcessor()
+    }()
+    private lazy var imageCDN: ImageCDN = {
+        return StreamImageCDN()
+    }()
+
+    // MARK: - Layout
+    open override func setUp() {
+        super.setUp()
+        setUpShimmerView()
+    }
 
     override open func setUpLayout() {
         super.setUpLayout()
         embed(presenceAvatarView)
+        embed(shimmerView)
+    }
+
+    open override func setUpAppearance() {
+        super.setUpAppearance()
+        presenceAvatarView
+            .avatarView
+            .imageView
+            .backgroundColor =  SkeletonAppearance.Settings.shimmerBackgroundColor
+    }
+
+    open func setUpShimmerView() {
+        shimmerView.isSkeletonable = true
+        shimmerView.layer.cornerRadius = avatarCornerRadius
+        shimmerView.skeletonCornerRadius = Float(avatarCornerRadius)
+        shimmerView.showAnimatedGradientSkeleton()
+        shimmerView.isHidden = true
     }
 
     override open func updateContent() {
+        super.updateContent()
         guard let channel = content.channel else {
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder3)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             presenceAvatarView.isOnlineIndicatorVisible = false
             return
         }
-
         loadAvatar(for: channel)
     }
-    
+
     open func loadAvatar(for channel: ChatChannel) {
         // If the channel has an avatar set, load that avatar
         if let channelAvatarUrl = channel.imageURL {
             loadChannelAvatar(from: channelAvatarUrl)
             return
         }
-      
+
         // Use the appropriate method to load avatar based on channel type
         if channel.isDirectMessageChannel {
             loadDirectMessageChannelAvatar(channel: channel)
@@ -55,11 +89,15 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
             loadMergedAvatars(channel: channel)
         }
     }
-    
+
     /// Loads the avatar from the URL. This function is used when the channel has a non-nil `imageURL`
     /// - Parameter url: The `imageURL` of the channel
     open func loadChannelAvatar(from url: URL) {
-        loadIntoAvatarImageView(from: url, placeholder: appearance.images.userAvatarPlaceholder4)
+        if let imageContainer = ImagePipeline.shared.cachedImage(for: url) {
+            loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
+            return
+        }
+        loadIntoAvatarImageView(from: url, placeholder: nil)
     }
     
     /// Loads avatar for a directMessageChannel
@@ -70,12 +108,21 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         // If there are no members other than the current user in the channel, load a placeholder
         guard !lastActiveMembers.isEmpty, let otherMember = lastActiveMembers.first else {
             presenceAvatarView.isOnlineIndicatorVisible = false
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder4)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
-        
-        loadIntoAvatarImageView(from: otherMember.imageURL, placeholder: appearance.images.userAvatarPlaceholder3)
+        guard let imageUrl = otherMember.imageURL else {
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
+            return
+        }
         presenceAvatarView.isOnlineIndicatorVisible = otherMember.isOnline
+        if let imageContainer = ImagePipeline.shared.cachedImage(for: imageUrl) {
+            loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
+            return
+        }
+        shimmerView.showAnimatedGradientSkeleton()
+        shimmerView.isHidden = false
+        loadIntoAvatarImageView(from: otherMember.imageURL, placeholder: nil)
     }
     
     /// Loads an avatar which is merged (tiled) version of the first four active members of the channel
@@ -88,25 +135,51 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         
         // If there are no members other than the current user in the channel, load a placeholder
         guard !lastActiveMembers.isEmpty else {
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder4)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
         
         var urls = lastActiveMembers.map(\.imageURL)
         
         if urls.isEmpty {
-            loadIntoAvatarImageView(from: nil, placeholder: appearance.images.userAvatarPlaceholder3)
+            loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
         
         // We show a combination of at max 4 images combined
         urls = Array(urls.prefix(maxNumberOfImagesInCombinedAvatar))
-        
+        let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
+        // Checked if avatar already cached
+        if let imageContainer = ImagePipeline.shared.cache.cachedImage(for: customKeyForCache),
+           let cachedUrlCount = imageContainer.userInfo["count"] as? Int,
+            urls.count == cachedUrlCount {
+                loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
+                shimmerView.hideSkeleton()
+                return
+        }
+        // showing shimmer effect while loading avatar
+        shimmerView.showAnimatedGradientSkeleton()
+        shimmerView.isHidden = false
         loadAvatarsFrom(urls: urls, channelId: channel.cid) { [weak self] avatars, channelId in
-            guard let self = self, channelId == self.content.channel?.cid else { return }
-            
-            let combinedImage = self.createMergedAvatar(from: avatars) ?? self.appearance.images.userAvatarPlaceholder2
-            self.loadIntoAvatarImageView(from: nil, placeholder: combinedImage)
+            guard let weakSelf = self, channelId == weakSelf.content.channel?.cid
+            else { return }
+            DispatchQueue.global(qos: .userInitiated).async {
+                let combinedImage = weakSelf.createMergedAvatar(from: avatars)
+                DispatchQueue.main.async {
+                    weakSelf.loadIntoAvatarImageView(from: nil, placeholder: combinedImage)
+                    weakSelf.shimmerView.hideSkeleton()
+                    if let image = combinedImage {
+                        let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
+                        let imageContainer = ImageContainer.init(
+                            image: image,
+                            type: nil,
+                            isPreview: false,
+                            data: nil,
+                            userInfo: ["count": urls.count])
+                        ImagePipeline.shared.cache.storeCachedImage(imageContainer, for: customKeyForCache)
+                    }
+                }
+            }
         }
     }
     
@@ -121,29 +194,19 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         completion: @escaping ([UIImage], ChannelId)
             -> Void
     ) {
-        var placeholderAvatars: [UIImage] = []
-        
-        var placeholderImages = [
-            appearance.images.userAvatarPlaceholder1,
-            appearance.images.userAvatarPlaceholder2,
-            appearance.images.userAvatarPlaceholder3,
-            appearance.images.userAvatarPlaceholder4
-        ]
-        
+
         var avatarUrls: [URL] = []
         
         for url in urls.prefix(maxNumberOfImagesInCombinedAvatar) {
             if let avatarUrl = url {
                 avatarUrls.append(avatarUrl)
-            } else {
-                placeholderAvatars.append(placeholderImages.removeFirst())
             }
         }
         
         components.imageLoader.loadImages(
             from: avatarUrls,
-            placeholders: placeholderImages,
-            imageCDN: components.imageCDN
+            placeholders: [],
+            imageCDN: imageCDN
         ) { images in
             completion(images, channelId)
         }
@@ -156,25 +219,20 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         guard !avatars.isEmpty else {
             return nil
         }
-        
         var combinedImage: UIImage?
-        
-        let imageProcessor = components.imageProcessor
-        
         let images = avatars.map {
             imageProcessor.scale(image: $0, to: .avatarThumbnailSize)
         }
-        
         // The half of the width of the avatar
         let halfContainerSize = CGSize(width: CGSize.avatarThumbnailSize.width / 2, height: CGSize.avatarThumbnailSize.height)
-        
-        if images.count == 1, let image = images.first {
-            combinedImage = image
-        } else if images.count == 2, let firstImage = images.first, let secondImage = images.last {
-            let leftImage = imageProcessor.crop(image: firstImage, to: halfContainerSize)
-                ?? appearance.images.userAvatarPlaceholder1
-            let rightImage = imageProcessor.crop(image: secondImage, to: halfContainerSize)
-                ?? appearance.images.userAvatarPlaceholder1
+
+        if images.count == 1 {
+            combinedImage = images[0]
+        } else if images.count == 2 {
+            let leftImage = imageProcessor.crop(image: images[0], to: halfContainerSize)
+            ?? images[0]
+            let rightImage = imageProcessor.crop(image: images[1], to: halfContainerSize)
+            ?? images[1]
             combinedImage = imageMerger.merge(
                 images: [
                     leftImage,
@@ -182,76 +240,69 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 ],
                 orientation: .horizontal
             )
-        } else if images.count == 3,
-                  let firstImage = images[safe: 0],
-                  let secondImage = images[safe: 1],
-                  let thirdImage = images[safe: 2] {
-            let leftImage = imageProcessor.crop(image: firstImage, to: halfContainerSize)
+        } else if images.count == 3 {
+            let leftImage = imageProcessor.crop(image: images[0], to: halfContainerSize)
 
             let rightCollage = imageMerger.merge(
                 images: [
-                    secondImage,
-                    thirdImage
+                    images[1],
+                    images[2]
                 ],
                 orientation: .vertical
             )
-            
+
             let rightImage = imageProcessor.crop(
                 image: imageProcessor
-                    .scale(image: rightCollage ?? appearance.images.userAvatarPlaceholder3, to: .avatarThumbnailSize),
+                    .scale(image: rightCollage ?? images[2], to: .avatarThumbnailSize),
                 to: halfContainerSize
             )
-            
+
             combinedImage = imageMerger.merge(
                 images:
-                [
-                    leftImage ?? appearance.images.userAvatarPlaceholder1,
-                    rightImage ?? appearance.images.userAvatarPlaceholder2
-                ],
+                    [
+                        leftImage ?? images[0],
+                        rightImage ?? images[1]
+                    ],
                 orientation: .horizontal
             )
-        } else if images.count == 4,
-                  let firstImage = images[safe: 0],
-                  let secondImage = images[safe: 1],
-                  let thirdImage = images[safe: 2],
-                  let forthImage = images[safe: 3] {
+        } else if images.count == 4 {
             let leftCollage = imageMerger.merge(
                 images: [
-                    firstImage,
-                    thirdImage
+                    images[0],
+                    images[2]
                 ],
                 orientation: .vertical
             )
-            
+
             let leftImage = imageProcessor.crop(
                 image: imageProcessor
-                    .scale(image: leftCollage ?? appearance.images.userAvatarPlaceholder1, to: .avatarThumbnailSize),
+                    .scale(image: leftCollage ?? images[0], to: .avatarThumbnailSize),
                 to: halfContainerSize
             )
-            
+
             let rightCollage = imageMerger.merge(
                 images: [
-                    secondImage,
-                    forthImage
+                    images[1],
+                    images[3]
                 ],
                 orientation: .vertical
             )
-            
+
             let rightImage = imageProcessor.crop(
                 image: imageProcessor
-                    .scale(image: rightCollage ?? appearance.images.userAvatarPlaceholder2, to: .avatarThumbnailSize),
+                    .scale(image: rightCollage ?? images[1], to: .avatarThumbnailSize),
                 to: halfContainerSize
             )
-         
+
             combinedImage = imageMerger.merge(
                 images: [
-                    leftImage ?? appearance.images.userAvatarPlaceholder1,
-                    rightImage ?? appearance.images.userAvatarPlaceholder2
+                    leftImage ?? images[1],
+                    rightImage ?? images[2]
                 ],
                 orientation: .horizontal
             )
         }
-        
+
         return combinedImage
     }
 
@@ -263,12 +314,23 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     }
     
     open func loadIntoAvatarImageView(from url: URL?, placeholder: UIImage?) {
+        if url == nil {
+            shimmerView.isHidden = true
+            shimmerView.hideSkeleton()
+        } else {
+            shimmerView.showAnimatedGradientSkeleton()
+            shimmerView.isHidden = false
+        }
         components.imageLoader.loadImage(
             into: presenceAvatarView.avatarView.imageView,
             url: url,
             imageCDN: components.imageCDN,
             placeholder: placeholder,
             preferredSize: .avatarThumbnailSize
-        )
+        ) { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.shimmerView.hideSkeleton()
+            weakSelf.shimmerView.isHidden = true
+        }
     }
 }

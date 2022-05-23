@@ -364,15 +364,20 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 .pin(equalTo: reactionsBubbleView.centerYAnchor, constant: 5)
             constraintsToActivate += [
                 reactionsBubbleView.topAnchor.pin(equalTo: topAnchor),
-                bubbleToReactionsConstraint,
-                reactionsBubbleView.centerXAnchor.pin(
-                    equalTo: options.contains(.flipped) ?
-                        (bubbleView ?? bubbleContentContainer).leadingAnchor :
-                        (bubbleView ?? bubbleContentContainer).trailingAnchor,
-                    constant: options.contains(.flipped) ? -8 : 8
-                )
+                bubbleToReactionsConstraint
             ]
             .compactMap { $0 }
+            if options.contains(.flipped) {
+                constraintsToActivate += [
+                    reactionsBubbleView.trailingAnchor.pin(greaterThanOrEqualTo: (bubbleView ?? bubbleContentContainer).leadingAnchor, constant: 20),
+                    reactionsBubbleView.leadingAnchor.pin(greaterThanOrEqualTo: leadingAnchor, constant: 0)
+                ]
+            } else {
+                constraintsToActivate += [
+                    reactionsBubbleView.leadingAnchor.pin(lessThanOrEqualTo: (bubbleView ?? bubbleContentContainer).trailingAnchor, constant: -20),
+                    reactionsBubbleView.trailingAnchor.pin(lessThanOrEqualTo: trailingAnchor, constant: 0)
+                ]
+            }
         } else {
             constraintsToActivate += [
                 mainContainer.topAnchor.pin(equalTo: topAnchor)
@@ -481,7 +486,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
         var textFont = appearance.fonts.body
         
         if content?.isDeleted == true {
-            textColor = appearance.colorPalette.textLowEmphasis
+            textColor = .white.withAlphaComponent(0.4)
         } else if content?.shouldRenderAsJumbomoji == true {
             textFont = appearance.fonts.emoji
         } else if content?.type == .system || content?.type == .error {
@@ -579,7 +584,7 @@ open class ChatMessageContentView: _View, ThemeProvider {
             .map { $0.isSentByCurrentUser ? .toTrailing : .toLeading }
         reactionsView?.content = content.map {
             .init(
-                useBigIcons: false,
+                useAnimatedIcons: false,
                 reactions: $0.reactionsData,
                 didTapOnReaction: nil
             )
@@ -758,12 +763,12 @@ open class ChatMessageContentView: _View, ThemeProvider {
                 .messageReactionsView
                 .init()
                 .withoutAutoresizingMaskConstraints
-
             let tapRecognizer = UITapGestureRecognizer(
                 target: self,
                 action: #selector(handleTapOnReactionsView)
             )
             reactionsBubbleView?.addGestureRecognizer(tapRecognizer)
+            reactionsView?.isThreadInReaction = true
         }
         return reactionsView!
     }

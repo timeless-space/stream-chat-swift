@@ -74,15 +74,15 @@ open class ChatMessageActionControl: _Control, AppearanceProvider {
 
         titleLabel.text = content?.title
         if isHighlighted {
-            titleLabel.textColor = appearance.colorPalette.highlightedColorForColor(titleTextColor)
+            titleLabel.textColor = .white
             imageView.image = content?.icon
-                .tinted(with: .white/*appearance.colorPalette.highlightedColorForColor(imageTintСolor)*/)
-            backgroundColor = appearance.colorPalette.highlightedColorForColor(appearance.colorPalette.background)
+                .tinted(with: .white)
+            backgroundColor = appearance.colorPalette.messageActionMenuBackground
         } else {
-            titleLabel.textColor = titleTextColor
+            titleLabel.textColor = .white
             imageView.image = content?.icon
-                .tinted(with: .white/*imageTintСolor*/)
-            backgroundColor = appearance.colorPalette.popoverBackground//appearance.colorPalette.background
+                .tinted(with: .white)
+            backgroundColor = appearance.colorPalette.messageActionMenuBackground
         }
     }
     

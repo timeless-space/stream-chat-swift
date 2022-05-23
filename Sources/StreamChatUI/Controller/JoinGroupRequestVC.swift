@@ -20,18 +20,28 @@ public class JoinGroupRequestVC: UIViewController {
     @IBOutlet private weak var backgroundView: UIView!
 
     // MARK: - VARIBALES
-    public var channelController: ChatChannelController!
     public var callbackUserJoined:(() -> Void)?
+    public var inviteCode: String?
+    public var cidDescription: String?
+    public var channelName: String?
+    public var channelDescription: String?
+    public var channelAvatar = [URL]()
+
     // MARK: - VIEW CYCLE
     public override func viewDidLoad() {
         super.viewDidLoad()
         groupImageView.layer.cornerRadius = groupImageView.bounds.width / 2
-        groupImageView.content = (channelController.channel, nil)
-        groupNameLabel.text = channelController.channel?.name?.capitalizingFirstLetter() ?? ""
-        lblGroupDetails.text = channelController.channel?.extraData.channelDescription ?? ""
+        groupNameLabel.text = channelName?.capitalizingFirstLetter() ?? ""
+        lblGroupDetails.text = channelDescription ?? ""
         joinGroupButton.layer.cornerRadius = joinGroupButton.bounds.height/2
         closeButton.setImage(Appearance.default.images.closePopup, for: .normal)
         backgroundView.backgroundColor = Appearance.default.colorPalette.panModelColor
+        guard let channel = try? ChannelId.init(cid: cidDescription ?? "") else { return }
+        groupImageView.loadAvatarsFrom(urls: channelAvatar, channelId: channel) { [weak self] images, _ in
+            guard let `self` = self else { return }
+            self.groupImageView.presenceAvatarView.avatarView.imageView.image = self.groupImageView.createMergedAvatar(from: images)
+        }
+
     }
     
     @IBAction func closeButtonAction(_ sender: UIButton) {
@@ -39,16 +49,18 @@ public class JoinGroupRequestVC: UIViewController {
     }
     
     @IBAction func joinGroupButtonAction(_ sender: UIButton) {
-        guard let userId = ChatClient.shared.currentUserId else { return }
-        channelController.addMembers(userIds: [userId]) { [weak self] error in
-            guard let weakSelf = self else { return }
-            guard error == nil else {
-                Snackbar.show(text: "Something went wrong!")
+        ChatClientConfiguration.shared.joinInviteGroup = { [weak self] isSuccess in
+            guard let self = self, isSuccess else {
                 return
             }
-            Snackbar.show(text: "Group joined successfully")
-            weakSelf.callbackUserJoined?()
+            guard isSuccess else {
+                self.dismiss(animated: true, completion: nil)
+                return
+            }
+            self.callbackUserJoined?()
         }
+        let parameter = [kInviteGroupID: cidDescription, kInviteId: inviteCode]
+        NotificationCenter.default.post(name: .joinInviteGroup, object: nil, userInfo: parameter)
     }
 }
 

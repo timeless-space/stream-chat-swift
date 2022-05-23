@@ -93,8 +93,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     var viewEmptyState: UIView = UIView()
-    var streamVideoLoader = StreamVideoLoader()
-    
+
     open override func viewDidLoad() {
         super.viewDidLoad()
         listView.register(CryptoSentBubble.self, forCellReuseIdentifier: "CryptoSentBubble")
@@ -102,16 +101,25 @@ open class ChatMessageListVC: _ViewController,
         listView.register(RedPacketSentBubble.self, forCellReuseIdentifier: "RedPacketSentBubble")
         listView.register(WalletRequestPayBubble.self, forCellReuseIdentifier: "RequestBubble")
         listView.register(RedPacketBubble.self, forCellReuseIdentifier: "RedPacketBubble")
+        listView.register(ChatMessageStickerBubble.self, forCellReuseIdentifier: "ChatMessageStickerBubble")
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
-        //setupEmptyState()
-//        if let numberMessage = dataSource?.numberOfMessages(in: self) {
-//            viewEmptyState.isHidden = numberMessage != 0
-//        }
+        listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
+        listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            guard let `self` = self else { return }
+            self.pausePlayVideos()
+        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
 
     /// A formatter that converts the message date to textual representation.
@@ -273,7 +281,7 @@ open class ChatMessageListVC: _ViewController,
             gesture.state == .began,
             let indexPath = listView.indexPathForRow(at: location)
         else { return }
-
+        NotificationCenter.default.post(name: .hideKeyboardMenu, object: nil, userInfo: nil)
         didSelectMessageCell(at: indexPath)
     }
 
@@ -308,7 +316,6 @@ open class ChatMessageListVC: _ViewController,
             controller.messageController = messageController
             return controller
         }()
-
         router.showMessageActionsPopUp(
             messageContentView: messageContentView,
             messageActionsController: actionsController,
@@ -404,6 +411,7 @@ open class ChatMessageListVC: _ViewController,
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
                     cell.client = client
+                    cell.imageLoader = components.imageLoader
                     cell.configData()
                     cell.blockExpAction = { blockExpUrl in
                         let svc = SFSafariViewController(url: blockExpUrl)
@@ -709,6 +717,11 @@ open class ChatMessageListVC: _ViewController,
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
+    }
+
+    public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let cell = cell as? ASVideoTableViewCell else { return }
+        ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
     }
 
     open func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -1032,6 +1045,11 @@ internal extension ChatMessageListVC {
         guard channelType == .announcement else { return }
         ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView)
     }
+
+    @objc private func handleAppDidBecomeActive() {
+        guard channelType == .announcement else { return }
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true)
+    }
 }
 
 extension ChatMessageListVC: UIScrollViewDelegate {
@@ -1057,7 +1075,14 @@ extension ChatMessageListVC: AnnouncementAction {
         )
     }
 
-    func didSelectAnnouncementAction(_ message: ChatMessage?) {
-        debugPrint(message?.text)
+    func didSelectAnnouncementAction(_ message: ChatMessage?) { }
+
+    func didRefreshCell(_ cell: AnnouncementTableViewCell, _ img: UIImage) {
+        guard let indexPath = listView.indexPath(for: cell),
+            let visibleRows = listView.indexPathsForVisibleRows,
+            visibleRows.contains(indexPath)
+        else { return }
+        let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
+        cell.configureCell(message)
     }
 }

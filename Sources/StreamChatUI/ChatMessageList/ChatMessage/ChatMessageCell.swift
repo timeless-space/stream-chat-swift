@@ -19,10 +19,10 @@ public final class ChatMessageCell: _TableViewCell, ComponentsProvider {
 
     /// The date separator view that groups messages from the same day.
     /// This is internal since it is a temporary solution.
-//    internal lazy var dateSeparatorView: ChatMessageListDateSeparatorView = components
-//        .messageListDateSeparatorView.init()
-//        .withoutAutoresizingMaskConstraints
-//        .withAccessibilityIdentifier(identifier: "dateSeparatorView")
+    internal lazy var dateSeparatorView: ChatMessageListDateSeparatorView = components
+        .messageListDateSeparatorView.init()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "dateSeparatorView")
     
     /// The message content view the cell is showing.
     public private(set) var messageContentView: ChatMessageContentView?
@@ -43,7 +43,7 @@ public final class ChatMessageCell: _TableViewCell, ComponentsProvider {
         containerStackView.axis = .vertical
         containerStackView.alignment = .center
         containerStackView.spacing = 8
-        //containerStackView.addArrangedSubview(dateSeparatorView)
+        containerStackView.addArrangedSubview(dateSeparatorView)
         messageContentView.map { containerStackView.addArrangedSubview($0) }
         contentView.addSubview(containerStackView)
         

@@ -84,6 +84,10 @@ public extension Appearance {
         public var groupDetailContainerBG: UIColor = .groupDetailContainerBG
         public var showMoreButtonBg: UIColor = .init(rgb: 0x38383A)
         public var accentPrimary: UIColor = .streamAccentPrimary
+        public var messageActionMenuBackground: UIColor = .init(rgb: 0x242426)
+        public var messageActionMenuSeparator: UIColor = .init(rgb: 0x383638)
+        public var stickerBg: UIColor = .init(rgb: 0x1E1F1F)
+        public var emojiBg: UIColor = .init(rgb: 0x737373)
     }
 }
 

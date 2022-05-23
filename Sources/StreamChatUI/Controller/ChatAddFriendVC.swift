@@ -101,8 +101,7 @@ public class ChatAddFriendVC: ChatBaseVC {
             }
             chatUserList.viewModel.searchDataUsing(searchString: searchText)
         } else {
-            chatUserList.viewModel.searchText = nil
-            chatUserList.viewModel.fetchUserList(true)
+            chatUserList.viewModel.refreshUserList()
         }
     }
     

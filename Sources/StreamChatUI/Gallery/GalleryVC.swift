@@ -136,6 +136,14 @@ open class GalleryVC: _ViewController,
     /// A constaint between `bottomBarView.bottomAnchor` and `view.bottomAnchor`.
     open private(set) var bottomBarBottomConstraint: NSLayoutConstraint?
 
+    /// A constaint videoPlayerHeightConstraint
+    open private(set) var videoPlayerHeightConstraint: NSLayoutConstraint?
+
+    /// A constaint videoPlayerHeightConstraint
+    open private(set) var textMessageHeightConstraint: NSLayoutConstraint?
+    private let inputLinesScrollThreshold = 8
+    private var isCellAlreadyUpdated = false
+
     override open func setUpAppearance() {
         super.setUpAppearance()
         
@@ -145,9 +153,9 @@ open class GalleryVC: _ViewController,
         attachmentsCollectionView.showsHorizontalScrollIndicator = false
         attachmentsCollectionView.showsVerticalScrollIndicator = false
         
-        topBarView.backgroundColor = appearance.colorPalette.walletTabbarBackground//appearance.colorPalette.popoverBackground
-        bottomBarView.backgroundColor = appearance.colorPalette.walletTabbarBackground//appearance.colorPalette.popoverBackground
-        videoPlaybackBar.backgroundColor = .black//appearance.colorPalette.popoverBackground
+        topBarView.backgroundColor = .black.withAlphaComponent(0.8)
+        bottomBarView.backgroundColor = .black.withAlphaComponent(0.8)
+        videoPlaybackBar.backgroundColor = .black.withAlphaComponent(0.8)
         
         userLabel.font = appearance.fonts.bodyBold
         userLabel.textColor = .white//appearance.colorPalette.text
@@ -230,10 +238,12 @@ open class GalleryVC: _ViewController,
         bottomBarBottomConstraint = bottomBarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         bottomBarBottomConstraint?.isActive = true
 
+        let bottomBarContainerStackView = ContainerStackView()
+            .withoutAutoresizingMaskConstraints
         bottomBarContainerStackView.preservesSuperviewLayoutMargins = true
         bottomBarContainerStackView.isLayoutMarginsRelativeArrangement = true
         bottomBarView.embed(bottomBarContainerStackView)
-        
+
         shareButton.setContentHuggingPriority(.streamRequire, for: .horizontal)
         shareButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         bottomBarContainerStackView.addArrangedSubview(shareButton)
@@ -247,6 +257,7 @@ open class GalleryVC: _ViewController,
         view.addSubview(videoPlaybackBar)
         videoPlaybackBar.pin(anchors: [.leading, .trailing], to: view)
         videoPlaybackBar.bottomAnchor.constraint(equalTo: bottomBarView.topAnchor).isActive = true
+        videoPlayerHeightConstraint = videoPlaybackBar.heightAnchor.constraint(equalToConstant: 0)
 
         view.addSubview(textViewMessageContainerView)
         textViewMessageContainerView.pin(anchors: [.leading, .trailing], to: view)
@@ -286,6 +297,20 @@ open class GalleryVC: _ViewController,
                 )
             }
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
+            guard let `self` = self else { return }
+            if !self.isCellAlreadyUpdated {
+                self.topBarTopConstraint?.constant =  -self.topBarView.frame.height
+                self.bottomBarBottomConstraint?.constant = self.bottomBarView.frame.height
+                Animate {
+                    self.textViewMessageContainerView.alpha = 0
+                    self.topBarView.alpha = 0
+                    self.bottomBarView.alpha = 0
+                    self.videoPlaybackBar.backgroundColor = .clear
+                    self.view.layoutIfNeeded()
+                }
+            }
+        })
     }
     
     override open func viewWillDisappear(_ animated: Bool) {
@@ -319,6 +344,22 @@ open class GalleryVC: _ViewController,
         
         videoPlaybackBar.player = videoCell?.player
         videoPlaybackBar.isHidden = videoPlaybackBar.player == nil
+        videoPlayerHeightConstraint?.isActive = videoPlaybackBar.player == nil ? true : false
+
+        let isConstraintActive = textMessageHeightConstraint.flatMap { $0.isActive } ?? false
+
+        let lineHeight = textViewMessage.font?.lineHeight ?? 1
+        let linesCount = Int(textViewMessage.contentSize.height / lineHeight)
+
+        if isConstraintActive == false {
+            textMessageHeightConstraint = textViewMessage.heightAnchor.constraint(equalToConstant: textViewMessage.frame.height)
+            textMessageHeightConstraint?.isActive = true
+            textViewMessage.isScrollEnabled = true
+        } else {
+            textMessageHeightConstraint?.constant = linesCount > inputLinesScrollThreshold ?
+            lineHeight * CGFloat(inputLinesScrollThreshold) : textViewMessage.contentSize.height
+        }
+        textViewMessage.layoutIfNeeded()
     }
     
     /// Called whenever user pans with a given `gestureRecognizer`.
@@ -480,12 +521,14 @@ open class GalleryVC: _ViewController,
     
     /// Triggered when the current image is single tapped.
     open func handleSingleTapOnCell(at indexPath: IndexPath) {
+        isCellAlreadyUpdated = true
         let areBarsHidden = bottomBarBottomConstraint?.constant != 0
         
         topBarTopConstraint?.constant = areBarsHidden ? 0 : -topBarView.frame.height
         bottomBarBottomConstraint?.constant = areBarsHidden ? 0 : bottomBarView.frame.height
 
         Animate {
+            self.textViewMessageContainerView.alpha = areBarsHidden ? 1 : 0
             self.topBarView.alpha = areBarsHidden ? 1 : 0
             self.bottomBarView.alpha = areBarsHidden ? 1 : 0
             self.videoPlaybackBar.backgroundColor = areBarsHidden ? self.bottomBarView.backgroundColor : .clear

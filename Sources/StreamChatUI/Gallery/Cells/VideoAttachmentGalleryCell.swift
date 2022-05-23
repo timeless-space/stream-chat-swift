@@ -24,6 +24,8 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
     open private(set) lazy var playerView: PlayerView = components
         .playerView.init()
         .withoutAutoresizingMaskConstraints
+
+    private var gradientLayer = CAGradientLayer()
     
     override open func setUpAppearance() {
         super.setUpAppearance()
@@ -41,6 +43,7 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
         animationPlaceholderImageView.addSubview(playerView)
         playerView.pin(to: animationPlaceholderImageView)
         playerView.pin(anchors: [.height, .width], to: animationPlaceholderImageView)
+        gradientLayer.frame = frame
     }
     
     override open func updateContent() {
@@ -56,18 +59,29 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
                 AVPlayerItem(asset: components.videoLoader.videoAsset(at: $0))
             }
             player.replaceCurrentItem(with: playerItem)
-            
             if let url = newAssetURL {
                 components.videoLoader.loadPreviewForVideo(at: url) { [weak self] in
+                    guard let `self` = self else { return }
                     switch $0 {
                     case let .success(preview):
-                        self?.animationPlaceholderImageView.image = preview
+                        self.animationPlaceholderImageView.image = preview
+                        self.addGradientLayer(
+                            topColor: preview.averageColor?.cgColor,
+                            bottomColor: preview.averageColor?.withAlphaComponent(0.3).cgColor
+                        )
                     case .failure:
-                        self?.animationPlaceholderImageView.image = nil
+                        self.animationPlaceholderImageView.image = nil
                     }
                 }
             }
         }
+    }
+
+    func addGradientLayer(topColor: CGColor?, bottomColor: CGColor?) {
+        gradientLayer.removeFromSuperlayer()
+        gradientLayer.colors = [topColor, bottomColor]
+        gradientLayer.locations = [0.0, 1.0]
+        layer.insertSublayer(gradientLayer, at: 0)
     }
     
     override open func viewForZooming(in scrollView: UIScrollView) -> UIView? {

@@ -24,11 +24,13 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     @IBOutlet weak var lblTitle: UILabel!
     @IBOutlet weak var viewAction: UIView!
     @IBOutlet weak var btnShowMore: UIButton!
+    @IBOutlet weak var imgAspectConst: NSLayoutConstraint!
 
     // MARK: - Variables
     var content: ChatMessage?
-    var streamVideoLoader: StreamVideoLoader?
     var message: ChatMessage?
+    var cacheVideoThumbnail: Cache<URL, UIImage>?
+    private let containerPadding = 65
     weak var delegate: AnnouncementAction?
     /// Object which is responsible for loading images
     var imageLoader: ImageLoading?
@@ -40,7 +42,8 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        videoLayer.frame = playerView.frame
+        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: self.frame.width - CGFloat(containerPadding), height: self.frame.width - CGFloat(containerPadding))
+
     }
 
     func configureCell(_ message: ChatMessage?) {
@@ -77,8 +80,10 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             lblHashTag.text = nil
         }
         if let imageAttachments = message?.imageAttachments.first {
-            imgHeightConst.constant = 250
             imgView.image = nil
+            imgView.isHidden = false
+            imgHeightConst.priority = .defaultLow
+            imgAspectConst.priority = .defaultHigh
             btnShowMore.setTitle(getActionTitle(), for: .normal)
             imageUrl = imageAttachments.imageURL.absoluteString
             lblTitle.text = imageAttachments.title
@@ -92,27 +97,35 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             videoURL = nil
         } else if let videoAttachment = message?.videoAttachments.first {
             videoURL = videoAttachment.videoURL.absoluteString
-            imgHeightConst.constant = 250
+            imgHeightConst.priority = .defaultLow
+            imgAspectConst.priority = .defaultHigh
             playerView.isHidden = false
             imgView.image = nil
             lblTitle.text = videoAttachment.title
-            streamVideoLoader?.loadPreviewForVideo(at: videoAttachment.videoURL, completion: { [weak self] result in
-                guard let `self` = self else { return }
-                switch result {
-                case .success(let image):
-                    self.imgView.image = image
-                    self.imgPlay.isHidden = true
-                case .failure(_):
-                    self.imgView.image = nil
-                    self.imgPlay.isHidden = false
-                    break
-                }
-            })
+            if let img = cacheVideoThumbnail?[videoAttachment.videoURL] {
+                imageView.image = img
+                imgPlay.isHidden = true
+                imgView.isHidden = false
+            } else {
+                Components.default.videoLoader.loadPreviewForVideo(with: videoAttachment.videoURL, completion: { [weak self] result in
+                    guard let `self` = self else { return }
+                    switch result {
+                    case .success(let image, let url):
+                        self.cacheVideoThumbnail?[url] = image
+                        self.delegate?.didRefreshCell(self, image)
+                    case .failure(_):
+                        break
+                    }
+                })
+            }
         } else {
             videoURL = nil
             imgView.image = nil
             playerView.isHidden = true
             imgHeightConst.constant = 0
+            imgHeightConst.priority = .defaultHigh
+            imgAspectConst.priority = .defaultLow
+            imgHeightConst.isActive = true
             lblTitle.text = nil
         }
         layoutIfNeeded()
@@ -122,6 +135,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
         videoLayer.backgroundColor = UIColor.clear.cgColor
         videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         playerView.layer.addSublayer(videoLayer)
+        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: self.frame.width - CGFloat(containerPadding), height: playerView.frame.height)
     }
     
     private func getActionTitle() -> String {
@@ -150,4 +164,5 @@ extension AnnouncementTableViewCell: GalleryItemPreview {
 protocol AnnouncementAction: class  {
     func didSelectAnnouncement(_ message: ChatMessage?, view: AnnouncementTableViewCell)
     func didSelectAnnouncementAction(_ message: ChatMessage?)
+    func didRefreshCell(_ cell: AnnouncementTableViewCell, _ img: UIImage)
 }

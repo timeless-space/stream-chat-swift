@@ -229,6 +229,7 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
                 cellBeforeUpdateMessage?.extraData == cellAfterUpdateMessage?.extraData {
                 // If identifiers and messages match we can simply update the current cell with new content
                 cellBeforeUpdate?.messageContentView?.content = cellAfterUpdateMessage
+                indexPathToReload.append(indexPath)
             } else {
                 // If identifiers do not match or the cell size will need to change, ex: Editing text
                 // we do a reload to let the table view dequeue another cell

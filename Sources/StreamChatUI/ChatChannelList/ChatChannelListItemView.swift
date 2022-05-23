@@ -19,7 +19,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             self.currentUserId = currentUserId
         }
     }
-    
+    // avatar size
+    private var avatarSize: CGFloat = 48
     /// The data this view component shows.
     public var content: Content? {
         didSet { updateContentIfNeeded() }
@@ -131,6 +132,13 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         } else if lastMessage.extraData.keys.contains("RedPacketTopAmountReceived")
                     || lastMessage.extraData.keys.contains("RedPacketOtherAmountReceived") {
             return "Red Packet Amount Received"
+        } else if lastMessage.extraData.keys.contains("gift") {
+            return "Gift"
+        } else if lastMessage.extraData.keys.contains("fallbackMessage") {
+            let extraData = lastMessage.extraData
+            guard let fallbackMessage = extraData["fallbackMessage"] else { return "" }
+            let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
+            return fallbackMessageString
         } else if !lastMessage.text.isEmpty {
             return content.channel.isDirectMessageChannel ? lastMessage.text : "\(authorName) \(lastMessage.text)"
         } else if let previewMessage = content.channel.previewMessage {
@@ -217,7 +225,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         ])
 
         NSLayoutConstraint.activate([
-            avatarView.heightAnchor.pin(equalToConstant: 48),
+            avatarView.heightAnchor.pin(equalToConstant: avatarSize),
             avatarView.widthAnchor.pin(equalTo: avatarView.heightAnchor)
         ])
 
@@ -238,6 +246,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         titleLabel.text = titleText
         subtitleLabel.text = subtitleText
         timestampLabel.text = timestampText
+        avatarView.avatarCornerRadius = avatarSize/2
+        avatarView.layer.cornerRadius = avatarSize/2
         avatarView.content = (content?.channel, content?.currentUserId)
 
         unreadCountView.content = content?.channel.unreadCount ?? .noUnread

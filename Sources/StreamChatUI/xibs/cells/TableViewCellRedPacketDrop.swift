@@ -11,21 +11,18 @@ import StreamChat
 
 class TableViewCellRedPacketDrop: UITableViewCell {
     public static let nib: UINib = UINib.init(nibName: identifier, bundle: nil)
-    
     // MARK: -  @IBOutlet
     @IBOutlet private weak var viewContainer: UIView!
     @IBOutlet private weak var subContainer: UIView!
     @IBOutlet private weak var sentThumbImageView: UIImageView!
     @IBOutlet private weak var timestampLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
-    @IBOutlet private weak var sentCryptoLabel: UILabel!
     @IBOutlet private weak var pickUpButton: UIButton!
     @IBOutlet private weak var lblTotal: UILabel!
     @IBOutlet private weak var lblMax: UILabel!
     @IBOutlet private weak var lblDetails: UILabel!
     @IBOutlet private weak var lblExpire: UILabel!
     @IBOutlet private weak var authorAvatarView: UIImageView!
-    @IBOutlet private weak var authorAvatarSpacer: UIView!
     @IBOutlet private weak var authorNameLabel: UILabel!
     @IBOutlet private weak var avatarViewContainerView: UIView!
     @IBOutlet private weak var cellWidthConstraint: NSLayoutConstraint!
@@ -46,17 +43,17 @@ class TableViewCellRedPacketDrop: UITableViewCell {
     // MARK: -  View Cycle
     override func awakeFromNib() {
         super.awakeFromNib()
+        setLayout()
+    }
+
+    // MARK: -  Methods
+    private func setLayout() {
         selectionStyle = .none
         contentView.backgroundColor = Appearance.default.colorPalette.chatViewBackground
         contentView.transform = .mirrorY
         viewContainer.backgroundColor = .clear
         avatarViewContainerView.isHidden = true
         cellWidthConstraint.constant = cellWidth
-    }
-
-    // MARK: -  Methods
-    func configureCell(isSender: Bool) {
-        self.isSender = isSender
         // Constraint
         viewContainerTopConstraint.constant = Constants.MessageTopPadding
         viewContainerLeadingConstraint.constant = Constants.MessageLeftPadding
@@ -102,12 +99,6 @@ class TableViewCellRedPacketDrop: UITableViewCell {
         lblExpire.numberOfLines = 0
         lblExpire.textColor = .white.withAlphaComponent(0.6)
         lblExpire.font = Appearance.default.fonts.body.withSize(11)
-        // detailsStack
-        detailsStack.axis = .vertical
-        detailsStack.distribution = .fillEqually
-        detailsStack.spacing = 2
-        subContainer.addSubview(detailsStack)
-        detailsStack.alignment = .leading
         // pickUpButton
         pickUpButton.setTitle("Pick Up", for: .normal)
         pickUpButton.setTitleColor(.white, for: .normal)
@@ -123,10 +114,15 @@ class TableViewCellRedPacketDrop: UITableViewCell {
         timestampLabel.font = Appearance.default.fonts.footnote
         timestampLabel.textAlignment = isSender ? .right : .left
         // author name
-        authorNameLabel.text = content?.author.name ?? ""
         authorNameLabel.textAlignment = .left
         authorNameLabel.textColor = Appearance.default.colorPalette.subtitleText
         authorNameLabel.font = Appearance.default.fonts.footnote
+    }
+
+    func configData(isSender: Bool) {
+        self.isSender = isSender
+        // author name
+        authorNameLabel.text = content?.author.name ?? ""
         // Avatar
         let placeholder = Appearance.default.images.userAvatarPlaceholder1
         if let imageURL = content?.author.imageURL {
@@ -140,18 +136,10 @@ class TableViewCellRedPacketDrop: UITableViewCell {
         } else {
             authorAvatarView.image = placeholder
         }
-        // avatarViewContainerView
-        avatarViewContainerView.isHidden = true
         if let options = layoutOptions {
-            //avatarViewContainerView.isHidden = !options.contains(.avatar)
             authorNameLabel.isHidden = !options.contains(.authorName)
             timestampLabel.isHidden = !options.contains(.timestamp)
         }
-        // 
-        //cellWidthConstraint.constant = avatarViewContainerView.isHidden ? cellWidth : (cellWidth - avatarViewContainerView.bounds.width)
-    }
-
-    func configData() {
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.string(from: createdAt)
         } else {

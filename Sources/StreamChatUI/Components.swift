@@ -112,7 +112,7 @@ public struct Components {
     public var messageActionsTransitionController: ChatMessageActionsTransitionController.Type =
         ChatMessageActionsTransitionController.self
 
-    /// The foundation view for the message list view controller.
+    /// The view that shows the message list.
     public var messageListView: ChatMessageListView.Type = ChatMessageListView
         .self
 
@@ -398,6 +398,8 @@ public struct Components {
 
     /// The router responsible for navigation on message list screen.
     public var messageListRouter: ChatMessageListRouter.Type = ChatMessageListRouter.self
+
+    public var cacheVideoThumbnail = Cache<URL, UIImage>.init()
 
     /// The router responsible for presenting alerts.
     public var alertsRouter: AlertsRouter.Type = AlertsRouter.self

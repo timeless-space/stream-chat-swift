@@ -18,6 +18,10 @@ open class CloseButton: _Button, AppearanceProvider {
         
         setImage(appearance.images.close, for: .normal)
     }
+
+    open override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        return bounds.insetBy(dx: -20, dy: -20).contains(point)
+    }
     
     override open func updateContent() {
         super.updateContent()

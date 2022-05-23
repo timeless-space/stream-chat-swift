@@ -177,7 +177,18 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider, ThemeProv
         let nickName = UIAction(title: "Nickname", image: appearance.images.rectanglePencil) { _ in
         }
         if isDirectMessageChannel() {
-            return [addContact, reportAction]
+            var arrActions: [UIAction] = []
+            if let channel = viewModel.channelController?.channel,
+               let otherMember = Array(channel.lastActiveMembers).first(where: { member in member.id != ChatClient.shared.currentUserId }) {
+                if let contactList = contacts {
+                    let selectedUser = contactList.filter{ $0.walletAddress == otherMember.id }
+                    if selectedUser.isEmpty {
+                        arrActions.append(addContact)
+                    }
+                }
+            }
+            arrActions.append(reportAction)
+            return arrActions
         } else if viewModel.screenType == .channelDetail {
             return [reportAction]
         } else if viewModel.screenType == .userdetail {
@@ -206,11 +217,7 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider, ThemeProv
         }
     }
 
-    private func addToContact() {
-        guard viewModel.screenType == .userdetail,
-              let member = viewModel.user else {
-            return
-        }
+    private func addMemberToContact(member: ChatChannelMember) {
         if contacts == nil {
             var tempModel = [ContactModel]()
             tempModel.append(ContactModel(name: member.name ?? "",
@@ -232,7 +239,46 @@ public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider, ThemeProv
                                             updated: Date()))
             Snackbar.show(text: "Contact added successfully!")
         }
+    }
+
+    private func addToContact() {
+        guard viewModel.screenType == .userdetail || isDirectMessageChannel() else {
+            return
+        }
+        if isDirectMessageChannel() {
+            guard let channel = viewModel.channelController?.channel,
+                  let otherMember = Array(channel.lastActiveMembers)
+                    .first(where: { member in member.id != ChatClient.shared.currentUserId }) else {
+                        return
+                    }
+            addMemberToContact(member: otherMember)
+        } else {
+            guard let member = viewModel.user else {
+                return
+            }
+            addMemberToContact(member: member)
+        }
         addMenuToMoreButton()
+    }
+
+    open func loadMoreChannelMembers(tableView: UITableView, forItemAt indexPath: IndexPath) {
+        guard let controller = viewModel.chatMemberController else { return }
+        guard let totalMembers = viewModel.channelController?.channel?.memberCount, totalMembers > 0 else { return }
+        guard viewModel.channelMembers.count != totalMembers else { return }
+        if controller.state != .remoteDataFetched {
+            return
+        }
+        guard let lastVisibleIndexPath = tableView.indexPathsForVisibleRows?.last else {
+            return
+        }
+        guard indexPath.row == viewModel.channelMembers.count - 1  else {
+            return
+        }
+        guard !viewModel.loadingMoreMembers else {
+            return
+        }
+        viewModel.loadingMoreMembers = true
+        viewModel.loadMoreMembers()
     }
 }
 
@@ -284,12 +330,12 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
             cell.configCell(
                 controller: controller,
                 screenType: viewModel.screenType,
-                members: viewModel.chatMemberController?.members.count ?? 0,
+                members: viewModel.channelController?.channel?.memberCount ?? 0,
                 channelMember: viewModel.user)
             return cell
         case .userList:
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TableViewCellChatUser.reuseId,
+                withIdentifier: TableViewCellChatUser.identifier,
                 for: indexPath) as? TableViewCellChatUser else {
                     return UITableViewCell()
                 }
@@ -300,6 +346,10 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
             cell.selectionStyle = .none
             return cell
         }
+    }
+
+    public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        loadMoreChannelMembers(tableView: tableView, forItemAt: indexPath)
     }
 
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -325,7 +375,7 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
         guard let view = ChannelMemberCountView.instanceFromNib() else {
             return nil
         }
-        view.setParticipantsCount(viewModel.chatMemberController?.members.count ?? 0)
+        view.setParticipantsCount(viewModel.channelController?.channel?.memberCount ?? 0)
         return view
     }
 
@@ -390,6 +440,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
                 return
             }
             qrCodeVc.groupName = channelController.channel?.name
+            qrCodeVc.channelController = channelController
             qrCodeVc.modalPresentationStyle = .fullScreen
             if channelController.channel?.type == .dao {
                 qrCodeVc.strContent = channelController.channel?.extraData.daoJoinLink
@@ -403,27 +454,47 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
     func leaveChannel() {
         guard let channelController = viewModel.channelController else { return }
         var alertTitle = ""
-        if isUserAdmin() {
-            alertTitle = "Would you like to delete this channel?\nIt'll be permanently deleted."
+        var actionTitle = ""
+        if isDirectMessageChannel() {
+            alertTitle = "Would you like to delete this conversation?"
+            actionTitle = "Delete Conversation"
         } else {
-            alertTitle = "Would you like to leave this channel?"
+            if isUserAdmin() {
+                alertTitle = "Would you like to delete this channel?\nIt'll be permanently deleted."
+            } else {
+                alertTitle = "Would you like to leave this channel?"
+            }
+            actionTitle = "Leave Channel"
         }
-        let deleteAction = UIAlertAction(title: "Leave Channel", style: .destructive) { [weak self] _ in
+        let deleteAction = UIAlertAction(title: actionTitle, style: .destructive) { [weak self] _ in
             guard let self = self else {
                 return
             }
-            if self.isUserAdmin() {
-                self.deleteAndLeaveChannel()
+            if self.isDirectMessageChannel() {
+                channelController.hideChannel(clearHistory: true) { [weak self] error in
+                    guard let self = self else {
+                        return
+                    }
+                    if error == nil {
+                        self.popBack()
+                    } else {
+                        Snackbar.show(text: "Error while deleting conversation")
+                    }
+                }
             } else {
-                if let userId = ChatClient.shared.currentUserId {
-                    channelController.removeMembers(userIds: [userId]) { [weak self] error in
-                        guard let self = self else {
-                            return
-                        }
-                        if error == nil {
-                            self.popBack()
-                        } else {
-                            Snackbar.show(text: "Error while removing member")
+                if self.isUserAdmin() {
+                    self.deleteAndLeaveChannel()
+                } else {
+                    if let userId = ChatClient.shared.currentUserId {
+                        channelController.removeMembers(userIds: [userId]) { [weak self] error in
+                            guard let self = self else {
+                                return
+                            }
+                            if error == nil {
+                                self.popBack()
+                            } else {
+                                Snackbar.show(text: "Error while leaving channel")
+                            }
                         }
                     }
                 }

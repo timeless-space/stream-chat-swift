@@ -138,7 +138,7 @@ open class ChatMessageReactionAuthorViewCell: _CollectionViewCell, ThemeProvider
         
         reactionBubbleView.tailDirection = isCurrentUser ? .toTrailing : .toLeading
         reactionItemView.content = .init(
-            useBigIcon: false,
+            useAnimatedIcon: false,
             reaction: ChatMessageReactionData(
                 type: content.reaction.type,
                 score: content.reaction.score,

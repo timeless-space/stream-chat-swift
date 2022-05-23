@@ -27,8 +27,16 @@ class CryptoReceiveBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
 
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -36,10 +44,10 @@ class CryptoReceiveBubble: UITableViewCell {
         viewContainer.clipsToBounds = true
         self.contentView.addSubview(viewContainer)
         NSLayoutConstraint.activate([
-            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
-            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding),
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8),
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth),
+            viewContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
+            viewContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Constants.MessageTopPadding),
+            viewContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            viewContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -cellWidth),
         ])
 
         subContainer = UIView()
@@ -56,7 +64,7 @@ class CryptoReceiveBubble: UITableViewCell {
 
         sentThumbImageView = UIImageView()
         sentThumbImageView.backgroundColor = Appearance.default.colorPalette.background6
-        sentThumbImageView.image = Appearance.default.images.cryptoSentThumb
+        sentThumbImageView.image = nil
         sentThumbImageView.transform = .mirrorY
         sentThumbImageView.contentMode = .scaleAspectFill
         sentThumbImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -108,7 +116,6 @@ class CryptoReceiveBubble: UITableViewCell {
         ])
         blockExplorerButton.transform = .mirrorY
 
-
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
@@ -120,10 +127,6 @@ class CryptoReceiveBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
     }
 
     private var cellWidth: CGFloat {
