@@ -426,20 +426,31 @@ open class ComposerVC: _ViewController,
                 self.composerView.confirmButton.isHidden = true
                 self.composerView.inputMessageView.sendButton.isHidden = false
                 self.composerView.headerView.isHidden = true
+                debugPrint("#### Hey there I am called")
             }
         case .quote:
+            composerView.headerView.isHidden = false
             composerView.titleLabel.text = L10n.Composer.Title.reply
             composerView.inputMessageView.textView.becomeFirstResponder()
-            Animate {
-                self.composerView.headerView.isHidden = false
-            }
+            debugPrint("#### Hey there quote is called")
+//            composerView.headerView.isHidden = false
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//                Animate {
+//                    self.composerView.headerView.isHidden = false
+//                }
+//            }
         case .edit:
+            composerView.headerView.isHidden = false
             composerView.titleLabel.text = L10n.Composer.Title.edit
             composerView.inputMessageView.textView.becomeFirstResponder()
-            Animate {
-                self.composerView.inputMessageView.sendButton.isHidden = true
-                self.composerView.headerView.isHidden = false
-            }
+            composerView.inputMessageView.sendButton.isHidden = true
+//            composerView.headerView.isHidden = false
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//                Animate {
+//                    self.composerView.inputMessageView.sendButton.isHidden = true
+//                    self.composerView.headerView.isHidden = false
+//                }
+//            }
         default:
             log.warning("The composer state \(content.state.description) was not handled.")
         }
