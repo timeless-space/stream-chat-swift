@@ -248,7 +248,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         if isGestureInActionsView || isGestureInReactionsView {
             return
         }
-        
+
         dismiss(animated: true)
     }
 }
