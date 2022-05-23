@@ -240,7 +240,7 @@ public class DatabaseContainer: NSPersistentContainer {
     /// messages pedning sent. You can use this option to warn a user about potential data loss.
     ///   - completion: Called when the operation is completed. If the error is present, the operation failed.
     ///
-    func removeAllData(force: Bool = true, completion: ((Error?) -> Void)? = nil) {
+    public func removeAllData(force: Bool = true, completion: ((Error?) -> Void)? = nil) {
         if !force {
             fatalError("Non-force flush is not implemented yet.")
         }
