@@ -20,40 +20,33 @@ class ChatMessageStickerBubble: _TableViewCell {
         .withoutAutoresizingMaskConstraints
     public lazy var subContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-    public private(set) var sentThumbStickerView: SPUIStickerView!
-    public private(set) var sentThumbGifView: UIImageView!
+    public lazy var stickerContainer = ContainerStackView(axis: .vertical)
+        .withoutAutoresizingMaskConstraints
     public private(set) var authorAvatarView: ChatAvatarView?
+    private var leadingMainContainer: NSLayoutConstraint?
+    private var trailingMainContainer: NSLayoutConstraint?
+    private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     var content: ChatMessage?
     var chatChannel: ChatChannel?
     var isSender = false
+    private var cellWidth: CGFloat = 100.0
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
 
-    private var cellWidth: CGFloat = 100.0
 
-    func configureCell(isSender: Bool) {
-        if let giphyUrl = content?.extraData.giphyUrl {
-            cellWidth = 200
-        } else {
-            cellWidth = 150
-        }
-        if mainContainer != nil && subContainer != nil {
-            mainContainer.removeFromSuperview()
-            subContainer.removeFromSuperview()
-            mainContainer.removeAllArrangedSubviews()
-            subContainer.removeAllArrangedSubviews()
-            timestampLabel = nil
-            authorAvatarView = nil
-        }
+
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
+
         mainContainer.addArrangedSubviews([createAvatarView(), subContainer])
         mainContainer.alignment = .bottom
         contentView.addSubview(mainContainer)
@@ -61,46 +54,65 @@ class ChatMessageStickerBubble: _TableViewCell {
             mainContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 4),
             mainContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -4)
         ])
+
+        subContainer.addArrangedSubviews([createTimestampLabel(), stickerContainer])
+        subContainer.alignment = .leading
+        subContainer.transform = .mirrorY
+        leadingMainContainer = mainContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingMainContainer = mainContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        timestampLabelWidthConstraint = timestampLabel?.widthAnchor.constraint(equalToConstant: cellWidth)
+        timestampLabelWidthConstraint?.isActive = true
+    }
+
+    private func setBubbleConstraints(_ isSender: Bool) {
+        leadingMainContainer?.isActive = !isSender
+        trailingMainContainer?.isActive = isSender
+        timestampLabelWidthConstraint?.constant = cellWidth
+    }
+
+    private func setStickerViews() {
+        stickerContainer.removeAllArrangedSubviews()
+        if let giphyUrl = content?.extraData.giphyUrl, let gifUrl = URL(string: giphyUrl) {
+            let sentThumbGifView = GPHMediaView()
+            sentThumbGifView.backgroundColor = Appearance.default.colorPalette.background6
+            sentThumbGifView.transform = .mirrorY
+            sentThumbGifView.contentMode = .scaleAspectFill
+            sentThumbGifView.layer.cornerRadius = 12
+            sentThumbGifView.translatesAutoresizingMaskIntoConstraints = false
+            sentThumbGifView.clipsToBounds = true
+            sentThumbGifView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
+            sentThumbGifView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
+            sentThumbGifView.setGifFromURL(gifUrl)
+            stickerContainer.addArrangedSubview(sentThumbGifView)
+        } else if let sticker = content?.extraData.stickerUrl?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            let sentThumbStickerView = SPUIStickerView()
+            sentThumbStickerView.backgroundColor = Appearance.default.colorPalette.background6
+            sentThumbStickerView.transform = .mirrorY
+            sentThumbStickerView.contentMode = .scaleAspectFill
+            sentThumbStickerView.layer.cornerRadius = 12
+            sentThumbStickerView.translatesAutoresizingMaskIntoConstraints = false
+            sentThumbStickerView.clipsToBounds = true
+            sentThumbStickerView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
+            sentThumbStickerView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
+            sentThumbStickerView.setSticker(sticker, sizeOptimized: true)
+            stickerContainer.addArrangedSubview(sentThumbStickerView)
+        }
+    }
+
+    func configureCell(isSender: Bool) {
+
+        if let giphyUrl = content?.extraData.giphyUrl {
+            cellWidth = 200
+        } else {
+            cellWidth = 150
+        }
+        setBubbleConstraints(isSender)
         if isSender {
-            mainContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
             authorAvatarView?.isHidden = true
         } else {
-            mainContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
             authorAvatarView?.isHidden = false
         }
-
-        sentThumbStickerView = SPUIStickerView()
-        sentThumbStickerView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        sentThumbStickerView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        sentThumbStickerView.backgroundColor = Appearance.default.colorPalette.background6
-        sentThumbStickerView.transform = .mirrorY
-        sentThumbStickerView.contentMode = .scaleAspectFill
-        sentThumbStickerView.layer.cornerRadius = 12
-        sentThumbStickerView.translatesAutoresizingMaskIntoConstraints = false
-        sentThumbStickerView.clipsToBounds = true
-        subContainer.transform = .mirrorY
-        sentThumbGifView = GPHMediaView()
-        sentThumbGifView.backgroundColor = Appearance.default.colorPalette.background6
-        sentThumbGifView.transform = .mirrorY
-        sentThumbGifView.contentMode = .scaleAspectFill
-        sentThumbGifView.layer.cornerRadius = 12
-        sentThumbGifView.translatesAutoresizingMaskIntoConstraints = false
-        sentThumbGifView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        sentThumbGifView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        sentThumbGifView.clipsToBounds = true
-        subContainer.addSubview(sentThumbGifView)
-        subContainer.addArrangedSubviews([createTimestampLabel(), sentThumbStickerView, sentThumbGifView])
-        subContainer.alignment = .leading
-        timestampLabel?.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        if let giphyUrl = content?.extraData.giphyUrl, let gifUrl = URL(string: giphyUrl) {
-            sentThumbGifView.setGifFromURL(gifUrl)
-            sentThumbGifView.isHidden = false
-            sentThumbStickerView.isHidden = true
-        } else if let sticker = content?.extraData.stickerUrl?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-            sentThumbStickerView.setSticker(sticker, sizeOptimized: true)
-            sentThumbGifView.isHidden = true
-            sentThumbStickerView.isHidden = false
-        }
+        setStickerViews()
         if let options = layoutOptions, let memberCount = chatChannel?.memberCount {
             // Hide Avatar view for one-way chat
             if memberCount <= 2 {

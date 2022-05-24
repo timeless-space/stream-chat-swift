@@ -55,7 +55,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         super.setUpAppearance()
         messageActionsContainerStackView.layer.cornerRadius = 16
         messageActionsContainerStackView.layer.masksToBounds = true
-        messageActionsContainerStackView.backgroundColor = appearance.colorPalette.border
+        messageActionsContainerStackView.backgroundColor = appearance.colorPalette.messageActionMenuSeparator
     }
 
     override open func updateContent() {
@@ -65,10 +65,12 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
 
         messageActions.forEach {
             let actionView = actionButtonClass.init()
-            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
             actionView.content = $0
+            actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
             messageActionsContainerStackView.addArrangedSubview(actionView)
         }
+        messageActionsContainerStackView.layoutMarginsDidChange()
     }
 
     /// Array of `ChatMessageActionItem`s - override this to setup your own custom actions
@@ -81,14 +83,12 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         var actions: [ChatMessageActionItem] = []
         actions.append(inlineReplyActionItem())
         actions.append(copyActionItem())
-        actions.append(translateMessageItem())
-        actions.append(moreItem())
-        return [
-            inlineReplyActionItem(),
-            copyActionItem(),
-            translateMessageItem(),
-            moreItem()
-        ]
+        if message.isSentByCurrentUser {
+            actions.append(editActionItem())
+        }
+        actions.append(pinMessageActionItem())
+        actions.append(forwardActionItem())
+        return actions
     }
     
     /// Returns `ChatMessageActionItem` for edit action
@@ -98,7 +98,23 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             appearance: appearance
         )
     }
-    
+
+    /// Returns `ChatMessageActionItem` for pin Message action
+    open func pinMessageActionItem() -> ChatMessageActionItem {
+        PinMessageActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
+    /// Returns `ChatMessageActionItem` for forward action
+    open func forwardActionItem() -> ChatMessageActionItem {
+        ForwardMessageActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
     /// Returns `ChatMessageActionItem` for delete action
     open func deleteActionItem() -> ChatMessageActionItem {
         DeleteActionItem(
@@ -184,9 +200,12 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         CopyActionItem(
             action: { [weak self] _ in
                 guard let self = self else { return }
+                Snackbar.hide()
                 UIPasteboard.general.string = self.message?.text
-
-                self.delegate?.chatMessageActionsVCDidFinish(self)
+                DispatchQueue.main.async {
+                    Snackbar.show(text: "", messageType: StreamChatMessageType.MessageCopied)
+                    self.delegate?.chatMessageActionsVCDidFinish(self)
+                }
             },
             appearance: appearance
         )
@@ -195,7 +214,6 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     open func translateMessageItem() -> ChatMessageActionItem {
         TranslateMessageActionItem(action: { [weak self] _ in
             guard let self = self else { return }
-            print("------------>>>>>>>>")
             self.delegate?.chatMessageActionsVCDidFinish(self)
             // ToDo:
         }, appearance: appearance)
@@ -205,7 +223,6 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     open func moreItem() -> ChatMessageActionItem {
         MoreActionItem(action: { [weak self] _ in
             guard let self = self else { return }
-            print("------------>>>>>>>> more tapped")
             self.delegate?.chatMessageActionsVCDidFinish(self)
         }, appearance: appearance)
     }

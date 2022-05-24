@@ -15,6 +15,10 @@ class RedPacketAmountBubble: UITableViewCell {
     public private(set) var subContainer: UIView!
     public private(set) var timestampLabel: UILabel!
     public private(set) var descriptionLabel: UILabel!
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var leadingAnchorForReceiver: NSLayoutConstraint?
+    private var trailingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorForReceiver: NSLayoutConstraint?
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     var client: ChatClient?
@@ -32,8 +36,7 @@ class RedPacketAmountBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
@@ -44,7 +47,9 @@ class RedPacketAmountBubble: UITableViewCell {
         return UIScreen.main.bounds.width * 0.3
     }
 
-    func configureCell(isSender: Bool) {
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -54,13 +59,6 @@ class RedPacketAmountBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -73,7 +71,7 @@ class RedPacketAmountBubble: UITableViewCell {
             subContainer.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
         ])
-        
+
         descriptionLabel = createDescLabel()
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         subContainer.addSubview(descriptionLabel)
@@ -85,7 +83,7 @@ class RedPacketAmountBubble: UITableViewCell {
         ])
         descriptionLabel.transform = .mirrorY
         descriptionLabel.textAlignment = .left
-        
+
         btnExplore.translatesAutoresizingMaskIntoConstraints = false
         subContainer.insertSubview(btnExplore, aboveSubview: descriptionLabel)
 
@@ -97,7 +95,7 @@ class RedPacketAmountBubble: UITableViewCell {
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
-        timestampLabel.textAlignment = isSender ? .right : .left
+
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -106,10 +104,26 @@ class RedPacketAmountBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
         timestampLabel.transform = .mirrorY
+
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
+    }
+
+    private func setBubbleConstraints(_ isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        leadingAnchorForSender?.constant = cellWidth
+        trailingAnchorForSender?.isActive = isSender
+        trailingAnchorForSender?.constant = -8
+        leadingAnchorForReceiver?.isActive = !isSender
+        leadingAnchorForReceiver?.constant = 8
+        trailingAnchorForReceiver?.isActive = !isSender
+        trailingAnchorForReceiver?.constant = -cellWidth
     }
 
     @objc func btnTapExploreAction() {
-        if let txID = getExtraData()?.txId {
+        if let txID = content?.extraData.otherAmountTxId {
             if let blockExpURL = URL(string: "\(Constants.blockExplorer)\(txID)") {
                 blockExpAction?(blockExpURL)
             }
@@ -155,7 +169,9 @@ class RedPacketAmountBubble: UITableViewCell {
         return lblDetails
     }
 
-    func configData() {
+    func configData(isSender: Bool) {
+        setBubbleConstraints(isSender)
+        timestampLabel.textAlignment = isSender ? .right : .left
         var nameAndTimeString: String? = ""
         if let options = layoutOptions {
             if options.contains(.authorName), let name = content?.author.name {
@@ -170,79 +186,24 @@ class RedPacketAmountBubble: UITableViewCell {
     }
 
     private func configOtherAmount() {
-        guard let extraData = getExtraData() else {
-            return
-        }
-        if let userId = extraData["userId"] {
-            let strUserId = fetchRawData(raw: userId) as? String ?? ""
-            var descriptionText = ""
-            if strUserId == client?.currentUserId ?? "" {
-                // I picked up other amount
-                descriptionText = "\(getCongrates(extraData)) \nYou just picked up \(getAmount(extraData)) ONE! \n\n🧧Red Packet"
-
-            } else {
-                // someone pickup amount
-                descriptionText = "\(getCongrates(extraData)) \n\(getUserName(extraData)) just picked up \(getAmount(extraData)) ONE! \n\n🧧Red Packet"
-            }
-            
-            let imageAttachment = NSTextAttachment()
-            if #available(iOS 13.0, *) {
-                imageAttachment.image = Appearance.default.images.arrowUpRightSquare?.withTintColor(.white)
-            } else {
-                // Fallback on earlier versions
-            }
-            let fullString = NSMutableAttributedString(string: descriptionText + "  ")
-            fullString.append(NSAttributedString(attachment: imageAttachment))
-            descriptionLabel.attributedText = fullString
-        }
-    }
-
-    private func getAmount(_ extraData: [String: RawJSON]?) -> String {
-        guard let data = extraData else {
-            return ""
-        }
-        if let receivedAmount = data["receivedAmount"] {
-            let amount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            return String(format: "%.1f", amount)
+        let strUserId = content?.extraData.otherAmountUserId ?? ""
+        var descriptionText = ""
+        if strUserId == client?.currentUserId ?? "" {
+            // I picked up other amount
+            descriptionText = "\(content?.extraData.otherAmountReceivedCongratesKey ?? "") \nYou just picked up \(content?.extraData.otherReceivedAmount?.formattedOneBalance ?? "") ONE! \n\n🧧Red Packet"
         } else {
-            return "\(0)"
+            // someone pickup amount
+            descriptionText = "\(content?.extraData.otherAmountReceivedCongratesKey ?? "") \n\(content?.extraData.otherAmuntReceivedUserName ?? "") just picked up \(content?.extraData.otherReceivedAmount?.formattedOneBalance ?? "") ONE! \n\n🧧Red Packet"
         }
-    }
 
-    private func getUserName(_ extraData: [String: RawJSON]?) -> String {
-        guard let data = extraData else {
-            return ""
-        }
-        if let receivedAmount = data["userName"] {
-            let strAmount = fetchRawData(raw: receivedAmount) as? String ?? ""
-            return strAmount
+        let imageAttachment = NSTextAttachment()
+        if #available(iOS 13.0, *) {
+            imageAttachment.image = Appearance.default.images.arrowUpRightSquare?.withTintColor(.white)
         } else {
-            return ""
+            // Fallback on earlier versions
         }
-    }
-
-    private func getCongrates(_ extraData: [String: RawJSON]?) -> String {
-        guard let data = extraData else {
-            return ""
-        }
-        if let congrates = data["congratsKey"] {
-            let strCongrates = fetchRawData(raw: congrates) as? String ?? ""
-            return strCongrates
-        } else {
-            return ""
-        }
-    }
-
-    private func getExtraData() -> [String: RawJSON]? {
-        if let extraData = content?.extraData["RedPacketOtherAmountReceived"] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
-        }
+        let fullString = NSMutableAttributedString(string: descriptionText + "  ")
+        fullString.append(NSAttributedString(attachment: imageAttachment))
+        descriptionLabel.attributedText = fullString
     }
 }

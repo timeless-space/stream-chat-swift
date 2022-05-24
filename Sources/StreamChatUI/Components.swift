@@ -107,6 +107,10 @@ public struct Components {
     @available(iOSApplicationExtension, unavailable)
     public var messageListVC: ChatMessageListVC.Type = ChatMessageListVC.self
 
+    /// The controller that handles `ChatMessageListVC <-> ChatMessagePopUp` transition.
+    public var messageActionsTransitionController: MessageActionsTransitionController.Type =
+        MessageActionsTransitionController.self
+
     /// The view that shows the message list.
     public var messageListView: ChatMessageListView.Type = ChatMessageListView
         .self
@@ -409,6 +413,8 @@ public struct Components {
 
     /// The router responsible for navigation on message list screen.
     public var messageListRouter: ChatMessageListRouter.Type = ChatMessageListRouter.self
+
+    public var cacheVideoThumbnail = Cache<URL, UIImage>.init()
 
     /// The router responsible for presenting alerts.
     public var alertsRouter: AlertsRouter.Type = AlertsRouter.self

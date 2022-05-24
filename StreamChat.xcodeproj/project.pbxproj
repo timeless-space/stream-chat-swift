@@ -18,6 +18,7 @@
 		224116B2258BACF90034184D /* Message.json in Resources */ = {isa = PBXBuildFile; fileRef = 224116B1258BACF90034184D /* Message.json */; };
 		224165A825910A2C00ED7F78 /* CheckboxControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224165A725910A2C00ED7F78 /* CheckboxControl.swift */; };
 		2245B2B625602465006A612D /* ChatChannelAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2245B2B525602465006A612D /* ChatChannelAvatarView.swift */; };
+		224FC4CB280D3BE900F6E135 /* GiftPacketSentBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224FC4CA280D3BE900F6E135 /* GiftPacketSentBubble.swift */; };
 		224FF67B2562F1EA00725DD1 /* ChatChannelReadStatusCheckmarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224FF67A2562F1EA00725DD1 /* ChatChannelReadStatusCheckmarkView.swift */; };
 		224FF6812562F2E900725DD1 /* ChatChannelUnreadCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224FF6802562F2E900725DD1 /* ChatChannelUnreadCountView.swift */; };
 		224FF6912562F58F00725DD1 /* UIColor+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224FF6902562F58F00725DD1 /* UIColor+Extensions.swift */; };
@@ -126,6 +127,12 @@
 		6E297C1227CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */; };
 		6E297C5027CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */; };
 		6E297C5127CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */; };
+		6E3DAEBC280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */; };
+		6E3DAEBD280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */; };
+		6E3DAEC02809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */; };
+		6E3DAEC12809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */; };
+		6E3DAEC22809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */; };
+		6E3DAEC32809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */; };
 		6E3DEF6A27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */; };
 		6E3DEF6B27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */; };
 		6E41867B27C3CD630061E03F /* SFCompactText-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6E41867527C3CD630061E03F /* SFCompactText-Regular.ttf */; };
@@ -189,6 +196,16 @@
 		6EDDA65C27F1923300E5355B /* TableViewCellRedPacketDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EDDA65927F1923300E5355B /* TableViewCellRedPacketDrop.swift */; };
 		6EDDA65D27F1923300E5355B /* TableViewCellRedPacketDrop.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6EDDA65A27F1923300E5355B /* TableViewCellRedPacketDrop.xib */; };
 		6EDDA65E27F1923300E5355B /* TableViewCellRedPacketDrop.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6EDDA65A27F1923300E5355B /* TableViewCellRedPacketDrop.xib */; };
+		6EE7C57927FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */; };
+		6EE7C57A27FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */; };
+		6EE7C57B27FC81D6003DD063 /* grinning-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */; };
+		6EE7C57C27FC81D6003DD063 /* grinning-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */; };
+		6EE7C57D27FC81D6003DD063 /* smiling-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */; };
+		6EE7C57E27FC81D6003DD063 /* smiling-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */; };
+		6EE7C57F27FC81D6003DD063 /* sad-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */; };
+		6EE7C58027FC81D6003DD063 /* sad-face-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */; };
+		6EE7C58127FC81D6003DD063 /* angry-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57827FC81D5003DD063 /* angry-emoji.json */; };
+		6EE7C58227FC81D6003DD063 /* angry-emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 6EE7C57827FC81D5003DD063 /* angry-emoji.json */; };
 		6EEFB78327BB83AD007224C2 /* PanModalPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFB77127BB83AB007224C2 /* PanModalPresentationController.swift */; };
 		6EEFB78427BB83AD007224C2 /* PanModalPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFB77127BB83AB007224C2 /* PanModalPresentationController.swift */; };
 		6EEFB78527BB83AD007224C2 /* UIViewController+PanModalPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFB77327BB83AB007224C2 /* UIViewController+PanModalPresenter.swift */; };
@@ -1043,7 +1060,6 @@
 		CD43C66027B54951006C1E0C /* ContextMenuCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD43C65E27B54950006C1E0C /* ContextMenuCell.xib */; };
 		CD43C66127B54951006C1E0C /* ContextMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD43C65F27B54951006C1E0C /* ContextMenuCell.swift */; };
 		CD6058EB278860EB00A033CD /* ChatClientConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD6058EA278860EB00A033CD /* ChatClientConfiguration.swift */; };
-		CD6A29D627AD688700007D7B /* ExtraDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD6A29D427AD688700007D7B /* ExtraDataHelper.swift */; };
 		CD72548D275F556100CD6444 /* RedPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD72548C275F556100CD6444 /* RedPacket.swift */; };
 		CD72AFD4278DAEF20025999A /* EFQRCode in Frameworks */ = {isa = PBXBuildFile; productRef = CD72AFD3278DAEF20025999A /* EFQRCode */; };
 		CD7897A227B29FA3005EB481 /* AdminMessageTVCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD7897A027B29FA3005EB481 /* AdminMessageTVCell.swift */; };
@@ -1133,6 +1149,24 @@
 		DBCAFE2425C44B920015AD58 /* LazyCachedMapCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBCAFE2325C44B920015AD58 /* LazyCachedMapCollection.swift */; };
 		DBF12128258BAFC1001919C6 /* OnlyLinkTappableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF12127258BAFC1001919C6 /* OnlyLinkTappableTextView.swift */; };
 		DBF17AE825D48865004517B3 /* BackgroundTaskScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF17AE725D48865004517B3 /* BackgroundTaskScheduler.swift */; };
+		E344A5BD2823E16300CA7AC5 /* GiphyCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49728197880002CA91C /* GiphyCollectionCell.swift */; };
+		E3C2DCC32822BF3C00CA4F0E /* EmojiPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCB92822BF3C00CA4F0E /* EmojiPickerViewController.swift */; };
+		E3C2DCC42822BF3C00CA4F0E /* EmojiMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCBA2822BF3C00CA4F0E /* EmojiMenuViewController.swift */; };
+		E3C2DCC52822BF3C00CA4F0E /* PickerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCBC2822BF3C00CA4F0E /* PickerTableViewCell.swift */; };
+		E3C2DCC62822BF3C00CA4F0E /* StickerMenuCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCBD2822BF3C00CA4F0E /* StickerMenuCollectionCell.swift */; };
+		E3C2DCC72822BF3C00CA4F0E /* StickerCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCBE2822BF3C00CA4F0E /* StickerCollectionCell.swift */; };
+		E3C2DCC82822BF3C00CA4F0E /* EmojiContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCBF2822BF3C00CA4F0E /* EmojiContainerViewController.swift */; };
+		E3C2DCCA2822BF3C00CA4F0E /* GifViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCC22822BF3C00CA4F0E /* GifViewController.swift */; };
+		E3D2975628252B650026B69F /* GiphyApiCallBaseRestApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2975528252B650026B69F /* GiphyApiCallBaseRestApi.swift */; };
+		E3D2975A282539E80026B69F /* GetGifRequestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D29759282539E80026B69F /* GetGifRequestModel.swift */; };
+		E3D2975D28255C6A0026B69F /* URLSession+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2975C28255C6A0026B69F /* URLSession+Extensions.swift */; };
+		E3D2975F28255C9C0026B69F /* Publisher+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2975E28255C9C0026B69F /* Publisher+Extensions.swift */; };
+		E3D2976128255CB70026B69F /* Dictionary+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2976028255CB70026B69F /* Dictionary+Extensions.swift */; };
+		E3D2976328255CD00026B69F /* GiphyApiServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2976228255CD00026B69F /* GiphyApiServiceProtocol.swift */; };
+		E3D2976528255CF50026B69F /* EndpointProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D2976428255CF50026B69F /* EndpointProtocol.swift */; };
+		E3D29767282567570026B69F /* GifViewController+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D29766282567570026B69F /* GifViewController+ViewModel.swift */; };
+		E3DAF49A28198313002CA91C /* GiphyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF4952819726D002CA91C /* GiphyModel.swift */; };
+		E3DAF49B28198315002CA91C /* SwiftyGiphyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */; };
 		E701201E2583EBD50036DACD /* CALayer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70120152583EBC90036DACD /* CALayer+Extensions.swift */; };
 		E7073A6325DD67B3003896B9 /* UILabel+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7073A6225DD67B3003896B9 /* UILabel+Extensions.swift */; };
 		E7166CB225BED22B00B03B07 /* Appearance+ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7166CB125BED22B00B03B07 /* Appearance+ColorPalette.swift */; };
@@ -1209,6 +1243,7 @@
 		ED5DD0CA27CCAC3A000B3E9A /* AnnouncementTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED5DD0C727CCAC3A000B3E9A /* AnnouncementTableViewCell.swift */; };
 		ED5DD0CB27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = ED5DD0C827CCAC3A000B3E9A /* AnnouncementTableViewCell.xib */; };
 		ED5DD0CC27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = ED5DD0C827CCAC3A000B3E9A /* AnnouncementTableViewCell.xib */; };
+		ED6627C3283BA57A003C3C58 /* Double+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6627C2283BA57A003C3C58 /* Double+Extension.swift */; };
 		ED7DAB3127AC2CD30085E2B9 /* Snackbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */; };
 		ED7DAB3227AC2D000085E2B9 /* ChatMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD8450F279E6930004BF3CD /* ChatMenuViewController.swift */; };
 		ED7DD40027CCF36C007CE0BA /* ASVideoContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7DD3FD27CCF36C007CE0BA /* ASVideoContainer.swift */; };
@@ -1222,6 +1257,7 @@
 		EDAB4B4227A17A0300F07D53 /* EmojiButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDAB4B4027A179D600F07D53 /* EmojiButton.swift */; };
 		EDD84510279E6930004BF3CD /* ChatMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD8450F279E6930004BF3CD /* ChatMenuViewController.swift */; };
 		EDD84516279EB2F6004BF3CD /* SendPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD84515279EB2F6004BF3CD /* SendPaymentViewController.swift */; };
+		EDE6D9252818259700FCAB53 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDE6D9242818259700FCAB53 /* Utils.swift */; };
 		EDE9F686278823E900DF4F31 /* WalletStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDE9F685278823E900DF4F31 /* WalletStepper.swift */; };
 		F61D7C3124FF9D1F00188A0E /* MessageEndpoints_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61D7C3024FF9D1F00188A0E /* MessageEndpoints_Tests.swift */; };
 		F61D7C3324FFA60600188A0E /* MessageUpdater_Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61D7C3224FFA60600188A0E /* MessageUpdater_Mock.swift */; };
@@ -1350,11 +1386,14 @@
 		FC1A920C27F5ED23006A1E1A /* ContactModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A920B27F5ED22006A1E1A /* ContactModel.swift */; };
 		FC1A920E27F5EDAB006A1E1A /* SCSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A920D27F5EDAB006A1E1A /* SCSettings.swift */; };
 		FC1A921127F5EE31006A1E1A /* UserDefault.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A921027F5EE31006A1E1A /* UserDefault.swift */; };
+		FC2F12C92820FE41001996E0 /* ConstantsKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2F12C82820FE41001996E0 /* ConstantsKey.swift */; };
+		FC2F12CB2820FEA7001996E0 /* ExtraDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2F12CA2820FEA7001996E0 /* ExtraDataHelper.swift */; };
 		FC4F2EF727F413AE00A6D729 /* ChannelDetailDescView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC4F2EF627F413AE00A6D729 /* ChannelDetailDescView.swift */; };
 		FC4F2EF927F413D300A6D729 /* ChannelDetailDescView.xib in Resources */ = {isa = PBXBuildFile; fileRef = FC4F2EF827F413D300A6D729 /* ChannelDetailDescView.xib */; };
 		FC4F2EFB27F4407000A6D729 /* ChannelMemberCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC4F2EFA27F4407000A6D729 /* ChannelMemberCountView.swift */; };
 		FC4F2EFD27F4407A00A6D729 /* ChannelMemberCountView.xib in Resources */ = {isa = PBXBuildFile; fileRef = FC4F2EFC27F4407A00A6D729 /* ChannelMemberCountView.xib */; };
 		FC4F2F0027F4555900A6D729 /* ChatGroupDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC4F2EFF27F4555900A6D729 /* ChatGroupDetailViewModel.swift */; };
+		FC71860C2836093700CD15CC /* GiftPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC71860B2836093700CD15CC /* GiftPacket.swift */; };
 		FCAC7B3527E0B21F00A310EC /* ChannelDetailHeaderTVCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAC7B3327E0B21F00A310EC /* ChannelDetailHeaderTVCell.swift */; };
 		FCAC7B3627E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = FCAC7B3427E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib */; };
 /* End PBXBuildFile section */
@@ -1610,6 +1649,7 @@
 		224116B1258BACF90034184D /* Message.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Message.json; sourceTree = "<group>"; };
 		224165A725910A2C00ED7F78 /* CheckboxControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckboxControl.swift; sourceTree = "<group>"; };
 		2245B2B525602465006A612D /* ChatChannelAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatChannelAvatarView.swift; sourceTree = "<group>"; };
+		224FC4CA280D3BE900F6E135 /* GiftPacketSentBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftPacketSentBubble.swift; sourceTree = "<group>"; };
 		224FF67A2562F1EA00725DD1 /* ChatChannelReadStatusCheckmarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatChannelReadStatusCheckmarkView.swift; sourceTree = "<group>"; };
 		224FF6802562F2E900725DD1 /* ChatChannelUnreadCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatChannelUnreadCountView.swift; sourceTree = "<group>"; };
 		224FF6902562F58F00725DD1 /* UIColor+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extensions.swift"; sourceTree = "<group>"; };
@@ -1726,6 +1766,9 @@
 		6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellGroupDetailsAttachmentsList.swift; sourceTree = "<group>"; };
 		6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellGroupDetailsAttachmentsList.xib; sourceTree = "<group>"; };
 		6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChatCustomButton.swift; sourceTree = "<group>"; };
+		6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SkeletonView+Configure.swift"; sourceTree = "<group>"; };
+		6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellShimmerEffect.swift; sourceTree = "<group>"; };
+		6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellShimmerEffect.xib; sourceTree = "<group>"; };
 		6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupRequestVC.swift; sourceTree = "<group>"; };
 		6E41867527C3CD630061E03F /* SFCompactText-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFCompactText-Regular.ttf"; sourceTree = "<group>"; };
 		6E41867627C3CD630061E03F /* SFProText-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProText-Semibold.ttf"; sourceTree = "<group>"; };
@@ -1757,6 +1800,11 @@
 		6ED3E45327B53D3400A05C0A /* AttachmentListContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentListContainerView.swift; sourceTree = "<group>"; };
 		6EDDA65927F1923300E5355B /* TableViewCellRedPacketDrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellRedPacketDrop.swift; sourceTree = "<group>"; };
 		6EDDA65A27F1923300E5355B /* TableViewCellRedPacketDrop.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellRedPacketDrop.xib; sourceTree = "<group>"; };
+		6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "rolling-eyes-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "grinning-face-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "smiling-face-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "sad-face-emoji.json"; sourceTree = "<group>"; };
+		6EE7C57827FC81D5003DD063 /* angry-emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "angry-emoji.json"; sourceTree = "<group>"; };
 		6EEFB77127BB83AB007224C2 /* PanModalPresentationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PanModalPresentationController.swift; sourceTree = "<group>"; };
 		6EEFB77327BB83AB007224C2 /* UIViewController+PanModalPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+PanModalPresenter.swift"; sourceTree = "<group>"; };
 		6EEFB77427BB83AB007224C2 /* PanModalPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PanModalPresenter.swift; sourceTree = "<group>"; };
@@ -2614,7 +2662,6 @@
 		CD43C65F27B54951006C1E0C /* ContextMenuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContextMenuCell.swift; sourceTree = "<group>"; };
 		CD6058EA278860EB00A033CD /* ChatClientConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatClientConfiguration.swift; sourceTree = "<group>"; };
 		CD66B570273D5D1D00DAC5D2 /* KeyboardToolKitList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardToolKitList.swift; sourceTree = "<group>"; };
-		CD6A29D427AD688700007D7B /* ExtraDataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraDataHelper.swift; sourceTree = "<group>"; };
 		CD72548C275F556100CD6444 /* RedPacket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedPacket.swift; sourceTree = "<group>"; };
 		CD7897A027B29FA3005EB481 /* AdminMessageTVCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageTVCell.swift; sourceTree = "<group>"; };
 		CD7897A127B29FA3005EB481 /* AdminMessageTVCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AdminMessageTVCell.xib; sourceTree = "<group>"; };
@@ -2701,6 +2748,24 @@
 		DBF17AE725D48865004517B3 /* BackgroundTaskScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskScheduler.swift; sourceTree = "<group>"; };
 		DD4855E5875D07D6210C02AB /* Pods_StreamChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_StreamChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D462C3A1288350E42719FC /* Pods-StreamChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-StreamChat.release.xcconfig"; path = "Target Support Files/Pods-StreamChat/Pods-StreamChat.release.xcconfig"; sourceTree = "<group>"; };
+		E3C2DCB92822BF3C00CA4F0E /* EmojiPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiPickerViewController.swift; sourceTree = "<group>"; };
+		E3C2DCBA2822BF3C00CA4F0E /* EmojiMenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiMenuViewController.swift; sourceTree = "<group>"; };
+		E3C2DCBC2822BF3C00CA4F0E /* PickerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickerTableViewCell.swift; sourceTree = "<group>"; };
+		E3C2DCBD2822BF3C00CA4F0E /* StickerMenuCollectionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StickerMenuCollectionCell.swift; sourceTree = "<group>"; };
+		E3C2DCBE2822BF3C00CA4F0E /* StickerCollectionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StickerCollectionCell.swift; sourceTree = "<group>"; };
+		E3C2DCBF2822BF3C00CA4F0E /* EmojiContainerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiContainerViewController.swift; sourceTree = "<group>"; };
+		E3C2DCC22822BF3C00CA4F0E /* GifViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifViewController.swift; sourceTree = "<group>"; };
+		E3D2975528252B650026B69F /* GiphyApiCallBaseRestApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyApiCallBaseRestApi.swift; sourceTree = "<group>"; };
+		E3D29759282539E80026B69F /* GetGifRequestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetGifRequestModel.swift; sourceTree = "<group>"; };
+		E3D2975C28255C6A0026B69F /* URLSession+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSession+Extensions.swift"; sourceTree = "<group>"; };
+		E3D2975E28255C9C0026B69F /* Publisher+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+Extensions.swift"; sourceTree = "<group>"; };
+		E3D2976028255CB70026B69F /* Dictionary+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+Extensions.swift"; sourceTree = "<group>"; };
+		E3D2976228255CD00026B69F /* GiphyApiServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyApiServiceProtocol.swift; sourceTree = "<group>"; };
+		E3D2976428255CF50026B69F /* EndpointProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointProtocol.swift; sourceTree = "<group>"; };
+		E3D29766282567570026B69F /* GifViewController+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GifViewController+ViewModel.swift"; sourceTree = "<group>"; };
+		E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyGiphyAPI.swift; sourceTree = "<group>"; };
+		E3DAF4952819726D002CA91C /* GiphyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyModel.swift; sourceTree = "<group>"; };
+		E3DAF49728197880002CA91C /* GiphyCollectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiphyCollectionCell.swift; sourceTree = "<group>"; };
 		E4615C3D10765DC6561CFFF7 /* Pods-YouTube.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YouTube.debug.xcconfig"; path = "Target Support Files/Pods-YouTube/Pods-YouTube.debug.xcconfig"; sourceTree = "<group>"; };
 		E70120152583EBC90036DACD /* CALayer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayer+Extensions.swift"; sourceTree = "<group>"; };
 		E7073A6225DD67B3003896B9 /* UILabel+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UILabel+Extensions.swift"; sourceTree = "<group>"; };
@@ -2765,6 +2830,7 @@
 		ED3B5F04275A3A5A00DEAF0A /* RedPacketSentBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedPacketSentBubble.swift; sourceTree = "<group>"; };
 		ED5DD0C727CCAC3A000B3E9A /* AnnouncementTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnouncementTableViewCell.swift; sourceTree = "<group>"; };
 		ED5DD0C827CCAC3A000B3E9A /* AnnouncementTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AnnouncementTableViewCell.xib; sourceTree = "<group>"; };
+		ED6627C2283BA57A003C3C58 /* Double+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+Extension.swift"; sourceTree = "<group>"; };
 		ED7DD3FD27CCF36C007CE0BA /* ASVideoContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoContainer.swift; sourceTree = "<group>"; };
 		ED7DD3FE27CCF36C007CE0BA /* ASVideoLayerObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoLayerObject.swift; sourceTree = "<group>"; };
 		ED7DD3FF27CCF36C007CE0BA /* ASVideoPlayerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoPlayerController.swift; sourceTree = "<group>"; };
@@ -2773,6 +2839,7 @@
 		EDAB4B4027A179D600F07D53 /* EmojiButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiButton.swift; sourceTree = "<group>"; };
 		EDD8450F279E6930004BF3CD /* ChatMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMenuViewController.swift; sourceTree = "<group>"; };
 		EDD84515279EB2F6004BF3CD /* SendPaymentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendPaymentViewController.swift; sourceTree = "<group>"; };
+		EDE6D9242818259700FCAB53 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		EDE9F6622788147300DF4F31 /* Wallet.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Wallet.storyboard; path = Sources/StreamChatUI/Composer/Wallet.storyboard; sourceTree = SOURCE_ROOT; };
 		EDE9F685278823E900DF4F31 /* WalletStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletStepper.swift; sourceTree = "<group>"; };
 		F2D5FFDA82B29C092E1137E3 /* Pods-iMessage.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iMessage.release.xcconfig"; path = "Target Support Files/Pods-iMessage/Pods-iMessage.release.xcconfig"; sourceTree = "<group>"; };
@@ -2892,11 +2959,14 @@
 		FC1A920B27F5ED22006A1E1A /* ContactModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactModel.swift; sourceTree = "<group>"; };
 		FC1A920D27F5EDAB006A1E1A /* SCSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCSettings.swift; sourceTree = "<group>"; };
 		FC1A921027F5EE31006A1E1A /* UserDefault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserDefault.swift; sourceTree = "<group>"; };
+		FC2F12C82820FE41001996E0 /* ConstantsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConstantsKey.swift; sourceTree = "<group>"; };
+		FC2F12CA2820FEA7001996E0 /* ExtraDataHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExtraDataHelper.swift; path = Sources/StreamChatUI/Utils/ExtraDataHelper.swift; sourceTree = SOURCE_ROOT; };
 		FC4F2EF627F413AE00A6D729 /* ChannelDetailDescView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelDetailDescView.swift; sourceTree = "<group>"; };
 		FC4F2EF827F413D300A6D729 /* ChannelDetailDescView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ChannelDetailDescView.xib; sourceTree = "<group>"; };
 		FC4F2EFA27F4407000A6D729 /* ChannelMemberCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMemberCountView.swift; sourceTree = "<group>"; };
 		FC4F2EFC27F4407A00A6D729 /* ChannelMemberCountView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ChannelMemberCountView.xib; sourceTree = "<group>"; };
 		FC4F2EFF27F4555900A6D729 /* ChatGroupDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatGroupDetailViewModel.swift; sourceTree = "<group>"; };
+		FC71860B2836093700CD15CC /* GiftPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GiftPacket.swift; sourceTree = "<group>"; };
 		FCAC7B3327E0B21F00A310EC /* ChannelDetailHeaderTVCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelDetailHeaderTVCell.swift; sourceTree = "<group>"; };
 		FCAC7B3427E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ChannelDetailHeaderTVCell.xib; sourceTree = "<group>"; };
 		FFC1759B7D73175543C2A317 /* Pods-StreamChat-StreamChatTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-StreamChat-StreamChatTests.debug.xcconfig"; path = "Target Support Files/Pods-StreamChat-StreamChatTests/Pods-StreamChat-StreamChatTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -3151,6 +3221,14 @@
 			path = Controller;
 			sourceTree = "<group>";
 		};
+		6E3DAEBA280960BD00B3D7A4 /* SkeletonViewSetting */ = {
+			isa = PBXGroup;
+			children = (
+				6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */,
+			);
+			path = SkeletonViewSetting;
+			sourceTree = "<group>";
+		};
 		6E41867427C3CD630061E03F /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
@@ -3177,6 +3255,18 @@
 				6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */,
 			);
 			path = CustomView;
+			sourceTree = "<group>";
+		};
+		6EE7C57327FC81C0003DD063 /* ReactionMenu */ = {
+			isa = PBXGroup;
+			children = (
+				6EE7C57827FC81D5003DD063 /* angry-emoji.json */,
+				6EE7C57527FC81D4003DD063 /* grinning-face-emoji.json */,
+				6EE7C57427FC81D3003DD063 /* rolling-eyes-emoji.json */,
+				6EE7C57727FC81D5003DD063 /* sad-face-emoji.json */,
+				6EE7C57627FC81D4003DD063 /* smiling-face-emoji.json */,
+			);
+			path = ReactionMenu;
 			sourceTree = "<group>";
 		};
 		6EEFB76F27BB837F007224C2 /* PanModel */ = {
@@ -3274,6 +3364,7 @@
 		7908823025432C6400896F03 /* StreamChatUI */ = {
 			isa = PBXGroup;
 			children = (
+				E3DAF49028195208002CA91C /* ApiLayer */,
 				6ED3E44327B52D9800A05C0A /* CustomView */,
 				CD43C65B27B545E3006C1E0C /* ContextMenu */,
 				6E0D12C427B3C8E1003DD1AA /* Controller */,
@@ -3292,7 +3383,6 @@
 				BD4016352638411D00F09774 /* Deprecations.swift */,
 				CD24C70F2784511A00F6378D /* PrivateChat */,
 				888123D0255D42F000070D5A /* Utils */,
-				ED7DD3F127CCC008007CE0BA /* New Group */,
 				888123E5255D51BD00070D5A /* CommonViews */,
 				F833D64326393E4800651D14 /* Gallery */,
 				790882BE25486AB000896F03 /* ChatChannelList */,
@@ -3547,6 +3637,7 @@
 				8AE335A324FCF95D002B6677 /* InternetConnection */,
 				79BF83EA248F8EC0007611A1 /* Logger */,
 				79280F6F2487CD2B00CDEB89 /* Atomic.swift */,
+				FC2F12CA2820FEA7001996E0 /* ExtraDataHelper.swift */,
 				E7DD8EC025E4083B0059A322 /* OptionalDecodable.swift */,
 				79280F702487CD2B00CDEB89 /* Atomic_Tests.swift */,
 				792A4F3D247FFDE700EAF71D /* Codable+Extensions.swift */,
@@ -3573,6 +3664,7 @@
 				BCE48068C1C02C0689BEB64E /* JSONDecoder_Tests.swift */,
 				BCE489A4B136D48249DD6969 /* JSONEncoder_Tests.swift */,
 				ED00E2AE27A8071800AA1A13 /* KeyboardService.swift */,
+				FC2F12C82820FE41001996E0 /* ConstantsKey.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -4749,6 +4841,7 @@
 		888123D0255D42F000070D5A /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				E3D2975B28255C0B0026B69F /* Extensions */,
 				ED7DD40427CCF38C007CE0BA /* VideoPlayer */,
 				CD24C71A278487ED00F6378D /* Dynamics */,
 				CD24C71527846C1A00F6378D /* DPOTPView */,
@@ -4804,7 +4897,7 @@
 				CD24C71D2784892A00F6378D /* UIApplication+Extension.swift */,
 				CD6058EA278860EB00A033CD /* ChatClientConfiguration.swift */,
 				EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */,
-				CD6A29D427AD688700007D7B /* ExtraDataHelper.swift */,
+				EDE6D9242818259700FCAB53 /* Utils.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -5569,6 +5662,8 @@
 				6EDDA65A27F1923300E5355B /* TableViewCellRedPacketDrop.xib */,
 				FCAC7B3327E0B21F00A310EC /* ChannelDetailHeaderTVCell.swift */,
 				FCAC7B3427E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib */,
+				6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */,
+				6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -5576,6 +5671,8 @@
 		CDA1FB0927884FC500C2F4BD /* xibs */ = {
 			isa = PBXGroup;
 			children = (
+				6E3DAEBA280960BD00B3D7A4 /* SkeletonViewSetting */,
+				6EE7C57327FC81C0003DD063 /* ReactionMenu */,
 				FC4F2EF527F4139700A6D729 /* Views */,
 				CDA1FB032788420A00C2F4BD /* cells */,
 				CD24C70A27844B9F00F6378D /* Storyboard */,
@@ -5586,6 +5683,7 @@
 		CDB98D102757D41F00CA7CDE /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				FC71860B2836093700CD15CC /* GiftPacket.swift */,
 				FC1A920B27F5ED22006A1E1A /* ContactModel.swift */,
 				CDB98D112757D43A00CA7CDE /* SendOneWallet.swift */,
 				CD72548C275F556100CD6444 /* RedPacket.swift */,
@@ -5703,6 +5801,41 @@
 			path = Requests;
 			sourceTree = "<group>";
 		};
+		E3C2DCB82822BF3C00CA4F0E /* EmojiMenu */ = {
+			isa = PBXGroup;
+			children = (
+				E3C2DCB92822BF3C00CA4F0E /* EmojiPickerViewController.swift */,
+				E3C2DCBA2822BF3C00CA4F0E /* EmojiMenuViewController.swift */,
+				E3C2DCBB2822BF3C00CA4F0E /* Cell */,
+				E3C2DCBF2822BF3C00CA4F0E /* EmojiContainerViewController.swift */,
+				E3C2DCC22822BF3C00CA4F0E /* GifViewController.swift */,
+				E3D29766282567570026B69F /* GifViewController+ViewModel.swift */,
+			);
+			path = EmojiMenu;
+			sourceTree = "<group>";
+		};
+		E3C2DCBB2822BF3C00CA4F0E /* Cell */ = {
+			isa = PBXGroup;
+			children = (
+				E3DAF49728197880002CA91C /* GiphyCollectionCell.swift */,
+				E3C2DCBC2822BF3C00CA4F0E /* PickerTableViewCell.swift */,
+				E3C2DCBD2822BF3C00CA4F0E /* StickerMenuCollectionCell.swift */,
+				E3C2DCBE2822BF3C00CA4F0E /* StickerCollectionCell.swift */,
+			);
+			path = Cell;
+			sourceTree = "<group>";
+		};
+		E3D2975B28255C0B0026B69F /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				E3D2975C28255C6A0026B69F /* URLSession+Extensions.swift */,
+				E3D2975E28255C9C0026B69F /* Publisher+Extensions.swift */,
+				E3D2976028255CB70026B69F /* Dictionary+Extensions.swift */,
+				ED6627C2283BA57A003C3C58 /* Double+Extension.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		E3D5D2142701F0450054ECE5 /* Examples */ = {
 			isa = PBXGroup;
 			children = (
@@ -5712,6 +5845,19 @@
 				AC908382268B115F00ACFB8E /* YouTubeClone */,
 			);
 			path = Examples;
+			sourceTree = "<group>";
+		};
+		E3DAF49028195208002CA91C /* ApiLayer */ = {
+			isa = PBXGroup;
+			children = (
+				E3DAF49128195216002CA91C /* SwiftyGiphyAPI.swift */,
+				E3DAF4952819726D002CA91C /* GiphyModel.swift */,
+				E3D2975528252B650026B69F /* GiphyApiCallBaseRestApi.swift */,
+				E3D29759282539E80026B69F /* GetGifRequestModel.swift */,
+				E3D2976228255CD00026B69F /* GiphyApiServiceProtocol.swift */,
+				E3D2976428255CF50026B69F /* EndpointProtocol.swift */,
+			);
+			path = ApiLayer;
 			sourceTree = "<group>";
 		};
 		E74346B12593546000512C2D /* ChatMessage */ = {
@@ -5736,6 +5882,7 @@
 				ED3B5F04275A3A5A00DEAF0A /* RedPacketSentBubble.swift */,
 				ED0D5144275DE10B00753692 /* RedPacketBubble.swift */,
 				ED0D5146275DED8800753692 /* RedPacketAmountBubble.swift */,
+				224FC4CA280D3BE900F6E135 /* GiftPacketSentBubble.swift */,
 			);
 			path = ChatMessage;
 			sourceTree = "<group>";
@@ -5791,13 +5938,6 @@
 			path = Announcement;
 			sourceTree = "<group>";
 		};
-		ED7DD3F127CCC008007CE0BA /* New Group */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "New Group";
-			sourceTree = "<group>";
-		};
 		ED7DD40427CCF38C007CE0BA /* VideoPlayer */ = {
 			isa = PBXGroup;
 			children = (
@@ -5811,6 +5951,7 @@
 		EDD84512279E6934004BF3CD /* ChatMenu */ = {
 			isa = PBXGroup;
 			children = (
+				E3C2DCB82822BF3C00CA4F0E /* EmojiMenu */,
 				EDD84515279EB2F6004BF3CD /* SendPaymentViewController.swift */,
 				EDD8450F279E6930004BF3CD /* ChatMenuViewController.swift */,
 			);
@@ -6483,7 +6624,9 @@
 				6ED3E45227B53AE200A05C0A /* AttachmentListCollectionViewCell.xib in Resources */,
 				6EC116A727EB509E00DD49F9 /* TableViewHeaderAlphabetSection.xib in Resources */,
 				FC4F2EF927F413D300A6D729 /* ChannelDetailDescView.xib in Resources */,
+				6EE7C57A27FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */,
 				6E0D12EC27B3CF85003DD1AA /* TableViewCellChatUser.xib in Resources */,
+				6EE7C58227FC81D6003DD063 /* angry-emoji.json in Resources */,
 				88F0D74B257E50B200F4B050 /* Assets.xcassets in Resources */,
 				FCAC7B3627E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib in Resources */,
 				CD7897A327B29FA3005EB481 /* AdminMessageTVCell.xib in Resources */,
@@ -6491,12 +6634,16 @@
 				CDA1FB08278843AF00C2F4BD /* PrivateGroupUsersCVCell.xib in Resources */,
 				6E41867E27C3CD630061E03F /* SFProText-Semibold.ttf in Resources */,
 				6E41868427C3CD630061E03F /* SFProDisplay-Bold.ttf in Resources */,
+				6EE7C57E27FC81D6003DD063 /* smiling-face-emoji.json in Resources */,
 				6E6A40D927EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */,
 				ED5DD0CC27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */,
 				CD24C70E27844C3500F6378D /* Wallet.storyboard in Resources */,
+				6E3DAEC32809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */,
 				88F0D743257E50B000F4B050 /* Localizable.strings in Resources */,
 				CD24C70C27844BC500F6378D /* PrivateGroup.storyboard in Resources */,
 				6ECB403C27ECA95400044B90 /* TableViewCellEmptyChatListData.xib in Resources */,
+				6EE7C57C27FC81D6003DD063 /* grinning-face-emoji.json in Resources */,
+				6EE7C58027FC81D6003DD063 /* sad-face-emoji.json in Resources */,
 				6E41867C27C3CD630061E03F /* SFCompactText-Regular.ttf in Resources */,
 				6ED0BE5527C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib in Resources */,
 				6E41868627C3CD630061E03F /* SFProDisplay-Heavy.ttf in Resources */,
@@ -6572,13 +6719,19 @@
 				6ED3E45127B53AE200A05C0A /* AttachmentListCollectionViewCell.xib in Resources */,
 				6E0D12EB27B3CF85003DD1AA /* TableViewCellChatUser.xib in Resources */,
 				6EC85CDD27D5EB9400063EB8 /* CollectionViewCellGroupUsers.xib in Resources */,
+				6EE7C57B27FC81D6003DD063 /* grinning-face-emoji.json in Resources */,
+				6EE7C57D27FC81D6003DD063 /* smiling-face-emoji.json in Resources */,
 				6E41867D27C3CD630061E03F /* SFProText-Semibold.ttf in Resources */,
 				6EC116A627EB509E00DD49F9 /* TableViewHeaderAlphabetSection.xib in Resources */,
 				6ECB403B27ECA95400044B90 /* TableViewCellEmptyChatListData.xib in Resources */,
+				6EE7C58127FC81D6003DD063 /* angry-emoji.json in Resources */,
 				ED5DD0CB27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */,
+				6E3DAEC22809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */,
 				6ED0BE5427C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib in Resources */,
+				6EE7C57F27FC81D6003DD063 /* sad-face-emoji.json in Resources */,
 				6E92FD3C27BCEEAD00DA89B6 /* Assets.xcassets in Resources */,
 				6E6A40D827EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */,
+				6EE7C57927FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */,
 				6EDDA65D27F1923300E5355B /* TableViewCellRedPacketDrop.xib in Resources */,
 				6E41868327C3CD630061E03F /* SFProDisplay-Bold.ttf in Resources */,
 				6E41868527C3CD630061E03F /* SFProDisplay-Heavy.ttf in Resources */,
@@ -7211,6 +7364,7 @@
 				792057A326416776002B145B /* ChatMentionSuggestionCollectionViewCell.swift in Sources */,
 				228190EB256733420048D7C6 /* UIFont+Extensions.swift in Sources */,
 				888123D2255D430B00070D5A /* UIView+Extensions.swift in Sources */,
+				E3D2975628252B650026B69F /* GiphyApiCallBaseRestApi.swift in Sources */,
 				ED1D14722786C197005A0EAB /* WalletInputViewController.swift in Sources */,
 				AD158B6526C1873000C104CD /* ChatThreadVC+SwiftUI.swift in Sources */,
 				8825333E258CE7AC00B77352 /* ChatMessageActionsVC.swift in Sources */,
@@ -7219,6 +7373,7 @@
 				22ADD682256C40410098EFEB /* ComposerView.swift in Sources */,
 				E7A37B8425ADA66E0055458F /* ChatSuggestionsHeaderView.swift in Sources */,
 				6E297C5127CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */,
+				6E3DAEC12809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */,
 				8850FE91256558B200C8D534 /* NavigationRouter.swift in Sources */,
 				883051C82630579D0069D731 /* ChatThreadArrowView.swift in Sources */,
 				6E297C1027CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift in Sources */,
@@ -7263,6 +7418,7 @@
 				EDD84510279E6930004BF3CD /* ChatMenuViewController.swift in Sources */,
 				DBC8A5762581476E00B20A82 /* ChatMessageListVC.swift in Sources */,
 				CD7897A227B29FA3005EB481 /* AdminMessageTVCell.swift in Sources */,
+				224FC4CB280D3BE900F6E135 /* GiftPacketSentBubble.swift in Sources */,
 				6EEFB79C27BB83AD007224C2 /* PanModalPresentationDelegate.swift in Sources */,
 				CDC2BCE72763756500D75F6F /* Date+Extensions.swift in Sources */,
 				6ED3E44927B5337C00A05C0A /* AvatarView.swift in Sources */,
@@ -7274,8 +7430,10 @@
 				ACF73D7826CFE07900372DC0 /* Cancellable.swift in Sources */,
 				847D602B2679EED400FB701D /* VideoAttachmentGalleryCell.swift in Sources */,
 				AD87D097263C7783008B466C /* CommandButton.swift in Sources */,
+				E3D2976328255CD00026B69F /* GiphyApiServiceProtocol.swift in Sources */,
 				224165A825910A2C00ED7F78 /* CheckboxControl.swift in Sources */,
 				6E6A40D727EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */,
+				6E3DAEBD280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */,
 				79FA4A84263BFD1100EC33DA /* GalleryAttachmentViewInjector.swift in Sources */,
 				88D88F86257F9AA700AFE2A2 /* NSLayoutConstraint+Extensions.swift in Sources */,
 				796CBD1C25FF9552003299B0 /* UIStackView+Extensions.swift in Sources */,
@@ -7302,6 +7460,7 @@
 				843F0BC326775CDB00B342CB /* Cache.swift in Sources */,
 				8830513E263031C40069D731 /* ChatMessageLayoutOptions.swift in Sources */,
 				792DD9D9256BC542001DB91B /* BaseViews.swift in Sources */,
+				EDE6D9252818259700FCAB53 /* Utils.swift in Sources */,
 				CD72548D275F556100CD6444 /* RedPacket.swift in Sources */,
 				ADA3572F269C807A004AD8E9 /* ChatChannelHeaderView.swift in Sources */,
 				F80BCA1426304F7800F2107B /* ShareButton.swift in Sources */,
@@ -7309,6 +7468,7 @@
 				64B059E22670EFFE0024CE90 /* ChatChannelVC+SwiftUI.swift in Sources */,
 				BDDD1EA32632C50200BA007B /* Appearance.swift in Sources */,
 				88CABC4425933EE70061BB67 /* ChatMessageDefaultReactionsBubbleView.swift in Sources */,
+				E3D2975F28255C9C0026B69F /* Publisher+Extensions.swift in Sources */,
 				79CCB66E259CBC4F0082F172 /* ChatChannelNamer.swift in Sources */,
 				43EB3AE22671718200954323 /* AttachmentViewCatalog.swift in Sources */,
 				79F691B22604C10A000AE89B /* SystemEnvironment.swift in Sources */,
@@ -7341,6 +7501,7 @@
 				E7166CE225BEE20600B03B07 /* Appearance+Images.swift in Sources */,
 				CD24C71E2784892A00F6378D /* UIApplication+Extension.swift in Sources */,
 				88CABC6625934CF60061BB67 /* ChatMessageReactions+Types.swift in Sources */,
+				E3D2976528255CF50026B69F /* EndpointProtocol.swift in Sources */,
 				BD69F5D52669392E00E9E3FA /* ScrollToLatestMessageButton.swift in Sources */,
 				6E3DEF6B27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */,
 				790882F725486B8000896F03 /* ChatChannelListCollectionViewDelegate.swift in Sources */,
@@ -7375,6 +7536,7 @@
 				BDC80CB5265CF4B800F62CE2 /* ImageCDN.swift in Sources */,
 				843F0BCD2677667000B342CB /* AttachmentActionButton.swift in Sources */,
 				CD24C719278484B800F6378D /* LocationManager.swift in Sources */,
+				E3D2975D28255C6A0026B69F /* URLSession+Extensions.swift in Sources */,
 				843F0BC72677640000B342CB /* VideoAttachmentGalleryPreview.swift in Sources */,
 				ADB22F7D25F1626200853C92 /* ChatPresenceAvatarView.swift in Sources */,
 				2245B2B625602465006A612D /* ChatChannelAvatarView.swift in Sources */,
@@ -7422,6 +7584,7 @@
 				CD1C90F0272C417F00A6E85B /* CryptoSentBubble.swift in Sources */,
 				AD43F90926153BAD00F2D4BB /* QuotedChatMessageView.swift in Sources */,
 				ED0D5147275DED8800753692 /* RedPacketAmountBubble.swift in Sources */,
+				E3D29767282567570026B69F /* GifViewController+ViewModel.swift in Sources */,
 				6EEFB78E27BB83AD007224C2 /* PanModalPresentable+LayoutHelpers.swift in Sources */,
 				ED5DD0CA27CCAC3A000B3E9A /* AnnouncementTableViewCell.swift in Sources */,
 				847F3CEA2689FDEB00D240E0 /* ChatMessageCell.swift in Sources */,
@@ -7431,7 +7594,6 @@
 				ED7DD40127CCF36C007CE0BA /* ASVideoLayerObject.swift in Sources */,
 				CD6058EB278860EB00A033CD /* ChatClientConfiguration.swift in Sources */,
 				6E0D12D627B3CA4A003DD1AA /* NameGroupViewController.swift in Sources */,
-				CD6A29D627AD688700007D7B /* ExtraDataHelper.swift in Sources */,
 				79088339254876F200896F03 /* ChatMessageListView.swift in Sources */,
 				EDAB4B4227A17A0300F07D53 /* EmojiButton.swift in Sources */,
 				6ED0BE5327C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift in Sources */,
@@ -7449,12 +7611,16 @@
 				CD9A4706275DFA1100CA9931 /* Constants.swift in Sources */,
 				883998212576397900294DB9 /* ChatMessageGalleryView.swift in Sources */,
 				F64DFA8C26282F8B00F7F6F9 /* CGPoint+Extensions.swift in Sources */,
+				E3DAF49A28198313002CA91C /* GiphyModel.swift in Sources */,
 				6ED3E45027B53AE200A05C0A /* AttachmentListCollectionViewCell.swift in Sources */,
 				2210525F256FE16600A5F0DB /* CommandLabelView.swift in Sources */,
+				ED6627C3283BA57A003C3C58 /* Double+Extension.swift in Sources */,
+				FC71860C2836093700CD15CC /* GiftPacket.swift in Sources */,
 				ADB22F7C25F1626200853C92 /* OnlineIndicatorView.swift in Sources */,
 				AD447586263B463D0030E583 /* ConfirmButton.swift in Sources */,
 				AD7112F325F12AA800932AEE /* ChatUserAvatarView.swift in Sources */,
 				6EEFB79427BB83AD007224C2 /* PanContainerView.swift in Sources */,
+				E3D2975A282539E80026B69F /* GetGifRequestModel.swift in Sources */,
 				FC4F2EFB27F4407000A6D729 /* ChannelMemberCountView.swift in Sources */,
 				882AE124257A7FFE004095B3 /* UIViewController+Extensions.swift in Sources */,
 				E768AA892625C18D00328E6E /* TypingIndicatorView.swift in Sources */,
@@ -7464,8 +7630,10 @@
 				E7734D1C25F9479F004F76B0 /* CellActionView.swift in Sources */,
 				88BA7F7F258B97A8006CE0C5 /* ChatMessageImageGallery+ImagePreview.swift in Sources */,
 				88410ED126556B6F00525AA3 /* NavigationVC.swift in Sources */,
+				E3D2976128255CB70026B69F /* Dictionary+Extensions.swift in Sources */,
 				FCAC7B3527E0B21F00A310EC /* ChannelDetailHeaderTVCell.swift in Sources */,
 				CD8918A3273E32110051C651 /* SendMoneyButton.swift in Sources */,
+				E3DAF49B28198315002CA91C /* SwiftyGiphyAPI.swift in Sources */,
 				AD050B9E265D5E12006649A5 /* QuotedChatMessageView+SwiftUI.swift in Sources */,
 				224FF69D2562F5D100725DD1 /* UIImage+Extensions.swift in Sources */,
 				88F0D734257E4EA500F4B050 /* L10n.swift in Sources */,
@@ -7757,10 +7925,12 @@
 				6ED0BE5227C4F24B00AFAE48 /* TableViewHeaderCreateChat.swift in Sources */,
 				7964F3B6249A314D002A09EC /* PrefixLogFormatter.swift in Sources */,
 				8862922925AC720F00D9AE78 /* TokenProvider.swift in Sources */,
+				E3C2DCC52822BF3C00CA4F0E /* PickerTableViewCell.swift in Sources */,
 				6EC85CE027D5EC8400063EB8 /* CollectionViewGroupUserList.swift in Sources */,
 				6EEFB79127BB83AD007224C2 /* PanModalPresentable+UIViewController.swift in Sources */,
 				84A1D2E626AACDBE00014712 /* ChannelEventsController.swift in Sources */,
 				6ED3E44F27B53AE200A05C0A /* AttachmentListCollectionViewCell.swift in Sources */,
+				E3C2DCCA2822BF3C00CA4F0E /* GifViewController.swift in Sources */,
 				88BDCA8A2642B02D0099AD74 /* ChatMessageAttachment.swift in Sources */,
 				88E26D6E2580F34B00F55AB5 /* AttachmentUploader.swift in Sources */,
 				88A00DD02525F08000259AB4 /* ModerationEndpoints.swift in Sources */,
@@ -7773,7 +7943,9 @@
 				882C5760252C7CC400E60C44 /* ChannelMemberListQueryDTO.swift in Sources */,
 				64DA56BB26412EED00DCBF82 /* DatabaseCleanupUpdater.swift in Sources */,
 				88DA57E02631E80D00FA8C53 /* MutedChannelPayload.swift in Sources */,
+				FC2F12C92820FE41001996E0 /* ConstantsKey.swift in Sources */,
 				6ED3E45427B53D3400A05C0A /* AttachmentListContainerView.swift in Sources */,
+				E3C2DCC72822BF3C00CA4F0E /* StickerCollectionCell.swift in Sources */,
 				792A4F492480107A00EAF71D /* Sorting.swift in Sources */,
 				7937282A2498FFD300E13FE5 /* MemberPayload.swift in Sources */,
 				799C944C247D5766001F1104 /* ChannelController.swift in Sources */,
@@ -7813,6 +7985,7 @@
 				79CDE1DD24B321FE0003BD1D /* CurrentUserDTO.swift in Sources */,
 				6EEFB79327BB83AD007224C2 /* PanContainerView.swift in Sources */,
 				ADF34F9E25CDD8E600AD637C /* ConnectionController+SwiftUI.swift in Sources */,
+				FC2F12CB2820FEA7001996E0 /* ExtraDataHelper.swift in Sources */,
 				DAD539DB250B8A9C00CFC649 /* Controller.swift in Sources */,
 				F6ED5F76250278D7005D7327 /* SyncEndpoint.swift in Sources */,
 				797A756824814F0D003CF16D /* Bundle+Extensions.swift in Sources */,
@@ -7879,6 +8052,7 @@
 				79280F782489181200CDEB89 /* URLSessionWebSocketEngine.swift in Sources */,
 				792A4F3C247FFBB400EAF71D /* Timers.swift in Sources */,
 				79682C4624BC9DAF0071578E /* ChannelUpdater.swift in Sources */,
+				E344A5BD2823E16300CA7AC5 /* GiphyCollectionCell.swift in Sources */,
 				6E1BA5C427C62A70004046D2 /* StreamChatBackButton.swift in Sources */,
 				792A4F482480107A00EAF71D /* Pagination.swift in Sources */,
 				79AF43B42632AF1C00E75CDA /* ChannelVisibilityEventMiddleware.swift in Sources */,
@@ -7886,12 +8060,14 @@
 				8A0C3BBC24C0947400CAFD19 /* UserEvents.swift in Sources */,
 				DA4EE5B2252B67F500CB26D4 /* UserListController+SwiftUI.swift in Sources */,
 				79280F7A248918FD00CDEB89 /* StarscreamWebSocketEngine.swift in Sources */,
+				6E3DAEBC280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */,
 				7963BD6926B0208900281F8C /* ChatMessageAudioAttachment.swift in Sources */,
 				697C6F90260CFA37000E9023 /* Deprecations.swift in Sources */,
 				7964F3A4249A0ACF002A09EC /* ChannelListQueryDTO.swift in Sources */,
 				ED7DAB3227AC2D000085E2B9 /* ChatMenuViewController.swift in Sources */,
 				79280F3F2484E3BA00CDEB89 /* ClientError.swift in Sources */,
 				ED00E2AF27A8071800AA1A13 /* KeyboardService.swift in Sources */,
+				E3C2DCC42822BF3C00CA4F0E /* EmojiMenuViewController.swift in Sources */,
 				884C61222594A449008B70DC /* AttachmentActionRequestBody.swift in Sources */,
 				84A43CAF26A9A25000302763 /* UnknownEvent.swift in Sources */,
 				DAFAD6A124DC476A0043ED06 /* Result+Extensions.swift in Sources */,
@@ -7900,6 +8076,7 @@
 				7991D83B24F5427E00D21BA3 /* EphemeralValuesContainer.swift in Sources */,
 				79682C4B24BF37CB0071578E /* ChannelListPayload.swift in Sources */,
 				79D6CE3725F7C84600BE2EEC /* ChatChannelWatcherListController+SwiftUI.swift in Sources */,
+				6E3DAEC02809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */,
 				DA9985EE24E175AA000E9885 /* ChannelCodingKeys.swift in Sources */,
 				6EEFB78527BB83AD007224C2 /* UIViewController+PanModalPresenter.swift in Sources */,
 				22B54C4C25C80FA90041B357 /* RawJSON.swift in Sources */,
@@ -7925,10 +8102,13 @@
 				6EEFB79B27BB83AD007224C2 /* PanModalPresentationDelegate.swift in Sources */,
 				7991D83D24F7E93900D21BA3 /* ChannelListController+SwiftUI.swift in Sources */,
 				225D7FE225D191400094E555 /* ChatMessageImageAttachment.swift in Sources */,
+				E3C2DCC82822BF3C00CA4F0E /* EmojiContainerViewController.swift in Sources */,
 				8A0D64A724E57A520017A3C0 /* GuestUserTokenRequestPayload.swift in Sources */,
+				E3C2DCC62822BF3C00CA4F0E /* StickerMenuCollectionCell.swift in Sources */,
 				888E8C39252B2ABB00195E03 /* UserController+Combine.swift in Sources */,
 				792FCB4524A33B5B000290C7 /* EventDataProcessorMiddleware.swift in Sources */,
 				6EEFB79927BB83AD007224C2 /* PanModalPresentationAnimator.swift in Sources */,
+				E3C2DCC32822BF3C00CA4F0E /* EmojiPickerViewController.swift in Sources */,
 				79A0E9BE2498C33100E9BD50 /* TypingEvent.swift in Sources */,
 				79896D5C2506593E00BA8F1C /* ChannelReadDTO.swift in Sources */,
 				8819DFD52525F49D00FD1A50 /* UserController.swift in Sources */,

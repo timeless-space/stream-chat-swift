@@ -18,7 +18,8 @@ class ChatGroupDetailViewModel: NSObject {
     var reloadTable: (() -> Void)?
     var channelMembers: [ChatChannelMember] = []
     var user: ChatChannelMember?
-
+    var loadingMoreMembers: Bool = false
+    private let memberPageLimit = 99
     // MARK: - Enums
     enum ScreenType {
         case channelDetail
@@ -47,29 +48,27 @@ class ChatGroupDetailViewModel: NSObject {
     }
 
     func initChannelMembers() {
-        guard let controller = channelController else {
-            return
-        }
-        if let channelMemberController = chatMemberController {
-            channelMemberController.synchronize { [weak self] error in
-                guard let self = self else {
-                    return
-                }
-                self.sortChannelMembers()
-            }
-        } else {
+        guard let controller = channelController else { return }
+        if chatMemberController == nil {
             do {
+                var query = try ChannelMemberListQuery(cid: .init(cid: controller.cid?.description ?? ""))
+                query.pagination = Pagination(pageSize: memberPageLimit)
                 chatMemberController = try ChatClient.shared.memberListController(
-                    query: .init(cid: .init(cid: controller.cid?.description ?? "")))
-                chatMemberController?.synchronize { [weak self] error in
-                    guard let self = self else {
-                        return
-                    }
-                    self.sortChannelMembers()
-                }
-            } catch {
-            }
+                    query: query)
+            } catch {}
         }
+        chatMemberController?.synchronize { [weak self] error in
+            guard let self = self else { return }
+            self.sortChannelMembers()
+        }
+    }
+
+    public func loadMoreMembers() {
+        chatMemberController?.loadNextMembers(limit: memberPageLimit, completion: { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.sortChannelMembers()
+            weakSelf.loadingMoreMembers = false
+        })
     }
 
     private func sortChannelMembers() {
@@ -90,6 +89,11 @@ class ChatGroupDetailViewModel: NSObject {
         channelMembers.append(contentsOf: alphabetUsers)
         channelMembers.append(contentsOf: otherUsers)
         self.channelMembers = channelMembers
+        if channelController?.channel?.isDirectMessageChannel == true {
+            user = channelMembers.first(where: { userMember in
+                userMember.id != ChatClient.shared.currentUserId
+            })
+        }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
                 return

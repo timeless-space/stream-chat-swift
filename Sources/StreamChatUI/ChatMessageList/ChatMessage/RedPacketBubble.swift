@@ -20,6 +20,10 @@ class RedPacketBubble: UITableViewCell {
     public private(set) var pickUpButton: UIButton!
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorSender: NSLayoutConstraint?
+    private var leadingAnchorReceiver: NSLayoutConstraint?
+    private var trailingAnchorReceiver: NSLayoutConstraint?
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
@@ -36,8 +40,7 @@ class RedPacketBubble: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        setLayout()
     }
 
     required init?(coder: NSCoder) {
@@ -48,8 +51,10 @@ class RedPacketBubble: UITableViewCell {
         return UIScreen.main.bounds.width * 0.3
     }
 
-    func configureCell(isSender: Bool, with type: CellType) {
-        cellType = type
+    private func setLayout() {
+        selectionStyle = .none
+        backgroundColor = .clear
+
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -59,13 +64,6 @@ class RedPacketBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -81,11 +79,6 @@ class RedPacketBubble: UITableViewCell {
 
         sentThumbImageView = UIImageView()
         sentThumbImageView.backgroundColor = Appearance.default.colorPalette.background6
-        if type == .EXPIRED {
-            sentThumbImageView.image = Appearance.default.images.expiredPacketThumb
-        } else {
-            sentThumbImageView.image = Appearance.default.images.cryptoSentThumb
-        }
         sentThumbImageView.transform = .mirrorY
         sentThumbImageView.contentMode = .scaleAspectFill
         sentThumbImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -110,13 +103,6 @@ class RedPacketBubble: UITableViewCell {
         descriptionLabel.textAlignment = .center
 
         lblDetails = createDetailsLabel()
-        if type == .EXPIRED {
-            descriptionLabel.text = "That was fun! \nWant to go next!?"
-        } else if type == .RECEIVED {
-            //lblDetails.text = "You just picked up 65 ONE!"
-            descriptionLabel.text = "Rad - Top Amount!"
-        }
-
         detailsStack = UIStackView(arrangedSubviews: [lblDetails])
         detailsStack.axis = .vertical
         detailsStack.distribution = .fillEqually
@@ -150,11 +136,9 @@ class RedPacketBubble: UITableViewCell {
         ])
         pickUpButton.transform = .mirrorY
 
-
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
-        timestampLabel.textAlignment = isSender ? .right : .left
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -163,6 +147,47 @@ class RedPacketBubble: UITableViewCell {
             timestampLabel.heightAnchor.constraint(lessThanOrEqualToConstant: 15),
         ])
         timestampLabel.transform = .mirrorY
+
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
+    }
+
+    func configData(isSender: Bool, with type: CellType) {
+        cellType = type
+        self.isSender = isSender
+        handleBubbleConstraints(isSender)
+        timestampLabel.textAlignment = isSender ? .right : .left
+        if type == .EXPIRED {
+            sentThumbImageView.image = Appearance.default.images.expiredPacketThumb
+            descriptionLabel.text = "That was fun! \nWant to go next!?"
+        } else {
+            sentThumbImageView.image = Appearance.default.images.cryptoSentThumb
+            descriptionLabel.text = "Rad - Top Amount!"
+        }
+        var nameAndTimeString: String? = ""
+        if let options = layoutOptions {
+            if options.contains(.authorName), let name = content?.author.name {
+                nameAndTimeString?.append("\(name)   ")
+            }
+            if options.contains(.timestamp) , let createdAt = content?.createdAt {
+                nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+            }
+        }
+        timestampLabel?.text = nameAndTimeString
+        if cellType == .RECEIVED {
+            configTopAmountCell()
+        } else if cellType == .EXPIRED {
+            configExpiredCell()
+        }
+    }
+
+    private func handleBubbleConstraints(_ isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        trailingAnchorSender?.isActive = isSender
+        leadingAnchorReceiver?.isActive = !isSender
+        trailingAnchorReceiver?.isActive = !isSender
     }
 
     private func createTimestampLabel() -> UILabel {
@@ -218,76 +243,18 @@ class RedPacketBubble: UITableViewCell {
         return sentCryptoLabel
     }
 
-    func configData() {
-        var nameAndTimeString: String? = ""
-        if let options = layoutOptions {
-            if options.contains(.authorName), let name = content?.author.name {
-                nameAndTimeString?.append("\(name)   ")
-            }
-            if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
-            }
-        }
-        timestampLabel?.text = nameAndTimeString
-        if cellType == .RECEIVED {
-            configTopAmountCell()
-        } else if cellType == .EXPIRED {
-            configExpiredCell()
-        }
-    }
-
     func configTopAmountCell() {
-        guard let topAmount = getExtraData(key: "RedPacketTopAmountReceived") else {
-            return
-        }
-        if let receivedAmount = topAmount["receivedAmount"] {
-            let dblReceivedAmount = fetchRawData(raw: receivedAmount) as? Double ?? 0
-            let strReceivedAmount = String(format: "%.2f", dblReceivedAmount)
-            if ChatClient.shared.currentUserId ?? "" == getUserId(raw: topAmount) {
-                lblDetails.text = "You just picked up \(strReceivedAmount) ONE!"
-            } else {
-                lblDetails.text = "\(getUserName(raw: topAmount)) just picked up \(strReceivedAmount) ONE!"
-            }
+        let strReceivedAmount = content?.extraData.topReceivedAmount
+        if ChatClient.shared.currentUserId ?? "" == content?.extraData.highestAmountUserId {
+            lblDetails.text = "You just picked up \(strReceivedAmount?.formattedOneBalance ?? "") ONE!"
+        } else {
+            lblDetails.text = "\(content?.extraData.highestAmountUserName ?? "") just picked up \(strReceivedAmount?.formattedOneBalance ?? "") ONE!"
         }
     }
 
     func configExpiredCell() {
-        guard let expiredData = getExtraData(key: "RedPacketExpired") else {
-            return
-        }
-        if let userName = expiredData["highestAmountUserName"] {
-            let strUserName = fetchRawData(raw: userName) as? String ?? ""
-            lblDetails.text = "\(strUserName) selected the highest amount!"
-        }
-    }
-
-    private func getUserName(raw: [String: RawJSON]) -> String {
-        if let userName = raw["highestAmountUserName"] {
-            return fetchRawData(raw: userName) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func getUserId(raw: [String: RawJSON]) -> String {
-        if let userId = raw["highestAmountUserId"] {
-            return fetchRawData(raw: userId) as? String ?? ""
-        } else {
-            return ""
-        }
-    }
-
-    private func getExtraData(key: String) -> [String: RawJSON]? {
-        if let extraData = content?.extraData[key] {
-            switch extraData {
-            case .dictionary(let dictionary):
-                return dictionary
-            default:
-                return nil
-            }
-        } else {
-            return nil
-        }
+        let strUserName = content?.extraData.redPacketExpiredHighestAmountUserName ?? ""
+        lblDetails.text = "\(strUserName) selected the highest amount!"
     }
     
     @objc func btnSendPacketAction() {

@@ -46,6 +46,7 @@ class WalletStepper: UIView {
 
     private var centerContainerXLayoutConstraint: NSLayoutConstraint?
     private var centerContainerYLayoutConstraint: NSLayoutConstraint?
+    private var decimalSeparator = Constants.decimalSeparator
     private var startPosition: CGPoint!
     public var value: Double = 1
     public var minimumValue: Double = 0.0
@@ -144,13 +145,16 @@ class WalletStepper: UIView {
     }
 
     @objc func panGestureDidReceiveInteraction(_ panGesture: UIPanGestureRecognizer) {
-        guard let centerContainerXLayoutConstraint = centerContainerXLayoutConstraint, let centerContainerYLayoutConstraint = centerContainerYLayoutConstraint else { return }
+        guard let centerContainerXLayoutConstraint = centerContainerXLayoutConstraint,
+                let centerContainerYLayoutConstraint = centerContainerYLayoutConstraint
+        else { return }
         let gestureLocation = panGesture.location(in: self)
         if panGesture.state == .began {
             startPosition = gestureLocation
         } else if panGesture.state == .changed {
             guard startPosition != nil else { return }
-            if ((abs(startPosition.y - gestureLocation.y) > 10) && scrollLock == false) || ((abs(startPosition.x - gestureLocation.x) > 10 && scrollLock == false)) {
+            if ((abs(startPosition.y - gestureLocation.y) > 10) && scrollLock == false) ||
+                ((abs(startPosition.x - gestureLocation.x) > 10 && scrollLock == false)) {
                 scrollDirection = (abs(startPosition.y - gestureLocation.y) > 10) ? .upDown : .leftRight
                 scrollLock = true
             }
@@ -245,26 +249,43 @@ class WalletStepper: UIView {
         }
     }
 
+    func getAmount() -> Double {
+        return Double((self.lblAmount.text?.replacingOccurrences(of: decimalSeparator, with: ".").trimmingCharacters(in: .whitespaces) ?? "0")) ?? 0
+    }
+
     func insertNumber(numberValue: String?) {
         var amountString = ""
+        if let amount = Double(self.lblAmount.text?.replacingOccurrences(of: decimalSeparator, with: ".").trimmingCharacters(in: .whitespaces) ?? "0"),
+           amount >= maximumValue,
+           numberValue != nil,
+           numberValue == decimalSeparator {
+            self.requireUserAttention(on: lblAmount)
+            return
+        }
         guard isValidAmountInput(numberValue: numberValue ?? "") else { return }
         if let keyPadNumber = numberValue {
             var walletInputAmount = "\(self.lblAmount.text ?? "")".trimmingCharacters(in: .whitespaces)
-            if walletInputAmount == "0" && keyPadNumber != "." {
+            if walletInputAmount == "0" && keyPadNumber != decimalSeparator {
                 walletInputAmount = ""
             }
             amountString = "\(walletInputAmount)" + "\(keyPadNumber ?? "")"
-            if numberValue == "." {
+            if numberValue == decimalSeparator {
                 lblAmount.text = amountString
             } else {
-                let amount = amountString.replacingOccurrences(of: ",", with: "")
-                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: ".", with: "").isEmpty &&
-                    !(amount.components(separatedBy: ".").last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
-                    if !amount.contains(".") {
+                let amount = amountString
+                if !amount.replacingOccurrences(of: "0", with: "")
+                    .replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
+                    !(amount.components(separatedBy: decimalSeparator).last?
+                        .replacingOccurrences(of: "0", with: "").isEmpty ?? false)
+                {
+                    if !amount.contains(decimalSeparator) {
                         self.updateAmount(amount: Double(amount) ?? 0.0)
                     } else {
                         lblAmount.text = amount
-                        self.updateAmount(amount: Double(amount) ?? 0, shouldFormat: false)
+                        self.updateAmount(
+                            amount: Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0,
+                            shouldFormat: false
+                        )
                     }
                 } else {
                     lblAmount.text = amount
@@ -277,14 +298,16 @@ class WalletStepper: UIView {
                 value = 0
                 updateAmount(amount: value)
             } else {
-                let amount = amountString.replacingOccurrences(of: ",", with: "")
-                if !amount.replacingOccurrences(of: "0", with: "").replacingOccurrences(of: ".", with: "").isEmpty &&
-                    !(amount.components(separatedBy: ".").last?.replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
-                    if !amount.contains(".") {
+                let amount = amountString
+                if !amount.replacingOccurrences(of: "0", with: "")
+                    .replacingOccurrences(of: decimalSeparator, with: "").isEmpty &&
+                    !(amount.components(separatedBy: decimalSeparator).last?
+                        .replacingOccurrences(of: "0", with: "").isEmpty ?? false) {
+                    if !amount.contains(decimalSeparator) {
                         self.updateAmount(amount: Double(amount) ?? 0.0)
                     } else {
                         lblAmount.text = amount
-                        self.updateAmount(amount: Double(amount) ?? 0, shouldFormat: false)
+                        self.updateAmount(amount: Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0, shouldFormat: false)
                     }
                 } else {
                     lblAmount.text = amount
@@ -295,15 +318,19 @@ class WalletStepper: UIView {
     }
 
     private func isValidAmountInput(numberValue: String) -> Bool {
-        if (self.lblAmount.text ?? "").contains(".") && numberValue == "." {
+        if (self.lblAmount.text ?? "").contains(decimalSeparator) && numberValue == decimalSeparator {
             return false
         }
         var walletInputAmount = "\(self.lblAmount.text ?? "")" + numberValue
-        guard walletInputAmount.contains(".") else { return true }
+        guard walletInputAmount.contains(decimalSeparator) else { return true }
         if currencyType == .ONE {
-            return !(walletInputAmount.components(separatedBy: ".").last?.count ?? 0 > 3)
+            return !(walletInputAmount.components(
+                separatedBy: decimalSeparator).last?.count ?? 0 > NumberUtils.Constant.coin.maximumFractionDigits
+            )
         } else {
-            return !(walletInputAmount.components(separatedBy: ".").last?.count ?? 0 > 2)
+            return !(walletInputAmount.components(
+                separatedBy: decimalSeparator).last?.count ?? 0 > NumberUtils.Constant.currency.maximumFractionDigits
+            )
         }
     }
 
@@ -312,17 +339,23 @@ class WalletStepper: UIView {
         currencyFormatter.usesGroupingSeparator = true
         currencyFormatter.numberStyle = .currency
         currencyFormatter.currencySymbol = ""
-        currencyFormatter.decimalSeparator = "."
-        currencyFormatter.maximumFractionDigits = 4
+        currencyFormatter.decimalSeparator = decimalSeparator
+        currencyFormatter.maximumFractionDigits = NumberUtils.Constant.coin.maximumFractionDigits
         currencyFormatter.minimumFractionDigits = 0
-        currencyFormatter.locale = Locale.init(identifier: "en_US")
         if let priceString = currencyFormatter.string(from: NSNumber(value: value)) {
             lblAmount.text = priceString
         }
     }
 
     private func animate(animations: @escaping (() -> Void), completion: @escaping (() -> Void)) {
-        UIView.animate(withDuration: 0.6, delay: 0.0, usingSpringWithDamping: 0.75, initialSpringVelocity: 2, options: .curveEaseInOut, animations: animations, completion: { _ in
+        UIView.animate(
+            withDuration: 0.6,
+            delay: 0.0,
+            usingSpringWithDamping: 0.75,
+            initialSpringVelocity: 2,
+            options: .curveEaseInOut,
+            animations: animations,
+            completion: { _ in
             completion()
         })
     }

@@ -43,6 +43,7 @@ class WalletQuickInputViewController: UIViewController {
     }
     
     @IBAction func btnShowKeypadAction(_ sender: Any) {
+        Snackbar.hide()
         showKeypad?(walletStepper.value)
     }
 
@@ -63,7 +64,7 @@ class WalletQuickInputViewController: UIViewController {
     }
 
     private func validateAmount() -> Bool {
-        if walletStepper.value == 0 {
+        if walletStepper.getAmount() == 0 {
             Snackbar.show(text: "You cannot send/request 0 ONE.")
             return false
         }
