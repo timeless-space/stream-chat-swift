@@ -113,7 +113,15 @@ class StickerGiftBubble: UITableViewCell {
 
         pickUpButton = UIButton()
         pickUpButton.translatesAutoresizingMaskIntoConstraints = false
-        pickUpButton.setTitle("Accept", for: .normal)
+        if content?.extraData.giftSenderId == ChatClient.shared.currentUserId?.string {
+            pickUpButton.alpha = 0.5
+            pickUpButton.isEnabled = false
+            pickUpButton.setTitle("Sent", for: .normal)
+        } else {
+            pickUpButton.alpha = 1.0
+            pickUpButton.isEnabled = true
+            pickUpButton.setTitle("Accept", for: .normal)
+        }
         pickUpButton.addTarget(self, action: #selector(btnGifPickupAction), for: .touchUpInside)
         pickUpButton.setTitleColor(.white, for: .normal)
         pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
@@ -212,7 +220,8 @@ class StickerGiftBubble: UITableViewCell {
                         if result.header?.status == ResultType.warning.rawValue {
                             Snackbar.show(text: "duplicate Purchase Sticker!", messageType: nil)
                         } else {
-                            self.sendDownloadSticker()
+                            Snackbar.show(text: "Stickers added!", messageType: nil)
+//                            self.sendDownloadSticker()
                         }
                         
                     }
