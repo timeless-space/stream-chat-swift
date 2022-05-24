@@ -112,10 +112,7 @@ extension String {
 // MARK: Currency Format
 extension String {
     var formattedOneBalance: String {
-        if let amount = Double(self) {
-            return NumberUtils.formatONE(amount)
-        }
-        return "0"
+        NumberUtils.formatONE(Double(self) ?? 0)
     }
 }
 
