@@ -437,7 +437,7 @@ open class ComposerVC: _ViewController,
             composerView.titleLabel.text = L10n.Composer.Title.edit
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
-                composerView.inputMessageView.sendButton.isHidden = true
+                self.composerView.inputMessageView.sendButton.isHidden = true
                 self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
             }
         default:
