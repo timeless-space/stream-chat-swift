@@ -13,6 +13,15 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
     public let collectionView = UICollectionView(frame: .zero, collectionViewLayout: StackedItemsLayout())
 
+    public var collectionFlowLayout: UICollectionViewFlowLayout {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 20
+        layout.minimumInteritemSpacing = 20
+        layout.itemSize = .init(width: 200, height: 200)
+        return layout
+    }
+
     /// this will be called to configure each cell
     public var configureItemHandler: ConfigureItemHandler?
     public typealias ConfigureItemHandler = (ItemType, CellType) -> Void
@@ -27,8 +36,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     public var items = [ItemType]() {
         didSet {
             guard items != oldValue else { return }
-            collectionView.reloadData()
-            scrollToItem(at: 0, animated: false)
+            setupCollectionFlowLayout()
         }
     }
 
@@ -148,6 +156,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         collectionView.delegate = self
         collectionView.register(CellType.self, forCellWithReuseIdentifier: "Cell")
         addSubview(collectionView)
+        collectionView.collectionViewLayout = StackedItemsLayout()
     }
 
     private var stackedItemsLayout: StackedItemsLayout! {
@@ -174,8 +183,20 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         setup()
     }
 
+    public func setupCollectionFlowLayout() {
+        if items.count == 1 {
+            collectionView.collectionViewLayout = collectionFlowLayout
+            collectionView.isScrollEnabled = false
+        } else {
+            collectionView.collectionViewLayout = stackedItemsLayout
+            collectionView.isScrollEnabled = true
+        }
+        collectionView.reloadData()
+        scrollToItem(at: 0, animated: false)
+    }
+
     public func expandView(index: Int) {
-        if !isExpand {
+        if !isExpand && items.count > 1 {
             isExpand = true
             let focusIndex = currentlyFocusedItemIndex
             let layout = UICollectionViewFlowLayout()

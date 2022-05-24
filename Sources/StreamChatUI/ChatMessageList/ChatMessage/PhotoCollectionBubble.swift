@@ -26,14 +26,6 @@ class PhotoCollectionBubble: UITableViewCell {
     }
     weak var delegate: PhotoCollectionAction?
 
-    private(set) lazy var imgPreview: UIImageView = {
-        let imgPreview = UIImageView()
-        imgPreview.clipsToBounds = true
-        imgPreview.contentMode = .scaleAspectFill
-        imgPreview.translatesAutoresizingMaskIntoConstraints = false
-        return imgPreview
-    }()
-
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -64,42 +56,26 @@ class PhotoCollectionBubble: UITableViewCell {
         heightConst = viewContainer.heightAnchor.constraint(equalToConstant: 285)
         heightConst?.isActive = true
 
-        viewContainer.addSubview(imgPreview)
-        imgPreview.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor).isActive = true
-        imgPreview.topAnchor.constraint(equalTo: viewContainer.topAnchor).isActive = true
-        imgPreview.bottomAnchor.constraint(equalTo: viewContainer.bottomAnchor).isActive = true
-        imgPreview.widthAnchor.constraint(equalToConstant: 200).isActive = true
-
         leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor)
         trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
         leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
         trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(
             equalTo: self.contentView.trailingAnchor)
-
     }
 
     func configureCell(isSender: Bool) {
-        if content?.imageAttachments.count == 1 {
-            Nuke.loadImage(with: content?.imageAttachments.first?.imageURL, into: imgPreview)
-            heightConst?.constant = 200
-            imgPreview.isHidden = false
-            stackedItemsView.isHidden = true
-        } else {
-            stackedItemsView.items = content?.imageAttachments ?? []
-            heightConst?.constant = 300
-            stackedItemsView.configureItemHandler = { item, cell in
-                cell.configureMedia(attachment: item)
-                cell.clipsToBounds = true
-                cell.cornerRadius = 20
+        stackedItemsView.items = content?.imageAttachments ?? []
+        heightConst?.constant = 300
+        stackedItemsView.configureItemHandler = { item, cell in
+            cell.configureMedia(attachment: item)
+            cell.clipsToBounds = true
+            cell.cornerRadius = 20
+        }
+        stackedItemsView.selectionHandler = { [weak self] type, selectedIndex in
+            guard let `self` = self, let cell = self.stackedItemsView.cell(at: selectedIndex) else {
+                return
             }
-            stackedItemsView.selectionHandler = { [weak self] type, selectedIndex in
-                guard let `self` = self, let cell = self.stackedItemsView.cell(at: selectedIndex) else {
-                    return
-                }
-                self.delegate?.didSelectAttachment(self.content, view: cell, type.id)
-            }
-            imgPreview.isHidden = true
-            stackedItemsView.isHidden = false
+            self.delegate?.didSelectAttachment(self.content, view: cell, type.id)
         }
         handleBubbleConstraints(isSender)
     }
