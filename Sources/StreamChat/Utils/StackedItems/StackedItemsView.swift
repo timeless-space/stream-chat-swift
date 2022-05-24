@@ -18,7 +18,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         layout.scrollDirection = .horizontal
         layout.minimumLineSpacing = 20
         layout.minimumInteritemSpacing = 20
-        layout.itemSize = .init(width: 200, height: 200)
+        layout.itemSize = .init(width: 250, height: 200)
         return layout
     }
 
@@ -35,7 +35,6 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     /// The items this view displays
     public var items = [ItemType]() {
         didSet {
-            guard items != oldValue else { return }
             setupCollectionFlowLayout()
         }
     }
@@ -184,6 +183,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     }
 
     public func setupCollectionFlowLayout() {
+        collectionView.collectionViewLayout.invalidateLayout()
         if items.count == 1 {
             collectionView.collectionViewLayout = collectionFlowLayout
             collectionView.isScrollEnabled = false

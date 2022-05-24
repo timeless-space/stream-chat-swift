@@ -301,6 +301,9 @@ public class StackedItemsLayout: UICollectionViewLayout {
     }
 
     public override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        return items[indexPath.item]
+        if items.count > indexPath.row {
+            return items[indexPath.row]
+        }
+        return nil
     }
 }

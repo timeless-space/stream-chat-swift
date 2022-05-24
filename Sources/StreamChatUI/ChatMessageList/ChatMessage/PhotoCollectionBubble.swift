@@ -53,7 +53,7 @@ class PhotoCollectionBubble: UITableViewCell {
         stackedItemsView.topAnchor.constraint(equalTo: viewContainer.topAnchor).isActive = true
         stackedItemsView.bottomAnchor.constraint(equalTo: viewContainer.bottomAnchor).isActive = true
         addGestureRecognizer(stackedItemsView.panGestureRecognizer)
-        heightConst = viewContainer.heightAnchor.constraint(equalToConstant: 285)
+        heightConst = viewContainer.heightAnchor.constraint(equalToConstant: 230)
         heightConst?.isActive = true
 
         leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor)
@@ -65,7 +65,10 @@ class PhotoCollectionBubble: UITableViewCell {
 
     func configureCell(isSender: Bool) {
         stackedItemsView.items = content?.imageAttachments ?? []
-        heightConst?.constant = 300
+        heightConst?.constant = 260
+        if stackedItemsView.items.count > 1 {
+            heightConst?.constant = 280
+        }
         stackedItemsView.configureItemHandler = { item, cell in
             cell.configureMedia(attachment: item)
             cell.clipsToBounds = true
