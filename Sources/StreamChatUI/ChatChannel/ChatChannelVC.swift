@@ -773,23 +773,15 @@ open class ChatChannelVC:
         didTapOnAction actionItem: ChatMessageActionItem,
         for message: ChatMessage
     ) {
-        messageComposerVC?.composerView.inputMessageView.textView.text = ""
         switch actionItem {
         case is EditActionItem:
             dismiss(animated: true) { [weak self] in
                 self?.messageComposerVC?.content.editMessage(message)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-
-//                    self?.messageComposerVC?.composerView.inputMessageView.textView.becomeFirstResponder()
-                }
             }
         case is InlineReplyActionItem:
             dismiss(animated: true) { [weak self] in
+                self?.messageComposerVC?.composerView.inputMessageView.textView.text = ""
                 self?.messageComposerVC?.content.quoteMessage(message)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                    self?.messageComposerVC?.composerView.headerView.isHidden = false
-//                    self?.messageComposerVC?.composerView.inputMessageView.textView.becomeFirstResponder()
-                }
             }
         case is ThreadReplyActionItem:
             dismiss(animated: true) { [weak self] in

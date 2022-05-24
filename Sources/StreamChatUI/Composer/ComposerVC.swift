@@ -425,32 +425,21 @@ open class ComposerVC: _ViewController,
             Animate {
                 self.composerView.confirmButton.isHidden = true
                 self.composerView.inputMessageView.sendButton.isHidden = false
-                self.composerView.headerView.isHidden = true
-                debugPrint("#### Hey there I am called")
+                self.composerView.container.removeArrangedSubview(self.composerView.headerView)
             }
         case .quote:
-            composerView.headerView.isHidden = false
             composerView.titleLabel.text = L10n.Composer.Title.reply
             composerView.inputMessageView.textView.becomeFirstResponder()
-            debugPrint("#### Hey there quote is called")
-//            composerView.headerView.isHidden = false
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                Animate {
-//                    self.composerView.headerView.isHidden = false
-//                }
-//            }
+            Animate {
+                self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
+            }
         case .edit:
-            composerView.headerView.isHidden = false
             composerView.titleLabel.text = L10n.Composer.Title.edit
             composerView.inputMessageView.textView.becomeFirstResponder()
             composerView.inputMessageView.sendButton.isHidden = true
-//            composerView.headerView.isHidden = false
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                Animate {
-//                    self.composerView.inputMessageView.sendButton.isHidden = true
-//                    self.composerView.headerView.isHidden = false
-//                }
-//            }
+            Animate {
+                self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
+            }
         default:
             log.warning("The composer state \(content.state.description) was not handled.")
         }
