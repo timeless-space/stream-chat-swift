@@ -220,6 +220,19 @@ public class PollBubble: UITableViewCell {
                     }
                 }
 
+                let controller = ChatClient.shared.currentUserController()
+                var showYourFirstPoll = false
+                if !isPreview, isSender {
+                    if let firstPollMessageIDRaw = controller.currentUser?.extraData["firstPollMessageID"] {
+                        if let messageId = self.content?.id {
+                            let firstPollMessageID = fetchRawData(raw: firstPollMessageIDRaw) as? String ?? ""
+                            showYourFirstPoll = firstPollMessageID == messageId
+                        }
+                    } else {
+                        showYourFirstPoll = true
+                    }
+                }
+
                 subContainer.subviews.forEach {
                     $0.removeFromSuperview()
                 }
@@ -235,6 +248,7 @@ public class PollBubble: UITableViewCell {
                     pollID: pollID,
                     isSender: isSender,
                     isPreview: isPreview,
+                    showYourFirstPoll: showYourFirstPoll,
                     onTapSend: {
                         guard let messageId = self.content?.id else { return }
                         let action = AttachmentAction(name: "action",
@@ -244,7 +258,13 @@ public class PollBubble: UITableViewCell {
                                                       text: "Send")
                         self.chatClient.messageController(cid: cid,
                                                             messageId: messageId)
-                            .dispatchEphemeralMessageAction(action)
+                            .dispatchEphemeralMessageAction(action, completion: { error in
+                                if error == nil {
+                                    var userInfo = [String: Any]()
+                                    userInfo["firstPollMessageID"] = messageId
+                                    NotificationCenter.default.post(name: .pollSended, object: nil, userInfo: userInfo)
+                                }
+                            })
                     },
                     onTapEdit: { self.onTapEdit() },
                     onTapCancel: { self.onTapCancel() },
@@ -291,33 +311,6 @@ public class PollBubble: UITableViewCell {
         }
     }
 
-    private func onTapSend(
-        question: String,
-        imageUrl: String,
-        optionList: [String],
-        anonymousPolling: Bool,
-        multipleChoices: Bool,
-        hideTally: Bool
-    ) {
-//        guard let cid = channel?.cid else {
-//            return
-//        }
-//        var userInfo = [String: Any]()
-//        userInfo["channelId"] = cid
-//        userInfo["question"] = question
-//        userInfo["imageUrl"] = imageUrl
-//        userInfo["anonymous"] = anonymousPolling
-//        userInfo["multipleChoices"] = multipleChoices
-//        userInfo["hideTally"] = hideTally
-//        userInfo["groupID"] = cid.description
-//        var answers: [[String: String]] = []
-//        optionList.forEach { item in
-//            answers.append(["content": item])
-//        }
-//        userInfo["answers"] = answers
-//        NotificationCenter.default.post(name: .sendPoll, object: nil, userInfo: userInfo)
-    }
-
     private func onTapEdit() {
         guard let cid = channel?.cid,
         let messageId = content?.id else {
@@ -329,17 +322,6 @@ public class PollBubble: UITableViewCell {
         userInfo["editData"] = editData
         userInfo["messageId"] = messageId
         NotificationCenter.default.post(name: .editPoll, object: nil, userInfo: userInfo)
-
-//        guard let messageId = content?.id,
-//              let cid = channel?.cid else { return }
-//        let action = AttachmentAction(name: "action",
-//                                      value: "edit",
-//                                      style: .default,
-//                                      type: .button,
-//                                      text: "Edit")
-//        chatClient.messageController(cid: cid,
-//                                            messageId: messageId)
-//            .dispatchEphemeralMessageAction(action)
     }
 
     private func onTapCancel() {
@@ -440,6 +422,7 @@ struct PollView: View {
     var pollID = ""
     var isSender: Bool
     var isPreview = false
+    var showYourFirstPoll = false
 
     // MARK: - Properties
     @State private var selectedMultiAnswerID: [String] = []
@@ -481,13 +464,13 @@ struct PollView: View {
                     }
                     VStack(alignment: .leading, spacing: 0) {
                         //TODO
-//                        if !isPreview {
-//                            Text("YOUR FIRST POLL")
-//                                .tracking(-0.4)
-//                                .font(.system(size: 9, weight: .medium))
-//                                .foregroundColor(Color.white.opacity(0.8))
-//                                .padding(.bottom, 2.5)
-//                        }
+                        if showYourFirstPoll {
+                            Text("YOUR FIRST POLL")
+                                .tracking(-0.4)
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(Color.white.opacity(0.8))
+                                .padding(.bottom, 2.5)
+                        }
                         Text(question)
                             .tracking(-0.2)
                             .font(.system(size: 14, weight: .bold))

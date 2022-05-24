@@ -25,7 +25,7 @@ extension Notification.Name {
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
     public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
     public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
-    public static let sendPoll = Notification.Name("kStreamChatSendPollTapAction")
+    public static let pollSended = Notification.Name("kStreamChatPollSendedAction")
     public static let submitVote = Notification.Name("kStreamChatSubmitVoteTapAction")
     public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
     public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
