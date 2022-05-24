@@ -279,20 +279,27 @@ public class PollBubble: UITableViewCell {
                     }
                 ))
                 timestampLabel.textAlignment = isSender ? .right : .left
-                var nameAndTimeString: String? = ""
+                var nameAndTimeString = ""
                 if let options = layoutOptions {
                     if options.contains(.authorName), let name = content?.author.name {
-                        nameAndTimeString?.append("\(name)   ")
+                        nameAndTimeString.append("\(name)   ")
                     }
-                    if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                        if isSender && isPreview {
-                            nameAndTimeString?.append("Only visible to you \(dateFormatter.string(from: createdAt))")
-                        } else {
-                            nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+                    if let createdAt = content?.createdAt {
+                        if options.contains(.timestamp) {
+                            if isSender && isPreview {
+                                nameAndTimeString.append("  Only visible to you \(dateFormatter.string(from: createdAt))")
+                            } else {
+                                nameAndTimeString.append("\(dateFormatter.string(from: createdAt))")
+                            }
+                        } else if options.contains(.onlyVisibleForYouIndicator), isSender && isPreview {
+                            nameAndTimeString.append("  Only visible to you \(dateFormatter.string(from: createdAt))")
                         }
                     }
                 }
                 timestampLabel?.text = nameAndTimeString
+                if nameAndTimeString.contains("Only visible to you") {
+                    timestampLabel?.addImage(systemName: "eye.fill")
+                }
             }
         }
     }
@@ -382,6 +389,31 @@ public class PollBubble: UITableViewCell {
         userInfo["answers"] = answers
         userInfo["poll_voted_count"] = pollVotedCount
         NotificationCenter.default.post(name: .viewPollResult, object: nil, userInfo: userInfo)
+    }
+}
+
+extension UILabel {
+    func addImage(systemName: String, afterLabel: Bool = false) {
+        let attachment = NSTextAttachment()
+        if #available(iOS 13.0, *) {
+            attachment.image = UIImage(systemName: systemName)
+            attachment.image = attachment.image?.withTintColor(Appearance.default.colorPalette.subtitleText)
+            attachment.bounds = CGRect(x: 0, y: 0, width: 15.5, height: 10)
+        }
+        let attachmentString = NSAttributedString(attachment: attachment)
+
+        if afterLabel {
+            let strLabelText = NSMutableAttributedString(string: self.text!)
+            strLabelText.append(attachmentString)
+
+            self.attributedText = strLabelText
+        } else {
+            let strLabelText = NSAttributedString(string: self.text!)
+            let mutableAttachmentString = NSMutableAttributedString(attributedString: attachmentString)
+            mutableAttachmentString.append(strLabelText)
+
+            self.attributedText = mutableAttachmentString
+        }
     }
 }
 
