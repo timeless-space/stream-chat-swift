@@ -249,11 +249,12 @@ public class PollBubble: UITableViewCell {
                     onTapEdit: { self.onTapEdit() },
                     onTapCancel: { self.onTapCancel() },
                     onTapSubmit: { listAnswerID in self.onTapSubmit(listAnswerID) },
-                    onTapViewResult: { answersRes in
+                    onTapViewResult: { answersRes, pollVotedCountRes in
                         self.onTapViewResult(
                             question: question,
                             mediaUrl: imageUrl,
-                            answerList: answersRes
+                            answerList: answersRes,
+                            pollVotedCount: pollVotedCountRes
                         )
                     }
                 ))
@@ -368,7 +369,8 @@ public class PollBubble: UITableViewCell {
     private func onTapViewResult(
         question: String,
         mediaUrl: String,
-        answerList: [AnswerRes]
+        answerList: [AnswerRes],
+        pollVotedCount: Double
     ) {
         var userInfo = [String: Any]()
         userInfo["question"] = question
@@ -396,6 +398,7 @@ public class PollBubble: UITableViewCell {
             answers.append(answer)
         }
         userInfo["answers"] = answers
+        userInfo["poll_voted_count"] = pollVotedCount
         NotificationCenter.default.post(name: .viewPollResult, object: nil, userInfo: userInfo)
     }
 }
@@ -456,7 +459,7 @@ struct PollView: View {
     var onTapEdit: () -> Void
     var onTapCancel: () -> Void
     var onTapSubmit: ([String]) -> Void
-    var onTapViewResult: ([AnswerRes]) -> Void
+    var onTapViewResult: ([AnswerRes], Double) -> Void
 
     // MARK: Computed Variables
 
@@ -770,7 +773,7 @@ struct PollView: View {
     private var submitResultButton: some View {
         Button(action: {
             if voted {
-                onTapViewResult(answers)
+                onTapViewResult(answers, pollVotedCount)
             } else {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     loadingSubmit = true
