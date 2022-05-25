@@ -128,6 +128,19 @@ open class ChatChannelListVC: _ViewController,
             selector: #selector(pushToDaoChatMessageScreen(_:)),
             name: .pushToDaoChatMessageScreen,
             object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(refreshChannel(_:)),
+            name: .refreshHiddenChannel,
+            object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func refreshChannel(_ notification: NSNotification) {
+        controller.synchronize()
     }
 
     @objc private func pushToDaoChatMessageScreen(_ notification: NSNotification) {
