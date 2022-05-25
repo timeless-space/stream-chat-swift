@@ -118,7 +118,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
                     Nuke.loadImage(with: themeURL, into: payRequestImageView)
                 }
             }
-            lblDetails.text = "REQUEST: \(payload?.extraData?.requestedAmount ?? "0") ONE"
+            lblDetails.text = "REQUEST: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
             if payload?.extraData?.requestedIsPaid ?? false {
                 pickUpButton.alpha = 0.5
                 pickUpButton.isEnabled = false

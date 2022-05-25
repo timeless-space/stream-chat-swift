@@ -190,15 +190,15 @@ class CryptoSentBubble: UITableViewCell {
     }
 
     private func configOneWallet() {
-            let recipientName = content?.extraData.sentOneRecipientName ?? ""
-            let imageAttachment = NSTextAttachment()
-            imageAttachment.image = Appearance.default.images.senOneImage
-            let fullString = NSMutableAttributedString(string: "You ")
-            fullString.append(NSAttributedString(attachment: imageAttachment))
-            fullString.append(NSAttributedString(string: " \(recipientName)"))
-            descriptionLabel.attributedText = fullString
-            let one = content?.extraData.sentOneTransferAmount ?? "0"
-            sentCryptoLabel.text = "SENT: \(one) ONE"
+        let recipientName = content?.extraData.sentOneRecipientName ?? ""
+        let imageAttachment = NSTextAttachment()
+        imageAttachment.image = Appearance.default.images.senOneImage
+        let fullString = NSMutableAttributedString(string: "You ")
+        fullString.append(NSAttributedString(attachment: imageAttachment))
+        fullString.append(NSAttributedString(string: " \(recipientName)"))
+        descriptionLabel.attributedText = fullString
+        let one = content?.extraData.sentOneTransferAmount ?? "0"
+        sentCryptoLabel.text = "SENT: \(one.formattedOneBalance) ONE"
         let defaultURL = WalletAttachmentPayload.PaymentTheme.none.getPaymentThemeUrl()
         let themeURL = content?.extraData.sentOnePaymentTheme ?? "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
         if let imageUrl = URL(string: themeURL) {
