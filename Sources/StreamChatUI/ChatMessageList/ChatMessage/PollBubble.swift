@@ -12,6 +12,12 @@ import StreamChat
 import Nuke
 
 public class PollBubble: UITableViewCell {
+    // MARK: - Input Properties
+    var layoutOptions: ChatMessageLayoutOptions?
+    var content: ChatMessage?
+    var channel: ChatChannel?
+
+    // MARK: - Properties
     public private(set) var viewContainer: UIView!
     public private(set) var subContainer: UIView!
     public private(set) var timestampLabel: UILabel!
@@ -19,19 +25,21 @@ public class PollBubble: UITableViewCell {
     private var leadingAnchorForReceiver: NSLayoutConstraint?
     private var trailingAnchorForSender: NSLayoutConstraint?
     private var trailingAnchorForReceiver: NSLayoutConstraint?
-    var layoutOptions: ChatMessageLayoutOptions?
-    var content: ChatMessage?
-    var channel: ChatChannel?
-    var pollID = ""
-    let chatClient = ChatClient.shared
+    private var pollID = ""
+    private let chatClient = ChatClient.shared
+    private lazy var dateFormatter: DateFormatter = .makeDefault()
+
+    // MARK: - Computed Variables
+    private var cellWidth: CGFloat {
+        UIScreen.main.bounds.width * 0.3
+    }
+
+    // MARK: - Callback Functions
     public static var callback: ((String) -> [String: Any]?)?
     public static var clearCache: (() -> Void)?
     public static var getWalletImageURL: ((String) -> String)?
 
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
-
-    var isSender = false
-
+    // MARK: - Methods
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setLayout()
@@ -48,13 +56,11 @@ public class PollBubble: UITableViewCell {
         super.init(coder: coder)
     }
 
-    private var cellWidth: CGFloat {
-        return UIScreen.main.bounds.width * 0.3
-    }
-
     private func setLayout() {
         selectionStyle = .none
         backgroundColor = .clear
+
+        // MARK: - Set viewContainer
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -65,23 +71,23 @@ public class PollBubble: UITableViewCell {
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
 
+        // MARK: - Set subContainer
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
         subContainer.backgroundColor = .clear
         subContainer.clipsToBounds = true
         viewContainer.addSubview(subContainer)
         subContainer.transform = .mirrorY
-
         NSLayoutConstraint.activate([
             subContainer.bottomAnchor.constraint(equalTo: viewContainer.bottomAnchor, constant: 0),
             subContainer.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
         ])
 
+        // MARK: - Set timestampLabel
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
-
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -91,10 +97,15 @@ public class PollBubble: UITableViewCell {
         ])
         timestampLabel.transform = .mirrorY
 
-        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
-        trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
-        leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
-        trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
+        // MARK: - Set Anchor
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor,
+                                                                        constant: cellWidth)
+        trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor,
+                                                                          constant: -8)
+        leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor,
+                                                                          constant: 8)
+        trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor,
+                                                                            constant: -cellWidth)
     }
 
     private func setBubbleConstraints(_ isSender: Bool) {
@@ -126,12 +137,15 @@ public class PollBubble: UITableViewCell {
         guard let cid = channel?.cid else {
             return
         }
-        if #available(iOS 13.0, *) {
+        if #available(iOS 15.0, *) {
             var isPreview = false
             if let pollData = self.getExtraData(key: "poll"),
-               let questionRaw = pollData["question"], let imageUrlRaw = pollData["image_url"],
-               let anonymousRaw = pollData["anonymous"], let multipleChoicesRaw = pollData["multiple_choices"],
-               let hideTallyRaw = pollData["hide_tally"], let answersRaw = pollData["answers"] {
+               let questionRaw = pollData["question"],
+               let imageUrlRaw = pollData["image_url"],
+               let anonymousRaw = pollData["anonymous"],
+               let multipleChoicesRaw = pollData["multiple_choices"],
+               let hideTallyRaw = pollData["hide_tally"],
+               let answersRaw = pollData["answers"] {
                 let question = fetchRawData(raw: questionRaw) as? String ?? ""
                 let imageUrl = fetchRawData(raw: imageUrlRaw) as? String ?? ""
                 let anonymous = fetchRawData(raw: anonymousRaw) as? Bool ?? false
@@ -146,8 +160,11 @@ public class PollBubble: UITableViewCell {
                     answersArrayDict.append(item)
                 }
                 answersArrayDict.forEach { item in
-                    if let id = item["id"], let content = item["content"], let pollID = item["poll_id"],
-                        let votedCount = item["voted_count"], let createdAt = item["created_at"] {
+                    if let id = item["id"],
+                       let content = item["content"],
+                       let pollID = item["poll_id"],
+                       let votedCount = item["voted_count"],
+                       let createdAt = item["created_at"] {
                         var wallets: [AnswerWallet] = []
                         if let walletsRaw = item["wallets"] {
                             let walletsArrayJSON = fetchRawData(raw: walletsRaw) as? [RawJSON] ?? []
@@ -220,7 +237,7 @@ public class PollBubble: UITableViewCell {
                     }
                 }
 
-                let controller = ChatClient.shared.currentUserController()
+                let controller = chatClient.currentUserController()
                 var showYourFirstPoll = false
                 if !isPreview, isSender {
                     if let firstPollMessageIDRaw = controller.currentUser?.extraData["firstPollMessageID"] {
@@ -249,7 +266,7 @@ public class PollBubble: UITableViewCell {
                     isSender: isSender,
                     isPreview: isPreview,
                     showYourFirstPoll: showYourFirstPoll,
-                    onTapSend: {
+                    callBackSend: {
                         guard let messageId = self.content?.id else { return }
                         let action = AttachmentAction(name: "action",
                                                       value: "submit",
@@ -266,10 +283,10 @@ public class PollBubble: UITableViewCell {
                                 }
                             })
                     },
-                    onTapEdit: { self.onTapEdit() },
-                    onTapCancel: { self.onTapCancel() },
-                    onTapSubmit: { listAnswerID in self.onTapSubmit(listAnswerID) },
-                    onTapViewResult: { answersRes, pollVotedCountRes in
+                    callBackEdit: { self.callBackEdit() },
+                    callBackCancel: { self.callBackCancel() },
+                    callBackSubmit: { listAnswerID in self.callBackSubmit(listAnswerID) },
+                    callBackViewResults: { answersRes, pollVotedCountRes in
                         self.onTapViewResult(
                             question: question,
                             mediaUrl: imageUrl,
@@ -318,33 +335,32 @@ public class PollBubble: UITableViewCell {
         }
     }
 
-    private func onTapEdit() {
-        guard let cid = channel?.cid,
-        let messageId = content?.id else {
+    private func callBackEdit() {
+        guard let cid = channel?.cid, let messageId = content?.id else {
             return
         }
         let editData = self.getExtraData(key: "poll")
         var userInfo = [String: Any]()
         userInfo["channelId"] = cid
         userInfo["editData"] = editData
-        userInfo["messageId"] = messageId
+        userInfo["message_id"] = messageId
         NotificationCenter.default.post(name: .editPoll, object: nil, userInfo: userInfo)
     }
 
-    private func onTapCancel() {
-        guard let messageId = content?.id,
-              let cid = channel?.cid else { return }
+    private func callBackCancel() {
+        guard let messageId = content?.id, let cid = channel?.cid else {
+            return
+        }
         let action = AttachmentAction(name: "action",
                                       value: "cancel",
                                       style: .default,
                                       type: .button,
                                       text: "Cancel")
-        chatClient.messageController(cid: cid,
-                                            messageId: messageId)
+        chatClient.messageController(cid: cid, messageId: messageId)
             .dispatchEphemeralMessageAction(action)
     }
 
-    private func onTapSubmit(_ listAnswerID: [String]) {
+    private func callBackSubmit(_ listAnswerID: [String]) {
         guard let cid = channel?.cid else {
             return
         }
@@ -369,8 +385,8 @@ public class PollBubble: UITableViewCell {
             var answer: [String: Any] = [:]
             answer["id"] = item.id
             answer["content"] = item.content
-            answer["pollID"] = item.pollID
-            answer["votedCount"] = item.votedCount
+            answer["poll_id"] = item.pollID
+            answer["voted_count"] = item.votedCount
             var wallets: [[String: Any]] = []
             item.wallets.forEach { itemWallet in
                 var wallet: [String: Any] = [:]
@@ -383,7 +399,7 @@ public class PollBubble: UITableViewCell {
                 wallets.append(wallet)
             }
             answer["wallets"] = wallets
-            answer["createdAt"] = item.createdAt
+            answer["created_at"] = item.createdAt
             answers.append(answer)
         }
         userInfo["answers"] = answers
@@ -395,23 +411,20 @@ public class PollBubble: UITableViewCell {
 extension UILabel {
     func addImage(systemName: String, afterLabel: Bool = false) {
         let attachment = NSTextAttachment()
-        if #available(iOS 13.0, *) {
+        if #available(iOS 15.0, *) {
             attachment.image = UIImage(systemName: systemName)
             attachment.image = attachment.image?.withTintColor(Appearance.default.colorPalette.subtitleText)
             attachment.bounds = CGRect(x: 0, y: 0, width: 15.5, height: 10)
         }
         let attachmentString = NSAttributedString(attachment: attachment)
-
         if afterLabel {
             let strLabelText = NSMutableAttributedString(string: self.text!)
             strLabelText.append(attachmentString)
-
             self.attributedText = strLabelText
         } else {
             let strLabelText = NSAttributedString(string: self.text!)
             let mutableAttachmentString = NSMutableAttributedString(attributedString: attachmentString)
             mutableAttachmentString.append(strLabelText)
-
             self.attributedText = mutableAttachmentString
         }
     }
@@ -440,8 +453,8 @@ struct OrderedWallet {
     var createdAt = ""
 }
 
-@available(iOS 13.0.0, *)
-struct PollView: View {
+@available(iOS 15.0, *)
+struct PollView {
     // MARK: - Input Paramters
     var cid: ChannelId
     var question = ""
@@ -457,7 +470,7 @@ struct PollView: View {
     var showYourFirstPoll = false
 
     // MARK: - Properties
-    @State private var selectedMultiAnswerID: [String] = []
+    @State private var selectedAnswersID: [String] = []
     @State private var voted = false
     @State private var loadingSubmit = false
     @State private var isLoaded = false
@@ -469,294 +482,132 @@ struct PollView: View {
     @State private var listVotedAnswer: [String] = []
     private let mediaWidth = UIScreen.main.bounds.width * 243 / 375
 
-    // MARK: - Callback functions
-    var onTapSend: () -> Void
-    var onTapEdit: () -> Void
-    var onTapCancel: () -> Void
-    var onTapSubmit: ([String]) -> Void
-    var onTapViewResult: ([AnswerRes], Double) -> Void
+    // MARK: - Callback Functions
+    var callBackSend: () -> Void
+    var callBackEdit: () -> Void
+    var callBackCancel: () -> Void
+    var callBackSubmit: ([String]) -> Void
+    var callBackViewResults: ([AnswerRes], Double) -> Void
 
     // MARK: Computed Variables
-
     private var enableSubmitButton: Bool {
-        if voted {
-            return true
-        } else {
-            return !selectedMultiAnswerID.isEmpty
-        }
+        return voted ? true : !selectedAnswersID.isEmpty
     }
+}
 
-    // MARK: - Body view
+// MARK: - Body view
+@available(iOS 15.0, *)
+extension PollView: View {
     var body: some View {
-        if #available(iOS 14.0, *) {
-            VStack(alignment: .trailing, spacing: 0) {
-                VStack(alignment: .leading, spacing: 0) {
-                    if !imageUrl.isEmpty {
-                        mediaView(imageUrl)
-                    }
-                    VStack(alignment: .leading, spacing: 0) {
-                        //TODO
-                        if showYourFirstPoll {
-                            Text("YOUR FIRST POLL")
-                                .tracking(-0.4)
-                                .font(.system(size: 9, weight: .medium))
-                                .foregroundColor(Color.white.opacity(0.8))
-                                .padding(.bottom, 2.5)
-                        }
-                        Text(question)
-                            .tracking(-0.2)
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(Color.white)
-                            .padding(.leading, 1)
-                            .padding(.bottom, isPreview ? 10.5 : 4.5)
-                        if !isPreview {
-                            HStack(spacing: 3) {
-                                Text("\(Int(pollVotedCount)) \(pollVotedCount > 1 ? "Votes" : "Vote")")
-                                    .tracking(-0.4)
-                                    .font(.system(size: 10))
-                                    .foregroundColor(Color.white)
-                                    .padding(.leading, 1)
-                                    .overlay(
-                                        ZStack {
-                                            if memberVotedURL.count > 0 {
-                                                ForEach(0 ..< (memberVotedURL.count <= 5 ? memberVotedURL.count : 5)) { idx in
-                                                    ListMemberAvatar(avatarURL: memberVotedURL[idx])
-                                                        .zIndex(Double(-idx))
-                                                        .offset(x: CGFloat(idx * 12 - idx))
-                                                }
-                                            }
-                                        }
-                                        .offset(x: 21)
-                                        .id("\(memberVotedURL.count)"), alignment: .trailing
-                                    )
-                            }
-                            .padding(.bottom, 14.5)
-                        }
-                        VStack(alignment: .leading, spacing: 17) {
-                            ForEach(0 ..< answers.count) { idx in
-                                PollSelectLine(item: answers[idx],
-                                               multipleChoices: multipleChoices,
-                                               hideTally: hideTally,
-                                               isPreview: isPreview,
-                                               isSender: isSender,
-                                               listVotedAnswer: listVotedAnswer,
-                                               selectedMultiAnswerID: $selectedMultiAnswerID,
-                                               voted: $voted,
-                                               answers: $answers,
-                                               pollVotedCount: $pollVotedCount)
-                            }
-                        }
-                        .padding(.bottom, 17)
-                        .disabled(voted || isPreview)
-                        if !isPreview {
-                            submitResultButton
-                        }
-                    }
-                    .padding(.top, 8.5)
-                    .padding(.bottom, isPreview ? 1 : 8.5)
-                    .padding(.horizontal, 12.5)
-                    .frame(minWidth: mediaWidth, alignment: .leading)
-                    .background(isSender ? Color.blue : Color.gray.opacity(0.6))
-                    .background(Color.black)
+        VStack(alignment: .trailing, spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                if !imageUrl.isEmpty {
+                    mediaView(imageUrl)
                 }
-                .cornerRadius(15)
-                if isPreview {
-                    previewButtons
+                contentView
+            }
+            .cornerRadius(15)
+            if isPreview {
+                previewButtons
+            }
+        }
+        .onAppear { onAppearHandler() }
+        .onReceive(NotificationCenter.default.publisher(for: .pollUpdate)) { notification in
+            onReceiveUpdatedPoll(notification)
+        }
+    }
+}
+
+// MARK: - Subview
+@available(iOS 15.0, *)
+extension PollView {
+    private func mediaView(_ imageURL: String) -> some View {
+        ZStack {
+            Rectangle()
+                .foregroundColor(Color.black)
+                .frame(width: mediaWidth, height: mediaWidth)
+            ProgressView()
+                .progressViewStyle(.circular)
+                .opacity(!isGifMedia || uploadedImage == nil ? 1 : 0)
+            if isLoaded {
+                if isGifMedia, let url = URL(string: imageURL) {
+                    SwiftyGifView(url: url, frame: mediaWidth)
+                        .frame(width: mediaWidth, height: mediaWidth)
+                } else if let uiimage = uploadedImage {
+                    Image(uiImage: uiimage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: mediaWidth, height: mediaWidth)
                 }
             }
-            .onAppear {
-                if let userInfo = PollBubble.callback?(pollID) {
-                    loadingSubmit = false
-                    let groupID = userInfo["groupID"] as? String ?? ""
-                    let pollID = userInfo["pollID"] as? String ?? ""
-                    if groupID == cid.description && pollID == self.pollID {
-                        let question = userInfo["question"] as? String ?? ""
-                        let imageURL = userInfo["imageURL"] as? String ?? ""
-                        let anonymous = userInfo["anonymous"] as? Bool ?? false
-                        let multipleChoices = userInfo["multipleChoices"] as? Bool ?? false
-                        let hideTally = userInfo["hideTally"] as? Bool ?? false
-                        let createdAt = userInfo["createdAt"] as? String ?? ""
-                        let creator = userInfo["creator"] as? String ?? ""
-                        let groupID = userInfo["groupID"] as? String ?? ""
-                        let messageID = userInfo["messageID"] as? String ?? ""
-                        let answers = userInfo["answers"] as? [[String: Any]] ?? []
-                        let voteFor = userInfo["vote_for"] as? [String] ?? []
-                        let orderedWallets = userInfo["ordered_wallets"] as? [[String: Any]] ?? []
-                        self.answers.removeAll()
-                        answers.forEach { item in
-                            var wallets: [AnswerWallet] = []
-                            let walletItems = item["wallets"] as? [[String: Any]] ?? []
-                            walletItems.forEach { wallet in
-                                let title = wallet["title"] as? String ?? ""
-                                let avatar = wallet["avatar"] as? String ?? ""
-                                let bio = wallet["bio"] as? String ?? ""
-                                let id = wallet["id"] as? String ?? ""
-                                let address = wallet["address"] as? String ?? ""
-                                let verified = wallet["verified"] as? Bool ?? false
-                                wallets.append(AnswerWallet(
-                                    title: wallet["title"] as? String ?? "",
-                                    avatar: wallet["avatar"] as? String ?? "",
-                                    bio: wallet["bio"] as? String ?? "",
-                                    id: wallet["id"] as? String ?? "",
-                                    address: wallet["address"] as? String ?? "",
-                                    verified: wallet["verified"] as? Bool ?? false
-                                ))
-                            }
-                            self.answers.append(AnswerRes(
-                                id: item["id"] as? String ?? "",
-                                content: item["content"] as? String ?? "",
-                                pollID: pollID,
-                                votedCount: item["votedCount"] as? Int ?? 0,
-                                wallets: wallets,
-                                createdAt: item["createdAt"] as? String ?? ""
-                            ))
-                        }
-                        voted = userInfo["voted"] as? Bool ?? false
-                        listVotedAnswer = voteFor
-                        pollVotedCount = userInfo["pollVotedCount"] as? Double ?? 0
-                        self.orderedWallets.removeAll()
-                        orderedWallets.forEach { item in
-                            self.orderedWallets.append(OrderedWallet(
-                                walletAddress: item["wallet_address"] as? String ?? "",
-                                createdAt: item["created_at"] as? String ?? ""
-                            ))
-                        }
-                    }
-                    isLoaded = true
-                } else {
-                    var userInfo = [String: Any]()
-                    userInfo["group_id"] = cid.description
-                    userInfo["poll_id"] = pollID
-                    NotificationCenter.default.post(name: .getPollData, object: nil, userInfo: userInfo)
-                }
-                memberVotedURL.removeAll()
-                self.orderedWallets.forEach { item in
-                    if let walletImageURL = PollBubble.getWalletImageURL?(item.walletAddress) {
-                        memberVotedURL.append(walletImageURL)
-                    }
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .pollUpdate)) { value in
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    loadingSubmit = false
-                }
-                let groupID = value.userInfo?["groupID"] as? String ?? ""
-                let pollID = value.userInfo?["pollID"] as? String ?? ""
-                if groupID == cid.description && pollID == self.pollID {
-                    let question = value.userInfo?["question"] as? String ?? ""
-                    let imageURL = value.userInfo?["imageURL"] as? String ?? ""
-                    let anonymous = value.userInfo?["anonymous"] as? Bool ?? false
-                    let multipleChoices = value.userInfo?["multipleChoices"] as? Bool ?? false
-                    let hideTally = value.userInfo?["hideTally"] as? Bool ?? false
-                    let createdAt = value.userInfo?["createdAt"] as? String ?? ""
-                    let creator = value.userInfo?["creator"] as? String ?? ""
-                    let groupID = value.userInfo?["groupID"] as? String ?? ""
-                    let messageID = value.userInfo?["messageID"] as? String ?? ""
-                    let answers = value.userInfo?["answers"] as? [[String: Any]] ?? []
-                    let orderedWallets = value.userInfo?["ordered_wallets"] as? [[String: Any]] ?? []
-                    let voteFor = value.userInfo?["vote_for"] as? [String] ?? []
-                    self.answers.removeAll()
-                    answers.forEach { item in
-                        var wallets: [AnswerWallet] = []
-                        let walletItems = item["wallets"] as? [[String: Any]] ?? []
-                        walletItems.forEach { wallet in
-                            let title = wallet["title"] as? String ?? ""
-                            let avatar = wallet["avatar"] as? String ?? ""
-                            let bio = wallet["bio"] as? String ?? ""
-                            let id = wallet["id"] as? String ?? ""
-                            let address = wallet["address"] as? String ?? ""
-                            let verified = wallet["verified"] as? Bool ?? false
-                            wallets.append(AnswerWallet(
-                                title: wallet["title"] as? String ?? "",
-                                avatar: wallet["avatar"] as? String ?? "",
-                                bio: wallet["bio"] as? String ?? "",
-                                id: wallet["id"] as? String ?? "",
-                                address: wallet["address"] as? String ?? "",
-                                verified: wallet["verified"] as? Bool ?? false
-                            ))
-                        }
-                        self.answers.append(AnswerRes(
-                            id: item["id"] as? String ?? "",
-                            content: item["content"] as? String ?? "",
-                            pollID: pollID,
-                            votedCount: item["votedCount"] as? Int ?? 0,
-                            wallets: wallets,
-                            createdAt: item["createdAt"] as? String ?? ""
-                        ))
-                    }
-                    self.orderedWallets.removeAll()
-                    orderedWallets.forEach { item in
-                        self.orderedWallets.append(OrderedWallet(
-                            walletAddress: item["wallet_address"] as? String ?? "",
-                            createdAt: item["created_at"] as? String ?? ""
-                        ))
-                    }
-                    memberVotedURL.removeAll()
-                    self.orderedWallets.forEach { item in
-                        if let walletImageURL = PollBubble.getWalletImageURL?(item.walletAddress) {
-                            memberVotedURL.append(walletImageURL)
-                        }
-                    }
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        voted = value.userInfo?["voted"] as? Bool ?? false
-                    }
-                    self.listVotedAnswer = voteFor
-                    pollVotedCount = value.userInfo?["pollVotedCount"] as? Double ?? 0
-                }
-                isLoaded = true
-            }
-        } else {
-            EmptyView()
         }
     }
 
-    // MARK: - Subview
-    private func mediaView(_ imageURL: String) -> some View {
-        if !isGifMedia, uploadedImage == nil {
-            DispatchQueue.main.async {
-                let pathExtension = imageURL.components(separatedBy: "?")
-                var path = ""
-                if pathExtension.count > 0 {
-                    path = pathExtension[0]
+    private var contentView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if showYourFirstPoll {
+                Text("YOUR FIRST POLL")
+                    .tracking(-0.4)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(Color.white.opacity(0.8))
+                    .padding(.bottom, 2.5)
+            }
+            Text(question)
+                .tracking(-0.2)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(Color.white)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, 1)
+                .padding(.bottom, isPreview ? 10.5 : 4.5)
+            if !isPreview {
+                HStack(spacing: 3) {
+                    Text("\(Int(pollVotedCount)) \(pollVotedCount > 1 ? "Votes" : "Vote")")
+                        .tracking(-0.4)
+                        .font(.system(size: 10))
+                        .foregroundColor(Color.white)
+                        .padding(.leading, 1)
+                        .overlay(
+                            ZStack {
+                                if memberVotedURL.count > 0 {
+                                    ForEach(0 ..< (memberVotedURL.count <= 5 ? memberVotedURL.count : 5)) { idx in
+                                        ListMemberAvatar(avatarURL: memberVotedURL[idx])
+                                            .zIndex(Double(-idx))
+                                            .offset(x: CGFloat(idx * 12 - idx))
+                                    }
+                                }
+                            }
+                                .offset(x: 21)
+                                .id("\(memberVotedURL.count)"), alignment: .trailing
+                        )
                 }
-                let mediaType = path.split(separator: ".").last ?? ""
-                if mediaType == "gif" {
-                    isGifMedia = true
-                } else {
-                    Nuke.loadImage(with: imageURL, into: uiImageView) { result in
-                        switch result {
-                        case .success(let imageResult):
-                            uploadedImage = imageResult.image
-                        case .failure: break
-                        }
-                    }
+                .padding(.bottom, 14.5)
+            }
+            VStack(alignment: .leading, spacing: 17) {
+                ForEach(0 ..< answers.count) { idx in
+                    PollSelectLine(item: answers[idx],
+                                   multipleChoices: multipleChoices,
+                                   hideTally: hideTally,
+                                   isPreview: isPreview,
+                                   isSender: isSender,
+                                   listVotedAnswer: listVotedAnswer,
+                                   selectedAnswersID: $selectedAnswersID,
+                                   voted: $voted,
+                                   answers: $answers,
+                                   pollVotedCount: $pollVotedCount)
                 }
+            }
+            .padding(.bottom, 17)
+            .disabled(voted || isPreview)
+            if !isPreview {
+                submitResultButton
             }
         }
-        
-        return ZStack {
-            if #available(iOS 15.0, *) {
-                Rectangle()
-                    .foregroundColor(Color.black)
-                    .frame(width: mediaWidth, height: mediaWidth)
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .opacity(!isGifMedia || uploadedImage == nil ? 1 : 0)
-                if isLoaded {
-                    if isGifMedia, let url = URL(string: imageURL) {
-                        SwiftyGifView(url: url, frame: mediaWidth)
-                            .frame(width: mediaWidth, height: mediaWidth)
-                    } else if let uiimage = uploadedImage {
-                        Image(uiImage: uiimage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: mediaWidth, height: mediaWidth)
-                    }
-                }
-            }
-        } 
-        .animation(.easeInOut(duration: 0.2), value: uploadedImage)
-        .animation(.easeInOut(duration: 0.2), value: isLoaded)
+        .padding(.top, 8.5)
+        .padding(.bottom, isPreview ? 1 : 8.5)
+        .padding(.horizontal, 12.5)
+        .frame(minWidth: mediaWidth, alignment: .leading)
+        .background(isSender ? Color.blue : Color.gray.opacity(0.6))
+        .background(Color.black)
     }
 
     struct SwiftyGifView: UIViewRepresentable {
@@ -781,19 +632,15 @@ struct PollView: View {
             return view
         }
 
-        func updateUIView(_ contentView: UIView, context: Context) {
-        }
+        func updateUIView(_ contentView: UIView, context: Context) { }
     }
 
     private var submitResultButton: some View {
         Button(action: {
             if voted {
-                onTapViewResult(answers, pollVotedCount)
+                onTapViewResults()
             } else {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    loadingSubmit = true
-                }
-                onTapSubmit(selectedMultiAnswerID)
+                onTapSubmit()
             }
         }) {
             RoundedRectangle(cornerRadius: .infinity)
@@ -801,23 +648,19 @@ struct PollView: View {
                 .frame(width: UIScreen.main.bounds.width * 184 / 375, height: 29)
                 .overlay(
                     ZStack {
-                        if #available(iOS 14.0, *) {
-                            Text("Submit Vote")
-                                .tracking(-0.3)
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(Color.white.opacity(enableSubmitButton ? 1 : 0.5))
-                                .opacity(voted ? 0 : 1)
-                                .offset(x: voted ? 50 : 0)
-                                .overlay(
-                                    ProgressView()
-                                        .progressViewStyle(.circular)
-                                        .scaleEffect(loadingSubmit ? 0.7 : 0.1)
-                                        .opacity(loadingSubmit ? 1 : 0)
-                                        .offset(x: 22), alignment: .trailing
-                                )
-                        } else {
-                            EmptyView()
-                        }
+                        Text("Submit Vote")
+                            .tracking(-0.3)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.white.opacity(enableSubmitButton ? 1 : 0.5))
+                            .opacity(voted ? 0 : 1)
+                            .offset(x: voted ? 50 : 0)
+                            .overlay(
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .scaleEffect(loadingSubmit ? 0.7 : 0.1)
+                                    .opacity(loadingSubmit ? 1 : 0)
+                                    .offset(x: 22), alignment: .trailing
+                            )
                         Text("View Results")
                             .tracking(-0.3)
                             .font(.system(size: 12, weight: .bold))
@@ -838,19 +681,19 @@ struct PollView: View {
     private var previewButtons: some View {
         HStack(spacing: 0) {
             Spacer(minLength: 0)
-            Button(action: { onTapSend() }) {
+            Button(action: { callBackSend() }) {
                 Text("Send")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color.blue)
             }
             .padding(.trailing, 33)
-            Button(action: { onTapEdit() }) {
+            Button(action: { callBackEdit() }) {
                 Text("Edit")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color.white.opacity(0.4))
             }
             .padding(.trailing, 33)
-            Button(action: { onTapCancel() }) {
+            Button(action: { callBackCancel() }) {
                 Text("Cancel")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color.white.opacity(0.4))
@@ -876,48 +719,157 @@ struct PollView: View {
                     }
                 }
             }
-            return ZStack {
-                if #available(iOS 15.0, *) {
-                    Rectangle()
-                        .foregroundColor(Color.clear)
-                        .frame(width: 16.5, height: 16.5)
-                        .overlay(
-                            ZStack {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .scaleEffect(0.5)
-                                    .opacity(avatarUIImage == nil ? 1 : 0)
-                                if avatarUIImage != nil {
-                                    Image(uiImage: avatarUIImage!)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 16.5, height: 16.5)
-                                }
-                            }
-                        )
-                        .cornerRadius(.infinity)
-                }
-            }
+            return Rectangle()
+                .foregroundColor(Color.clear)
+                .frame(width: 16.5, height: 16.5)
+                .overlay(
+                    ZStack {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .scaleEffect(0.5)
+                            .opacity(avatarUIImage == nil ? 1 : 0)
+                        if avatarUIImage != nil {
+                            Image(uiImage: avatarUIImage!)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 16.5, height: 16.5)
+                        }
+                    }
+                )
+                .cornerRadius(.infinity)
         }
     }
+
     private func memberAvatar(_ avatarURL: String) -> some View {
-        ZStack {
-            if #available(iOS 15.0, *) {
-                AsyncImage(url: URL(string: avatarURL)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Color.black
-                }
-                .frame(width: 16.5, height: 16.5)
-                .cornerRadius(.infinity)
-            }
+        AsyncImage(url: URL(string: avatarURL)) { image in
+            image
+                .resizable()
+                .scaledToFill()
+        } placeholder: {
+            Color.black
         }
+        .frame(width: 16.5, height: 16.5)
+        .cornerRadius(.infinity)
     }
 }
 
-@available(iOS 13.0.0, *)
+// MARK: - Methods
+@available(iOS 15.0, *)
+extension PollView {
+    private func onAppearHandler() {
+        if !imageUrl.isEmpty, !isGifMedia, uploadedImage == nil {
+            let pathExtension = imageUrl.components(separatedBy: "?")
+            let path = pathExtension.count > 0 ? pathExtension[0] : ""
+            let mediaType = path.split(separator: ".").last ?? ""
+            if mediaType == "gif" {
+                isGifMedia = true
+            } else {
+                Nuke.loadImage(with: imageUrl, into: uiImageView) { result in
+                    switch result {
+                    case .success(let imageViewResult):
+                        uploadedImage = imageViewResult.image
+                    case .failure: break
+                    }
+                }
+            }
+        }
+        if let userInfo = PollBubble.callback?(pollID) {
+            setDataFromUserInfo(userInfo)
+        } else {
+            var userInfo = [String: Any]()
+            userInfo["group_id"] = cid.description
+            userInfo["poll_id"] = pollID
+            NotificationCenter.default.post(name: .getPollData, object: nil, userInfo: userInfo)
+        }
+    }
+
+    private func onReceiveUpdatedPoll(_ notification: NotificationCenter.Publisher.Output) {
+        if let userInfo = notification.userInfo {
+            setDataFromUserInfo(userInfo, updatedPoll: true)
+        }
+    }
+
+    private func setDataFromUserInfo(_ userInfo: [AnyHashable: Any], updatedPoll: Bool = false) {
+        withAnimation(.easeInOut(duration: updatedPoll ? 0.2 : 0)) {
+            loadingSubmit = false
+        }
+        if cid.description == (userInfo["group_id"] as? String ?? ""),
+            pollID == (userInfo["poll_id"] as? String ?? "") {
+            let question = userInfo["question"] as? String ?? ""
+            let imageURL = userInfo["image_url"] as? String ?? ""
+            let anonymous = userInfo["anonymous"] as? Bool ?? false
+            let multipleChoices = userInfo["multiple_choices"] as? Bool ?? false
+            let hideTally = userInfo["hide_tally"] as? Bool ?? false
+            let createdAt = userInfo["created_at"] as? String ?? ""
+            let expiredAt = userInfo["expired_at"] as? String ?? ""
+            let messageID = userInfo["message_id"] as? String ?? ""
+            let creator = userInfo["creator"] as? String ?? ""
+            let answers = userInfo["answers"] as? [[String: Any]] ?? []
+            withAnimation(.easeInOut(duration: updatedPoll ? 0.2 : 0)) {
+                voted = userInfo["voted"] as? Bool ?? false
+            }
+            listVotedAnswer = userInfo["vote_for"] as? [String] ?? []
+            pollVotedCount = userInfo["poll_voted_count"] as? Double ?? 0
+            let orderedWallets = userInfo["ordered_wallets"] as? [[String: Any]] ?? []
+            self.answers.removeAll()
+            answers.forEach { answer in
+                var wallets: [AnswerWallet] = []
+                let walletItems = answer["wallets"] as? [[String: Any]] ?? []
+                walletItems.forEach { wallet in
+                    let title = wallet["title"] as? String ?? ""
+                    let avatar = wallet["avatar"] as? String ?? ""
+                    let bio = wallet["bio"] as? String ?? ""
+                    let id = wallet["id"] as? String ?? ""
+                    let address = wallet["address"] as? String ?? ""
+                    let verified = wallet["verified"] as? Bool ?? false
+                    wallets.append(AnswerWallet(
+                        title: wallet["title"] as? String ?? "",
+                        avatar: wallet["avatar"] as? String ?? "",
+                        bio: wallet["bio"] as? String ?? "",
+                        id: wallet["id"] as? String ?? "",
+                        address: wallet["address"] as? String ?? "",
+                        verified: wallet["verified"] as? Bool ?? false
+                    ))
+                }
+                self.answers.append(AnswerRes(
+                    id: answer["id"] as? String ?? "",
+                    content: answer["content"] as? String ?? "",
+                    pollID: pollID,
+                    votedCount: answer["voted_count"] as? Int ?? 0,
+                    wallets: wallets,
+                    createdAt: answer["created_at"] as? String ?? ""
+                ))
+            }
+            self.orderedWallets.removeAll()
+            orderedWallets.forEach { orderedWallet in
+                self.orderedWallets.append(OrderedWallet(
+                    walletAddress: orderedWallet["wallet_address"] as? String ?? "",
+                    createdAt: orderedWallet["created_at"] as? String ?? ""
+                ))
+            }
+            memberVotedURL.removeAll()
+            self.orderedWallets.forEach { orderedWallet in
+                if let walletImageURL = PollBubble.getWalletImageURL?(orderedWallet.walletAddress) {
+                    memberVotedURL.append(walletImageURL)
+                }
+            }
+            isLoaded = true
+        }
+    }
+
+    private func onTapSubmit() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            loadingSubmit = true
+        }
+        callBackSubmit(selectedAnswersID)
+    }
+
+    private func onTapViewResults() {
+        callBackViewResults(answers, pollVotedCount)
+    }
+}
+
+@available(iOS 15.0, *)
 struct PollSelectLine: View {
     // MARK: - Input Parameter
     var item: AnswerRes
@@ -926,7 +878,7 @@ struct PollSelectLine: View {
     var isPreview = false
     var isSender: Bool
     var listVotedAnswer: [String]
-    @Binding var selectedMultiAnswerID: [String]
+    @Binding var selectedAnswersID: [String]
     @Binding var voted: Bool
     @Binding var answers: [AnswerRes]
     @Binding var pollVotedCount: Double
@@ -936,143 +888,92 @@ struct PollSelectLine: View {
 
     // MARK: - Computed Variables
     private var percent: CGFloat {
-        return pollVotedCount <= 0 ? 0 : CGFloat(item.votedCount) / CGFloat(pollVotedCount) * 100
+        pollVotedCount <= 0 ? 0 : (CGFloat(item.votedCount) / CGFloat(pollVotedCount) * 100)
     }
 
     private var checkMarkIcon: String {
-        if isPreview {
+        if !isPreview && (listVotedAnswer.contains(item.id) || selectedAnswersID.contains(item.id)) {
+            return "checkmark.circle.fill"
+        } else {
             return "circle"
-        } else {
-            if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
-                return "checkmark.circle.fill"
-            } else {
-                return "circle"
-            }
         }
     }
 
-    private var checkMarkOpacity: CGFloat {
-        if voted, !selectedMultiAnswerID.contains(item.id) && !listVotedAnswer.contains(item.id) {
-            return 0
-        } else {
-            return 1
-        }
+    private var hideCheckMark: Bool {
+        voted && !selectedAnswersID.contains(item.id) && !listVotedAnswer.contains(item.id)
     }
 
-    private var percentOpacity: CGFloat {
-        if isPreview {
-            return 0
-        } else {
-            return !hideTally || voted ? 1 : 0
-        }
+    private var showPercent: Bool {
+        !isPreview && (!hideTally || voted)
     }
 
-    private var paddingLeading: CGFloat {
-        if isPreview {
-            return 1
-        } else {
-            return !hideTally || voted ? 35 : 1
-        }
-    }
-
-    private var progressBarColor: Color {
-        if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
-            return Color.white.opacity(0.5)
-        } else {
-            return Color.black.opacity(0.4)
-        }
-    }
-
-    private var progressBarOpacity: CGFloat {
-        if isPreview {
-            return 0
-        } else {
-            return !hideTally || voted ? 1 : 0
-        }
-    }
-
-    private var opacityUnselectedText: CGFloat {
-        if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
-            return 0
-        } else {
-            return 1
-        }
-    }
-
-    private var opacitySelectedText: CGFloat {
-        if listVotedAnswer.contains(item.id) || selectedMultiAnswerID.contains(item.id) {
-            return 1
-        } else {
-            return 0
-        }
+    private var didSelected: Bool {
+        listVotedAnswer.contains(item.id) || selectedAnswersID.contains(item.id)
     }
 
     // MARK: - Body view
     var body: some View {
         Button(action: {
-            if selectedMultiAnswerID.contains(item.id) {
+            if selectedAnswersID.contains(item.id) {
                 if multipleChoices {
-                    selectedMultiAnswerID.removeAll(where: { $0 == item.id })
+                    selectedAnswersID.removeAll(where: { $0 == item.id })
                 } else {
-                    selectedMultiAnswerID.removeAll()
+                    selectedAnswersID.removeAll()
                 }
             } else {
                 if !multipleChoices {
-                    selectedMultiAnswerID.removeAll()
+                    selectedAnswersID.removeAll()
                 }
-                selectedMultiAnswerID.append(item.id)
+                selectedAnswersID.append(item.id)
             }
         }) {
-            if #available(iOS 14.0, *) {
-                HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
-                    Image(systemName: checkMarkIcon)
-                        .resizable()
+            HStack(alignment: .top, spacing: !hideTally || voted ? 3.5 : 6) {
+                Image(systemName: checkMarkIcon)
+                    .resizable()
+                    .foregroundColor(Color.white)
+                    .frame(width: 15, height: 15)
+                    .opacity(hideCheckMark ? 0 : 1)
+                ZStack(alignment: .topLeading) {
+                    Text(item.content)
+                        .tracking(-0.3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                        .font(.system(size: 12))
                         .foregroundColor(Color.white)
-                        .frame(width: 15, height: 15)
-                        .opacity(checkMarkOpacity)
-                    ZStack(alignment: .topLeading) {
-                        Text(item.content)
-                            .tracking(-0.3)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .multilineTextAlignment(.leading)
-                            .font(.system(size: 12))
-                            .foregroundColor(Color.white)
-                            .opacity(opacityUnselectedText == 0 ? 0 : 1)
-                        Text(item.content)
-                            .tracking(-0.3)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .multilineTextAlignment(.leading)
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(Color.white)
-                            .opacity(opacitySelectedText == 1 ? 1 : 0)
-                    }
-                }
-                .padding(.leading, paddingLeading)
-                .overlay(
-                    RoundedRectangle(cornerRadius: .infinity)
-                        .foregroundColor(progressBarColor)
-                        .frame(width: chartLength == 0 ?
-                               2 : (UIScreen.main.bounds.width * chartLength / 375),
-                               height: 2)
-                        .opacity(progressBarOpacity)
-                        .padding(.leading, 54)
-                        .offset(y: 7), alignment: .bottomLeading
-                )
-                .overlay(
-                    Text("\(String(format: "%.0f", percent))%")
-                        .font(.system(size: 10, weight: .bold))
+                        .opacity(didSelected ? 0 : 1)
+                    Text(item.content)
+                        .tracking(-0.3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                        .font(.system(size: 12, weight: .bold))
                         .foregroundColor(Color.white)
-                        .opacity(percentOpacity)
-                        .padding(.leading, 1.5), alignment: .topLeading
-                )
-                .onChange(of: percent) { value in
-                    chartLength = 0
-//                    withAnimation(.easeInOut(duration: !voted ? 0.3 : 0)) {
-                        chartLength = CGFloat(value * 150 / 100)
-//                    }
+                        .opacity(didSelected ? 1 : 0)
                 }
-            } else {
-                EmptyView()
+            }
+            .padding(.trailing, 34)
+            .offset(x: showPercent ? 35 : 1)
+            .overlay(
+                RoundedRectangle(cornerRadius: .infinity)
+                    .foregroundColor(didSelected ? Color.white.opacity(0.5) : Color.black.opacity(0.4))
+                    .frame(width: chartLength == 0 ?
+                           2 : (UIScreen.main.bounds.width * chartLength / 375),
+                           height: 2)
+                    .opacity(showPercent ? 1 : 0)
+                    .padding(.leading, 54)
+                    .offset(y: 7), alignment: .bottomLeading
+            )
+            .overlay(
+                Text("\(String(format: "%.0f", percent))%")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(Color.white)
+                    .opacity(showPercent ? 1 : 0)
+                    .padding(.leading, 1.5), alignment: .topLeading
+            )
+            .onChange(of: percent) { value in
+                // chartLength = 0
+                // withAnimation(.easeInOut(duration: !voted ? 0.3 : 0)) {
+                chartLength = CGFloat(value * 150 / 100)
+                // }
             }
         }
     }
