@@ -428,7 +428,7 @@ open class ComposerVC: _ViewController,
                 self.composerView.headerView.isHidden = true
             }
         case .quote:
-            composerView.titleLabel.text = L10n.Composer.Title.reply
+            composerView.titleLabel.text = getReplyToMessageTitle()
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.headerView.isHidden = false
@@ -504,6 +504,18 @@ open class ComposerVC: _ViewController,
         composerView.inputMessageView.textView.isPastingImagesEnabled = !filesExistInAttachments
 
         dismissSuggestions()
+    }
+
+    private func getReplyToMessageTitle() -> String {
+        var replyToMsg = "\(L10n.Composer.Title.reply) Message"
+        guard let author = content.quotingMessage?.author,
+                let currentUserId = ChatClient.shared.currentUserId else {
+            return replyToMsg
+        }
+        if author.id == currentUserId {
+            return replyToMsg
+        }
+        return "\(L10n.Composer.Title.reply) \(author.name ?? "Message")"
     }
 
     open func setupAttachmentsView() {
