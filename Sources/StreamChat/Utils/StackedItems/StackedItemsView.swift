@@ -30,7 +30,9 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     public var selectionHandler: SelectionHandler?
     public typealias SelectionHandler = (ItemType, Int) -> Void
 
-    public var isExpand = false
+    public var isExpand: Bool {
+        return !(collectionView.collectionViewLayout is StackedItemsLayout)
+    }
 
     /// The items this view displays
     public var items = [ItemType]() {
@@ -127,7 +129,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
     // MARK: UICollectionViewDelegate
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if isExpand {
+        if isExpand || items.count == 1 {
             selectionHandler?(items[indexPath.row], indexPath.row)
         } else if indexPath.row == currentlyFocusedItemIndex {
             collectionView.deselectItem(at: indexPath, animated: true)
@@ -183,7 +185,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     }
 
     public func setupCollectionFlowLayout() {
-        collectionView.collectionViewLayout.invalidateLayout()
+        collectionView.isPagingEnabled = true
         if items.count == 1 {
             collectionView.collectionViewLayout = collectionFlowLayout
             collectionView.isScrollEnabled = false
@@ -192,12 +194,12 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             collectionView.isScrollEnabled = true
         }
         collectionView.reloadData()
+        collectionView.collectionViewLayout.invalidateLayout()
         scrollToItem(at: 0, animated: false)
     }
 
     public func expandView(index: Int) {
         if !isExpand && items.count > 1 {
-            isExpand = true
             let focusIndex = currentlyFocusedItemIndex
             let layout = UICollectionViewFlowLayout()
             layout.scrollDirection = .horizontal

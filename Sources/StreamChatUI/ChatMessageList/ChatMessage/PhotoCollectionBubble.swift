@@ -15,15 +15,8 @@ class PhotoCollectionBubble: UITableViewCell {
     // MARK: Variables
     var content: ChatMessage?
     private var heightConst: NSLayoutConstraint?
-    private let stackedItemsView = StackedItemsView<ChatMessageImageAttachment, MediaPreviewCollectionCell>()
-    private var leadingAnchorForSender: NSLayoutConstraint?
-    private var trailingAnchorSender: NSLayoutConstraint?
-    private var leadingAnchorReceiver: NSLayoutConstraint?
-    private var trailingAnchorReceiver: NSLayoutConstraint?
+    private let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
     public private(set) var viewContainer: UIView!
-    private var cellWidth: CGFloat {
-        return UIScreen.main.bounds.width
-    }
     weak var delegate: PhotoCollectionAction?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -53,22 +46,22 @@ class PhotoCollectionBubble: UITableViewCell {
         stackedItemsView.topAnchor.constraint(equalTo: viewContainer.topAnchor).isActive = true
         stackedItemsView.bottomAnchor.constraint(equalTo: viewContainer.bottomAnchor).isActive = true
         addGestureRecognizer(stackedItemsView.panGestureRecognizer)
-        heightConst = viewContainer.heightAnchor.constraint(equalToConstant: 230)
+        heightConst = viewContainer.heightAnchor.constraint(equalToConstant: 280)
         heightConst?.isActive = true
 
-        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor)
-        trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
-        leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
-        trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(
-            equalTo: self.contentView.trailingAnchor)
+        viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor).isActive = true
+        viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8).isActive = true
+        viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8).isActive = true
+        viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor).isActive = true
     }
 
     func configureCell(isSender: Bool) {
-        stackedItemsView.items = content?.imageAttachments ?? []
-        heightConst?.constant = 260
-        if stackedItemsView.items.count > 1 {
-            heightConst?.constant = 280
-        }
+        stackedItemsView.items = content?.imageAttachments.compactMap {
+            StackedItem.init(
+                id: $0.id.index,
+                imageUrl: $0.imageURL,
+                attachmentId: $0.id.rawValue)
+        } ?? []
         stackedItemsView.configureItemHandler = { item, cell in
             cell.configureMedia(attachment: item)
             cell.clipsToBounds = true
@@ -78,20 +71,28 @@ class PhotoCollectionBubble: UITableViewCell {
             guard let `self` = self, let cell = self.stackedItemsView.cell(at: selectedIndex) else {
                 return
             }
-            self.delegate?.didSelectAttachment(self.content, view: cell, type.id)
+            if let id = AttachmentId(rawValue: "\(type.attachmentId ?? "")") {
+                self.delegate?.didSelectAttachment(self.content, view: cell, id)
+            }
         }
         handleBubbleConstraints(isSender)
     }
 
     private func handleBubbleConstraints(_ isSender: Bool) {
-        leadingAnchorForSender?.isActive = isSender
-        trailingAnchorSender?.isActive = isSender
-        leadingAnchorReceiver?.isActive = !isSender
-        trailingAnchorReceiver?.isActive = !isSender
-        if !isSender {
-            stackedItemsView.horizontalAlignment = .leading
+        stackedItemsView.horizontalAlignment = .middle
+        stackedItemsView.collectionView.contentInset = .zero
+        if stackedItemsView.items.count == 1 {
+            if !isSender {
+                stackedItemsView.collectionView.contentInset = .init(top: 0, left: 0, bottom: 0, right: stackedItemsView.bounds.width - 250)
+            } else {
+                stackedItemsView.collectionView.contentInset = .init(top: 0, left: stackedItemsView.bounds.width - 250, bottom: 0, right: 0)
+            }
         } else {
-            stackedItemsView.horizontalAlignment = .trailing
+            if !isSender {
+                stackedItemsView.horizontalAlignment = .leading
+            } else {
+                stackedItemsView.horizontalAlignment = .trailing
+            }
         }
     }
 }
@@ -133,7 +134,7 @@ open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview 
         Nuke.loadImage(with: attachment.payload.imageURL, into: imgPreview)
     }
 
-    public func configureMedia(attachment: StackedItems) {
+    public func configureMedia(attachment: StackedItem) {
         Nuke.loadImage(with: attachment.imageUrl, into: imgPreview)
     }
 }
@@ -142,20 +143,22 @@ protocol PhotoCollectionAction: class  {
     func didSelectAttachment(_ message: ChatMessage?, view: MediaPreviewCollectionCell, _ id: AttachmentId)
 }
 
-public class StackedItems: Equatable {
-    public static func == (lhs: StackedItems, rhs: StackedItems) -> Bool {
+public class StackedItem: Equatable {
+    public static func == (lhs: StackedItem, rhs: StackedItem) -> Bool {
         return lhs.id == rhs.id
     }
     public var id: Int
     public var imageUrl: URL
+    public var attachmentId: String?
 
-    public init(id: Int, imageUrl: URL) {
+    public init(id: Int, imageUrl: URL, attachmentId: String? = nil) {
         self.id = id
         self.imageUrl = imageUrl
+        self.attachmentId = attachmentId
     }
 
-    public static func staticData() -> [StackedItems] {
-        var items = [StackedItems]()
+    public static func staticData() -> [StackedItem] {
+        var items = [StackedItem]()
         items.append(.init(id: 0, imageUrl: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png")!))
         items.append(.init(id: 1, imageUrl: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/celebrate.gif")!))
         items.append(.init(id: 2, imageUrl: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/cheers.gif")!))
