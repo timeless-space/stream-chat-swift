@@ -15,6 +15,10 @@ class SendEmojiViewController: UIViewController {
     // MARK: Outlets
     @IBOutlet weak var imgSticker: UIImageView!
     @IBOutlet weak var lblStickerName: UILabel!
+    @IBOutlet weak var stickerCollectionView: UICollectionView!
+    @IBOutlet weak var lblCreatedBy: UILabel!
+
+    private var stickers = [Sticker]()
 
     // MARK: Variables
     var packageInfo: PackageList?
@@ -24,6 +28,19 @@ class SendEmojiViewController: UIViewController {
         super.viewDidLoad()
         Nuke.loadImage(with: packageInfo?.packageImg ?? "", into: imgSticker)
         lblStickerName.text = packageInfo?.packageName ?? ""
+        lblCreatedBy.text = "Created by :- \(packageInfo?.artistName ?? "Unknown")"
+        guard let stickerId = packageInfo?.packageID else {
+            return
+        }
+        loadSticker(stickerId: "\(stickerId)")
+        let flowLayout = UICollectionViewFlowLayout()
+        flowLayout.minimumLineSpacing = 0
+        flowLayout.minimumInteritemSpacing = 0
+        stickerCollectionView.collectionViewLayout = flowLayout
+    }
+
+    deinit {
+        debugPrint("Deinit called")
     }
 
     private func sendStickerGift(chatMembers: ChatChannelMember, cid: ChannelId) {
@@ -74,46 +91,58 @@ class SendEmojiViewController: UIViewController {
         })
     }
 
+    private func loadSticker(stickerId: String) {
+        // Retrieve from userdefault
+        if let stickers = UserDefaults.standard.retrieve(object: [Sticker].self, fromKey: stickerId) {
+            self.stickers = stickers
+            stickerCollectionView.reloadData()
+        } else {
+            StickerApiClient.stickerInfo(stickerId: stickerId) { [weak self] result in
+                guard let `self` = self else { return }
+                self.stickers = result.body?.package?.stickers ?? []
+                // Cache sticker in userdefault
+                UserDefaults.standard.save(customObject: self.stickers, inKey: stickerId)
+                UserDefaults.standard.synchronize()
+                self.stickerCollectionView.reloadData()
+            }
+        }
+    }
+
     @IBAction func btnCloseAction(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
 }
 
+// MARK: - Collection view delegate
 @available(iOS 13.0, *)
-extension SendEmojiViewController: PanModalPresentable {
-    public var panScrollable: UIScrollView? {
-        return nil
+extension SendEmojiViewController: UICollectionViewDelegate {
+
+}
+
+// MARK: - Collection view datasource
+@available(iOS 13.0, *)
+extension SendEmojiViewController: UICollectionViewDataSource {
+
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return stickers.count
     }
 
-    public var shortFormHeight: PanModalHeight {
-        return .contentHeightIgnoringSafeArea(450)
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StickerCollectionCell", for: indexPath) as? StickerCollectionCell else {
+            return UICollectionViewCell()
+        }
+        cell.configureSticker(sticker: stickers[indexPath.row])
+        return cell
     }
 
-    public var longFormHeight: PanModalHeight {
-        return .contentHeightIgnoringSafeArea(450)
+}
+
+@available(iOS 13.0, *)
+extension SendEmojiViewController: UICollectionViewDelegateFlowLayout {
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = (collectionView.bounds.width / 4)
+        return .init(width: width, height: width)
     }
 
-    public var anchorModalToLongForm: Bool {
-        return true
-    }
-
-    public var showDragIndicator: Bool {
-        return false
-    }
-
-    public var allowsExtendedPanScrolling: Bool {
-        return false
-    }
-
-    public var allowsDragToDismiss: Bool {
-        return true
-    }
-
-    public var cornerRadius: CGFloat {
-        return 34
-    }
-
-    public var isHapticFeedbackEnabled: Bool {
-        return true
-    }
 }

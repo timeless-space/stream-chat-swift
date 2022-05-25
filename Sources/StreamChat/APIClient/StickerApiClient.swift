@@ -152,5 +152,12 @@ public class StickerApiClient {
             .store(in: &stickerCalls)
     }
 
+    public static func getHiddenStickers(
+        _ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)) {
+        StickerApi.call(type: .getHiddenStickers)
+            .sink { _  in } receiveValue: { result in completion(result) }
+            .store(in: &stickerCalls)
+    }
+
 
 }

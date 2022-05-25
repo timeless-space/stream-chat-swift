@@ -11,7 +11,7 @@ import Combine
 @available(iOS 13.0, *)
 extension StickerApi {
     public enum RequestType: EndPointType {
-        case mySticker
+        case mySticker, getHiddenStickers
         case stickerInfo(id: String)
         case trendingStickers(pageNumber: Int, animated: Bool)
         case downloadStickers(packageId: Int)
@@ -30,7 +30,7 @@ extension StickerApi {
         var path: String {
             switch self {
             case .mySticker:
-                return "mysticker/\(StickerApi.userId)?userId=\(userId)&limit=1000"
+                return "mysticker/\(StickerApi.userId)?userId=\(userId)&limit=100"
             case .stickerInfo(id: let id):
                 return ("package/\(id)?" + "userId=\(userId)")
             case .trendingStickers(pageNumber: let pageNumber, animated: let animated):
@@ -49,12 +49,14 @@ extension StickerApi {
                 return "gift/\(packageId)/\(sendUserId)/\(receiveUserId)"
             case .downloadGiftPackage(packageId: let packageId, receiverUserId: let receiverUserId):
                 return "download/\(packageId)?userId=\(receiverUserId)&isPurchase=N"
+            case .getHiddenStickers:
+                return "mysticker/hide/\(StickerApi.userId)?userId=\(userId)&limit=100"
             }
         }
 
         var httpMethod: HTTPMethod {
             switch self {
-            case .mySticker, .stickerInfo, .trendingStickers, .recentSticker:
+            case .mySticker, .stickerInfo, .trendingStickers, .recentSticker, .getHiddenStickers:
                 return .get
             case .downloadStickers, .stickerSend, .sendGiftSticker, .downloadGiftPackage:
                 return .post

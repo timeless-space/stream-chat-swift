@@ -13,6 +13,10 @@ import Nuke
 @available(iOS 13.0, *)
 class EmojiPickerViewController: UIViewController {
 
+    public enum ScreenType: Int {
+        case Animated, Sticker, MySticker
+    }
+
     // MARK: Outlets
     @IBOutlet weak var segmentController: UISegmentedControl!
     @IBOutlet weak var tblPicker: UITableView!
@@ -20,10 +24,13 @@ class EmojiPickerViewController: UIViewController {
     // MARK: Variables
     private var stickerCalls = Set<AnyCancellable>()
     private var packages = [PackageList]()
+    private var myStickers = [PackageList]()
+    private var hiddenStickers = [PackageList]()
     private var pageMap: [String: Int]?
     private var isMyPackage = false
     var downloadedPackage = [Int]()
     var chatChannelController: ChatChannelController?
+    var dispatchGroup = DispatchGroup()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,13 +55,29 @@ class EmojiPickerViewController: UIViewController {
     private func fetchMySticker() {
         StickerApiClient.mySticker { [weak self] result in
             guard let `self` = self else { return }
-            self.packages = result.body?.packageList ?? []
-            self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
-            self.tblPicker.reloadData()
+            //self.packages = result.body?.packageList ?? []
+            self.myStickers.removeAll()
+            self.myStickers = result.body?.packageList ?? []
+            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
+            //self.tblPicker.reloadData()
         }
     }
 
-    private func deletePackage(_ packageId: Int) {
+    private func getHiddenSticker() {
+        StickerApiClient.getHiddenStickers { [weak self] result in
+            guard let `self` = self else { return }
+            self.hiddenStickers.removeAll()
+            self.hiddenStickers = result.body?.packageList ?? []
+            for (index, _) in self.hiddenStickers.enumerated() {
+                self.hiddenStickers[index].isHidden = true
+            }
+            //self.packages = result.body?.packageList ?? []
+            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
+            //self.tblPicker.reloadData()
+        }
+    }
+
+    private func hidePackage(_ packageId: Int) {
         StickerApiClient.hideStickers(packageId: packageId, nil)
     }
 
@@ -71,12 +94,44 @@ class EmojiPickerViewController: UIViewController {
         }
     }
 
+    func getCurrentUserAllStickers() {
+        dispatchGroup.enter()
+        StickerApiClient.mySticker { [weak self] result in
+            guard let `self` = self else { return }
+            self.myStickers.removeAll()
+            self.myStickers = result.body?.packageList ?? []
+            self.dispatchGroup.leave()
+            //self.packages = result.body?.packageList ?? []
+            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
+            //self.tblPicker.reloadData()
+        }
+        dispatchGroup.enter()
+        StickerApiClient.getHiddenStickers { [weak self] result in
+            guard let `self` = self else { return }
+            self.hiddenStickers.removeAll()
+            self.hiddenStickers = result.body?.packageList ?? []
+            for (index, _) in self.hiddenStickers.enumerated() {
+                self.hiddenStickers[index].isHidden = true
+            }
+            self.dispatchGroup.leave()
+            //self.packages = result.body?.packageList ?? []
+            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
+            //self.tblPicker.reloadData()
+        }
+        dispatchGroup.notify(queue: .main) { [weak self] in
+            guard let `self` = self else { return }
+            self.packages = self.myStickers + self.hiddenStickers
+            self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
+            self.tblPicker.reloadData()
+        }
+    }
+
     @IBAction func segmentDidChange(_ sender: UISegmentedControl) {
         packages.removeAll()
         tblPicker.reloadData()
         if sender.selectedSegmentIndex == 2 {
             isMyPackage = true
-            fetchMySticker()
+            getCurrentUserAllStickers()
         } else {
             isMyPackage = false
             fetchStickers(pageNumber: 0, animated: sender.selectedSegmentIndex == 0)
@@ -96,7 +151,7 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
             return UITableViewCell()
         }
         cell.btnDownload.addTarget(self, action: #selector(btnDownloadAction(_:)), for: .touchUpInside)
-        cell.configure(with: packages[indexPath.row], downloadedPackage: downloadedPackage)
+        cell.configure(with: packages[indexPath.row], downloadedPackage: downloadedPackage, screenType: segmentController.selectedSegmentIndex)
         return cell
     }
 
@@ -111,7 +166,7 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
         if let sendEmojiVc: SendEmojiViewController = SendEmojiViewController.instantiateController(storyboard: .wallet) {
             sendEmojiVc.packageInfo = packages[indexPath.row]
             sendEmojiVc.chatChannelController = chatChannelController
-            self.presentPanModal(sendEmojiVc)
+            self.present(sendEmojiVc, animated: true)
         }
     }
 
@@ -120,8 +175,8 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
     }
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let delete = UIContextualAction(style: .destructive, title: "Delete") { (action, sourceView, completionHandler) in
-            self.deletePackage(self.packages[indexPath.row].packageID ?? 0)
+        let delete = UIContextualAction(style: .destructive, title: self.packages[indexPath.row].isHidden ? "Unhide" : "Hide") { (action, sourceView, completionHandler) in
+            self.hidePackage(self.packages[indexPath.row].packageID ?? 0)
             self.downloadedPackage.removeAll(where: { $0 == self.packages[indexPath.row].packageID ?? 0 })
             self.packages.remove(at: indexPath.row)
             self.tblPicker.deleteRows(at: [indexPath], with: .automatic)
