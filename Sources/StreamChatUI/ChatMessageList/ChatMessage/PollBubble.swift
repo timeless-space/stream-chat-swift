@@ -605,7 +605,7 @@ extension PollView {
         .padding(.top, 8.5)
         .padding(.bottom, isPreview ? 1 : 8.5)
         .padding(.horizontal, 12.5)
-        .frame(minWidth: mediaWidth, alignment: .leading)
+        .frame(width: mediaWidth, alignment: .leading)
         .background(isSender ? Color.blue : Color.gray.opacity(0.6))
         .background(Color.black)
     }
