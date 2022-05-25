@@ -853,8 +853,8 @@ extension PollView {
                     memberVotedURL.append(walletImageURL)
                 }
             }
-            isLoaded = true
         }
+        isLoaded = true
     }
 
     private func onTapSubmit() {
