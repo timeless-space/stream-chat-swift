@@ -9,6 +9,7 @@
 import UIKit
 import StreamChat
 import Nuke
+import AVKit
 
 class PhotoCollectionBubble: UITableViewCell {
 
@@ -59,11 +60,12 @@ class PhotoCollectionBubble: UITableViewCell {
         stackedItemsView.items = content?.imageAttachments.compactMap {
             StackedItem.init(
                 id: $0.id.index,
-                imageUrl: $0.imageURL,
+                url: $0.imageURL,
+                attachmentType: .image,
                 attachmentId: $0.id.rawValue)
         } ?? []
         stackedItemsView.configureItemHandler = { item, cell in
-            cell.configureMedia(attachment: item)
+            cell.configureMedia(attachment: item, isExpand: self.stackedItemsView.isExpand)
             cell.clipsToBounds = true
             cell.cornerRadius = 20
         }
@@ -97,7 +99,22 @@ class PhotoCollectionBubble: UITableViewCell {
     }
 }
 
-open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview {
+open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview, ASAutoPlayVideoLayerContainer {
+
+    // MARK: Variables
+    public var videoURL: String? {
+        didSet {
+            if let videoURL = videoURL {
+                ASVideoPlayerController.sharedVideoPlayer.setupVideoFor(url: videoURL)
+            }
+            videoLayer.isHidden = videoURL == nil
+        }
+    }
+
+    public var imageUrl: String?
+    public var isVideoPlaying: Bool = false
+    public var videoLayer = AVPlayerLayer()
+    
     // MARK: Variables
     public var attachmentId: AttachmentId? {
         return AttachmentId(rawValue: attachment.attachmentId ?? "")
@@ -127,11 +144,37 @@ open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview 
 
     private func setupUI() {
         embed(imgPreview)
+        videoLayer.backgroundColor = UIColor.clear.cgColor
+        videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        layer.addSublayer(videoLayer)
+        videoLayer.frame = bounds
     }
 
-    public func configureMedia(attachment: StackedItem) {
+    open override func layoutSubviews() {
+        super.layoutSubviews()
+        videoLayer.frame = bounds
+    }
+
+    public func configureMedia(attachment: StackedItem, isExpand: Bool) {
+        imgPreview.image = nil
         self.attachment = attachment
-        Nuke.loadImage(with: attachment.imageUrl, into: imgPreview)
+        videoURL = nil
+        if attachment.attachmentType == .image {
+            Nuke.loadImage(with: attachment.url, into: imgPreview)
+        } else {
+            if !isExpand {
+                videoURL = attachment.url.absoluteString
+            }
+            Components.default.videoLoader.loadPreviewForVideo(with: attachment.url, completion: { [weak self] result in
+                guard let `self` = self else { return }
+                switch result {
+                case .success(let image, let url):
+                    self.imgPreview.image = image
+                case .failure(_):
+                    break
+                }
+            })
+        }
     }
 }
 
@@ -140,25 +183,35 @@ protocol PhotoCollectionAction: class  {
 }
 
 public class StackedItem: Equatable {
+
+    public enum AttachmentType {
+        case video
+        case image
+    }
+
     public static func == (lhs: StackedItem, rhs: StackedItem) -> Bool {
         return lhs.id == rhs.id
     }
     public var id: Int
-    public var imageUrl: URL
+    public var url: URL
     public var attachmentId: String?
+    public var attachmentType: AttachmentType?
 
-    public init(id: Int, imageUrl: URL, attachmentId: String? = nil) {
+    public init(id: Int, url: URL, attachmentType: AttachmentType, attachmentId: String? = nil) {
         self.id = id
-        self.imageUrl = imageUrl
+        self.attachmentType = attachmentType
+        self.url = url
         self.attachmentId = attachmentId
     }
 
     public static func staticData() -> [StackedItem] {
         var items = [StackedItem]()
-        items.append(.init(id: 0, imageUrl: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png")!))
-        items.append(.init(id: 1, imageUrl: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/celebrate.gif")!))
-        items.append(.init(id: 2, imageUrl: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/cheers.gif")!))
-        items.append(.init(id: 3, imageUrl: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/thanks.png")!))
+        items.append(.init(id: 0, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png")!, attachmentType: .image))
+        items.append(.init(id: 1, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/celebrate.gif")!, attachmentType: .image))
+        items.append(.init(id: 2, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/cheers.gif")!, attachmentType: .image))
+        items.append(.init(id: 3, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/thanks.png")!, attachmentType: .image))
+        items.append(.init(id: 4, url: URL.init(string: "https://res.cloudinary.com/timeless/video/upload/v1644831818/app/Wallet/shopping-travel.mp4")!, attachmentType: .video))
+        items.append(.init(id: 5, url: URL.init(string: "https://res.cloudinary.com/timeless/video/upload/v1644831819/app/Wallet/wellbeing-calm.mp4")!, attachmentType: .video))
         return items
     }
 }

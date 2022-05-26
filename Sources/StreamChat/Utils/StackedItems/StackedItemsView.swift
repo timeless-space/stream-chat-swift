@@ -65,14 +65,6 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         }
     }
 
-    /// the corner radius for each item
-    public var cornerRadius = CGFloat(20) {
-        didSet {
-            guard cornerRadius != oldValue else { return }
-            collectionView.reloadData()
-        }
-    }
-
     /// the index of the item that is currently focused and on the top of the stack
     public var currentlyFocusedItemIndex: Int {
         return stackedItemsLayout.currentlyFocusedItemIndex
@@ -144,6 +136,22 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         } else {
             return scrollToItem(at: currentlyFocusedItemIndex + 1, animated: true)
         }
+    }
+
+    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        guard let cell = collectionView.cellForItem(at: .init(row: currentlyFocusedItemIndex + 1, section: 0)) as? MediaPreviewCollectionCell else {
+            return
+        }
+        items.enumerated().forEach { index, _ in
+            guard let previewCell = collectionView.cellForItem(at: .init(row: index, section: 0)) as? MediaPreviewCollectionCell
+            else {
+                return
+            }
+            if previewCell != cell {
+                ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: previewCell)
+            }
+        }
+        ASVideoPlayerController.sharedVideoPlayer.playSelectedCell(cell: cell)
     }
 
     // MARK: - Private
