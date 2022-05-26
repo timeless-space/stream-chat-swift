@@ -24,6 +24,8 @@ open class ChatChannelListVC: _ViewController,
 
     private var loadingPreviousMessages: Bool = false
 
+    private var isChannelRefreshing: Bool = false
+
     open private(set) lazy var loadingIndicator: UIActivityIndicatorView = {
         if #available(iOS 13.0, *) {
             return UIActivityIndicatorView(style: .large).withoutAutoresizingMaskConstraints
@@ -140,7 +142,14 @@ open class ChatChannelListVC: _ViewController,
     }
 
     @objc private func refreshChannel(_ notification: NSNotification) {
-        controller.synchronize()
+        guard !isChannelRefreshing else {
+            return
+        }
+        isChannelRefreshing = true
+        controller.synchronize { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.isChannelRefreshing = false
+        }
     }
 
     @objc private func pushToDaoChatMessageScreen(_ notification: NSNotification) {
