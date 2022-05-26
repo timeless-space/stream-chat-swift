@@ -9,7 +9,10 @@
 import UIKit
 
 /// A view that provides a stacked of scrollable items by wrapping a UICollectionView with a `StackedItemsLayout`
-public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCell>: UIView, UICollectionViewDataSource, UICollectionViewDelegate  {
+public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCell>:
+    UIView,
+    UICollectionViewDataSource,
+    UICollectionViewDelegate {
 
     public let collectionView = UICollectionView(frame: .zero, collectionViewLayout: StackedItemsLayout())
 
@@ -78,7 +81,10 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     /// scrolls to a specific item by making it top of the stack
     public func scrollToItem(at index: Int, animated: Bool) {
         let xOffset = collectionView.bounds.width * CGFloat(index)
-        let contentOffset = CGPoint(x: -collectionView.adjustedContentInset.left + xOffset, y: -collectionView.adjustedContentInset.top)
+        let contentOffset = CGPoint(
+            x: -collectionView.adjustedContentInset.left + xOffset,
+            y: -collectionView.adjustedContentInset.top
+        )
         collectionView.setContentOffset(contentOffset, animated: animated)
         if animated == false {
             collectionView.setNeedsLayout()
@@ -111,7 +117,10 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             cell.layer.shadowRadius = 4
             cell.layer.shadowOpacity = 0.15
             cell.layer.shadowOffset = .zero
-            cell.layer.shadowPath = UIBezierPath(roundedRect:CGRect(origin: .zero, size:  stackedItemsLayout.itemSize), cornerRadius: cornerRadius).cgPath
+            cell.layer.shadowPath = UIBezierPath(
+                roundedRect: CGRect(origin: .zero, size:  stackedItemsLayout.itemSize),
+                cornerRadius: cornerRadius
+            ).cgPath
         } else {
             cell.layer.shadowPath = nil
         }
