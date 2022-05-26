@@ -83,9 +83,19 @@ class PhotoCollectionBubble: UITableViewCell {
         stackedItemsView.collectionView.contentInset = .zero
         if stackedItemsView.items.count == 1 {
             if !isSender {
-                stackedItemsView.collectionView.contentInset = .init(top: 0, left: 0, bottom: 0, right: stackedItemsView.bounds.width - 250)
+                stackedItemsView.collectionView.contentInset = .init(
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: stackedItemsView.bounds.width - 250
+                )
             } else {
-                stackedItemsView.collectionView.contentInset = .init(top: 0, left: stackedItemsView.bounds.width - 250, bottom: 0, right: 0)
+                stackedItemsView.collectionView.contentInset = .init(
+                    top: 0,
+                    left: stackedItemsView.bounds.width - 250,
+                    bottom: 0,
+                    right: 0
+                )
             }
         } else {
             if !isSender {

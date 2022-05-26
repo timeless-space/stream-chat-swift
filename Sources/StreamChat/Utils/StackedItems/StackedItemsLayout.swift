@@ -264,7 +264,10 @@ public class StackedItemsLayout: UICollectionViewLayout {
                 }
 
                 // calculate the transform for our items on the stacks
-                item.transform3D = itemTransformForItem(index: relativeIndex, progress: progressFromFocusedItem, isLeading: isPartOfLeadingStack).transform3D
+                item.transform3D = itemTransformForItem(
+                    index: relativeIndex,
+                    progress: progressFromFocusedItem,
+                    isLeading: isPartOfLeadingStack).transform3D
 
                 // we animate in the alpha of the final item of the stack, so that it appears nicely
                 if relativeIndex == horizontalOffsets.count {
