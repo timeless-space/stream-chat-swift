@@ -639,7 +639,11 @@ open class ChatMessageListVC:
 
     private func isImagePreview(_ message: ChatMessage?) -> Bool {
         if !(message?.imageAttachments.isEmpty ?? false) {
-            return (message?.imageAttachments.count ?? 0) > 1
+            guard let imageAttachmentCount = message?.imageAttachments.count
+            else {
+                return false
+            }
+            return imageAttachmentCount != message?.attachmentCounts.count
         }
         return false
     }

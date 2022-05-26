@@ -106,6 +106,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
+        cell.backgroundColor = UIColor.init(red: 0.074, green: 0.082, blue: 0.105, alpha: 1)
         if !isExpand {
             cell.contentView.clipsToBounds = true
             cell.contentView.layer.cornerRadius = cornerRadius

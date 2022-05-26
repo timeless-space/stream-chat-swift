@@ -100,14 +100,14 @@ class PhotoCollectionBubble: UITableViewCell {
 open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview {
     // MARK: Variables
     public var attachmentId: AttachmentId? {
-        return attachment.id
+        return AttachmentId(rawValue: attachment.attachmentId ?? "")
     }
 
     public var imageView: UIImageView {
         return imgPreview
     }
 
-    private var attachment: ChatMessageImageAttachment!
+    private var attachment: StackedItem!
     private(set) lazy var imgPreview: UIImageView = {
         let imgPreview = UIImageView()
         imgPreview.clipsToBounds = true
@@ -129,12 +129,8 @@ open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview 
         embed(imgPreview)
     }
 
-    public func configureMedia(attachment: ChatMessageImageAttachment) {
-        self.attachment = attachment
-        Nuke.loadImage(with: attachment.payload.imageURL, into: imgPreview)
-    }
-
     public func configureMedia(attachment: StackedItem) {
+        self.attachment = attachment
         Nuke.loadImage(with: attachment.imageUrl, into: imgPreview)
     }
 }

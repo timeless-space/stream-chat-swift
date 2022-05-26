@@ -552,6 +552,7 @@ open class ComposerVC: _ViewController,
         menuController?.didTapAction = { [weak self] action in
             guard let `self` = self else { return }
             self.lockInputViewObserver = true
+            self.shouldClearContent(action)
             switch action {
             case .media:
                 self.composerView.inputMessageView.textView.resignFirstResponder()
@@ -658,6 +659,11 @@ open class ComposerVC: _ViewController,
         }
     }
 
+    private func shouldClearContent(_ type: MenuType) {
+        if !(!self.content.attachments.filter { $0.type == .image || $0.type == .video }.isEmpty && type == .media) {
+            self.content.clear()
+        }
+    }
     /// Shows a photo/media picker.
     open func showMediaPicker() {
         DispatchQueue.main.async { [weak self] in
@@ -920,7 +926,6 @@ open class ComposerVC: _ViewController,
     }
 
     @objc open func toolKitToggleAction(sender: UIButton) {
-//        content.clear(
         if !isMenuShowing {
             animateToolkitView(isHide: false)
         } else {
