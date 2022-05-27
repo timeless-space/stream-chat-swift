@@ -28,7 +28,6 @@ class PickerTableViewCell: UITableViewCell {
             btnDownload.isUserInteractionEnabled = false
             btnDownload.isHidden = true
             contentView.alpha = package.isHidden ? 0.5 : 1.0
-            layoutIfNeeded()
         } else {
             btnDownload.isUserInteractionEnabled = true
             btnDownload.isHidden = false

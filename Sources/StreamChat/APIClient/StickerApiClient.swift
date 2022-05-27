@@ -158,6 +158,4 @@ public class StickerApiClient {
             .sink { _  in } receiveValue: { result in completion(result) }
             .store(in: &stickerCalls)
     }
-
-
 }

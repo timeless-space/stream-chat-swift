@@ -42,7 +42,6 @@ class GroupListPickerViewController: UIViewController {
             }
         })
     }
-
 }
 
 extension GroupListPickerViewController: UITableViewDelegate, UITableViewDataSource {

@@ -12,6 +12,7 @@ import Stipop
 
 class StickerGiftBubble: UITableViewCell {
 
+    // MARK: - Variables
     public private(set) var viewContainer: UIView!
     public private(set) var subContainer: UIView!
     public private(set) var imgStickerPreview: UIImageView!
@@ -23,7 +24,11 @@ class StickerGiftBubble: UITableViewCell {
     var content: ChatMessage?
     var isSender = false
     var channel: ChatChannel?
+    private var cellWidth: CGFloat {
+        return UIScreen.main.bounds.width * 0.3
+    }
 
+    // MARK: - Overrides
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.selectionStyle = .none
@@ -34,10 +39,7 @@ class StickerGiftBubble: UITableViewCell {
         super.init(coder: coder)
     }
 
-    private var cellWidth: CGFloat {
-        return UIScreen.main.bounds.width * 0.3
-    }
-
+    // MARK: - Custom functions
     func configureCell(isSender: Bool) {
         self.isSender = isSender
         viewContainer = UIView()
@@ -56,7 +58,7 @@ class StickerGiftBubble: UITableViewCell {
             viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding).isActive = true
             viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
         }
-
+        // SubContainer view
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
         subContainer.backgroundColor = Appearance.default.colorPalette.background6
@@ -68,7 +70,7 @@ class StickerGiftBubble: UITableViewCell {
             subContainer.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
         ])
-
+        // Sticker preview
         imgStickerPreview = UIImageView()
         imgStickerPreview.backgroundColor = Appearance.default.colorPalette.background6
         imgStickerPreview.transform = .mirrorY
@@ -82,7 +84,7 @@ class StickerGiftBubble: UITableViewCell {
             imgStickerPreview.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
             imgStickerPreview.heightAnchor.constraint(equalToConstant: 200)
         ])
-
+        // Desc label
         descriptionLabel = createDescLabel()
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         subContainer.addSubview(descriptionLabel)
@@ -96,7 +98,7 @@ class StickerGiftBubble: UITableViewCell {
         lblDetails = createDetailsLabel()
         Nuke.loadImage(with: content?.extraData.giftPackageImage, into: imgStickerPreview)
         lblDetails.text = content?.extraData.giftPackageName
-
+        // Details stack
         detailsStack = UIStackView(arrangedSubviews: [lblDetails])
         detailsStack.axis = .vertical
         detailsStack.distribution = .fillEqually
@@ -110,7 +112,7 @@ class StickerGiftBubble: UITableViewCell {
             detailsStack.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -10),
             detailsStack.bottomAnchor.constraint(equalTo: descriptionLabel.topAnchor, constant: -6)
         ])
-
+        // Sent/Accept button
         pickUpButton = UIButton()
         pickUpButton.translatesAutoresizingMaskIntoConstraints = false
         if content?.extraData.giftSenderId == ChatClient.shared.currentUserId?.string {
@@ -137,7 +139,7 @@ class StickerGiftBubble: UITableViewCell {
             pickUpButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 20)
         ])
         pickUpButton.transform = .mirrorY
-
+        // TimeStamp
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
@@ -221,9 +223,7 @@ class StickerGiftBubble: UITableViewCell {
                             Snackbar.show(text: "duplicate Purchase Sticker!", messageType: nil)
                         } else {
                             Snackbar.show(text: "Stickers added!", messageType: nil)
-//                            self.sendDownloadSticker()
                         }
-                        
                     }
                 }
             } else {
@@ -246,5 +246,4 @@ class StickerGiftBubble: UITableViewCell {
             extraData: ["sendStickerGift": .dictionary(downloadExtraData)],
             completion: nil)
     }
-
 }

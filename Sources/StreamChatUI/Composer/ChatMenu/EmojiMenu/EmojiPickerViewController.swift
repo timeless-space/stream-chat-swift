@@ -53,14 +53,17 @@ class EmojiPickerViewController: UIViewController {
     }
 
     private func fetchMySticker() {
+        dispatchGroup.enter()
         StickerApiClient.mySticker { [weak self] result in
             guard let `self` = self else { return }
             self.myStickers.removeAll()
             self.myStickers = result.body?.packageList ?? []
+            self.dispatchGroup.leave()
         }
     }
 
     private func getHiddenSticker() {
+        dispatchGroup.enter()
         StickerApiClient.getHiddenStickers { [weak self] result in
             guard let `self` = self else { return }
             self.hiddenStickers.removeAll()
@@ -68,6 +71,7 @@ class EmojiPickerViewController: UIViewController {
             for (index, _) in self.hiddenStickers.enumerated() {
                 self.hiddenStickers[index].isHidden = true
             }
+            self.dispatchGroup.leave()
         }
     }
 
@@ -93,29 +97,8 @@ class EmojiPickerViewController: UIViewController {
     }
 
     func getCurrentUserAllStickers() {
-        dispatchGroup.enter()
-        StickerApiClient.mySticker { [weak self] result in
-            guard let `self` = self else { return }
-            self.myStickers.removeAll()
-            self.myStickers = result.body?.packageList ?? []
-            self.dispatchGroup.leave()
-            //self.packages = result.body?.packageList ?? []
-            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
-            //self.tblPicker.reloadData()
-        }
-        dispatchGroup.enter()
-        StickerApiClient.getHiddenStickers { [weak self] result in
-            guard let `self` = self else { return }
-            self.hiddenStickers.removeAll()
-            self.hiddenStickers = result.body?.packageList ?? []
-            for (index, _) in self.hiddenStickers.enumerated() {
-                self.hiddenStickers[index].isHidden = true
-            }
-            self.dispatchGroup.leave()
-            //self.packages = result.body?.packageList ?? []
-            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
-            //self.tblPicker.reloadData()
-        }
+        fetchMySticker()
+        getHiddenSticker()
         dispatchGroup.notify(queue: .main) { [weak self] in
             guard let `self` = self else { return }
             self.packages = self.myStickers + self.hiddenStickers
@@ -173,7 +156,10 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
     }
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let delete = UIContextualAction(style: .destructive, title: self.packages[indexPath.row].isHidden ? "Unhide" : "Hide") { (action, sourceView, completionHandler) in
+        let delete = UIContextualAction(
+            style: .destructive,
+            title: self.packages[indexPath.row].isHidden ? "Unhide" : "Hide"
+        ) { (action, sourceView, completionHandler) in
             self.hidePackage(indexPath: indexPath)
             completionHandler(true)
         }

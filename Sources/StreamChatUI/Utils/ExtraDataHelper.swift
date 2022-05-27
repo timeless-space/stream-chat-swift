@@ -690,7 +690,6 @@ public extension Dictionary where Key == String, Value == RawJSON {
             return false
         }
     }
-
 }
 
 // MARK: - User detail

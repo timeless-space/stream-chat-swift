@@ -13,14 +13,12 @@ import Nuke
 class SendEmojiViewController: UIViewController {
 
     // MARK: Outlets
-    @IBOutlet weak var imgSticker: UIImageView!
-    @IBOutlet weak var lblStickerName: UILabel!
-    @IBOutlet weak var stickerCollectionView: UICollectionView!
-    @IBOutlet weak var lblCreatedBy: UILabel!
-
-    private var stickers = [Sticker]()
-
+    @IBOutlet private weak var imgSticker: UIImageView!
+    @IBOutlet private weak var lblStickerName: UILabel!
+    @IBOutlet private weak var stickerCollectionView: UICollectionView!
+    @IBOutlet private weak var lblCreatedBy: UILabel!
     // MARK: Variables
+    private var stickers = [Sticker]()
     var packageInfo: PackageList?
     var chatChannelController: ChatChannelController?
 
@@ -33,18 +31,23 @@ class SendEmojiViewController: UIViewController {
             return
         }
         loadSticker(stickerId: "\(stickerId)")
+        setUpCollectionViewFlowLayout()
+    }
+
+    private func setUpCollectionViewFlowLayout() {
         let flowLayout = UICollectionViewFlowLayout()
         flowLayout.minimumLineSpacing = 0
         flowLayout.minimumInteritemSpacing = 0
         stickerCollectionView.collectionViewLayout = flowLayout
     }
 
-    deinit {
-        debugPrint("Deinit called")
-    }
-
     private func sendStickerGift(chatMembers: ChatChannelMember, cid: ChannelId) {
-        StickerApiClient.sendGiftSticker(packageId: self.packageInfo?.packageID ?? 0, sendUserId: ChatClient.shared.currentUserId?.string ?? "", receiveUserId: chatMembers.id ?? "") { result in
+        StickerApiClient.sendGiftSticker(
+            packageId: packageInfo?.packageID ?? 0,
+            sendUserId: ChatClient.shared.currentUserId?.string ?? "",
+            receiveUserId: chatMembers.id ?? ""
+        ) { [weak self] result in
+            guard let `self` = self else { return }
             var sendStickerParam = [String: RawJSON]()
             sendStickerParam["giftPackageId"] = .string(self.packageInfo?.packageID?.string ?? "")
             sendStickerParam["giftPackageName"] = .string(self.packageInfo?.packageName ?? "")
@@ -66,9 +69,7 @@ class SendEmojiViewController: UIViewController {
     }
 
     @IBAction func btnSendSticker(_ sender: Any) {
-        //TODO: handle send flow
         guard let cid = chatChannelController?.channel?.cid else { return }
-
         let channelMember = chatChannelController?.client.memberListController(query: .init(cid: cid))
         channelMember?.synchronize({ [weak self] error in
             guard error == nil, let self = self else { return }
@@ -115,9 +116,7 @@ class SendEmojiViewController: UIViewController {
 
 // MARK: - Collection view delegate
 @available(iOS 13.0, *)
-extension SendEmojiViewController: UICollectionViewDelegate {
-
-}
+extension SendEmojiViewController: UICollectionViewDelegate { }
 
 // MARK: - Collection view datasource
 @available(iOS 13.0, *)
@@ -134,7 +133,6 @@ extension SendEmojiViewController: UICollectionViewDataSource {
         cell.configureSticker(sticker: stickers[indexPath.row])
         return cell
     }
-
 }
 
 @available(iOS 13.0, *)
@@ -144,5 +142,4 @@ extension SendEmojiViewController: UICollectionViewDelegateFlowLayout {
         let width = (collectionView.bounds.width / 4)
         return .init(width: width, height: width)
     }
-
 }
