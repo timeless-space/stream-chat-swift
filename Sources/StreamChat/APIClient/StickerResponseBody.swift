@@ -44,14 +44,20 @@ public struct Package: Codable {
 
 // MARK: - Sticker
 public struct Sticker: Codable {
-    public let stickerID: Int?
-    public let stickerImg: String?
-    public let packageID: Int?
+    public var stickerID: Int? = 0
+    public var stickerImg: String? = ""
+    public var packageID: Int? = 0
 
     enum CodingKeys: String, CodingKey {
         case stickerID = "stickerId"
         case stickerImg
         case packageID = "packageId"
+    }
+
+    public init(stickerId: Int, stickerImg: String, packageID: Int) {
+        self.stickerID = stickerId
+        self.stickerImg = stickerImg
+        self.packageID = packageID
     }
 }
 

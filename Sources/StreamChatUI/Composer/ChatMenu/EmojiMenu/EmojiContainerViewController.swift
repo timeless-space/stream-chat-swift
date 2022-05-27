@@ -229,8 +229,8 @@ class EmojiContainerViewController: UIViewController {
         StickerApiClient.recentSticker { [weak self] result in
             guard let self = self else { return }
             self.stickers = result.body?.stickerList ?? []
-            if self.stickers.isEmpty {
-                self.showNoStickerView()
+            for index in 0...11 {
+                self.stickers.insert(Sticker(stickerId: index, stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-\(index).json", packageID: index), at: index)
             }
             UserDefaults.standard.save(customObject: self.stickers, inKey: UserdefaultKey.recentSticker)
             UserDefaults.standard.synchronize()
@@ -280,6 +280,11 @@ extension EmojiContainerViewController: UICollectionViewDelegate, UICollectionVi
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = collectionView.bounds.width / 4
         return .init(width: width, height: width)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let cvCell = cell as? StickerCollectionCell else { return }
+        cvCell.remove()
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
