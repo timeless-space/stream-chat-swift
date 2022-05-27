@@ -24,22 +24,20 @@ class PickerTableViewCell: UITableViewCell {
         selectionStyle = .none
         btnDownload.isHidden = screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue
         btnDownload.isUserInteractionEnabled = screenType != EmojiPickerViewController.ScreenType.MySticker.rawValue
-
         if screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue {
             btnDownload.isUserInteractionEnabled = false
             btnDownload.isHidden = true
-            self.contentView.alpha = package.isHidden ? 0.5 : 1.0
-            self.layoutIfNeeded()
+            contentView.alpha = package.isHidden ? 0.5 : 1.0
+            layoutIfNeeded()
         } else {
             btnDownload.isUserInteractionEnabled = true
             btnDownload.isHidden = false
-            self.contentView.alpha = 1.0
+            contentView.alpha = 1.0
         }
-
-        if !downloadedPackage.contains(package.packageID ?? 0) {
-            btnDownload.setImage(Appearance.default.images.downloadSticker, for: .normal)
-        } else {
-            btnDownload.setImage(Appearance.default.images.downloadStickerFill, for: .normal)
-        }
+        btnDownload.setImage(
+            package.isDownload != "Y" ?
+            Appearance.default.images.downloadSticker :
+            Appearance.default.images.downloadStickerFill,
+            for: .normal)
     }
 }

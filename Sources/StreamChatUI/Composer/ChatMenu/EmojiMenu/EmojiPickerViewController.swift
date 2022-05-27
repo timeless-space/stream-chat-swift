@@ -30,7 +30,7 @@ class EmojiPickerViewController: UIViewController {
     private var isMyPackage = false
     var downloadedPackage = [Int]()
     var chatChannelController: ChatChannelController?
-    var dispatchGroup = DispatchGroup()
+    private var dispatchGroup = DispatchGroup()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,11 +55,8 @@ class EmojiPickerViewController: UIViewController {
     private func fetchMySticker() {
         StickerApiClient.mySticker { [weak self] result in
             guard let `self` = self else { return }
-            //self.packages = result.body?.packageList ?? []
             self.myStickers.removeAll()
             self.myStickers = result.body?.packageList ?? []
-            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
-            //self.tblPicker.reloadData()
         }
     }
 
@@ -71,14 +68,15 @@ class EmojiPickerViewController: UIViewController {
             for (index, _) in self.hiddenStickers.enumerated() {
                 self.hiddenStickers[index].isHidden = true
             }
-            //self.packages = result.body?.packageList ?? []
-            //self.packages.removeAll(where: { StickerMenu.getDefaultStickerIds().contains($0.packageID ?? 0 )})
-            //self.tblPicker.reloadData()
         }
     }
 
-    private func hidePackage(_ packageId: Int) {
-        StickerApiClient.hideStickers(packageId: packageId, nil)
+    private func hidePackage(indexPath: IndexPath) {
+        StickerApiClient.hideStickers(packageId: self.packages[indexPath.row].packageID ?? 0) { [weak self] _ in
+            guard let `self` = self else { return }
+            self.packages[indexPath.row].isHidden.toggle()
+            self.tblPicker.reloadRows(at: [indexPath], with: .automatic)
+        }
     }
 
     @objc private func btnDownloadAction(_ sender: UIButton) {
@@ -90,7 +88,7 @@ class EmojiPickerViewController: UIViewController {
         if packages[indexPath.row].isDownload != "Y" {
             StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { _ in }
         } else {
-            StickerApiClient.hideStickers(packageId: packages[indexPath.row].packageID ?? 0, nil)
+            Snackbar.show(text: "Sticker already downloaded!", messageType: nil)
         }
     }
 
@@ -176,10 +174,7 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let delete = UIContextualAction(style: .destructive, title: self.packages[indexPath.row].isHidden ? "Unhide" : "Hide") { (action, sourceView, completionHandler) in
-            self.hidePackage(self.packages[indexPath.row].packageID ?? 0)
-            self.downloadedPackage.removeAll(where: { $0 == self.packages[indexPath.row].packageID ?? 0 })
-            self.packages.remove(at: indexPath.row)
-            self.tblPicker.deleteRows(at: [indexPath], with: .automatic)
+            self.hidePackage(indexPath: indexPath)
             completionHandler(true)
         }
         let swipeActionConfig = UISwipeActionsConfiguration(actions: [delete])
