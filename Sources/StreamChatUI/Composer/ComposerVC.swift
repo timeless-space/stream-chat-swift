@@ -435,7 +435,8 @@ open class ComposerVC: _ViewController,
                 self.composerView.headerView.isHidden = true
             }
         case .quote:
-            composerView.titleLabel.text = L10n.Composer.Title.reply
+            let replyTo = content.quotingMessage?.author.name ?? "Message"
+            composerView.titleLabel.text = "\(L10n.Composer.Title.reply) \(replyTo)"
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.headerView.isHidden = false
