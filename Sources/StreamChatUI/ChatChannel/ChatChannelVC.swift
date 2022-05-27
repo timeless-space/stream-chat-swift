@@ -777,16 +777,11 @@ open class ChatChannelVC:
         case is EditActionItem:
             UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
                 self?.messageComposerVC?.content.editMessage(message)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    self?.messageComposerVC?.composerView.inputMessageView.textView.becomeFirstResponder()
-                }
             }
         case is InlineReplyActionItem:
             UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
+                self?.messageComposerVC?.composerView.inputMessageView.textView.text = ""
                 self?.messageComposerVC?.content.quoteMessage(message)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    self?.messageComposerVC?.composerView.inputMessageView.textView.becomeFirstResponder()
-                }
             }
         case is ThreadReplyActionItem:
             UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
