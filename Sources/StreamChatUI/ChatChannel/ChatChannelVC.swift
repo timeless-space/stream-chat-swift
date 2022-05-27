@@ -775,16 +775,16 @@ open class ChatChannelVC:
     ) {
         switch actionItem {
         case is EditActionItem:
-            dismiss(animated: true) { [weak self] in
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
                 self?.messageComposerVC?.content.editMessage(message)
             }
         case is InlineReplyActionItem:
-            dismiss(animated: true) { [weak self] in
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
                 self?.messageComposerVC?.composerView.inputMessageView.textView.text = ""
                 self?.messageComposerVC?.content.quoteMessage(message)
             }
         case is ThreadReplyActionItem:
-            dismiss(animated: true) { [weak self] in
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
                 self?.messageListVC?.showThread(messageId: message.id)
             }
         default:

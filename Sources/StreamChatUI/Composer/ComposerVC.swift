@@ -428,7 +428,8 @@ open class ComposerVC: _ViewController,
                 self.composerView.container.removeArrangedSubview(self.composerView.headerView)
             }
         case .quote:
-            composerView.titleLabel.text = L10n.Composer.Title.reply
+            let replyTo = content.quotingMessage?.author.name ?? "Message"
+            composerView.titleLabel.text = "\(L10n.Composer.Title.reply) \(replyTo)"
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
