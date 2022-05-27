@@ -327,7 +327,6 @@ open class ChatChannelVC:
             headerView.titleContainerView.subtitleLabel.isHidden = true
             messageComposerVC?.composerView.inputMessageView.textView.resignFirstResponder()
             channelAvatarView.isHidden = true
-            //moreButton.isHidden = true
         } else {
             messageComposerVC?.composerView.isUserInteractionEnabled = true
             messageComposerVC?.composerView.alpha = 1.0
@@ -391,17 +390,6 @@ open class ChatChannelVC:
               let currentUserId = ChatClient.shared.currentUserId
         else { return }
         isMute ? unMuteNotification() : muteNotification()
-//        if isMute {
-//            self.channelController?.unmuteChannel(completion: nil)
-//            // Add user in channel to enable notification
-//            self.channelController?.addMembers(userIds: [currentUserId], completion: nil)
-//            sender.setTitle("Mute", for: .normal)
-//            return;
-//        }
-//        self.channelController?.muteChannel(completion: nil)
-//        // Remove user from channel to disable notification
-//        self.channelController?.removeMembers(userIds: [currentUserId], completion: nil)
-//        sender.setTitle("Unmute", for: .normal)
     }
     
     @objc func headerViewAction(_ sender: Any) {
