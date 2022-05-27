@@ -234,7 +234,6 @@ open class ChatMessageListVC:
             gesture.state == .began,
             let indexPath = listView.indexPathForRow(at: location)
         else { return }
-        NotificationCenter.default.post(name: .hideKeyboardMenu, object: nil, userInfo: nil)
         didSelectMessageCell(at: indexPath)
     }
 
@@ -714,7 +713,7 @@ open class ChatMessageListVC:
     }
 
     open func chatMessageActionsVCDidFinish(_ vc: ChatMessageActionsVC) {
-        dismiss(animated: true)
+        UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true)
     }
 
     // MARK: - ChatMessageContentViewDelegate
