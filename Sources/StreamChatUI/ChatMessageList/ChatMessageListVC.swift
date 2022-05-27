@@ -518,7 +518,7 @@ open class ChatMessageListVC:
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
-            } else if isImagePreview(message) {
+            } else if isImageAndVideoPreview(message) {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "PhotoCollectionBubble",
                     for: indexPath) as? PhotoCollectionBubble else {
@@ -529,7 +529,6 @@ open class ChatMessageListVC:
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
-
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -637,15 +636,10 @@ open class ChatMessageListVC:
         return !message.isBlank
     }
 
-    private func isImagePreview(_ message: ChatMessage?) -> Bool {
-        if !(message?.imageAttachments.isEmpty ?? false) {
-            guard let imageAttachmentCount = message?.imageAttachments.count
-            else {
-                return false
-            }
-            return imageAttachmentCount != message?.attachmentCounts.count
-        }
-        return false
+    private func isImageAndVideoPreview(_ message: ChatMessage?) -> Bool {
+        let imageAttachmentCount = message?.attachmentCounts[.image] as? Int ?? 0
+        let videoAttachmentCount = message?.attachmentCounts[.video] as? Int ?? 0
+        return imageAttachmentCount > 0 || videoAttachmentCount > 0
     }
 
     private func isAdminMessage(_ message: ChatMessage?) -> Bool {

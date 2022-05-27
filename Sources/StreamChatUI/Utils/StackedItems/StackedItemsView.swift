@@ -135,8 +135,15 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             selectionHandler?(items[indexPath.row], indexPath.row)
         } else if indexPath.row == currentlyFocusedItemIndex {
             collectionView.deselectItem(at: indexPath, animated: true)
+            guard let cell = (collectionView.cellForItem(at: indexPath) as? MediaPreviewCollectionCell) else {
+                return
+            }
             if !isExpand {
-                expandView(index: indexPath.row)
+                if (items[indexPath.row] as? StackedItem)?.attachmentType == .video && !cell.isVideoPlaying {
+                    cell.btnPlayAction()
+                } else {
+                    expandView(index: indexPath.row)
+                }
             } else {
                 selectionHandler?(items[indexPath.row], indexPath.row)
             }
@@ -148,6 +155,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     }
 
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        /*
         guard let cell = collectionView.cellForItem(at: .init(row: currentlyFocusedItemIndex + 1, section: 0)) as? MediaPreviewCollectionCell else {
             return
         }
@@ -161,6 +169,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             }
         }
         ASVideoPlayerController.sharedVideoPlayer.playSelectedCell(cell: cell)
+         */
     }
 
     // MARK: - Private

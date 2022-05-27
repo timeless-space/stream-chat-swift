@@ -57,13 +57,21 @@ class PhotoCollectionBubble: UITableViewCell {
     }
 
     func configureCell(isSender: Bool) {
-        stackedItemsView.items = content?.imageAttachments.compactMap {
+        let imageAttachment = content?.imageAttachments.compactMap {
             StackedItem.init(
                 id: $0.id.index,
                 url: $0.imageURL,
                 attachmentType: .image,
                 attachmentId: $0.id.rawValue)
         } ?? []
+        let videoAttachment = content?.videoAttachments.compactMap {
+            StackedItem.init(
+                id: $0.id.index,
+                url: $0.videoURL,
+                attachmentType: .video,
+                attachmentId: $0.id.rawValue)
+        } ?? []
+        stackedItemsView.items = imageAttachment + videoAttachment
         stackedItemsView.configureItemHandler = { item, cell in
             cell.configureMedia(attachment: item, isExpand: self.stackedItemsView.isExpand)
             cell.clipsToBounds = true
@@ -124,6 +132,12 @@ open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview,
     public var imageUrl: String?
     public var isVideoPlaying: Bool = false
     public var videoLayer = AVPlayerLayer()
+    private(set) lazy var btnPlay: UIButton = {
+        let btnPlay = UIButton()
+        btnPlay.addTarget(self, action: #selector(btnPlayAction), for: .touchUpInside)
+        btnPlay.setImage(Appearance.default.images.play, for: .normal)
+        return btnPlay
+    }()
     
     // MARK: Variables
     public var attachmentId: AttachmentId? {
@@ -148,12 +162,21 @@ open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview,
         setupUI()
     }
 
+    open override func prepareForReuse() {
+        super.prepareForReuse()
+        videoLayer.player?.pause()
+    }
+
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     private func setupUI() {
         embed(imgPreview)
+        btnPlay.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(btnPlay)
+        btnPlay.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        btnPlay.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         videoLayer.backgroundColor = UIColor.clear.cgColor
         videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         layer.addSublayer(videoLayer)
@@ -168,10 +191,13 @@ open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview,
     public func configureMedia(attachment: StackedItem, isExpand: Bool) {
         imgPreview.image = nil
         self.attachment = attachment
+        btnPlay.isHidden = true
         videoURL = nil
         if attachment.attachmentType == .image {
+            btnPlay.isHidden = true
             Nuke.loadImage(with: attachment.url, into: imgPreview)
         } else {
+            btnPlay.isHidden = false
             if !isExpand {
                 videoURL = attachment.url.absoluteString
             }
@@ -186,6 +212,12 @@ open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview,
             })
         }
     }
+
+    @objc func btnPlayAction() {
+        btnPlay.isHidden = true
+        videoLayer.player?.play()
+    }
+
 }
 
 protocol PhotoCollectionAction: class  {
