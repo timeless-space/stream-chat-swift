@@ -8,7 +8,6 @@
 import Foundation
 import StreamChat
 import Nuke
-import Lottie
 
 class PickerTableViewCell: UITableViewCell {
     //MARK: Outlets
@@ -16,30 +15,6 @@ class PickerTableViewCell: UITableViewCell {
     @IBOutlet private weak var lblArtistName: UILabel!
     @IBOutlet private weak var imgPack: UIImageView!
     @IBOutlet private weak var btnDownload: UIButton!
-    private var animationView: AnimationView!
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-
-    }
-
-    func setUp() {
-        animationView = .init(url: URL(string: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-0.json")!, closure: { error in
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-
-                self.animationView.play()
-                self.animationView.loopMode = .loop
-            }
-        })
-        animationView.frame = self.contentView.bounds
-        animationView.contentMode = .scaleAspectFit
-        self.contentView.addSubview(animationView!)
-        animationView.translatesAutoresizingMaskIntoConstraints = false
-        animationView.heightAnchor.constraint(equalToConstant: 200).isActive = true
-        animationView.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        animationView.centerXAnchor.constraint(equalTo: self.contentView.centerXAnchor).isActive = true
-        animationView.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor).isActive = true
-    }
 
     func configure(with package: PackageList, downloadedPackage: [Int]) {
         lblPackName.text = package.packageName ?? ""

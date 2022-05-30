@@ -13,7 +13,7 @@ class StickerCollectionCell: UICollectionViewCell {
 
     // MARK: Variables
     private var imgSticker: SPUIStickerView!
-    private var animatedView: AnimationView! = AnimationView()
+    private var animatedView = AnimationView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
