@@ -10,6 +10,7 @@ import Nuke
 import AVKit
 import Stipop
 import GiphyUISDK
+import Lottie
 
 class ChatMessageStickerBubble: _TableViewCell {
 
@@ -84,6 +85,26 @@ class ChatMessageStickerBubble: _TableViewCell {
             sentThumbGifView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
             sentThumbGifView.setGifFromURL(gifUrl)
             stickerContainer.addArrangedSubview(sentThumbGifView)
+        } else if content?.extraData.stickerUrl?.contains(".json") ?? false, let lottie = URL(string: content?.extraData.stickerUrl ?? "") {
+            var sentThumbStickerView: AnimationView? = nil
+            sentThumbStickerView = .init(url: lottie, closure: { [weak self] _ in
+                guard let `self` = self else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    sentThumbStickerView?.play()
+                    sentThumbStickerView?.loopMode = .loop
+                }
+            })
+            if let stickerView = sentThumbStickerView {
+                stickerView.backgroundColor = Appearance.default.colorPalette.background6
+                stickerView.transform = .mirrorY
+                stickerView.contentMode = .scaleAspectFill
+                stickerView.layer.cornerRadius = 12
+                stickerView.translatesAutoresizingMaskIntoConstraints = false
+                stickerView.clipsToBounds = true
+                stickerView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
+                stickerView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
+                stickerContainer.addArrangedSubview(stickerView)
+            }
         } else if let sticker = content?.extraData.stickerUrl?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
             let sentThumbStickerView = SPUIStickerView()
             sentThumbStickerView.backgroundColor = Appearance.default.colorPalette.background6

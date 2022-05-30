@@ -108,6 +108,7 @@ public class StickerMenu: Codable, Equatable {
         menu.append(.init(image: "https://img.stipop.io/2021/2/10/1612910010258_LqupKfShY4.gif", menuId: 6223, name: "Mushroom Movie"))
         menu.append(.init(image: "https://img.stipop.io/2021/4/17/1618634173644_BC21rzJCti.gif", menuId: 6713, name: "Snowoo2"))
         menu.append(.init(image: "https://img.stipop.io/2020/9/8/1599612864041_AQn6C2GpVn.gif", menuId: 5272, name: "Jolly John Season 1"))
+        menu.append(.init(image: "https://img.stipop.io/2020/11/23/1606123362817_IE7darbhoR.gif", menuId: -3, name: "Dolphins"))
         return menu
     }
 
