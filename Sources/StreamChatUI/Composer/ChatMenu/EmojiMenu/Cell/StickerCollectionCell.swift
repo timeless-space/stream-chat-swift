@@ -13,7 +13,7 @@ class StickerCollectionCell: UICollectionViewCell {
 
     // MARK: Variables
     private var imgSticker: SPUIStickerView!
-    private var animatedView: AnimationView!
+    private var animatedView: AnimationView! = AnimationView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -30,13 +30,13 @@ class StickerCollectionCell: UICollectionViewCell {
         let stickerImgUrl = (sticker.stickerImg ?? "").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
         if let url = URL(string: stickerImgUrl ?? "") {
             if url.path.contains(".json") {
-                animatedView = .init(url: url, closure: { [weak self] _ in
+                Animation.loadedFrom(url: url, closure: { [weak self] lottieAnimation in
                     guard let `self` = self else { return }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        self.animatedView.play()
-                        self.animatedView.loopMode = .loop
-                    }
-                })
+                    self.animatedView.animation = lottieAnimation
+                    self.animatedView.play()
+                    self.animatedView.loopMode = .loop
+                    self.animatedView.backgroundBehavior = .pauseAndRestore
+                }, animationCache: LRUAnimationCache.sharedCache)
                 animatedView.translatesAutoresizingMaskIntoConstraints = false
                 embed(animatedView,insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
             } else {

@@ -10,6 +10,7 @@ import StreamChat
 import Combine
 import Nuke
 import GiphyUISDK
+import Lottie
 
 @available(iOS 13.0, *)
 class EmojiContainerViewController: UIViewController {
@@ -64,43 +65,6 @@ class EmojiContainerViewController: UIViewController {
         let walletStickerKey = UserdefaultKey.visibleSticker + StickerApi.userId
         return UserDefaults.standard.value(forKey: walletStickerKey) as? [Int] ?? []
     }
-    var dolphinStickers = [
-        Sticker(stickerId: 0,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-0.json",
-                packageID: 0),
-        Sticker(stickerId: 1,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-1.json",
-                packageID: 1),
-        Sticker(stickerId: 2,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-2.json",
-                packageID: 2),
-        Sticker(stickerId: 3,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-3.json",
-                packageID: 3),
-        Sticker(stickerId: 4,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-4.json",
-                packageID: 4),
-        Sticker(stickerId: 5,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-5.json",
-                packageID: 5),
-        Sticker(stickerId: 6,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-6.json",
-                packageID: 6),
-        Sticker(stickerId: 7,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-7.json",
-                packageID: 7),
-        Sticker(stickerId: 8,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-8.json",
-                packageID: 8),
-        Sticker(stickerId: 9,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-9.json",
-                packageID: 9),
-        Sticker(stickerId: 10,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-10.json",
-                packageID: 10),
-        Sticker(stickerId: 11,
-                stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-11.json",
-                packageID: 11)]
 
     init(with menu: StickerMenu) {
         super.init(nibName: nil, bundle: nil)
@@ -108,6 +72,14 @@ class EmojiContainerViewController: UIViewController {
         if menu.menuId == -2 {
             setupGifLayout()
         } else {
+            if (menu.menuId == -3) {
+                for index in 0..<11 {
+                    stickers.append(Sticker(
+                        stickerId: index,
+                        stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-\(index).json",
+                        packageID: index))
+                }
+            }
             setupSticker()
             loadStickerView()
         }
@@ -115,6 +87,7 @@ class EmojiContainerViewController: UIViewController {
 
     deinit {
         GPHCache.shared.clear()
+        LRUAnimationCache.sharedCache.clearCache()
     }
 
     required init?(coder: NSCoder) {
@@ -281,7 +254,6 @@ class EmojiContainerViewController: UIViewController {
     private func loadStaticSticker() {
         vStack.isHidden = true
         hStack.isHidden = true
-        stickers = dolphinStickers
         collectionEmoji.reloadData()
         collectionEmoji.isHidden = false
     }
@@ -298,7 +270,6 @@ class EmojiContainerViewController: UIViewController {
         } else {
             recentStickers()
         }
-
     }
 
     private func updateLoadingView(isHidden: Bool) {
