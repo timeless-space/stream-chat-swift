@@ -450,6 +450,7 @@ open class ComposerVC: _ViewController,
                 self.composerView.confirmButton.isHidden = true
                 self.composerView.inputMessageView.sendButton.isHidden = false
                 self.composerView.container.removeArrangedSubview(self.composerView.headerView)
+                self.composerView.headerView.isHidden = true
             }
         case .quote:
             let replyTo = content.quotingMessage?.author.name ?? "Message"
@@ -457,6 +458,7 @@ open class ComposerVC: _ViewController,
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
+                self.composerView.headerView.isHidden = false
             }
         case .edit:
             composerView.titleLabel.text = L10n.Composer.Title.edit
@@ -464,6 +466,7 @@ open class ComposerVC: _ViewController,
             Animate {
                 self.composerView.inputMessageView.sendButton.isHidden = true
                 self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
+                self.composerView.headerView.isHidden = false
             }
         default:
             log.warning("The composer state \(content.state.description) was not handled.")
