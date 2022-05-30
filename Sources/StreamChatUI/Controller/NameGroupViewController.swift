@@ -183,7 +183,6 @@ extension NameGroupViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         let user: ChatUser = selectedUsers[indexPath.row]
-        cell.imageLoader = Components.default.imageLoader
         cell.config(user: user,selectedImage: nil)
         return cell
     }

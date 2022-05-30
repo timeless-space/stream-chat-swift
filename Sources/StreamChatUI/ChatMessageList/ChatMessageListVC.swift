@@ -411,7 +411,6 @@ open class ChatMessageListVC: _ViewController,
                     cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                     cell.content = message
                     cell.client = client
-                    cell.imageLoader = components.imageLoader
                     cell.configData()
                     cell.blockExpAction = { blockExpUrl in
                         let svc = SFSafariViewController(url: blockExpUrl)

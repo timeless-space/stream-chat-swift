@@ -18,7 +18,7 @@ class CryptoReceiveBubble: UITableViewCell {
     public private(set) var descriptionLabel: UILabel!
     public private(set) var sentCryptoLabel: UILabel!
     public private(set) var blockExplorerButton: UIButton!
-    var imageLoader: ImageLoading?
+    let imageLoader = Components.default.imageLoader
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
@@ -216,7 +216,7 @@ class CryptoReceiveBubble: UITableViewCell {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
-                imageLoader?.loadImage(
+                imageLoader.loadImage(
                     into: sentThumbImageView,
                     url: imageUrl,
                     imageCDN: StreamImageCDN(),
@@ -224,7 +224,7 @@ class CryptoReceiveBubble: UITableViewCell {
             }
         } else {
             //Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
-            imageLoader?.loadImage(
+            imageLoader.loadImage(
                 into: sentThumbImageView,
                 url: URL(string: defaultURL),
                 imageCDN: StreamImageCDN(),

@@ -340,7 +340,6 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
                     return UITableViewCell()
                 }
             let user: ChatChannelMember = viewModel.channelMembers[indexPath.row]
-            cell.imageLoader = components.imageLoader
             cell.configGroupDetails(channelMember: user, selectedImage: nil)
             cell.backgroundColor = .clear
             cell.selectionStyle = .none

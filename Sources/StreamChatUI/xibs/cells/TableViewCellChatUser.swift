@@ -26,7 +26,7 @@ public class TableViewCellChatUser: _TableViewCell, AppearanceProvider {
 
     // MARK: - Variables
     private var user: ChatUser?
-    var imageLoader: ImageLoading?
+    let imageLoader = Components.default.imageLoader
 
     //MARK: - LIFE CYCEL
     public override func awakeFromNib() {
@@ -66,7 +66,7 @@ extension TableViewCellChatUser {
 
     public func config(user: ChatUser, selectedImage: UIImage?) {
         if let imageURL = user.imageURL {
-            imageLoader?.loadImage(
+            imageLoader.loadImage(
                 into: avatarView,
                 url: imageURL,
                 imageCDN: StreamImageCDN(),

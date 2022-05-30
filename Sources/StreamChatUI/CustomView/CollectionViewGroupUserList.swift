@@ -68,7 +68,6 @@ extension CollectionViewGroupUserList: UICollectionViewDelegate , UICollectionVi
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCellGroupUsers.reuseID, for: indexPath) as? CollectionViewCellGroupUsers else {
             return UICollectionViewCell.init(frame: .zero)
         }
-        cell.imageLoader = components.imageLoader
         cell.configCell(user: selectedUsers[indexPath.row])
         cell.removeUserButton.isHidden = self.isRemovreButtonHidden
         return cell

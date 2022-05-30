@@ -22,7 +22,7 @@ class WalletRequestPayBubble: UITableViewCell {
     public private(set) var pickUpButton: UIButton!
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
-    var imageLoader: ImageLoading?
+    let imageLoader = Components.default.imageLoader
     private var leadingAnchorForSender: NSLayoutConstraint?
     private var trailingAnchorSender: NSLayoutConstraint?
     private var leadingAnchorReceiver: NSLayoutConstraint?
@@ -164,7 +164,7 @@ class WalletRequestPayBubble: UITableViewCell {
                 if imageUrl.pathExtension == "gif" {
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
-                    imageLoader?.loadImage(
+                    imageLoader.loadImage(
                         into: sentThumbImageView,
                         url: URL(string: themeURL),
                         imageCDN: StreamImageCDN(),

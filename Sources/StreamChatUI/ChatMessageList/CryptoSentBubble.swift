@@ -21,7 +21,7 @@ class CryptoSentBubble: UITableViewCell {
     public private(set) var blockExplorerButton: UIButton!
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    var imageLoader: ImageLoading?
+    let imageLoader = Components.default.imageLoader
     public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     public var blockExpAction: ((URL) -> Void)?
 
@@ -205,14 +205,14 @@ class CryptoSentBubble: UITableViewCell {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
-                imageLoader?.loadImage(
+                imageLoader.loadImage(
                     into: sentThumbImageView,
                     url: imageUrl,
                     imageCDN: StreamImageCDN(),
                     placeholder: nil)
             }
         } else {
-            imageLoader?.loadImage(
+            imageLoader.loadImage(
                 into: sentThumbImageView,
                 url: URL(string: defaultURL),
                 imageCDN: StreamImageCDN(),

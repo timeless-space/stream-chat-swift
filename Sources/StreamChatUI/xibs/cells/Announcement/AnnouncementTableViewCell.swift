@@ -33,7 +33,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     private let containerPadding = 65
     weak var delegate: AnnouncementAction?
     /// Object which is responsible for loading images
-    var imageLoader: ImageLoading?
+    let imageLoader = Components.default.imageLoader
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -87,7 +87,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             btnShowMore.setTitle(getActionTitle(), for: .normal)
             imageUrl = imageAttachments.imageURL.absoluteString
             lblTitle.text = imageAttachments.title
-            imageLoader?.loadImage(
+            imageLoader.loadImage(
                 into: imageView,
                 url: imageAttachments.imageURL,
                 imageCDN: StreamImageCDN(),

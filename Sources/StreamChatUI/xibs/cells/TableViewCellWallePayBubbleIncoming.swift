@@ -40,7 +40,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
     var channel: ChatChannel?
     var client: ChatClient?
     var walletPaymentType: WalletAttachmentPayload.PaymentType = .pay
-    var imageLoader: ImageLoading?
+    let imageLoader = Components.default.imageLoader
     
     // MARK: -  View Cycle
     public override func awakeFromNib() {
@@ -114,7 +114,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
                     sentThumbImageView.isHidden = false
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
-                    imageLoader?.loadImage(
+                    imageLoader.loadImage(
                         into: sentThumbImageView,
                         url: imageUrl,
                         imageCDN: StreamImageCDN())
