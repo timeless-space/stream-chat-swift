@@ -74,7 +74,7 @@ open class ChatMessageReactionAuthorsVC: _ViewController,
 
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
-        view.backgroundColor = appearance.colorPalette.background
+        view.backgroundColor = appearance.colorPalette.messageActionMenuBackground
 
         flowLayout.scrollDirection = .vertical
         flowLayout.sectionInset = .init(top: 0, left: 8, bottom: 0, right: 8)
