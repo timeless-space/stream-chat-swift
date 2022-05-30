@@ -76,19 +76,8 @@ class SendEmojiViewController: UIViewController {
             let chatMembers = channelMember?.members.filter({ (member: ChatChannelMember) -> Bool in
                 return member.id != self.chatChannelController?.client.currentUserId
             })
-            if chatMembers?.count ?? 0 > 1 {
-                if let groupPicker = GroupListPickerViewController.instantiateController(storyboard: .wallet) as? GroupListPickerViewController {
-                    groupPicker.controller = self.chatChannelController
-                    groupPicker.didSelectMember = { [weak self] member in
-                        guard let `self` = self else { return }
-                        self.sendStickerGift(chatMembers: member, cid: cid)
-                    }
-                    self.presentPanModal(groupPicker)
-                }
-            } else {
-                guard let member = chatMembers?.first else { return }
-                self.sendStickerGift(chatMembers: member, cid: cid)
-            }
+            guard let member = chatMembers?.first else { return }
+            self.sendStickerGift(chatMembers: member, cid: cid)
         })
     }
 
