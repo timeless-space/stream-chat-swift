@@ -109,6 +109,13 @@ extension String {
     }
 }
 
+// MARK: Currency Format
+extension String {
+    var formattedOneBalance: String {
+        NumberUtils.formatONE(Double(self) ?? 0)
+    }
+}
+
 extension String {
     subscript(index: Int) -> Character {
         self[self.index(startIndex, offsetBy: index)]

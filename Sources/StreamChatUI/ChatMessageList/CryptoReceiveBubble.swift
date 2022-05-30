@@ -74,7 +74,7 @@ class CryptoReceiveBubble: UITableViewCell {
             sentThumbImageView.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
             sentThumbImageView.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
             sentThumbImageView.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
-            sentThumbImageView.heightAnchor.constraint(equalToConstant: 250)
+            sentThumbImageView.heightAnchor.constraint(equalToConstant: 200)
         ])
 
         descriptionLabel = createDescLabel()
@@ -105,14 +105,14 @@ class CryptoReceiveBubble: UITableViewCell {
         blockExplorerButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
         blockExplorerButton.addTarget(self, action: #selector(check), for: .touchUpInside)
         blockExplorerButton.clipsToBounds = true
-        blockExplorerButton.layer.cornerRadius = 20
+        blockExplorerButton.layer.cornerRadius = 16
         subContainer.addSubview(blockExplorerButton)
         NSLayoutConstraint.activate([
             blockExplorerButton.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 12),
             blockExplorerButton.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -12),
-            blockExplorerButton.heightAnchor.constraint(equalToConstant: 40),
-            blockExplorerButton.bottomAnchor.constraint(equalTo: sentCryptoLabel.bottomAnchor, constant: -35),
-            blockExplorerButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 30)
+            blockExplorerButton.heightAnchor.constraint(equalToConstant: 32),
+            blockExplorerButton.bottomAnchor.constraint(equalTo: sentCryptoLabel.bottomAnchor, constant: -30),
+            blockExplorerButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 22)
         ])
         blockExplorerButton.transform = .mirrorY
 
@@ -168,7 +168,7 @@ class CryptoReceiveBubble: UITableViewCell {
                 .withoutAutoresizingMaskConstraints
             sentCryptoLabel.textAlignment = .center
             sentCryptoLabel.numberOfLines = 0
-            sentCryptoLabel.textColor = Appearance.default.colorPalette.subtitleText
+            sentCryptoLabel.textColor = .white.withAlphaComponent(0.6)
             sentCryptoLabel.font = Appearance.default.fonts.footnote.withSize(11)
         }
         return sentCryptoLabel
@@ -209,7 +209,7 @@ class CryptoReceiveBubble: UITableViewCell {
         }
         if let amount = walletData["transferAmount"] {
             let one = fetchRawData(raw: amount) as? Double ?? 0
-            sentCryptoLabel.text = "RECEIVED: \(one) ONE"
+            sentCryptoLabel.text = "RECEIVED: \(NumberUtils.formatONE(one)) ONE"
         }
         let defaultURL = WalletAttachmentPayload.PaymentTheme.none.getPaymentThemeUrl()
         if let themeURL = requestedThemeURL(raw: walletData), let imageUrl = URL(string: themeURL) {

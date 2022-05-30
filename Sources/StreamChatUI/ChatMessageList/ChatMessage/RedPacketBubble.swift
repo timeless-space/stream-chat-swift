@@ -246,9 +246,9 @@ class RedPacketBubble: UITableViewCell {
     func configTopAmountCell() {
         let strReceivedAmount = content?.extraData.topReceivedAmount
         if ChatClient.shared.currentUserId ?? "" == content?.extraData.highestAmountUserId {
-            lblDetails.text = "You just picked up \(strReceivedAmount ?? "") ONE!"
+            lblDetails.text = "You just picked up \(strReceivedAmount?.formattedOneBalance ?? "") ONE!"
         } else {
-            lblDetails.text = "\(content?.extraData.highestAmountUserName ?? "") just picked up \(strReceivedAmount ?? "") ONE!"
+            lblDetails.text = "\(content?.extraData.highestAmountUserName ?? "") just picked up \(strReceivedAmount?.formattedOneBalance ?? "") ONE!"
         }
     }
 

@@ -171,7 +171,7 @@ class WalletRequestPayBubble: UITableViewCell {
                         placeholder: nil)
                 }
             }
-            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount ?? "0") ONE"
+            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
         }
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.format(createdAt)

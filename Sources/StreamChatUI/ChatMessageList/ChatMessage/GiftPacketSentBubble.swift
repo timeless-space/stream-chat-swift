@@ -288,10 +288,10 @@ class GiftBubble: UITableViewCell {
         let bigInt = BigUInt(amount) {
             if extraData.tokenAddress != nil {
                 let double = amountFromWeiUnit(amount: bigInt, weiUnit: Constant.tokenWeiUnit)
-                amountLabel.text = "\(double) USDC".replacingOccurrences(of: ".0", with: "")
+                amountLabel.text = "\(NumberUtils.formatONE(double)) USDC"
             } else {
                 let double = amountFromWeiUnit(amount: bigInt, weiUnit: Constant.oneWeiUnit)
-                amountLabel.text = "\(double) ONE".replacingOccurrences(of: ".0", with: "")
+                amountLabel.text = "\(NumberUtils.formatONE(double)) ONE"
             }
         }
     }
