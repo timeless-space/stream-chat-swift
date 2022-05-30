@@ -180,7 +180,7 @@ class WalletRequestPayBubble: UITableViewCell {
         }
         if walletPaymentType == .request {
             pickUpButton.isEnabled = false
-            pickUpButton.alpha = 0.5
+            pickUpButton.alpha = 0.2
         } else {
             pickUpButton.isEnabled = true
             pickUpButton.alpha = 1.0

@@ -123,11 +123,13 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             }
             lblDetails.text = "REQUEST: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
             if payload?.extraData?.requestedIsPaid ?? false {
-                pickUpButton.alpha = 0.5
+                pickUpButton.alpha = 0.2
                 pickUpButton.isEnabled = false
+                pickUpButton.setTitle("Paid", for: .normal)
             } else {
                 pickUpButton.alpha = 1.0
                 pickUpButton.isEnabled = true
+                pickUpButton.setTitle("Pay", for: .normal)
             }
         } else {
             pickUpButton.alpha = 1.0
@@ -135,7 +137,6 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
         }
         payRequestImageView.isHidden = !sentThumbImageView.isHidden
         // pickUpButton
-        pickUpButton.setTitle("Pay", for: .normal)
         pickUpButton.addTarget(self, action: #selector(btnSendPacketAction), for: .touchUpInside)
         pickUpButton.setTitleColor(.white, for: .normal)
         pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
