@@ -42,30 +42,23 @@ class SendEmojiViewController: UIViewController {
     }
 
     private func sendStickerGift(chatMembers: ChatChannelMember, cid: ChannelId) {
-        StickerApiClient.sendGiftSticker(
-            packageId: packageInfo?.packageID ?? 0,
-            sendUserId: ChatClient.shared.currentUserId?.string ?? "",
-            receiveUserId: chatMembers.id ?? ""
-        ) { [weak self] result in
-            guard let `self` = self else { return }
-            var sendStickerParam = [String: RawJSON]()
-            sendStickerParam["giftPackageId"] = .string(self.packageInfo?.packageID?.string ?? "")
-            sendStickerParam["giftPackageName"] = .string(self.packageInfo?.packageName ?? "")
-            sendStickerParam["giftPackageImage"] = .string(self.packageInfo?.packageImg ?? "")
-            sendStickerParam["giftSenderId"] = .string(ChatClient.shared.currentUserId?.string ?? "")
-            sendStickerParam["giftSenderName"] = .string(ChatClient.shared.currentUserController().currentUser?.name ?? "")
-            sendStickerParam["channelId"] = .string(cid.description)
-            sendStickerParam["giftReceiverId"] = .string(chatMembers.id ?? "")
-            sendStickerParam["giftReceiverName"] = .string(chatMembers.name ?? "")
-            ChatClient.shared.channelController(for: cid)
-                .createNewMessage(
-                    text: "",
-                    pinning: nil,
-                    attachments: [],
-                    extraData: ["sendStickerGift": .dictionary(sendStickerParam)],
-                    completion: nil)
-            self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
-        }
+        var sendStickerParam = [String: RawJSON]()
+        sendStickerParam["giftPackageId"] = .string(self.packageInfo?.packageID?.string ?? "")
+        sendStickerParam["giftPackageName"] = .string(self.packageInfo?.packageName ?? "")
+        sendStickerParam["giftPackageImage"] = .string(self.packageInfo?.packageImg ?? "")
+        sendStickerParam["giftSenderId"] = .string(ChatClient.shared.currentUserId?.string ?? "")
+        sendStickerParam["giftSenderName"] = .string(ChatClient.shared.currentUserController().currentUser?.name ?? "")
+        sendStickerParam["channelId"] = .string(cid.description)
+        sendStickerParam["giftReceiverId"] = .string(chatMembers.id ?? "")
+        sendStickerParam["giftReceiverName"] = .string(chatMembers.name ?? "")
+        ChatClient.shared.channelController(for: cid)
+            .createNewMessage(
+                text: "Sticker gift.",
+                pinning: nil,
+                attachments: [],
+                extraData: ["sendStickerGift": .dictionary(sendStickerParam)],
+                completion: nil)
+        self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
     }
 
     @IBAction func btnSendSticker(_ sender: Any) {

@@ -27,6 +27,7 @@ class StickerGiftBubble: UITableViewCell {
     private var cellWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.3
     }
+    public lazy var dateFormatter: DateFormatter = .makeDefault()
 
     // MARK: - Overrides
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -151,18 +152,15 @@ class StickerGiftBubble: UITableViewCell {
             timestampLabel.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0),
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
-        if content?.extraData.isDownloaded ?? false {
-            if isSender {
-                descriptionLabel.text = "You have downloaded \(content?.extraData.giftPackageName ?? "") sticker."
-            } else {
-                descriptionLabel.text = "\(content?.extraData.giftReceiverName?.firstUppercased ?? "") has downloaded \(content?.extraData.giftPackageName ?? "") sticker."
-            }
+        if isSender {
+            descriptionLabel.text = (channel?.isDirectMessageChannel ?? false) ? "You sent sticker gift to \(content?.extraData.giftReceiverName ?? "")" : "You sent sticker gift."
         } else {
-            if isSender {
-                descriptionLabel.text = "You sent sticker to \(content?.extraData.giftSenderName ?? "")"
-            } else {
-                descriptionLabel.text = "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent you sticker gift."
-            }
+            descriptionLabel.text = (channel?.isDirectMessageChannel ?? false) ? "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent you sticker gift.": "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent sticker gift."
+        }
+        if let createdAt = content?.createdAt {
+            timestampLabel?.text = dateFormatter.string(from: createdAt)
+        } else {
+            timestampLabel?.text = nil
         }
         timestampLabel.transform = .mirrorY
     }
@@ -211,19 +209,12 @@ class StickerGiftBubble: UITableViewCell {
             Snackbar.show(text: "You can not send sticker to your own account")
         } else {
             if #available(iOS 13.0, *) {
-                StickerApiClient.confirmGiftSticker(
-                    packageId: Int(content?.extraData.giftPackageId ?? "0") ?? 0,
-                    sendUserId: content?.extraData.giftSenderId ?? "",
-                    receiveUserId: content?.extraData.giftReceiverId ?? ""
-                ) { result in
-                    // download gift package
-                    StickerApiClient.downloadGiftPackage(packageId: Int(self.content?.extraData.giftPackageId ?? "0") ?? 0, receiverUserId: ChatClient.shared.currentUserId ?? "") { [weak self] result in
-                        guard let `self` = self else { return }
-                        if result.header?.status == ResultType.warning.rawValue {
-                            Snackbar.show(text: "duplicate Purchase Sticker!", messageType: nil)
-                        } else {
-                            Snackbar.show(text: "Stickers added!", messageType: nil)
-                        }
+                StickerApiClient.downloadGiftPackage(packageId: Int(self.content?.extraData.giftPackageId ?? "0") ?? 0, receiverUserId: ChatClient.shared.currentUserId ?? "") { [weak self] result in
+                    guard let `self` = self else { return }
+                    if result.header?.status == ResultType.warning.rawValue {
+                        Snackbar.show(text: "Duplicate Purchase Sticker!", messageType: nil)
+                    } else {
+                        Snackbar.show(text: "Stickers added!", messageType: nil)
                     }
                 }
             } else {

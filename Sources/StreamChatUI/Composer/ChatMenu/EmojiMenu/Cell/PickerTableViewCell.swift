@@ -39,4 +39,10 @@ class PickerTableViewCell: UITableViewCell {
             Appearance.default.images.downloadStickerFill,
             for: .normal)
     }
+
+    func updateDownloadState() {
+        btnDownload.setImage(
+            Appearance.default.images.downloadStickerFill,
+            for: .normal)
+    }
 }

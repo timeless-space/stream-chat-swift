@@ -90,7 +90,11 @@ class EmojiPickerViewController: UIViewController {
         else { return }
         downloadedPackage.append(packageId)
         if packages[indexPath.row].isDownload != "Y" {
-            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { _ in }
+            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { [weak self] _ in
+                guard let `self` = self else { return }
+                self.packages[indexPath.row].isDownload = "Y"
+                cell.updateDownloadState()
+            }
         } else {
             Snackbar.show(text: "Sticker already downloaded!", messageType: nil)
         }

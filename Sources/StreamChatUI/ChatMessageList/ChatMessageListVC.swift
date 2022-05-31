@@ -509,6 +509,9 @@ open class ChatMessageListVC:
                     for: indexPath) as? StickerGiftBubble else {
                         return UITableViewCell()
                     }
+                if let channel = dataSource?.channel(for: self) {
+                    cell.channel = channel
+                }
                 cell.isSender = isMessageFromCurrentUser
                 cell.content = message
                 cell.isSender = isMessageFromCurrentUser
