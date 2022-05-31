@@ -153,7 +153,6 @@ class EmojiContainerViewController: UIViewController {
         vStack.spacing = 10
         collectionEmoji.isHidden = true
         vStack.widthAnchor.constraint(equalToConstant: self.view.bounds.width * 0.7).isActive = true
-        view.layoutIfNeeded()
         imgSticker.layer.cornerRadius = 8
 
         view.addSubview(loadingIndicator)
@@ -298,11 +297,6 @@ extension EmojiContainerViewController: UICollectionViewDelegate, UICollectionVi
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = collectionView.bounds.width / 4
         return .init(width: width, height: width)
-    }
-
-    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        guard let cvCell = cell as? StickerCollectionCell else { return }
-        cvCell.remove()
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
