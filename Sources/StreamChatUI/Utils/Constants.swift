@@ -18,6 +18,12 @@ public struct Constants {
     public static let MessageLeftPadding: CGFloat = 8.0
     public static let MessageRightPadding: CGFloat = -8.0
     public static let MessageTopPadding: CGFloat = 15
+
+    enum SocialMediaProfilePrefix {
+        static let instagram = "instagram.com/"
+        static let tiktok = "tiktok.com/@"
+        static let twitter = "twitter.com/"
+    }
     public static var decimalSeparator: String {
         return Locale.current.decimalSeparator ?? "."
     }
@@ -30,3 +36,6 @@ public struct UserdefaultKey {
     public static let recentSticker = "recentSticker"
 }
 
+public struct MessageType {
+    public static let giftPacket = "new-gift-packet"
+}

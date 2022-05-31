@@ -28,4 +28,5 @@ Pod::Spec.new do |spec|
     spec.dependency "Stipop", "0.3.1"
     spec.dependency "Giphy", "2.1.21"
     spec.dependency "lottie-ios", "3.2.3"
+    spec.dependency "BigInt", "5.2.0"
   end

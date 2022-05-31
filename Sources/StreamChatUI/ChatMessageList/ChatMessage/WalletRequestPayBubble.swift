@@ -31,7 +31,7 @@ class WalletRequestPayBubble: UITableViewCell {
     var content: ChatMessage?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
     var isSender = false
-    var channel: ChatChannel?
+    var channelId: ChannelId?
     var chatClient: ChatClient?
     var client: ChatClient?
     var walletPaymentType: WalletAttachmentPayload.PaymentType = .pay
@@ -167,12 +167,19 @@ class WalletRequestPayBubble: UITableViewCell {
                     Nuke.loadImage(with: themeURL, into: sentThumbImageView)
                 }
             }
-            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount ?? "0") ONE"
+            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
         }
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.string(from: createdAt)
         } else {
             timestampLabel?.text = nil
+        }
+        if walletPaymentType == .request {
+            pickUpButton.isEnabled = false
+            pickUpButton.alpha = 0.5
+        } else {
+            pickUpButton.isEnabled = true
+            pickUpButton.alpha = 1.0
         }
     }
 
@@ -251,12 +258,9 @@ class WalletRequestPayBubble: UITableViewCell {
             userInfo["recipientName"] = payload.extraData?.recipientName
             userInfo["recipientUserId"] = payload.extraData?.recipientUserId
             userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
-            NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
-        } else {
-            guard let channelId = channel?.cid else { return }
-            var userInfo = [String: Any]()
+            userInfo["paymentTheme"] = payload.extraData?.sentOnePaymentTheme
             userInfo["channelId"] = channelId
-            NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
+            NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         }
     }
 }

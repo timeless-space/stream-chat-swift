@@ -17,6 +17,7 @@ extension Notification.Name {
     public static let createPrivateGroup = Notification.Name("kCreatePrivateGroup")
     public static let joinPrivateGroup = Notification.Name("kJoinPrivateGroup")
     public static let getPrivateGroup = Notification.Name("kGetPrivateGroup")
+    public static let sendPaymentRequest = Notification.Name("kSendPaymentRequest")
 }
 
 /// Controller responsible for displaying the channel messages.
@@ -774,21 +775,16 @@ open class ChatChannelVC:
     ) {
         switch actionItem {
         case is EditActionItem:
-            dismiss(animated: true) { [weak self] in
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
                 self?.messageComposerVC?.content.editMessage(message)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    self?.messageComposerVC?.composerView.inputMessageView.textView.becomeFirstResponder()
-                }
             }
         case is InlineReplyActionItem:
-            dismiss(animated: true) { [weak self] in
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
+                self?.messageComposerVC?.composerView.inputMessageView.textView.text = ""
                 self?.messageComposerVC?.content.quoteMessage(message)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    self?.messageComposerVC?.composerView.inputMessageView.textView.becomeFirstResponder()
-                }
             }
         case is ThreadReplyActionItem:
-            dismiss(animated: true) { [weak self] in
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
                 self?.messageListVC?.showThread(messageId: message.id)
             }
         default:
