@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -19,10 +19,10 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cRt-0A-ZT0">
-                        <rect key="frame" x="0.0" y="0.0" width="40" height="358"/>
+                        <rect key="frame" x="0.0" y="0.0" width="40" height="350"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4zR-Sv-csi">
-                                <rect key="frame" x="0.0" y="326" width="32" height="32"/>
+                                <rect key="frame" x="0.0" y="318" width="32" height="32"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="4zR-Sv-csi" secondAttribute="height" multiplier="1:1" id="xUH-mY-N87"/>
                                 </constraints>
@@ -37,15 +37,21 @@
                         </constraints>
                     </view>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4iv-Xl-0z9">
-                        <rect key="frame" x="40" y="0.0" width="230" height="358"/>
+                        <rect key="frame" x="40" y="0.0" width="230" height="350"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nev-mG-D0r">
-                                <rect key="frame" x="0.0" y="0.0" width="230" height="336"/>
+                                <rect key="frame" x="0.0" y="0.0" width="230" height="328"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="HV7-Ab-F2Y">
                                         <rect key="frame" x="0.0" y="0.0" width="230" height="200"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="200" id="vVR-hj-BrC"/>
+                                        </constraints>
+                                    </imageView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Xni-0v-fZl">
+                                        <rect key="frame" x="0.0" y="0.0" width="230" height="200"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="200" id="lMa-Ec-PNG"/>
                                         </constraints>
                                     </imageView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="Tao-pe-wWM">
@@ -66,9 +72,9 @@
                                         </subviews>
                                     </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Y0-gm-M2L">
-                                        <rect key="frame" x="12" y="276" width="206" height="40"/>
+                                        <rect key="frame" x="12" y="276" width="206" height="32"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="40" id="VWn-lL-1qd"/>
+                                            <constraint firstAttribute="height" constant="32" id="VWn-lL-1qd"/>
                                         </constraints>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal" title="Pay"/>
@@ -77,6 +83,10 @@
                                 <color key="backgroundColor" name="ChatNavColor"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="6Y0-gm-M2L" secondAttribute="trailing" constant="12" id="15G-a7-r7P"/>
+                                    <constraint firstItem="Xni-0v-fZl" firstAttribute="bottom" secondItem="HV7-Ab-F2Y" secondAttribute="bottom" id="5N3-Kw-hky"/>
+                                    <constraint firstItem="Xni-0v-fZl" firstAttribute="leading" secondItem="HV7-Ab-F2Y" secondAttribute="leading" id="76i-fU-mpX"/>
+                                    <constraint firstItem="Xni-0v-fZl" firstAttribute="top" secondItem="HV7-Ab-F2Y" secondAttribute="top" id="827-nh-HUC"/>
+                                    <constraint firstItem="Xni-0v-fZl" firstAttribute="trailing" secondItem="HV7-Ab-F2Y" secondAttribute="trailing" id="G5U-Jy-ZC2"/>
                                     <constraint firstItem="Tao-pe-wWM" firstAttribute="leading" secondItem="Nev-mG-D0r" secondAttribute="leading" constant="4" id="IJe-gk-M0s"/>
                                     <constraint firstItem="HV7-Ab-F2Y" firstAttribute="top" secondItem="Nev-mG-D0r" secondAttribute="top" id="Kaq-gC-Sex"/>
                                     <constraint firstAttribute="trailing" secondItem="HV7-Ab-F2Y" secondAttribute="trailing" id="SqP-V8-2ji"/>
@@ -89,7 +99,7 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bb5-5q-sJP">
-                                <rect key="frame" x="0.0" y="338" width="230" height="20"/>
+                                <rect key="frame" x="0.0" y="330" width="230" height="20"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="k9C-5r-0pb">
                                         <rect key="frame" x="0.0" y="1" width="230" height="18"/>
@@ -153,6 +163,7 @@
                 <outlet property="cellWidthConstraint" destination="t26-eE-k0j" id="ShH-KJ-Yej"/>
                 <outlet property="descriptionLabel" destination="V3L-oi-vtA" id="8KC-3s-C50"/>
                 <outlet property="lblDetails" destination="XTN-Rw-XdJ" id="t4x-IP-SQJ"/>
+                <outlet property="payRequestImageView" destination="Xni-0v-fZl" id="vsC-5f-iQd"/>
                 <outlet property="pickUpButton" destination="6Y0-gm-M2L" id="9iI-Xc-rex"/>
                 <outlet property="sentThumbImageView" destination="HV7-Ab-F2Y" id="HZF-73-gWP"/>
                 <outlet property="subContainer" destination="Nev-mG-D0r" id="WqD-WM-bZr"/>

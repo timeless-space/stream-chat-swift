@@ -35,3 +35,7 @@ public struct UserdefaultKey {
     public static let visibleSticker = "visibleSticker"
     public static let recentSticker = "recentSticker"
 }
+
+public struct MessageType {
+    public static let giftPacket = "new-gift-packet"
+}

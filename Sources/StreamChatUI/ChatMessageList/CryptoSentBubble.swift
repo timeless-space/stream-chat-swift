@@ -64,7 +64,7 @@ class CryptoSentBubble: UITableViewCell {
 
         sentThumbImageView = UIImageView()
         sentThumbImageView.backgroundColor = Appearance.default.colorPalette.background6
-        sentThumbImageView.image = Appearance.default.images.cryptoSentThumb
+        sentThumbImageView.image = nil
         sentThumbImageView.contentMode = .scaleAspectFill
         sentThumbImageView.translatesAutoresizingMaskIntoConstraints = false
         sentThumbImageView.clipsToBounds = true
@@ -73,7 +73,7 @@ class CryptoSentBubble: UITableViewCell {
             sentThumbImageView.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
             sentThumbImageView.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
             sentThumbImageView.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
-            sentThumbImageView.heightAnchor.constraint(equalToConstant: 250)
+            sentThumbImageView.heightAnchor.constraint(equalToConstant: 200)
         ])
         sentThumbImageView.transform = .mirrorY
         descriptionLabel = createDescLabel()
@@ -104,14 +104,14 @@ class CryptoSentBubble: UITableViewCell {
         blockExplorerButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         blockExplorerButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
         blockExplorerButton.clipsToBounds = true
-        blockExplorerButton.layer.cornerRadius = 20
+        blockExplorerButton.layer.cornerRadius = 16
         subContainer.addSubview(blockExplorerButton)
         NSLayoutConstraint.activate([
             blockExplorerButton.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 12),
             blockExplorerButton.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -12),
-            blockExplorerButton.heightAnchor.constraint(equalToConstant: 40),
-            blockExplorerButton.bottomAnchor.constraint(equalTo: sentCryptoLabel.bottomAnchor, constant: -35),
-            blockExplorerButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 30)
+            blockExplorerButton.heightAnchor.constraint(equalToConstant: 32),
+            blockExplorerButton.bottomAnchor.constraint(equalTo: sentCryptoLabel.bottomAnchor, constant: -30),
+            blockExplorerButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 22)
         ])
         blockExplorerButton.transform = .mirrorY
 
@@ -174,7 +174,7 @@ class CryptoSentBubble: UITableViewCell {
                 .withoutAutoresizingMaskConstraints
             sentCryptoLabel.textAlignment = .center
             sentCryptoLabel.numberOfLines = 0
-            sentCryptoLabel.textColor = Appearance.default.colorPalette.subtitleText
+            sentCryptoLabel.textColor = .white.withAlphaComponent(0.6)
             sentCryptoLabel.font = Appearance.default.fonts.footnote.withSize(11)
         }
         return sentCryptoLabel
@@ -190,15 +190,15 @@ class CryptoSentBubble: UITableViewCell {
     }
 
     private func configOneWallet() {
-            let recipientName = content?.extraData.sentOneRecipientName ?? ""
-            let imageAttachment = NSTextAttachment()
-            imageAttachment.image = Appearance.default.images.senOneImage
-            let fullString = NSMutableAttributedString(string: "You ")
-            fullString.append(NSAttributedString(attachment: imageAttachment))
-            fullString.append(NSAttributedString(string: " \(recipientName)"))
-            descriptionLabel.attributedText = fullString
-            let one = content?.extraData.sentOneTransferAmount ?? "0"
-            sentCryptoLabel.text = "SENT: \(one) ONE"
+        let recipientName = content?.extraData.sentOneRecipientName ?? ""
+        let imageAttachment = NSTextAttachment()
+        imageAttachment.image = Appearance.default.images.senOneImage
+        let fullString = NSMutableAttributedString(string: "You ")
+        fullString.append(NSAttributedString(attachment: imageAttachment))
+        fullString.append(NSAttributedString(string: " \(recipientName)"))
+        descriptionLabel.attributedText = fullString
+        let one = content?.extraData.sentOneTransferAmount ?? "0"
+        sentCryptoLabel.text = "SENT: \(one.formattedOneBalance) ONE"
         let defaultURL = WalletAttachmentPayload.PaymentTheme.none.getPaymentThemeUrl()
         let themeURL = content?.extraData.sentOnePaymentTheme ?? "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png"
         if let imageUrl = URL(string: themeURL) {

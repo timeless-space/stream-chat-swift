@@ -19,6 +19,8 @@ extension Notification.Name {
     public static let disburseFundAction = Notification.Name("kStreamChatDisburseFundTapAction")
     public static let showActivityAction = Notification.Name("kStreamChatshowActivityAction")
     public static let sendSticker = Notification.Name("kStreamChatSendSticker")
+    public static let sendGiftCardTapAction = Notification.Name("kStreamChatSendGiftCardTapAction")
+    public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
     public static let updateTextfield = Notification.Name("kUpdateTextfield")
@@ -427,20 +429,21 @@ open class ComposerVC: _ViewController,
             Animate {
                 self.composerView.confirmButton.isHidden = true
                 self.composerView.inputMessageView.sendButton.isHidden = false
-                self.composerView.headerView.isHidden = true
+                self.composerView.container.removeArrangedSubview(self.composerView.headerView)
             }
         case .quote:
-            composerView.titleLabel.text = L10n.Composer.Title.reply
+            let replyTo = content.quotingMessage?.author.name ?? "Message"
+            composerView.titleLabel.text = "\(L10n.Composer.Title.reply) \(replyTo)"
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
-                self.composerView.headerView.isHidden = false
+                self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
             }
         case .edit:
             composerView.titleLabel.text = L10n.Composer.Title.edit
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.inputMessageView.sendButton.isHidden = true
-                self.composerView.headerView.isHidden = false
+                self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
             }
         default:
             log.warning("The composer state \(content.state.description) was not handled.")
@@ -550,6 +553,7 @@ open class ComposerVC: _ViewController,
     func bindMenuController() {
         menuController = ChatMenuViewController.instantiateController(storyboard: .wallet)
         menuController?.extraData = self.channelController?.channel?.extraData ?? [:]
+        menuController?.isChatOnly = self.channelController?.channel?.isDirectMessageChannel ?? false
         menuController?.didTapAction = { [weak self] action in
             guard let `self` = self else { return }
             self.lockInputViewObserver = true
@@ -583,6 +587,12 @@ open class ComposerVC: _ViewController,
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
                     guard let `self` = self else { return }
                     self.sendRedPacketAction()
+                }
+            case .gift:
+                self.animateToolkitView(isHide: true)
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.sendGiftAction()
                 }
             case .dao:
                 self.animateToolkitView(isHide: true)
@@ -619,6 +629,10 @@ open class ComposerVC: _ViewController,
     @objc open func showEmojiMenu(_ sender: UIButton) {
         // EMOJI integration
         sender.isSelected.toggle()
+        if !composerView.toolbarBackButton.isHidden {
+            composerView.toolbarBackButton.isHidden.toggle()
+            composerView.toolbarToggleButton.isHidden.toggle()
+        }
         isMenuShowing = true
         animateMenuButton()
         if sender.isSelected {
@@ -868,6 +882,15 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.post(name: .sendGiftPacketTapAction, object: nil, userInfo: userInfo)
     }
 
+    @objc open func sendGiftAction() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        guard let channelId = channelController?.channel?.cid else { return }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        NotificationCenter.default.post(name: .sendGiftCardTapAction, object: nil, userInfo: userInfo)
+    }
+
     private func animateMenuButton() {
         if !isMenuShowing {
             UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 5, options: .curveEaseInOut, animations: { [weak self] in
@@ -947,13 +970,22 @@ open class ComposerVC: _ViewController,
             return
         }
 
-        channelController?.createNewMessage(
-            text: text,
-            pinning: nil,
-            attachments: content.attachments,
-            mentionedUserIds: content.mentionedUsers.map(\.id),
-            quotedMessageId: content.quotingMessage?.id
-        )
+        if let walletRequest = content.attachments.filter( { $0.type == .wallet} ).first?.payload as? WalletAttachmentPayload {
+            let parameter: [String: Any] = [
+                kAmount: walletRequest.extraData?.requestedAmount ?? "0",
+                kChannelId: cid.description,
+                kFlair: walletRequest.extraData?.requestedThemeUrl
+            ]
+            NotificationCenter.default.post(name: .sendPaymentRequest, object: nil, userInfo: parameter)
+        } else {
+            channelController?.createNewMessage(
+                text: text,
+                pinning: nil,
+                attachments: content.attachments,
+                mentionedUserIds: content.mentionedUsers.map(\.id),
+                quotedMessageId: content.quotingMessage?.id
+            )
+        }
     }
 
     /// Updates an existing message.

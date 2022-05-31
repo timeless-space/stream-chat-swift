@@ -32,7 +32,7 @@ struct SendPaymentOptionView: View {
             Spacer()
                 .frame(height: 15)
             VStack(spacing: 0) {
-                Text("\(paymentTypeDescription) \(amount) ONE")
+                Text("\(paymentTypeDescription) \(amount.formattedOneBalance) ONE")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white.opacity(0.6))
                     .frame(maxWidth: .infinity, alignment: .leading)
