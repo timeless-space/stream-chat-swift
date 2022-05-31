@@ -44,7 +44,7 @@ open class VideoAttachmentGalleryPreview: _View, ThemeProvider {
         imageView.contentMode = .scaleAspectFill
         imageView.layer.masksToBounds = true
         
-        playButton.setImage(appearance.images.bigPlay, for: .normal)
+        playButton.setImage(appearance.images.play, for: .normal)
     }
 
     override open func setUp() {

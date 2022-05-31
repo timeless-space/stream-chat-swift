@@ -91,6 +91,7 @@ open class ChatMessageListVC:
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
         listView.register(PhotoCollectionBubble.self, forCellReuseIdentifier: "PhotoCollectionBubble")
+        listView.register(AttachmentPreviewBubble.self, forCellReuseIdentifier: "AttachmentPreviewBubble")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -518,7 +519,19 @@ open class ChatMessageListVC:
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
-            } else if isImageAndVideoPreview(message) {
+            } else if isSinglePreview(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: AttachmentPreviewBubble.identifier,
+                    for: indexPath) as? AttachmentPreviewBubble else {
+                        return UITableViewCell()
+                    }
+                cell.content = message
+                cell.delegate = self
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                return cell
+            } else if isMultiplePreview(message) {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "PhotoCollectionBubble",
                     for: indexPath) as? PhotoCollectionBubble else {
@@ -526,6 +539,8 @@ open class ChatMessageListVC:
                     }
                 cell.content = message
                 cell.delegate = self
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
@@ -636,10 +651,14 @@ open class ChatMessageListVC:
         return !message.isBlank
     }
 
-    private func isImageAndVideoPreview(_ message: ChatMessage?) -> Bool {
-        let imageAttachmentCount = message?.attachmentCounts[.image] as? Int ?? 0
-        let videoAttachmentCount = message?.attachmentCounts[.video] as? Int ?? 0
-        return imageAttachmentCount > 0 || videoAttachmentCount > 0
+    private func isMultiplePreview(_ message: ChatMessage?) -> Bool {
+        return (message?.attachmentCounts[.image] ?? 0 > 1) || (message?.attachmentCounts[.video] ?? 0 > 1)
+    }
+
+    private func isSinglePreview(_ message: ChatMessage?) -> Bool {
+        return ((message?.attachmentCounts[.image] ?? 0 == 1)
+                || (message?.attachmentCounts[.video] ?? 0 == 1))
+                && message?.attachmentCounts.count == 1
     }
 
     private func isAdminMessage(_ message: ChatMessage?) -> Bool {
@@ -876,7 +895,7 @@ extension ChatMessageListVC: AnnouncementAction {
 }
 
 extension ChatMessageListVC: PhotoCollectionAction {
-    func didSelectAttachment(_ message: ChatMessage?, view: MediaPreviewCollectionCell, _ id: AttachmentId) {
+    func didSelectAttachment(_ message: ChatMessage?, view: GalleryItemPreview, _ id: AttachmentId) {
         guard let chatMessage = message else {
             return
         }

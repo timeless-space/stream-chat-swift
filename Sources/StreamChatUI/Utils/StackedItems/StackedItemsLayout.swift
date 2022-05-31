@@ -69,7 +69,13 @@ public class StackedItemsLayout: UICollectionViewLayout {
 
     /// the index of the item that is currently focussed and thus
     /// on top or in-flight of an "animation"
-    public private(set) var currentlyFocusedItemIndex = 0
+    public private(set) var currentlyFocusedItemIndex = 0 {
+        didSet {
+            didChangeIndex?(currentlyFocusedItemIndex)
+        }
+    }
+
+    public var didChangeIndex: ((Int) -> Void)?
 
     /// the intrinsic content size for this layout
     public var intrinsicContentSize: CGSize {

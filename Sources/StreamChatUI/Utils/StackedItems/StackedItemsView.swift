@@ -129,6 +129,16 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         return cell
     }
 
+    public func collectionView(
+        _ collectionView: UICollectionView,
+        didEndDisplaying cell: UICollectionViewCell,
+        forItemAt indexPath: IndexPath
+    ) {
+        if let previewCell = cell as? MediaPreviewCollectionCell {
+            ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: previewCell)
+        }
+    }
+
     // MARK: UICollectionViewDelegate
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if isExpand || items.count == 1 {
@@ -139,11 +149,8 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
                 return
             }
             if !isExpand {
-                if (items[indexPath.row] as? StackedItem)?.attachmentType == .video && !cell.isVideoPlaying {
-                    cell.btnPlayAction()
-                } else {
-                    expandView(index: indexPath.row)
-                }
+                playSelectedIndex(index: -1)
+                expandView(index: indexPath.row)
             } else {
                 selectionHandler?(items[indexPath.row], indexPath.row)
             }
@@ -152,24 +159,6 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         } else {
             return scrollToItem(at: currentlyFocusedItemIndex + 1, animated: true)
         }
-    }
-
-    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        /*
-        guard let cell = collectionView.cellForItem(at: .init(row: currentlyFocusedItemIndex + 1, section: 0)) as? MediaPreviewCollectionCell else {
-            return
-        }
-        items.enumerated().forEach { index, _ in
-            guard let previewCell = collectionView.cellForItem(at: .init(row: index, section: 0)) as? MediaPreviewCollectionCell
-            else {
-                return
-            }
-            if previewCell != cell {
-                ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: previewCell)
-            }
-        }
-        ASVideoPlayerController.sharedVideoPlayer.playSelectedCell(cell: cell)
-         */
     }
 
     // MARK: - Private
@@ -184,7 +173,33 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         collectionView.delegate = self
         collectionView.register(CellType.self, forCellWithReuseIdentifier: "Cell")
         addSubview(collectionView)
-        collectionView.collectionViewLayout = StackedItemsLayout()
+        let layout = StackedItemsLayout()
+        layout.didChangeIndex = { [weak self] index in
+            guard let `self` = self else { return }
+            self.playSelectedIndex(index: index)
+        }
+        collectionView.collectionViewLayout = layout
+    }
+
+    private func playSelectedIndex(index: Int) {
+        guard let cell = collectionView
+                .cellForItem(at: .init(row: currentlyFocusedItemIndex, section: 0))
+                as? MediaPreviewCollectionCell
+        else {
+            return
+        }
+        items.enumerated().forEach { index, _ in
+            guard let previewCell = collectionView
+                    .cellForItem(at: .init(row: index, section: 0))
+                    as? MediaPreviewCollectionCell
+            else {
+                return
+            }
+            if previewCell != cell {
+                ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: previewCell)
+            }
+        }
+        ASVideoPlayerController.sharedVideoPlayer.playSelectedCell(cell: cell)
     }
 
     private var stackedItemsLayout: StackedItemsLayout! {
@@ -235,6 +250,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             layout.itemSize = .init(width: 200, height: 260)
             collectionView.setCollectionViewLayout(layout, animated: true)
             collectionView.isPagingEnabled = false
+            collectionView.reloadData()
         }
     }
 }
