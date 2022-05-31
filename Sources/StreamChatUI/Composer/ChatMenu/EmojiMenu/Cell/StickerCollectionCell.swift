@@ -22,7 +22,6 @@ class StickerCollectionCell: UICollectionViewCell {
         imgSticker.translatesAutoresizingMaskIntoConstraints = false
         indicatorView.translatesAutoresizingMaskIntoConstraints = false
         indicatorView.isHidden = true
-        embed(indicatorView, insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
         embed(imgSticker,insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
     }
 
@@ -35,6 +34,7 @@ class StickerCollectionCell: UICollectionViewCell {
         if let url = URL(string: stickerImgUrl ?? "") {
             if url.path.contains(".json") {
                 removeAnimationView()
+                embed(indicatorView, insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
                 indicatorView.isHidden = false
                 indicatorView.startAnimating()
                 animatedView = .init(url: url, imageProvider: nil, closure: { [weak self] error in
