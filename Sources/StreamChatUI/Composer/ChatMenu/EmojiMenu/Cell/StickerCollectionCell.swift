@@ -30,7 +30,7 @@ class StickerCollectionCell: UICollectionViewCell {
         super.init(coder: coder)
     }
 
-    func configureSticker(sticker: Sticker, indexPath: IndexPath) {
+    func configureSticker(sticker: Sticker) {
         let stickerImgUrl = (sticker.stickerImg ?? "").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
         if let url = URL(string: stickerImgUrl ?? "") {
             if url.path.contains(".json") {
