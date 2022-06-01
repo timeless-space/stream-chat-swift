@@ -352,7 +352,7 @@ extension PollBubbleView {
                 }
             }
         }
-        if let userInfo = PollBubble.callback?(pollID) {
+        if let userInfo = PollBubble.fetchPollDataCallback?(pollID) {
             setDataFromUserInfo(userInfo)
         } else {
             var userInfo = [String: Any]()

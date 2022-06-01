@@ -33,7 +33,7 @@ public class PollBubble: UITableViewCell {
     }
 
     // MARK: - Callback Functions
-    public static var callback: ((String) -> [String: Any]?)?
+    public static var fetchPollDataCallback: ((String) -> [String: Any]?)?
     public static var clearCache: (() -> Void)?
     public static var getWalletImageURL: ((String) -> String)?
 
