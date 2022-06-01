@@ -88,15 +88,17 @@ class EmojiPickerViewController: UIViewController {
               let indexPath = tblPicker.indexPath(for: cell),
               let packageId = packages[indexPath.row].packageID
         else { return }
-        downloadedPackage.append(packageId)
+        sender.isUserInteractionEnabled = false
         if packages[indexPath.row].isDownload != "Y" {
             StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { [weak self] _ in
                 guard let `self` = self else { return }
                 self.packages[indexPath.row].isDownload = "Y"
+                self.downloadedPackage.append(packageId)
+                sender.isUserInteractionEnabled = true
                 cell.updateDownloadState()
             }
         } else {
-            Snackbar.show(text: "Sticker already downloaded!", messageType: nil)
+            Snackbar.show(text: "Sticker already downloaded!", messageType: StreamChatMessageType.StickerAlreadyDownloaded)
         }
     }
 

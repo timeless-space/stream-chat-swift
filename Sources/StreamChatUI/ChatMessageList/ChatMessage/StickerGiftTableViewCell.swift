@@ -215,6 +215,7 @@ class StickerGiftBubble: UITableViewCell {
                         Snackbar.show(text: "Duplicate Purchase Sticker!", messageType: nil)
                     } else {
                         Snackbar.show(text: "Stickers added!", messageType: nil)
+                        NotificationCenter.default.post(name: .updateStickers, object: nil)
                     }
                 }
             } else {

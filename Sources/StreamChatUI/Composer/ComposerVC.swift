@@ -23,6 +23,7 @@ extension Notification.Name {
     public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
+    public static let updateStickers = Notification.Name("kUpdateStickers")
 }
 
 /// The possible errors that can occur in attachment validation
