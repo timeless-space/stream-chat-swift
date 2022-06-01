@@ -515,6 +515,7 @@ open class ChatMessageListVC:
                 }
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
+                return cell
             } else if isPollCell(message) {
                 if isMessageFromCurrentUser {
                     guard let cell = tableView.dequeueReusableCell(
