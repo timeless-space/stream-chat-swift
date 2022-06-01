@@ -84,6 +84,8 @@ open class ChatMessageListVC:
         listView.register(ChatMessageStickerBubble.self, forCellReuseIdentifier: "ChatMessageStickerBubble")
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
+        listView.register(PollBubble.self, forCellReuseIdentifier: "PollBubble")
+        listView.register(PollBubble.self, forCellReuseIdentifier: "PollSentBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
@@ -232,7 +234,6 @@ open class ChatMessageListVC:
             gesture.state == .began,
             let indexPath = listView.indexPathForRow(at: location)
         else { return }
-        NotificationCenter.default.post(name: .hideKeyboardMenu, object: nil, userInfo: nil)
         didSelectMessageCell(at: indexPath)
     }
 
@@ -514,6 +515,28 @@ open class ChatMessageListVC:
                 }
                 cell.content = message
                 cell.configureCell(isSender: isMessageFromCurrentUser)
+            } else if isPollCell(message) {
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "PollBubble",
+                        for: indexPath) as? PollBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.content = message
+                    cell.channel = dataSource?.channel(for: self)
+                    cell.configData(isSender: isMessageFromCurrentUser)
+                    return cell
+                }
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PollSentBubble",
+                    for: indexPath) as? PollBubble else {
+                        return UITableViewCell()
+                    }
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.channel = dataSource?.channel(for: self)
+                cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
             } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
@@ -589,6 +612,13 @@ open class ChatMessageListVC:
               let messageType = extraData["messageType"] else { return false }
         let type = fetchRawData(raw: messageType) as? String ?? ""
         return type == MessageType.giftPacket
+    }
+
+    private func isPollCell(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let messageType = extraData["messageType"] else { return false }
+        let type = fetchRawData(raw: messageType) as? String ?? ""
+        return type == MessageType.newPoll
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
@@ -698,7 +728,7 @@ open class ChatMessageListVC:
     }
 
     open func chatMessageActionsVCDidFinish(_ vc: ChatMessageActionsVC) {
-        dismiss(animated: true)
+        UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true)
     }
 
     // MARK: - ChatMessageContentViewDelegate
