@@ -47,14 +47,14 @@ class WalletInputViewController: UIViewController {
         paymentType = .request
         NotificationCenter.default.post(name: .hidePaymentOptions, object: nil, userInfo: ["isHide": false])
         self.dismiss(animated: true, completion: nil)
-        didHide?(walletStepper.value, paymentType)
+        didHide?(walletStepper.getAmount(), paymentType)
     }
 
     @IBAction func btnSendAction(_ sender: Any) {
         paymentType = .pay
         NotificationCenter.default.post(name: .hidePaymentOptions, object: nil, userInfo: ["isHide": false])
         self.dismiss(animated: true, completion: nil)
-        didHide?(walletStepper.value, paymentType)
+        didHide?(walletStepper.getAmount(), paymentType)
     }
 
     @IBAction func btnKeypadAction(_ sender: UIButton) {
