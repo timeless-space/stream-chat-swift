@@ -195,10 +195,9 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             else {
                 return
             }
-            if previewCell != cell {
-                ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: previewCell)
-            }
+            ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: previewCell)
         }
+        guard index != -1 else { return }
         ASVideoPlayerController.sharedVideoPlayer.playSelectedCell(cell: cell)
     }
 
@@ -250,7 +249,10 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             layout.itemSize = .init(width: 200, height: 260)
             collectionView.setCollectionViewLayout(layout, animated: true)
             collectionView.isPagingEnabled = false
-            collectionView.reloadData()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let `self` = self else { return }
+                self.collectionView.reloadData()
+            }
         }
     }
 }

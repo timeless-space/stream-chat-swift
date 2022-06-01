@@ -10,31 +10,21 @@ import UIKit
 import StreamChat
 import Nuke
 
-class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
-    var attachmentId: AttachmentId? {
-        return isImagePreview
-        ? content?.imageAttachments.first?.id
-        : content?.videoAttachments.first?.id
-
-    }
-
-    override var imageView: UIImageView {
-        return imagePreview
-    }
-
-    public private(set) var viewContainer: UIView!
-    public private(set) var subContainer: UIView!
+class AttachmentPreviewBubble: UITableViewCell {
+    public lazy var mainContainer = ContainerStackView(axis: .horizontal)
+        .withoutAutoresizingMaskConstraints
+    public lazy var subContainer = ContainerStackView(axis: .vertical)
+        .withoutAutoresizingMaskConstraints
+    private var leadingMainContainer: NSLayoutConstraint?
+    private var trailingMainContainer: NSLayoutConstraint?
+    private var timestampLabelWidthConstraint: NSLayoutConstraint?
     public private(set) var imagePreview: UIImageView!
     public private(set) var videoPreview: VideoAttachmentGalleryPreview!
     public private(set) var timestampLabel: UILabel!
-    private var leadingAnchorForSender: NSLayoutConstraint?
-    private var trailingAnchorSender: NSLayoutConstraint?
-    private var leadingAnchorReceiver: NSLayoutConstraint?
-    private var trailingAnchorReceiver: NSLayoutConstraint?
+    public lazy var dateFormatter: DateFormatter = .makeDefault()
     var layoutOptions: ChatMessageLayoutOptions?
     weak var delegate: PhotoCollectionAction?
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
     var isSender = false
     var chatChannel: ChatChannel?
     public private(set) var authorAvatarView: ChatAvatarView?
@@ -42,11 +32,10 @@ class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
     private var isImagePreview: Bool {
         return content?.attachmentCounts[.image] != nil
     }
-
     private var imageTask: Cancellable? {
         didSet { oldValue?.cancel() }
     }
-    public private(set) lazy var loadingIndicator = Components
+    private lazy var loadingIndicator = Components
         .default
         .loadingIndicator
         .init()
@@ -68,66 +57,30 @@ class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
     private func setLayout() {
         selectionStyle = .none
         backgroundColor = .clear
+        mainContainer.addArrangedSubviews([createAvatarView(), subContainer])
+        mainContainer.alignment = .bottom
+        mainContainer.transform = .mirrorY
 
-        viewContainer = UIView()
-        viewContainer.translatesAutoresizingMaskIntoConstraints = false
-        viewContainer.backgroundColor = .clear
-        viewContainer.clipsToBounds = true
-        contentView.addSubview(viewContainer)
+        contentView.addSubview(mainContainer)
         NSLayoutConstraint.activate([
-            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
-            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
+            mainContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 4),
+            mainContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -4)
         ])
 
-        subContainer = UIView()
-        subContainer.translatesAutoresizingMaskIntoConstraints = false
-        subContainer.backgroundColor = Appearance.default.colorPalette.background6
-        subContainer.layer.cornerRadius = 12
-        subContainer.clipsToBounds = true
-        viewContainer.addSubview(subContainer)
-        NSLayoutConstraint.activate([
-            subContainer.bottomAnchor.constraint(equalTo: viewContainer.bottomAnchor, constant: 0),
-            subContainer.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
-            subContainer.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
-        ])
+        subContainer.alignment = .fill
+        subContainer.transform = .mirrorY
+        leadingMainContainer = mainContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
+        trailingMainContainer = mainContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
+        timestampLabelWidthConstraint = timestampLabel?.widthAnchor.constraint(equalToConstant: cellWidth)
+        timestampLabelWidthConstraint?.isActive = true
+        subContainer.heightAnchor.constraint(equalToConstant: 200).isActive = true
+        subContainer.widthAnchor.constraint(equalToConstant: 260).isActive = true
 
-        imagePreview = UIImageView()
-        imagePreview.backgroundColor = Appearance.default.colorPalette.background6
-        imagePreview.contentMode = .scaleAspectFill
-        imagePreview.translatesAutoresizingMaskIntoConstraints = false
-        imagePreview.clipsToBounds = true
-        imagePreview.transform = .mirrorY
-        subContainer.addSubview(imagePreview)
-        NSLayoutConstraint.activate([
-            imagePreview.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
-            imagePreview.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
-            imagePreview.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
-            imagePreview.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 0),
-            imagePreview.heightAnchor.constraint(equalToConstant: 200)
-        ])
-
-        timestampLabel = createTimestampLabel()
-        timestampLabel.translatesAutoresizingMaskIntoConstraints = false
-        viewContainer.addSubview(timestampLabel)
-        NSLayoutConstraint.activate([
-            timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
-            timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
-            timestampLabel.bottomAnchor.constraint(equalTo: subContainer.topAnchor, constant: -8),
-            timestampLabel.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0),
-            timestampLabel.heightAnchor.constraint(lessThanOrEqualToConstant: 15),
-        ])
-        timestampLabel.transform = .mirrorY
-
-        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: cellWidth)
-        trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8)
-        leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8)
-        trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -cellWidth)
         let tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(btnTapAttachment))
-        viewContainer.addGestureRecognizer(tapGesture)
+        mainContainer.addGestureRecognizer(tapGesture)
         addSubview(loadingIndicator)
-        loadingIndicator.transform = .mirrorY
-        loadingIndicator.centerYAnchor.pin(equalTo: imagePreview.centerYAnchor).isActive = true
-        loadingIndicator.centerXAnchor.pin(equalTo: imagePreview.centerXAnchor).isActive = true
+        loadingIndicator.centerYAnchor.pin(equalTo: subContainer.centerYAnchor).isActive = true
+        loadingIndicator.centerXAnchor.pin(equalTo: subContainer.centerXAnchor).isActive = true
     }
 
     @objc private func btnTapAttachment() {
@@ -137,10 +90,18 @@ class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
     }
 
     func configureCell(isSender: Bool) {
+        subContainer.removeAllArrangedSubviews()
         loadingIndicator.isVisible = false
-        imagePreview.image = nil
         if content?.attachmentCounts[.image] == 1 {
-            imagePreview.isHidden = false
+            if imagePreview != nil {
+                imagePreview.removeFromSuperview()
+            }
+            imagePreview = UIImageView()
+            imagePreview.backgroundColor = Appearance.default.colorPalette.background6
+            imagePreview.contentMode = .scaleAspectFill
+            imagePreview.transform = .mirrorY
+            imagePreview.clipsToBounds = true
+            imagePreview.layer.cornerRadius = 12
             loadingIndicator.isVisible = true
             imageTask = Components.default.imageLoader.loadImage(
                 into: imagePreview,
@@ -151,24 +112,17 @@ class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
                     self?.loadingIndicator.isVisible = false
                 }
             )
+            subContainer.addArrangedSubviews([createTimestampLabel(), imageView])
         } else {
             // Remove videoPreview to avoid thumbnail duplication issue
             if videoPreview != nil {
                 videoPreview.removeFromSuperview()
             }
             videoPreview = VideoAttachmentGalleryPreview()
-            videoPreview.translatesAutoresizingMaskIntoConstraints = false
             videoPreview.transform = .mirrorY
-
-            subContainer.addSubview(videoPreview)
-            NSLayoutConstraint.activate([
-                videoPreview.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
-                videoPreview.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
-                videoPreview.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
-                videoPreview.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 0),
-                videoPreview.heightAnchor.constraint(equalToConstant: 200)
-            ])
-            imagePreview.isHidden = true
+            videoPreview.clipsToBounds = true
+            videoPreview.layer.cornerRadius = 12
+            subContainer.addArrangedSubviews([createTimestampLabel(), videoPreview])
             videoPreview.didTapOnAttachment = { [weak self] attachment in
                 guard let `self` = self else { return }
                 self.delegate?.didSelectAttachment(self.content, view: self, attachment.id)
@@ -191,8 +145,8 @@ class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
             timestampLabel?.isHidden = !options.contains(.timestamp)
         }
         if let createdAt = content?.createdAt,
-            let authorName = content?.author.name?.trimStringBy(count: 15),
-            let memberCount = chatChannel?.memberCount {
+           let authorName = content?.author.name?.trimStringBy(count: 15),
+           let memberCount = chatChannel?.memberCount {
             var authorName = (memberCount <= 2) ? "" : authorName
             // Add extra white space in leading
             if !isSender {
@@ -211,11 +165,23 @@ class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
 
     private func handleBubbleConstraints(_ isSender: Bool) {
         let memberCount = chatChannel?.memberCount ?? 0
-        leadingAnchorForSender?.isActive = isSender
-        trailingAnchorSender?.isActive = isSender
-        leadingAnchorReceiver?.isActive = !isSender
-        trailingAnchorReceiver?.isActive = !isSender
-        leadingAnchorReceiver?.constant = memberCount <= 2 ? 25 : 20
+        leadingMainContainer?.isActive = !isSender
+        trailingMainContainer?.isActive = isSender
+        timestampLabelWidthConstraint?.constant = cellWidth
+        timestampLabel.textAlignment = !isSender ? .left : .right
+        leadingMainContainer?.constant = memberCount <= 2 ? 25 : 20
+    }
+
+    private func createAvatarView() -> ChatAvatarView {
+        if authorAvatarView == nil {
+            authorAvatarView = Components.default
+                .avatarView
+                .init()
+                .withoutAutoresizingMaskConstraints
+        }
+        authorAvatarView?.widthAnchor.pin(equalToConstant: messageAuthorAvatarSize.width).isActive = true
+        authorAvatarView?.heightAnchor.pin(equalToConstant: messageAuthorAvatarSize.height).isActive = true
+        return authorAvatarView!
     }
 
     private func createTimestampLabel() -> UILabel {
@@ -227,7 +193,24 @@ class AttachmentPreviewBubble: UITableViewCell, GalleryItemPreview {
             timestampLabel.textAlignment = .left
             timestampLabel!.textColor = Appearance.default.colorPalette.subtitleText
             timestampLabel!.font = Appearance.default.fonts.footnote
+            timestampLabel.numberOfLines = 1
         }
+        timestampLabel.transform = .mirrorY
+        timestampLabel.heightAnchor.constraint(equalToConstant: 15).isActive = true
         return timestampLabel!
+    }
+}
+
+extension AttachmentPreviewBubble: GalleryItemPreview {
+    var attachmentId: AttachmentId? {
+        return isImagePreview
+        ? content?.imageAttachments.first?.id
+        : content?.videoAttachments.first?.id
+    }
+
+    override var imageView: UIImageView {
+        return isImagePreview
+        ? imagePreview
+        : videoPreview.imageView
     }
 }
