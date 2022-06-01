@@ -84,7 +84,6 @@ open class ChatMessageListVC:
         listView.register(ChatMessageStickerBubble.self, forCellReuseIdentifier: "ChatMessageStickerBubble")
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
-        listView.register(PollBubble.self, forCellReuseIdentifier: "PollPreviewBubble")
         listView.register(PollBubble.self, forCellReuseIdentifier: "PollBubble")
         listView.register(PollBubble.self, forCellReuseIdentifier: "PollSentBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
