@@ -456,27 +456,30 @@ open class ChatChannelListVC: _ViewController,
             collectionView.reloadData()
             return
         }
+        UIView.performWithoutAnimation {
+            collectionView.performBatchUpdates(
+                {
+                    collectionView.deleteItems(at: Array(indices.remove))
+                    collectionView.insertItems(at: Array(indices.insert))
+                    UIView.performWithoutAnimation {
+                        collectionView.reloadItems(at: Array(indices.update))
+                    }
+                    indices.move.forEach {
+                        collectionView.moveItem(at: $0.fromIndex, to: $0.toIndex)
+                    }
 
-        collectionView.performBatchUpdates(
-            {
-                collectionView.deleteItems(at: Array(indices.remove))
-                collectionView.insertItems(at: Array(indices.insert))
-                collectionView.reloadItems(at: Array(indices.update))
-                indices.move.forEach {
-                    collectionView.moveItem(at: $0.fromIndex, to: $0.toIndex)
+                    channelsCount = controller.channels.count
+                },
+                completion: { _ in
+                    // Move changes from NSFetchController also can mean an update of the content.
+                    // Since a `moveItem` in collections do not update the content of the cell, we need to reload those cells.
+                    let moveIndexes = Array(indices.move.map(\.toIndex))
+                    if !moveIndexes.isEmpty {
+                        self.collectionView.reloadItems(at: moveIndexes)
+                    }
                 }
-                
-                channelsCount = controller.channels.count
-            },
-            completion: { _ in
-                // Move changes from NSFetchController also can mean an update of the content.
-                // Since a `moveItem` in collections do not update the content of the cell, we need to reload those cells.
-                let moveIndexes = Array(indices.move.map(\.toIndex))
-                if !moveIndexes.isEmpty {
-                    self.collectionView.reloadItems(at: moveIndexes)
-                }
-            }
-        )
+            )
+        }
     }
 
     @available(*, deprecated, message: "Please use `filter` when initializing a `ChatChannelListController`")
