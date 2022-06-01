@@ -86,7 +86,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         if message.isSentByCurrentUser {
             actions.append(editActionItem())
         }
-        actions.append(pinMessageActionItem())
+        actions.append(pinMessageActionItem(message: message))
         actions.append(forwardActionItem())
         return actions
     }
@@ -100,8 +100,9 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     }
 
     /// Returns `ChatMessageActionItem` for pin Message action
-    open func pinMessageActionItem() -> ChatMessageActionItem {
+    open func pinMessageActionItem(message: ChatMessage) -> ChatMessageActionItem {
         PinMessageActionItem(
+            message: message,
             action: { [weak self] in self?.handleAction($0) },
             appearance: appearance
         )

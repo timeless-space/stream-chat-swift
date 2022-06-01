@@ -127,6 +127,12 @@
 		6E297C1227CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */; };
 		6E297C5027CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */; };
 		6E297C5127CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */; };
+		6E3681CD2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3681CB2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift */; };
+		6E3681CE2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3681CB2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift */; };
+		6E3681CF2847A0D3008A4A63 /* PinMessageCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E3681CC2847A0D3008A4A63 /* PinMessageCollectionViewCell.xib */; };
+		6E3681D02847A0D3008A4A63 /* PinMessageCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E3681CC2847A0D3008A4A63 /* PinMessageCollectionViewCell.xib */; };
+		6E3681D22847A30B008A4A63 /* PinMessageContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3681D12847A30B008A4A63 /* PinMessageContainerView.swift */; };
+		6E3681D32847A30B008A4A63 /* PinMessageContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3681D12847A30B008A4A63 /* PinMessageContainerView.swift */; };
 		6E3DAEBC280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */; };
 		6E3DAEBD280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */; };
 		6E3DAEC02809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */; };
@@ -1766,6 +1772,9 @@
 		6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellGroupDetailsAttachmentsList.swift; sourceTree = "<group>"; };
 		6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellGroupDetailsAttachmentsList.xib; sourceTree = "<group>"; };
 		6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChatCustomButton.swift; sourceTree = "<group>"; };
+		6E3681CB2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinMessageCollectionViewCell.swift; sourceTree = "<group>"; };
+		6E3681CC2847A0D3008A4A63 /* PinMessageCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PinMessageCollectionViewCell.xib; sourceTree = "<group>"; };
+		6E3681D12847A30B008A4A63 /* PinMessageContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinMessageContainerView.swift; sourceTree = "<group>"; };
 		6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SkeletonView+Configure.swift"; sourceTree = "<group>"; };
 		6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellShimmerEffect.swift; sourceTree = "<group>"; };
 		6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellShimmerEffect.xib; sourceTree = "<group>"; };
@@ -5664,6 +5673,8 @@
 				FCAC7B3427E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib */,
 				6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */,
 				6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */,
+				6E3681CB2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift */,
+				6E3681CC2847A0D3008A4A63 /* PinMessageCollectionViewCell.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -6133,6 +6144,7 @@
 				FC4F2EF827F413D300A6D729 /* ChannelDetailDescView.xib */,
 				FC4F2EFA27F4407000A6D729 /* ChannelMemberCountView.swift */,
 				FC4F2EFC27F4407A00A6D729 /* ChannelMemberCountView.xib */,
+				6E3681D12847A30B008A4A63 /* PinMessageContainerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6638,6 +6650,7 @@
 				6E6A40D927EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */,
 				ED5DD0CC27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */,
 				CD24C70E27844C3500F6378D /* Wallet.storyboard in Resources */,
+				6E3681D02847A0D3008A4A63 /* PinMessageCollectionViewCell.xib in Resources */,
 				6E3DAEC32809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */,
 				88F0D743257E50B000F4B050 /* Localizable.strings in Resources */,
 				CD24C70C27844BC500F6378D /* PrivateGroup.storyboard in Resources */,
@@ -6729,6 +6742,7 @@
 				6E3DAEC22809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */,
 				6ED0BE5427C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib in Resources */,
 				6EE7C57F27FC81D6003DD063 /* sad-face-emoji.json in Resources */,
+				6E3681CF2847A0D3008A4A63 /* PinMessageCollectionViewCell.xib in Resources */,
 				6E92FD3C27BCEEAD00DA89B6 /* Assets.xcassets in Resources */,
 				6E6A40D827EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */,
 				6EE7C57927FC81D6003DD063 /* rolling-eyes-emoji.json in Resources */,
@@ -7371,6 +7385,7 @@
 				ED7DD40027CCF36C007CE0BA /* ASVideoContainer.swift in Sources */,
 				F80BCA1E26304FEE00F2107B /* CloseButton.swift in Sources */,
 				22ADD682256C40410098EFEB /* ComposerView.swift in Sources */,
+				6E3681D32847A30B008A4A63 /* PinMessageContainerView.swift in Sources */,
 				E7A37B8425ADA66E0055458F /* ChatSuggestionsHeaderView.swift in Sources */,
 				6E297C5127CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */,
 				6E3DAEC12809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */,
@@ -7496,6 +7511,7 @@
 				CD8918A6273E32AD0051C651 /* ToolTipToggleButton.swift in Sources */,
 				ED7DD40227CCF36C007CE0BA /* ASVideoPlayerController.swift in Sources */,
 				790882FD25486BFD00896F03 /* ChatChannelListCollectionViewCell.swift in Sources */,
+				6E3681CE2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift in Sources */,
 				6E0D12CD27B3C908003DD1AA /* ChatUserListVC.swift in Sources */,
 				88CABC4525933EE70061BB67 /* ChatMessageReactionsView.swift in Sources */,
 				E7166CE225BEE20600B03B07 /* Appearance+Images.swift in Sources */,
@@ -8024,6 +8040,7 @@
 				DA640FBE2535CF9200D32944 /* UserListSortingKey.swift in Sources */,
 				79877A182498E4EE00015F8B /* ChannelEndpoints.swift in Sources */,
 				7964F3BA249A314D002A09EC /* LogDestination.swift in Sources */,
+				6E3681CD2847A0D3008A4A63 /* PinMessageCollectionViewCell.swift in Sources */,
 				F63CC37324E592D30052844D /* MemberEventObserver.swift in Sources */,
 				88EA9AD825470F6A007EE76B /* Dictionary+Extensions.swift in Sources */,
 				8AE335A824FCF999002B6677 /* Reachability_Vendor.swift in Sources */,
@@ -8078,6 +8095,7 @@
 				79D6CE3725F7C84600BE2EEC /* ChatChannelWatcherListController+SwiftUI.swift in Sources */,
 				6E3DAEC02809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */,
 				DA9985EE24E175AA000E9885 /* ChannelCodingKeys.swift in Sources */,
+				6E3681D22847A30B008A4A63 /* PinMessageContainerView.swift in Sources */,
 				6EEFB78527BB83AD007224C2 /* UIViewController+PanModalPresenter.swift in Sources */,
 				22B54C4C25C80FA90041B357 /* RawJSON.swift in Sources */,
 				6ED3E44827B5337C00A05C0A /* AvatarView.swift in Sources */,

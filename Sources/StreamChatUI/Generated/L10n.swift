@@ -140,10 +140,12 @@ internal enum L10n {
       internal static var tranalate: String { L10n.tr("Localizable", "message.actions.translate")}
       /// More Action
       internal static var more: String { L10n.tr("Localizable", "message.actions.more") }
-        /// Pin Message Action
-        internal static var pin: String { L10n.tr("Localizable", "message.actions.pin") }
-        /// Forward Message Action
-        internal static var forward: String { L10n.tr("Localizable", "message.actions.forward") }
+      /// Pin Message Action
+      internal static var pin: String { L10n.tr("Localizable", "message.actions.pin") }
+      /// UnPin Message Action
+      internal static var unPin: String { L10n.tr("Localizable", "message.actions.unpin") }
+      /// Forward Message Action
+      internal static var forward: String { L10n.tr("Localizable", "message.actions.forward") }
       /// Delete Message
       internal static var delete: String { L10n.tr("Localizable", "message.actions.delete") }
       /// Edit Message

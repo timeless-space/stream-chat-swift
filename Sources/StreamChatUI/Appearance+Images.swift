@@ -445,6 +445,13 @@ public extension Appearance {
                 return nil
             }
         }()
+        public var messageActionUnpin: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "pin.slash")
+            } else {
+                return nil
+            }
+        }()
         public var messageActionForward: UIImage? = {
             if #available(iOS 13.0, *) {
                 return UIImage(systemName: "arrowshape.turn.up.right")?.withRenderingMode(.alwaysTemplate)

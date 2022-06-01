@@ -282,6 +282,28 @@ open class ChatMessageListVC:
         )
     }
 
+    /// pinMessage for given `MessageId`.
+    open func pinMessage(message: ChatMessage) {
+        guard let cid = dataSource?.channel(for: self)?.cid else { log.error("Channel is not available"); return }
+        let messageController = client.messageController(
+            cid: cid,
+            messageId: message.id
+        )
+        if message.isPinned {
+            messageController.unpin(completion: { [weak self] error in
+                if error != nil {
+                    Snackbar.show(text: "Error while unpin message!")
+                }
+            })
+        } else {
+            messageController.pin(MessagePinning.noExpiration, completion: { [weak self] error in
+                if error != nil {
+                    Snackbar.show(text: "Error while pin message!")
+                }
+            })
+        }
+    }
+
     // MARK: - UITableViewDataSource & UITableViewDelegate
 
     open func numberOfSections(in tableView: UITableView) -> Int {

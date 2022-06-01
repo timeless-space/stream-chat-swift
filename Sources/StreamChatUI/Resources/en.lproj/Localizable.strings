@@ -15,6 +15,7 @@
 "message.actions.copy" = "Copy";
 "message.actions.translate" = "Translate";
 "message.actions.pin" = "Pin";
+"message.actions.unpin" = "Unpin";
 "message.actions.forward" = "Forward";
 "message.actions.more" = "More...";
 "message.actions.delete" = "Delete Message";
