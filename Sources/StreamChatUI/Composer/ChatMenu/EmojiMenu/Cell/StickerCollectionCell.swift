@@ -42,7 +42,6 @@ class StickerCollectionCell: UICollectionViewCell {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
                         self.embed(self.animatedView ?? UIView(), insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
                         self.animatedView?.play()
-                        self.animatedView?.loopMode = .loop
                         self.animatedView?.backgroundBehavior = .pauseAndRestore
                         self.animatedView?.translatesAutoresizingMaskIntoConstraints = false
                         self.indicatorView.isHidden = true
