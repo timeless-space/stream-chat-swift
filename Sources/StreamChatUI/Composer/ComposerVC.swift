@@ -626,16 +626,12 @@ open class ComposerVC: _ViewController,
         switch sendMessageType {
         case .publishMessage:
             publishMessage(sender: composerView.inputMessageView.sendButton)
-            break
         case .sendOne(let amount, let type, let theme):
             showSendOnePaymentDialog(amount: amount, type: type, theme: theme)
-            break
         case .sendSticker(let notification):
             btnSendSticker(notification)
-            break
         case .sendRedPacket:
             sendRedPacketAction()
-            break
         }
     }
 
