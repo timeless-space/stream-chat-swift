@@ -96,10 +96,6 @@ class SendEmojiViewController: UIViewController {
     }
 }
 
-// MARK: - Collection view delegate
-@available(iOS 13.0, *)
-extension SendEmojiViewController: UICollectionViewDelegate { }
-
 // MARK: - Collection view datasource
 @available(iOS 13.0, *)
 extension SendEmojiViewController: UICollectionViewDataSource {

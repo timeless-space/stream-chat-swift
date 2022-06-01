@@ -11,7 +11,8 @@ import Combine
 @available(iOS 13.0, *)
 extension StickerApi {
     public enum RequestType: EndPointType {
-        case mySticker, getHiddenStickers
+        case mySticker
+        case getHiddenStickers
         case stickerInfo(id: String)
         case trendingStickers(pageNumber: Int, animated: Bool)
         case downloadStickers(packageId: Int)

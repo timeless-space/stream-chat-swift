@@ -512,9 +512,7 @@ open class ChatMessageListVC:
                 if let channel = dataSource?.channel(for: self) {
                     cell.channel = channel
                 }
-                cell.isSender = isMessageFromCurrentUser
                 cell.content = message
-                cell.isSender = isMessageFromCurrentUser
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 return cell
             } else if isFallbackMessage(message) {

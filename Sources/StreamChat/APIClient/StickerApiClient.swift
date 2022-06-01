@@ -124,7 +124,8 @@ public class StickerApiClient {
     }
 
     public static func hideStickers(
-        packageId: Int, _ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?
+        packageId: Int,
+        _ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?
     ) {
         StickerApi.call(type: .hideStickers(packageId: packageId))
             .sink { _  in } receiveValue: { result in completion?(result) }

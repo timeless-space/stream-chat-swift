@@ -83,25 +83,6 @@ class EmojiPickerViewController: UIViewController {
         }
     }
 
-    @objc private func btnDownloadAction(_ sender: UIButton) {
-        guard let cell = sender.superview?.superview as? PickerTableViewCell,
-              let indexPath = tblPicker.indexPath(for: cell),
-              let packageId = packages[indexPath.row].packageID
-        else { return }
-        sender.isUserInteractionEnabled = false
-        if packages[indexPath.row].isDownload != "Y" {
-            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { [weak self] _ in
-                guard let `self` = self else { return }
-                self.packages[indexPath.row].isDownload = "Y"
-                self.downloadedPackage.append(packageId)
-                sender.isUserInteractionEnabled = true
-                cell.updateDownloadState()
-            }
-        } else {
-            Snackbar.show(text: "Sticker already downloaded!", messageType: StreamChatMessageType.StickerAlreadyDownloaded)
-        }
-    }
-
     func getCurrentUserAllStickers() {
         fetchMySticker()
         getHiddenSticker()
@@ -137,8 +118,8 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "PickerTableViewCell") as? PickerTableViewCell else {
             return UITableViewCell()
         }
-        cell.btnDownload.addTarget(self, action: #selector(btnDownloadAction(_:)), for: .touchUpInside)
-        cell.configure(with: packages[indexPath.row], downloadedPackage: downloadedPackage, screenType: segmentController.selectedSegmentIndex)
+        cell.delegate = self
+        cell.configure(with: packages[indexPath.row], downloadedPackage: downloadedPackage, screenType: segmentController.selectedSegmentIndex, indexPath: indexPath)
         return cell
     }
 
@@ -153,7 +134,7 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
         if let sendEmojiVc: SendEmojiViewController = SendEmojiViewController.instantiateController(storyboard: .wallet) {
             sendEmojiVc.packageInfo = packages[indexPath.row]
             sendEmojiVc.chatChannelController = chatChannelController
-            self.present(sendEmojiVc, animated: true)
+            present(sendEmojiVc, animated: true)
         }
     }
 
@@ -172,5 +153,23 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
         let swipeActionConfig = UISwipeActionsConfiguration(actions: [delete])
         swipeActionConfig.performsFirstActionWithFullSwipe = false
         return swipeActionConfig
+    }
+}
+
+@available(iOS 13.0, *)
+extension EmojiPickerViewController: DownloadStickerDelegate {
+
+    func onClickOfDownload(indexPath: IndexPath) {
+        guard let packageId = packages[indexPath.row].packageID else { return }
+        if packages[indexPath.row].isDownload != "Y" {
+            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { [weak self] _ in
+                guard let `self` = self else { return }
+                self.packages[indexPath.row].isDownload = "Y"
+                self.downloadedPackage.append(packageId)
+                self.tblPicker.reloadRows(at: [indexPath], with: .automatic)
+            }
+        } else {
+            Snackbar.show(text: "Sticker already downloaded!", messageType: StreamChatMessageType.StickerAlreadyDownloaded)
+        }
     }
 }

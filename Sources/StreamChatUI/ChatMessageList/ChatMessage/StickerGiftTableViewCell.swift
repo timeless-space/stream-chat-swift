@@ -22,27 +22,29 @@ class StickerGiftBubble: UITableViewCell {
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
     var content: ChatMessage?
-    var isSender = false
     var channel: ChatChannel?
     private var cellWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.3
     }
+    private var leadingAnchorForSender: NSLayoutConstraint?
+    private var leadingAnchorForReceiver: NSLayoutConstraint?
+    private var trailingAnchorForSender: NSLayoutConstraint?
+    private var trailingAnchorForReceiver: NSLayoutConstraint?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
 
     // MARK: - Overrides
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.backgroundColor = .clear
+        selectionStyle = .none
+        backgroundColor = .clear
+        setUpUI()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
 
-    // MARK: - Custom functions
-    func configureCell(isSender: Bool) {
-        self.isSender = isSender
+    func setUpUI() {
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
@@ -52,13 +54,10 @@ class StickerGiftBubble: UITableViewCell {
             viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
             viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
         ])
-        if isSender {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding).isActive = true
-        } else {
-            viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding).isActive = true
-            viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth).isActive = true
-        }
+        leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
+        trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding)
+        leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding)
+        trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
         // SubContainer view
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -97,7 +96,6 @@ class StickerGiftBubble: UITableViewCell {
         descriptionLabel.transform = .mirrorY
         descriptionLabel.textAlignment = .center
         lblDetails = createDetailsLabel()
-        Nuke.loadImage(with: content?.extraData.giftPackageImage, into: imgStickerPreview)
         lblDetails.text = content?.extraData.giftPackageName
         // Details stack
         detailsStack = UIStackView(arrangedSubviews: [lblDetails])
@@ -116,15 +114,6 @@ class StickerGiftBubble: UITableViewCell {
         // Sent/Accept button
         pickUpButton = UIButton()
         pickUpButton.translatesAutoresizingMaskIntoConstraints = false
-        if content?.extraData.giftSenderId == ChatClient.shared.currentUserId?.string {
-            pickUpButton.alpha = 0.5
-            pickUpButton.isEnabled = false
-            pickUpButton.setTitle("Sent", for: .normal)
-        } else {
-            pickUpButton.alpha = 1.0
-            pickUpButton.isEnabled = true
-            pickUpButton.setTitle("Accept", for: .normal)
-        }
         pickUpButton.addTarget(self, action: #selector(btnGifPickupAction), for: .touchUpInside)
         pickUpButton.setTitleColor(.white, for: .normal)
         pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
@@ -144,7 +133,6 @@ class StickerGiftBubble: UITableViewCell {
         timestampLabel = createTimestampLabel()
         timestampLabel.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.addSubview(timestampLabel)
-        timestampLabel.textAlignment = isSender ? .right : .left
         NSLayoutConstraint.activate([
             timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
             timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
@@ -152,17 +140,48 @@ class StickerGiftBubble: UITableViewCell {
             timestampLabel.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0),
             timestampLabel.heightAnchor.constraint(equalToConstant: 15)
         ])
-        if isSender {
-            descriptionLabel.text = (channel?.isDirectMessageChannel ?? false) ? "You sent sticker gift to \(content?.extraData.giftReceiverName ?? "")" : "You sent sticker gift."
+        timestampLabel.transform = .mirrorY
+    }
+
+    // MARK: - Custom functions
+    func configureCell(isSender: Bool) {
+        updateBubbleConstraints(isSender: isSender)
+        Nuke.loadImage(with: content?.extraData.giftPackageImage, into: imgStickerPreview)
+        if content?.extraData.giftSenderId == ChatClient.shared.currentUserId?.string {
+            pickUpButton.alpha = 0.5
+            pickUpButton.isEnabled = false
+            pickUpButton.setTitle("Sent", for: .normal)
         } else {
-            descriptionLabel.text = (channel?.isDirectMessageChannel ?? false) ? "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent you sticker gift.": "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent sticker gift."
+            pickUpButton.alpha = 1.0
+            pickUpButton.isEnabled = true
+            pickUpButton.setTitle("Accept", for: .normal)
+        }
+        if isSender {
+            descriptionLabel.text = (channel?.isDirectMessageChannel ?? false) ?
+            "You sent sticker gift to \(content?.extraData.giftReceiverName ?? "")" :
+            "You sent sticker gift."
+        } else {
+            descriptionLabel.text = (channel?.isDirectMessageChannel ?? false) ?
+            "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent you sticker gift." :
+            "\(content?.extraData.giftSenderName?.firstUppercased ?? "") has sent sticker gift."
         }
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.string(from: createdAt)
         } else {
             timestampLabel?.text = nil
         }
-        timestampLabel.transform = .mirrorY
+    }
+
+    private func updateBubbleConstraints(isSender: Bool) {
+        leadingAnchorForSender?.isActive = isSender
+        leadingAnchorForSender?.constant = cellWidth
+        trailingAnchorForSender?.isActive = isSender
+        trailingAnchorForSender?.constant = Constants.MessageRightPadding
+        leadingAnchorForReceiver?.isActive = !isSender
+        leadingAnchorForReceiver?.constant = Constants.MessageLeftPadding
+        trailingAnchorForReceiver?.isActive = !isSender
+        trailingAnchorForReceiver?.constant = -cellWidth
+        timestampLabel.textAlignment = isSender ? .right : .left
     }
 
     private func createTimestampLabel() -> UILabel {

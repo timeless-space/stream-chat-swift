@@ -5,25 +5,33 @@
 //  Created by Parth Kshatriya on 01/04/22.
 //
 
-import Foundation
 import StreamChat
 import Nuke
 
+protocol DownloadStickerDelegate: class {
+    func onClickOfDownload(indexPath: IndexPath)
+}
+
 @available(iOS 13.0, *)
 class PickerTableViewCell: UITableViewCell {
+
     //MARK: Outlets
     @IBOutlet private weak var lblPackName: UILabel!
     @IBOutlet private weak var lblArtistName: UILabel!
     @IBOutlet private weak var imgPack: UIImageView!
-    @IBOutlet weak var btnDownload: UIButton!
+    @IBOutlet private weak var btnDownload: UIButton!
+    weak var delegate: DownloadStickerDelegate?
+    var indexPath: IndexPath = IndexPath(row: 0, section: 0)
 
-    func configure(with package: PackageList, downloadedPackage: [Int], screenType: Int) {
+    func configure(with package: PackageList, downloadedPackage: [Int], screenType: Int, indexPath: IndexPath) {
+        self.indexPath = indexPath
         lblPackName.text = package.packageName ?? ""
         lblArtistName.text = package.artistName ?? ""
         Nuke.loadImage(with: URL(string: package.packageImg ?? ""), into: imgPack)
         selectionStyle = .none
         btnDownload.isHidden = screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue
         btnDownload.isUserInteractionEnabled = screenType != EmojiPickerViewController.ScreenType.MySticker.rawValue
+        btnDownload.addTarget(self, action: #selector(btnDownloadAction), for: .touchUpInside)
         if screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue {
             btnDownload.isUserInteractionEnabled = false
             btnDownload.isHidden = true
@@ -38,6 +46,11 @@ class PickerTableViewCell: UITableViewCell {
             Appearance.default.images.downloadSticker :
             Appearance.default.images.downloadStickerFill,
             for: .normal)
+    }
+
+    @objc private func btnDownloadAction() {
+        btnDownload.isUserInteractionEnabled = false
+        delegate?.onClickOfDownload(indexPath: indexPath)
     }
 
     func updateDownloadState() {
