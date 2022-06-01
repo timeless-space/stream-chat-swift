@@ -170,6 +170,7 @@ extension EmojiPickerViewController: DownloadStickerDelegate {
             }
         } else {
             Snackbar.show(text: "Sticker already downloaded!", messageType: StreamChatMessageType.StickerAlreadyDownloaded)
+            tblPicker.reloadRows(at: [indexPath], with: .automatic)
         }
     }
 }
