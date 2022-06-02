@@ -1239,6 +1239,8 @@
 		ED1D14722786C197005A0EAB /* WalletInputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1D146F2786C197005A0EAB /* WalletInputViewController.swift */; };
 		ED1D14732786C197005A0EAB /* WalletQuickInputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1D14702786C197005A0EAB /* WalletQuickInputViewController.swift */; };
 		ED1D14762786C21C005A0EAB /* Storyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1D14752786C21C005A0EAB /* Storyboard.swift */; };
+		ED381A7B2848751A00C4C0B8 /* StackedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED381A7A2848751A00C4C0B8 /* StackedItem.swift */; };
+		ED381A7D2848754900C4C0B8 /* MediaPreviewCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED381A7C2848754900C4C0B8 /* MediaPreviewCollectionCell.swift */; };
 		ED3B5F05275A3A5A00DEAF0A /* RedPacketSentBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3B5F04275A3A5A00DEAF0A /* RedPacketSentBubble.swift */; };
 		ED57ECB52837920A00725964 /* PhotoCollectionBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED57ECB42837920A00725964 /* PhotoCollectionBubble.swift */; };
 		ED5DD0C927CCAC3A000B3E9A /* AnnouncementTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED5DD0C727CCAC3A000B3E9A /* AnnouncementTableViewCell.swift */; };
@@ -2832,6 +2834,8 @@
 		ED1D146F2786C197005A0EAB /* WalletInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WalletInputViewController.swift; sourceTree = "<group>"; };
 		ED1D14702786C197005A0EAB /* WalletQuickInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WalletQuickInputViewController.swift; sourceTree = "<group>"; };
 		ED1D14752786C21C005A0EAB /* Storyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Storyboard.swift; sourceTree = "<group>"; };
+		ED381A7A2848751A00C4C0B8 /* StackedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackedItem.swift; sourceTree = "<group>"; };
+		ED381A7C2848754900C4C0B8 /* MediaPreviewCollectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPreviewCollectionCell.swift; sourceTree = "<group>"; };
 		ED3B5F04275A3A5A00DEAF0A /* RedPacketSentBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedPacketSentBubble.swift; sourceTree = "<group>"; };
 		ED57ECB42837920A00725964 /* PhotoCollectionBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionBubble.swift; sourceTree = "<group>"; };
 		ED5DD0C727CCAC3A000B3E9A /* AnnouncementTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnouncementTableViewCell.swift; sourceTree = "<group>"; };
@@ -5894,6 +5898,7 @@
 				224FC4CA280D3BE900F6E135 /* GiftPacketSentBubble.swift */,
 				ED57ECB42837920A00725964 /* PhotoCollectionBubble.swift */,
 				ED102B252844E58F00CE5D82 /* AttachmentPreviewBubble.swift */,
+				ED381A7C2848754900C4C0B8 /* MediaPreviewCollectionCell.swift */,
 			);
 			path = ChatMessage;
 			sourceTree = "<group>";
@@ -5964,6 +5969,7 @@
 			children = (
 				EDC2D273283FA0D00056B73D /* StackedItemsLayout.swift */,
 				EDC2D274283FA0D10056B73D /* StackedItemsView.swift */,
+				ED381A7A2848751A00C4C0B8 /* StackedItem.swift */,
 			);
 			path = StackedItems;
 			sourceTree = "<group>";
@@ -7430,6 +7436,7 @@
 				F86DA1B026413A2B006A7CCA /* MessageActionsTransitionController.swift in Sources */,
 				847DD2D82670F75F0084E14B /* VideoAttachmentComposerPreview.swift in Sources */,
 				CDA1FB07278843AF00C2F4BD /* PrivateGroupUsersCVCell.swift in Sources */,
+				ED381A7B2848751A00C4C0B8 /* StackedItem.swift in Sources */,
 				847D60292679EDD300FB701D /* GalleryCollectionViewCell.swift in Sources */,
 				6EEFB79827BB83AD007224C2 /* PanModalAnimator.swift in Sources */,
 				E7166CB225BED22B00B03B07 /* Appearance+ColorPalette.swift in Sources */,
@@ -7521,6 +7528,7 @@
 				E7166CE225BEE20600B03B07 /* Appearance+Images.swift in Sources */,
 				CD24C71E2784892A00F6378D /* UIApplication+Extension.swift in Sources */,
 				88CABC6625934CF60061BB67 /* ChatMessageReactions+Types.swift in Sources */,
+				ED381A7D2848754900C4C0B8 /* MediaPreviewCollectionCell.swift in Sources */,
 				E3D2976528255CF50026B69F /* EndpointProtocol.swift in Sources */,
 				BD69F5D52669392E00E9E3FA /* ScrollToLatestMessageButton.swift in Sources */,
 				6E3DEF6B27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */,

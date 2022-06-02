@@ -519,7 +519,7 @@ open class ChatMessageListVC:
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
-            } else if isSinglePreview(message) {
+            } else if message?.isSinglePreview ?? false {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: AttachmentPreviewBubble.identifier,
                     for: indexPath) as? AttachmentPreviewBubble else {
@@ -531,7 +531,7 @@ open class ChatMessageListVC:
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 return cell
-            } else if isMultiplePreview(message) {
+            } else if message?.isMultiplePreview ?? false {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "PhotoCollectionBubble",
                     for: indexPath) as? PhotoCollectionBubble else {
@@ -649,16 +649,6 @@ open class ChatMessageListVC:
               let fallbackMessage = extraData["fallbackMessage"] else { return false }
         let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
         return !message.isBlank
-    }
-
-    private func isMultiplePreview(_ message: ChatMessage?) -> Bool {
-        return (message?.attachmentCounts[.image] ?? 0 > 1) || (message?.attachmentCounts[.video] ?? 0 > 1)
-    }
-
-    private func isSinglePreview(_ message: ChatMessage?) -> Bool {
-        return ((message?.attachmentCounts[.image] ?? 0 == 1)
-                || (message?.attachmentCounts[.video] ?? 0 == 1))
-                && message?.attachmentCounts.count == 1
     }
 
     private func isAdminMessage(_ message: ChatMessage?) -> Bool {

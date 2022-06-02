@@ -11,23 +11,23 @@ import StreamChat
 import Nuke
 
 class AttachmentPreviewBubble: UITableViewCell {
-    public lazy var mainContainer = ContainerStackView(axis: .horizontal)
-        .withoutAutoresizingMaskConstraints
-    public lazy var subContainer = ContainerStackView(axis: .vertical)
-        .withoutAutoresizingMaskConstraints
-    private var leadingMainContainer: NSLayoutConstraint?
-    private var trailingMainContainer: NSLayoutConstraint?
-    private var timestampLabelWidthConstraint: NSLayoutConstraint?
-    public private(set) var imagePreview: UIImageView!
-    public private(set) var videoPreview: VideoAttachmentGalleryPreview!
-    public private(set) var timestampLabel: UILabel!
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
     var layoutOptions: ChatMessageLayoutOptions?
     weak var delegate: PhotoCollectionAction?
     var content: ChatMessage?
     var isSender = false
     var chatChannel: ChatChannel?
+    public lazy var mainContainer = ContainerStackView(axis: .horizontal)
+        .withoutAutoresizingMaskConstraints
+    public lazy var subContainer = ContainerStackView(axis: .vertical)
+        .withoutAutoresizingMaskConstraints
+    public private(set) var imagePreview: UIImageView!
+    public private(set) var videoPreview: VideoAttachmentGalleryPreview!
+    public private(set) var timestampLabel: UILabel!
+    public lazy var dateFormatter: DateFormatter = .makeDefault()
     public private(set) var authorAvatarView: ChatAvatarView?
+    private var leadingMainContainer: NSLayoutConstraint?
+    private var trailingMainContainer: NSLayoutConstraint?
+    private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     private var isImagePreview: Bool {
         return content?.attachmentCounts[.image] != nil
@@ -35,11 +35,6 @@ class AttachmentPreviewBubble: UITableViewCell {
     private var imageTask: Cancellable? {
         didSet { oldValue?.cancel() }
     }
-    private lazy var loadingIndicator = Components
-        .default
-        .loadingIndicator
-        .init()
-        .withoutAutoresizingMaskConstraints
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -78,9 +73,6 @@ class AttachmentPreviewBubble: UITableViewCell {
 
         let tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(btnTapAttachment))
         mainContainer.addGestureRecognizer(tapGesture)
-        addSubview(loadingIndicator)
-        loadingIndicator.centerYAnchor.pin(equalTo: subContainer.centerYAnchor).isActive = true
-        loadingIndicator.centerXAnchor.pin(equalTo: subContainer.centerXAnchor).isActive = true
     }
 
     @objc private func btnTapAttachment() {
@@ -91,7 +83,6 @@ class AttachmentPreviewBubble: UITableViewCell {
 
     func configureCell(isSender: Bool) {
         subContainer.removeAllArrangedSubviews()
-        loadingIndicator.isVisible = false
         if content?.attachmentCounts[.image] == 1 {
             if imagePreview != nil {
                 imagePreview.removeFromSuperview()
@@ -102,14 +93,13 @@ class AttachmentPreviewBubble: UITableViewCell {
             imagePreview.transform = .mirrorY
             imagePreview.clipsToBounds = true
             imagePreview.layer.cornerRadius = 12
-            loadingIndicator.isVisible = true
             imageTask = Components.default.imageLoader.loadImage(
                 into: imagePreview,
                 url: content?.imageAttachments.first?.payload.imagePreviewURL,
                 imageCDN: Components.default.imageCDN,
+                placeholder: Appearance.default.images.videoAttachmentPlaceholder,
                 completion: { [weak self] _ in
                     self?.imageTask = nil
-                    self?.loadingIndicator.isVisible = false
                 }
             )
             subContainer.addArrangedSubviews([createTimestampLabel(), imageView])
@@ -169,7 +159,6 @@ class AttachmentPreviewBubble: UITableViewCell {
         trailingMainContainer?.isActive = isSender
         timestampLabelWidthConstraint?.constant = cellWidth
         timestampLabel.textAlignment = !isSender ? .left : .right
-        leadingMainContainer?.constant = memberCount <= 2 ? 25 : 20
     }
 
     private func createAvatarView() -> ChatAvatarView {

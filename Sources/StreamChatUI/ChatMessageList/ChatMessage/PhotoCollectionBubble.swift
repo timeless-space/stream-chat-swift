@@ -15,12 +15,16 @@ class PhotoCollectionBubble: _TableViewCell {
 
     // MARK: Variables
     var content: ChatMessage?
-    private let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
+    var chatChannel: ChatChannel?
+    var isSender = false
     weak var delegate: PhotoCollectionAction?
-
+    private let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
+    private var timestampLabelWidthConstraint: NSLayoutConstraint?
+    private var trailingConstraint: NSLayoutConstraint?
+    private var leadingConstraint: NSLayoutConstraint?
+    private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     public private(set) var timestampLabel: UILabel?
     public var layoutOptions: ChatMessageLayoutOptions?
-    private var timestampLabelWidthConstraint: NSLayoutConstraint?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
     public lazy var mainContainer = ContainerStackView(axis: .horizontal)
         .withoutAutoresizingMaskConstraints
@@ -28,12 +32,7 @@ class PhotoCollectionBubble: _TableViewCell {
         .withoutAutoresizingMaskConstraints
     public lazy var stickerContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-    private var leadingConstraint: NSLayoutConstraint?
-    private var trailingConstraint: NSLayoutConstraint?
     public private(set) var authorAvatarView: ChatAvatarView?
-    private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
-    var chatChannel: ChatChannel?
-    var isSender = false
     public private(set) lazy var loadingIndicator = Components
         .default
         .loadingIndicator
@@ -72,8 +71,6 @@ class PhotoCollectionBubble: _TableViewCell {
         trailingConstraint?.isActive = true
         timestampLabelWidthConstraint = timestampLabel?.widthAnchor.constraint(equalToConstant: bounds.width)
         timestampLabelWidthConstraint?.isActive = true
-        addGestureRecognizer(stackedItemsView.panGestureRecognizer)
-
         addSubview(loadingIndicator)
         loadingIndicator.centerYAnchor.pin(equalTo: subContainer.centerYAnchor).isActive = true
         loadingIndicator.centerXAnchor.pin(equalTo: subContainer.centerXAnchor).isActive = true
@@ -87,9 +84,11 @@ class PhotoCollectionBubble: _TableViewCell {
         (!videoAttachments.filter { $0.uploadingState != nil }.isEmpty) {
             loadingIndicator.isVisible = true
             stackedItemsView.isHidden = true
+            removeGestureRecognizer(stackedItemsView.panGestureRecognizer)
         } else {
             loadingIndicator.isVisible = false
             stackedItemsView.isHidden = false
+            addGestureRecognizer(stackedItemsView.panGestureRecognizer)
             let imageAttachment = content?.imageAttachments.compactMap {
                 StackedItem.init(
                     id: $0.id.index,
@@ -193,166 +192,5 @@ class PhotoCollectionBubble: _TableViewCell {
             timestampLabel?.transform = .mirrorY
         }
         return timestampLabel!
-    }
-}
-
-open class MediaPreviewCollectionCell: UICollectionViewCell, GalleryItemPreview, ASAutoPlayVideoLayerContainer {
-
-    // MARK: Variables
-    public var videoURL: String? {
-        didSet {
-            if let videoURL = videoURL {
-                ASVideoPlayerController.sharedVideoPlayer.setupVideoFor(url: videoURL)
-            }
-            videoLayer.isHidden = videoURL == nil
-        }
-    }
-
-    public var imageUrl: String?
-    public var isVideoPlaying: Bool = false
-    public var videoLayer = AVPlayerLayer()
-    private(set) lazy var btnPlay: UIButton = {
-        let btnPlay = UIButton()
-        btnPlay.addTarget(self, action: #selector(btnPlayAction), for: .touchUpInside)
-        btnPlay.setImage(Appearance.default.images.play, for: .normal)
-        return btnPlay
-    }()
-    
-    // MARK: Variables
-    public var attachmentId: AttachmentId? {
-        return AttachmentId(rawValue: attachment.attachmentId ?? "")
-    }
-
-    public var imageView: UIImageView {
-        return imgPreview
-    }
-    private var imageTask: Cancellable? {
-        didSet { oldValue?.cancel() }
-    }
-    private var attachment: StackedItem!
-    private(set) lazy var imgPreview: UIImageView = {
-        let imgPreview = UIImageView()
-        imgPreview.clipsToBounds = true
-        imgPreview.contentMode = .scaleAspectFill
-        imgPreview.translatesAutoresizingMaskIntoConstraints = false
-        return imgPreview
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupUI()
-    }
-
-    open override func prepareForReuse() {
-        super.prepareForReuse()
-        videoLayer.player?.pause()
-    }
-
-    public required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setupUI() {
-        embed(imgPreview)
-        btnPlay.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(btnPlay)
-        btnPlay.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        btnPlay.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        videoLayer.backgroundColor = UIColor.clear.cgColor
-        videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
-        layer.addSublayer(videoLayer)
-        videoLayer.frame = bounds
-    }
-
-    open override func layoutSubviews() {
-        super.layoutSubviews()
-        videoLayer.frame = bounds
-    }
-
-    public func configureMedia(attachment: StackedItem, isExpand: Bool) {
-        self.attachment = attachment
-        imgPreview.image = nil
-        imageTask?.cancel()
-        btnPlay.isHidden = true
-        videoURL = nil
-        if attachment.attachmentType == .image {
-            btnPlay.isHidden = true
-            imageTask = Components.default.imageLoader.loadImage(
-                into: imgPreview,
-                url: attachment.url,
-                imageCDN: Components.default.imageCDN,
-                placeholder: Appearance.default.images.videoAttachmentPlaceholder,
-                completion: { [weak self] result in
-                    switch result {
-                    case .failure(let error):
-                        print(error)
-                    case .success(_):
-                        break
-                    }
-                    self?.imageTask = nil
-                }
-            )
-        } else {
-            btnPlay.isHidden = false
-            if !isExpand {
-                videoURL = attachment.url.absoluteString
-            } else {
-                videoURL = nil
-            }
-            Components.default.videoLoader.loadPreviewForVideo(with: attachment.url, completion: { [weak self] result in
-                guard let `self` = self else { return }
-                switch result {
-                case .success(let image, let url):
-                    self.imgPreview.image = image
-                case .failure(_):
-                    self.imgPreview.image = nil
-                    break
-                }
-            })
-        }
-    }
-
-    @objc func btnPlayAction() {
-        btnPlay.isHidden = true
-        videoLayer.player?.play()
-    }
-
-}
-
-protocol PhotoCollectionAction: class  {
-    func didSelectAttachment(_ message: ChatMessage?, view: GalleryItemPreview, _ id: AttachmentId)
-}
-
-public class StackedItem: Equatable {
-
-    public enum AttachmentType {
-        case video
-        case image
-    }
-
-    public static func == (lhs: StackedItem, rhs: StackedItem) -> Bool {
-        return lhs.id == rhs.id
-    }
-    public var id: Int
-    public var url: URL
-    public var attachmentId: String?
-    public var attachmentType: AttachmentType?
-
-    public init(id: Int, url: URL, attachmentType: AttachmentType, attachmentId: String? = nil) {
-        self.id = id
-        self.attachmentType = attachmentType
-        self.url = url
-        self.attachmentId = attachmentId
-    }
-
-    public static func staticData() -> [StackedItem] {
-        var items = [StackedItem]()
-        items.append(.init(id: 0, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/shh.png")!, attachmentType: .image))
-        items.append(.init(id: 1, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/celebrate.gif")!, attachmentType: .image))
-        items.append(.init(id: 2, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/cheers.gif")!, attachmentType: .image))
-        items.append(.init(id: 3, url: URL.init(string: "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/thanks.png")!, attachmentType: .image))
-        items.append(.init(id: 4, url: URL.init(string: "https://res.cloudinary.com/timeless/video/upload/v1644831818/app/Wallet/shopping-travel.mp4")!, attachmentType: .video))
-        items.append(.init(id: 5, url: URL.init(string: "https://res.cloudinary.com/timeless/video/upload/v1644831819/app/Wallet/wellbeing-calm.mp4")!, attachmentType: .video))
-        return items
     }
 }
