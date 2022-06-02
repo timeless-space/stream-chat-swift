@@ -1383,6 +1383,8 @@
 		F8BA4FA425E69D8F0078BA9D /* iMessageComposerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BA4FA325E69D8F0078BA9D /* iMessageComposerVC.swift */; };
 		F8CF04AF25EF7D9F00077209 /* iMessageCellSeparatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CF04AE25EF7D9F00077209 /* iMessageCellSeparatorView.swift */; };
 		F8FC489826038BDA00A27DC5 /* SlackChatMessageGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8FC489726038BDA00A27DC5 /* SlackChatMessageGalleryView.swift */; };
+		FAC0A752282BACEF00843B52 /* UIHostingController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0A751282BACEF00843B52 /* UIHostingController+Extensions.swift */; };
+		FACA67C7282B9F4700C03115 /* PollBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACA67C6282B9F4700C03115 /* PollBubble.swift */; };
 		FC1A920C27F5ED23006A1E1A /* ContactModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A920B27F5ED22006A1E1A /* ContactModel.swift */; };
 		FC1A920E27F5EDAB006A1E1A /* SCSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A920D27F5EDAB006A1E1A /* SCSettings.swift */; };
 		FC1A921127F5EE31006A1E1A /* UserDefault.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1A921027F5EE31006A1E1A /* UserDefault.swift */; };
@@ -2956,6 +2958,8 @@
 		F8BA4FA325E69D8F0078BA9D /* iMessageComposerVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iMessageComposerVC.swift; sourceTree = "<group>"; };
 		F8CF04AE25EF7D9F00077209 /* iMessageCellSeparatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iMessageCellSeparatorView.swift; sourceTree = "<group>"; };
 		F8FC489726038BDA00A27DC5 /* SlackChatMessageGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackChatMessageGalleryView.swift; sourceTree = "<group>"; };
+		FAC0A751282BACEF00843B52 /* UIHostingController+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIHostingController+Extensions.swift"; sourceTree = "<group>"; };
+		FACA67C6282B9F4700C03115 /* PollBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollBubble.swift; sourceTree = "<group>"; };
 		FC1A920B27F5ED22006A1E1A /* ContactModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactModel.swift; sourceTree = "<group>"; };
 		FC1A920D27F5EDAB006A1E1A /* SCSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCSettings.swift; sourceTree = "<group>"; };
 		FC1A921027F5EE31006A1E1A /* UserDefault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserDefault.swift; sourceTree = "<group>"; };
@@ -4897,6 +4901,7 @@
 				CD24C71D2784892A00F6378D /* UIApplication+Extension.swift */,
 				CD6058EA278860EB00A033CD /* ChatClientConfiguration.swift */,
 				EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */,
+				FAC0A751282BACEF00843B52 /* UIHostingController+Extensions.swift */,
 				EDE6D9242818259700FCAB53 /* Utils.swift */,
 			);
 			path = Utils;
@@ -5863,6 +5868,7 @@
 		E74346B12593546000512C2D /* ChatMessage */ = {
 			isa = PBXGroup;
 			children = (
+				FACA67C6282B9F4700C03115 /* PollBubble.swift */,
 				ED1D146C2786C120005A0EAB /* WalletRequestPayBubble.swift */,
 				ED95B3F42769DF850049DD53 /* RedPacketExpired.swift */,
 				88A8CF15256E7BDA004EA4C7 /* ChatMessageContentView.swift */,
@@ -7411,6 +7417,7 @@
 				847DD2D82670F75F0084E14B /* VideoAttachmentComposerPreview.swift in Sources */,
 				CDA1FB07278843AF00C2F4BD /* PrivateGroupUsersCVCell.swift in Sources */,
 				847D60292679EDD300FB701D /* GalleryCollectionViewCell.swift in Sources */,
+				FAC0A752282BACEF00843B52 /* UIHostingController+Extensions.swift in Sources */,
 				6EEFB79827BB83AD007224C2 /* PanModalAnimator.swift in Sources */,
 				E7166CB225BED22B00B03B07 /* Appearance+ColorPalette.swift in Sources */,
 				88A11B0A2590AFBB0000AC24 /* ChatMessage+Extensions.swift in Sources */,
@@ -7459,6 +7466,7 @@
 				F80BCA0A263011F500F2107B /* ImageAttachmentGalleryCell.swift in Sources */,
 				843F0BC326775CDB00B342CB /* Cache.swift in Sources */,
 				8830513E263031C40069D731 /* ChatMessageLayoutOptions.swift in Sources */,
+				FACA67C7282B9F4700C03115 /* PollBubble.swift in Sources */,
 				792DD9D9256BC542001DB91B /* BaseViews.swift in Sources */,
 				EDE6D9252818259700FCAB53 /* Utils.swift in Sources */,
 				CD72548D275F556100CD6444 /* RedPacket.swift in Sources */,

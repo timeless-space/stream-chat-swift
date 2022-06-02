@@ -101,6 +101,7 @@ public struct AttachmentType: RawRepresentable, Codable, Hashable, ExpressibleBy
 public extension AttachmentType {
     /// Backend specified types.
     static let image = Self(rawValue: "image")
+    static let gif = Self(rawValue: "gif")
     static let file = Self(rawValue: "file")
     static let giphy = Self(rawValue: "giphy")
     static let video = Self(rawValue: "video")
