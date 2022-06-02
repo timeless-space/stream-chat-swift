@@ -30,16 +30,20 @@ class PickerTableViewCell: UITableViewCell {
         Nuke.loadImage(with: URL(string: package.packageImg ?? ""), into: imgPack)
         selectionStyle = .none
         btnDownload.isHidden = screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue
-        btnDownload.isUserInteractionEnabled = screenType != EmojiPickerViewController.ScreenType.MySticker.rawValue
+        btnDownload.isEnabled = screenType != EmojiPickerViewController.ScreenType.MySticker.rawValue
         btnDownload.addTarget(self, action: #selector(btnDownloadAction), for: .touchUpInside)
         if screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue {
-            btnDownload.isUserInteractionEnabled = false
+            btnDownload.isEnabled = false
             btnDownload.isHidden = true
             contentView.alpha = package.isHidden ? 0.5 : 1.0
         } else {
-            btnDownload.isUserInteractionEnabled = true
+            btnDownload.isEnabled = true
             btnDownload.isHidden = false
             contentView.alpha = 1.0
+        }
+        if package.isDownload == "Y" {
+            btnDownload.alpha = 0.5
+            btnDownload.isEnabled = false
         }
         btnDownload.setImage(
             package.isDownload != "Y" ?
@@ -49,13 +53,7 @@ class PickerTableViewCell: UITableViewCell {
     }
 
     @objc private func btnDownloadAction() {
-        btnDownload.isUserInteractionEnabled = false
+        btnDownload.isEnabled = false
         delegate?.onClickOfDownload(indexPath: indexPath)
-    }
-
-    func updateDownloadState() {
-        btnDownload.setImage(
-            Appearance.default.images.downloadStickerFill,
-            for: .normal)
     }
 }
