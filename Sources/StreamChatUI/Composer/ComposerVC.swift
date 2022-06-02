@@ -973,6 +973,7 @@ open class ComposerVC: _ViewController,
                 kMessageText: text
             ]
             NotificationCenter.default.post(name: .sendPaymentRequest, object: nil, userInfo: parameter)
+            composerView.inputMessageView.textView.resignFirstResponder()
         } else {
             channelController?.createNewMessage(
                 text: text,
