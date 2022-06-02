@@ -118,7 +118,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
                     Nuke.loadImage(with: themeURL, into: payRequestImageView)
                 }
             }
-            lblDetails.text = "REQUEST: \(payload?.extraData?.requestedAmount ?? "0") ONE"
+            lblDetails.text = "REQUEST: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
             if payload?.extraData?.requestedIsPaid ?? false {
                 pickUpButton.alpha = 0.5
                 pickUpButton.isEnabled = false
@@ -138,7 +138,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
         pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         pickUpButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
         pickUpButton.clipsToBounds = true
-        pickUpButton.layer.cornerRadius = 20
+        pickUpButton.layer.cornerRadius = 16
         // Avatar
         let placeholder = Appearance.default.images.userAvatarPlaceholder1
         if let imageURL = content?.author.imageURL {

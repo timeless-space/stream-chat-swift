@@ -155,12 +155,12 @@ class TableViewCellRedPacketDrop: UITableViewCell {
         }
         descriptionLabel.text = extraData.redPacketTitle
         if let maxOne = extraData.redPacketMaxOne {
-            lblTotal.text = "Total: \(maxOne) ONE"
+            lblTotal.text = "Total: \(maxOne.formattedOneBalance) ONE"
         } else {
             lblTotal.text = "Total: 0 ONE"
         }
         if let minOne = extraData.redPacketMinOne {
-            lblMax.text = "Max: \(minOne) ONE"
+            lblMax.text = "Max: \(minOne.formattedOneBalance) ONE"
         } else {
             lblMax.text = "Max: 0 ONE"
         }

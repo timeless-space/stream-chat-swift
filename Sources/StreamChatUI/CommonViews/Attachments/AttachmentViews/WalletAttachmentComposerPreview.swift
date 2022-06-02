@@ -51,7 +51,7 @@ open class WalletAttachmentComposerPreview: _View, ThemeProvider {
 
         lblAmount.font = .systemFont(ofSize: 22, weight: .bold)
         lblAmount.textColor = .white
-        lblAmount.text = getOneAmount(data: walletAttachment.extraData) ?? "0 ONE"//walletAttachment.oneAmount
+        lblAmount.text = getOneAmount(data: walletAttachment.extraData)?.formattedOneBalance ?? "0 ONE"//walletAttachment.oneAmount
         lblAmount.textAlignment = .center
         bgView.backgroundColor = .darkGray
         widthAnchor.pin(equalToConstant: width).isActive = true
