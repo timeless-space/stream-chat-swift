@@ -256,6 +256,17 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
             result[indexPath] = cell
         }
     }
+
+    /// Scrolls to IndexPath message
+    open func scrollToIndexPath(indexPath: IndexPath) {
+        let rowsRange = 0..<numberOfRows(inSection: 0)
+        let lastMessageIndexPath = indexPath
+        scrollToRow(at: indexPath, at: .none, animated: true)
+
+//        if rowsRange.contains(lastMessageIndexPath.row) {
+//            scrollToRow(at: lastMessageIndexPath, at: .top, animated: animated)
+//        }
+    }
 }
 
 extension CGAffineTransform {

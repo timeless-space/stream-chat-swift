@@ -144,6 +144,8 @@ internal enum L10n {
       internal static var pin: String { L10n.tr("Localizable", "message.actions.pin") }
       /// UnPin Message Action
       internal static var unPin: String { L10n.tr("Localizable", "message.actions.unpin") }
+      internal static var pinFailed: String { L10n.tr("Localizable", "message.pin.failed") }
+      internal static var unPinFailed: String { L10n.tr("Localizable", "message.unpin.failed") }
       /// Forward Message Action
       internal static var forward: String { L10n.tr("Localizable", "message.actions.forward") }
       /// Delete Message

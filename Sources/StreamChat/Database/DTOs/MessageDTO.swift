@@ -584,12 +584,11 @@ private extension ChatMessage {
         
         if dto.pinned,
            let pinnedAt = dto.pinnedAt,
-           let pinnedBy = dto.pinnedBy,
-           let pinExpires = dto.pinExpires {
-            pinDetails = .init(
+           let pinnedBy = dto.pinnedBy {
+            pinDetails = try .init(
                 pinnedAt: pinnedAt,
                 pinnedBy: pinnedBy.asModel(),
-                expiresAt: pinExpires
+                expiresAt: dto.pinExpires
             )
         } else {
             pinDetails = nil

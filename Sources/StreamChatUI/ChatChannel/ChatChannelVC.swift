@@ -71,21 +71,9 @@ open class ChatChannelVC:
         return view
     }()
 
-    open private(set) lazy var pinnedMessageView: PinMessageContainerView = {
-        let view = PinMessageContainerView(frame: .zero).withoutAutoresizingMaskConstraints
-        view.backgroundColor =  Appearance.default.colorPalette.walletTabbarBackground
-        return view
-    }()
+    open private(set) var messageListTopConstraint: NSLayoutConstraint?
 
-    open private(set) var pinnedMessageContainerView: UIView?
-
-    open private(set) lazy var unPinCloseButton: UIButton = {
-        let button = UIButton()
-        button.setImage(appearance.images.closeBold, for: .normal)
-        button.tintColor = .white
-        button.addTarget(self, action: #selector(unPinMessage), for: .touchUpInside)
-        return button.withoutAutoresizingMaskConstraints
-    }()
+    open private(set) var pinnedMessageContainerView: PinMessageContainerView?
 
     open private(set) lazy var moreButton: UIButton = {
         let button = UIButton()
@@ -293,9 +281,12 @@ open class ChatChannelVC:
             addChildViewController(messageListVC, targetView: view)
             NSLayoutConstraint.activate([
                 messageListVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-                messageListVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-                messageListVC.view.topAnchor.constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0),
+                messageListVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0)
             ])
+            messageListTopConstraint = messageListVC.view.topAnchor
+                .constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0)
+            messageListTopConstraint?.isActive = true
+
             if let messageComposerVC = messageComposerVC {
                 addChildViewController(messageComposerVC, targetView: view)
                 messageComposerVC.view.pin(anchors: [.leading, .trailing], to: view)
@@ -378,42 +369,59 @@ open class ChatChannelVC:
 
     private func layoutPinnedMessageView() {
         guard !pinnedMessages.isEmpty else {
+            removePinMessageContainerView()
             return
         }
         if pinnedMessageContainerView == nil {
-            // view created
-            let containerView = UIView(frame: .zero)
-                .withoutAutoresizingMaskConstraints
-            pinnedMessageContainerView = containerView
-            // view added
-            view.addSubview(containerView)
-            containerView.addSubview(pinnedMessageView)
-            containerView.addSubview(unPinCloseButton)
-            // constraint
-            NSLayoutConstraint.activate([
-                containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-                containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-                containerView.topAnchor.constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0),
-                containerView.heightAnchor.constraint(equalToConstant: 54)
-            ])
-            NSLayoutConstraint.activate([
-                unPinCloseButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20),
-                unPinCloseButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor, constant: 0),
-                unPinCloseButton.widthAnchor.constraint(equalToConstant: 35),
-                unPinCloseButton.heightAnchor.constraint(equalToConstant: 35)
-            ])
-            NSLayoutConstraint.activate([
-                pinnedMessageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
-                pinnedMessageView.trailingAnchor.constraint(equalTo: unPinCloseButton.leadingAnchor, constant: -20),
-                pinnedMessageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor, constant: 0),
-                pinnedMessageView.heightAnchor.constraint(equalTo: containerView.heightAnchor)
-            ])
+            addPinMessageContainerView()
         }
+        pinnedMessageContainerView?.setupUI(pinMessages: pinnedMessages)
+        // callback
+        pinnedMessageContainerView?.callbackMessageDidSelect = { [weak self] message in
+            guard let weakSelf = self else { return }
+            guard let pinIndex = weakSelf.messages
+                .firstIndex(where: { $0.id == message.id }) else { return }
+            let indexPath = IndexPath(item: pinIndex, section: 0)
+            guard let cell = weakSelf.messageListVC?.listView
+                .cellForRow(at: indexPath) as? ChatMessageCell else { return }
+            weakSelf.messageListVC?.listView.scrollToIndexPath(indexPath: indexPath)
+            let selectionColor = cell.messageContentView?.bubbleView?.backgroundColor
+            UIView.animate(withDuration: 1, delay: 0, options: []) {
+                cell.messageContentView?.bubbleView?.backgroundColor =
+                selectionColor?.withAlphaComponent(0.3)
+                weakSelf.view.layoutIfNeeded()
+            } completion: { status in
+                cell.messageContentView?.bubbleView?.backgroundColor = selectionColor
+            }
+        }
+        pinnedMessageContainerView?.callbackCloseButton = { [weak self] message in
+            guard let weakSelf = self else { return }
+            let cancelAction = UIAlertAction(title: "Cancel",
+                                             style: .cancel, handler: nil)
+            let unPinAllAction = UIAlertAction(title: "Unpin", style: .default) { action in
+                weakSelf.unPinMessage(message: message)
+            }
+            weakSelf.presentAlert(title: "Would you like to unpin this message?",
+                                  message: nil, actions: [cancelAction,unPinAllAction])
+        }
+    }
 
-        pinnedMessageView.backgroundColor = Appearance
+    private func addPinMessageContainerView() {
+        let containerView = PinMessageContainerView(frame: .zero)
+            .withoutAutoresizingMaskConstraints
+        pinnedMessageContainerView = containerView
+        pinnedMessageContainerView?.backgroundColor = Appearance
             .default
             .colorPalette
             .walletTabbarBackground
+        view.addSubview(containerView)
+        NSLayoutConstraint.activate([
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            containerView.topAnchor.constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0),
+            containerView.heightAnchor.constraint(equalToConstant: 54)
+        ])
+        messageListTopConstraint?.constant = 54
     }
 
     override open func viewDidLoad() {
@@ -444,6 +452,20 @@ open class ChatChannelVC:
         if enableKeyboardObserver {
             keyboardHandler.stop()
         }
+    }
+
+    private func removePinMessageContainerView() {
+        pinnedMessageContainerView?.removeFromSuperview()
+        pinnedMessageContainerView = nil
+        messageListTopConstraint?.constant = 0
+    }
+
+    private func unPinMessage(message: ChatMessage) {
+        messageListVC?.unPinMessage(message: message, completion: { [weak self] error in
+            if error != nil {
+                Snackbar.show(text: L10n.Message.Actions.unPinFailed)
+            }
+        })
     }
 
     @objc func backAction(_ sender: Any) {
@@ -861,7 +883,11 @@ open class ChatChannelVC:
             }
         case is PinMessageActionItem:
             UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
-                self?.messageListVC?.pinMessage(message: message)
+                if message.isPinned {
+                    self?.messageListVC?.unPinMessage(message: message)
+                } else {
+                    self?.messageListVC?.pinMessage(message: message)
+                }
             }
         default:
             return

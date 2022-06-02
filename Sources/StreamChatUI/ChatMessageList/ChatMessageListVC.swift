@@ -282,26 +282,33 @@ open class ChatMessageListVC:
         )
     }
 
-    /// pinMessage for given `MessageId`.
+    /// pin Message for given `MessageId`.
     open func pinMessage(message: ChatMessage) {
         guard let cid = dataSource?.channel(for: self)?.cid else { log.error("Channel is not available"); return }
         let messageController = client.messageController(
             cid: cid,
             messageId: message.id
         )
-        if message.isPinned {
-            messageController.unpin(completion: { [weak self] error in
-                if error != nil {
-                    Snackbar.show(text: "Error while unpin message!")
-                }
-            })
-        } else {
-            messageController.pin(MessagePinning.noExpiration, completion: { [weak self] error in
-                if error != nil {
-                    Snackbar.show(text: "Error while pin message!")
-                }
-            })
-        }
+        messageController.pin(MessagePinning.noExpiration, completion: { [weak self] error in
+            if error != nil {
+                Snackbar.show(text: L10n.Message.Actions.pinFailed)
+            }
+        })
+    }
+
+    /// unpin Message for given `MessageId`.
+    open func unPinMessage(message: ChatMessage, completion: ((Error?) -> Void)? = nil) {
+        guard let cid = dataSource?.channel(for: self)?.cid else { log.error("Channel is not available"); return }
+        let messageController = client.messageController(
+            cid: cid,
+            messageId: message.id
+        )
+        messageController.unpin(completion: { [weak self] error in
+            if error != nil && completion == nil {
+                Snackbar.show(text: L10n.Message.Actions.pinFailed)
+            }
+            completion?(error)
+        })
     }
 
     // MARK: - UITableViewDataSource & UITableViewDelegate
