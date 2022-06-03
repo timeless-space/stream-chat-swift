@@ -83,7 +83,8 @@ extension Endpoint {
     static func dispatchEphemeralMessageAction(
         cid: ChannelId,
         messageId: MessageId,
-        action: AttachmentAction
+        action: AttachmentAction,
+        poll: [String: RawJSON]
     ) -> Endpoint<MessagePayload.Boxed> {
         .init(
             path: messageId.actionPath,
@@ -93,7 +94,8 @@ extension Endpoint {
             body: AttachmentActionRequestBody(
                 cid: cid,
                 messageId: messageId,
-                action: action
+                action: action,
+                poll: poll
             )
         )
     }

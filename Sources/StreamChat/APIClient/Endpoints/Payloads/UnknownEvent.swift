@@ -20,7 +20,7 @@ public struct UnknownEvent: Event, Hashable {
     public let createdAt: Date
     
     /// A dictionary with custom fields.
-    let payload: [String: RawJSON]
+    public let payload: [String: RawJSON]
 }
 
 // MARK: - Decodable

@@ -26,6 +26,7 @@ class ChatMenuViewController: UIViewController {
     var didTapAction:((_ type: MenuType) -> Void)?
     var extraData = [String: RawJSON]()
     var menus = [MenuType]()
+    var isChatOnly = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,7 +42,11 @@ class ChatMenuViewController: UIViewController {
             if (extraData.signers.contains(ChatClient.shared.currentUserId ?? "")) {
                 menus = MenuType.getDaoMenu()
             } else {
-                menus = MenuType.getNonDaoMenu()
+                if isChatOnly {
+                    menus = MenuType.getNonDaoMenu()
+                } else {
+                    menus = MenuType.getNonDaoMenuWithoutGift()
+                }
             }
             var chatMenuView = ChatMenuView(menus: menus)
             chatMenuView.didTapAction = didTapAction
@@ -103,6 +108,7 @@ enum MenuType: Int, CaseIterable {
     case polling = 10
     case contact = 11
     case gift = 12
+    case poll = 13
 
     func getTitle() -> String {
         switch self {
@@ -130,6 +136,8 @@ enum MenuType: Int, CaseIterable {
             return "Contact"
         case .gift:
             return "Gift"
+        case .poll:
+            return "Polls"
         }
     }
 
@@ -159,15 +167,21 @@ enum MenuType: Int, CaseIterable {
             return Appearance.default.images.menuContact
         case .gift:
             return Appearance.default.images.menuGiftPacket ?? .init()
+        case .poll:
+            return Appearance.default.images.pollChat
         }
     }
 
     static func getDaoMenu() -> [MenuType] {
-        return [.media, .disburseFund, .contributeToFund, .polling, .weather, .nft, .contact]
+        return [.media, .disburseFund, .contributeToFund, .polling, .weather, .nft, .contact,  .poll]
     }
 
     static func getNonDaoMenu() -> [MenuType] {
         return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .gift]
+    }
+
+    static func getNonDaoMenuWithoutGift() -> [MenuType] {
+        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .poll]
     }
 }
 

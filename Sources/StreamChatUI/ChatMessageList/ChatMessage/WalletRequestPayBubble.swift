@@ -167,12 +167,19 @@ class WalletRequestPayBubble: UITableViewCell {
                     Nuke.loadImage(with: themeURL, into: sentThumbImageView)
                 }
             }
-            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount ?? "0") ONE"
+            lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
         }
         if let createdAt = content?.createdAt {
             timestampLabel?.text = dateFormatter.string(from: createdAt)
         } else {
             timestampLabel?.text = nil
+        }
+        if walletPaymentType == .request {
+            pickUpButton.isEnabled = false
+            pickUpButton.alpha = 0.5
+        } else {
+            pickUpButton.isEnabled = true
+            pickUpButton.alpha = 1.0
         }
     }
 
