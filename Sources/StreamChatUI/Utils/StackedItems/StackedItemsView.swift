@@ -239,6 +239,10 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         scrollToItem(at: 0, animated: false)
     }
 
+    public func showLoadingState() {
+
+    }
+
     public func expandView(index: Int) {
         if !isExpand && items.count > 1 {
             let focusIndex = currentlyFocusedItemIndex

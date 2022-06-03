@@ -18,8 +18,8 @@ class PhotoCollectionBubble: _TableViewCell {
     var chatChannel: ChatChannel?
     var isSender = false
     weak var delegate: PhotoCollectionAction?
+    private var isLoading = false
     private let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
-    private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var trailingConstraint: NSLayoutConstraint?
     private var leadingConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
@@ -33,11 +33,6 @@ class PhotoCollectionBubble: _TableViewCell {
     public lazy var stickerContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
     public private(set) var authorAvatarView: ChatAvatarView?
-    public private(set) lazy var loadingIndicator = Components
-        .default
-        .loadingIndicator
-        .init()
-        .withoutAutoresizingMaskConstraints
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -69,53 +64,52 @@ class PhotoCollectionBubble: _TableViewCell {
         leadingConstraint?.isActive = true
         trailingConstraint = mainContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
         trailingConstraint?.isActive = true
-        timestampLabelWidthConstraint = timestampLabel?.widthAnchor.constraint(equalToConstant: bounds.width)
-        timestampLabelWidthConstraint?.isActive = true
-        addSubview(loadingIndicator)
-        loadingIndicator.centerYAnchor.pin(equalTo: subContainer.centerYAnchor).isActive = true
-        loadingIndicator.centerXAnchor.pin(equalTo: subContainer.centerXAnchor).isActive = true
     }
 
     func configureCell(isSender: Bool) {
+        removeGestureRecognizer(stackedItemsView.panGestureRecognizer)
+        stackedItemsView.isUserInteractionEnabled = false
         let imgAttachments = content?.attachments(payloadType: ImageAttachmentPayload.self) ?? []
         let videoAttachments = content?.attachments(payloadType: VideoAttachmentPayload.self) ?? []
         if (!imgAttachments.filter { $0.uploadingState != nil }.isEmpty)
-        &&
-        (!videoAttachments.filter { $0.uploadingState != nil }.isEmpty) {
-            loadingIndicator.isVisible = true
-            stackedItemsView.isHidden = true
+        || (!videoAttachments.filter { $0.uploadingState != nil }.isEmpty) {
+            isLoading = true
             removeGestureRecognizer(stackedItemsView.panGestureRecognizer)
         } else {
-            loadingIndicator.isVisible = false
-            stackedItemsView.isHidden = false
+            isLoading = false
+            stackedItemsView.isUserInteractionEnabled = true
             addGestureRecognizer(stackedItemsView.panGestureRecognizer)
-            let imageAttachment = content?.imageAttachments.compactMap {
-                StackedItem.init(
-                    id: $0.id.index,
-                    url: $0.imageURL,
-                    attachmentType: .image,
-                    attachmentId: $0.id.rawValue)
-            } ?? []
-            let videoAttachment = content?.videoAttachments.compactMap {
-                StackedItem.init(
-                    id: $0.id.index,
-                    url: $0.videoURL,
-                    attachmentType: .video,
-                    attachmentId: $0.id.rawValue)
-            } ?? []
-            stackedItemsView.items = imageAttachment + videoAttachment
-            stackedItemsView.configureItemHandler = { item, cell in
-                cell.configureMedia(attachment: item, isExpand: self.stackedItemsView.isExpand)
-                cell.clipsToBounds = true
-                cell.cornerRadius = 20
+        }
+        let imageAttachment = content?.imageAttachments.compactMap {
+            StackedItem.init(
+                id: $0.id.index,
+                url: $0.imageURL,
+                attachmentType: .image,
+                attachmentId: $0.id.rawValue)
+        } ?? []
+        let videoAttachment = content?.videoAttachments.compactMap {
+            StackedItem.init(
+                id: $0.id.index,
+                url: $0.videoURL,
+                attachmentType: .video,
+                attachmentId: $0.id.rawValue)
+        } ?? []
+        stackedItemsView.items = (imageAttachment + videoAttachment).sorted(by: { $0.id < $1.id })
+        stackedItemsView.configureItemHandler = { item, cell in
+            cell.configureMedia(
+                attachment: item,
+                isExpand: self.stackedItemsView.isExpand,
+                isLoading: self.isLoading
+            )
+            cell.clipsToBounds = true
+            cell.cornerRadius = 20
+        }
+        stackedItemsView.selectionHandler = { [weak self] type, selectedIndex in
+            guard let `self` = self, let cell = self.stackedItemsView.cell(at: selectedIndex) else {
+                return
             }
-            stackedItemsView.selectionHandler = { [weak self] type, selectedIndex in
-                guard let `self` = self, let cell = self.stackedItemsView.cell(at: selectedIndex) else {
-                    return
-                }
-                if let id = AttachmentId(rawValue: "\(type.attachmentId ?? "")") {
-                    self.delegate?.didSelectAttachment(self.content, view: cell, id)
-                }
+            if let id = AttachmentId(rawValue: "\(type.attachmentId ?? "")") {
+                self.delegate?.didSelectAttachment(self.content, view: cell, id)
             }
         }
         if let options = layoutOptions, let memberCount = chatChannel?.memberCount {

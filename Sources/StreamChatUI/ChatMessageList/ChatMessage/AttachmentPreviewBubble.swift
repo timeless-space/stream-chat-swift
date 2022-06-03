@@ -16,9 +16,12 @@ class AttachmentPreviewBubble: UITableViewCell {
     var content: ChatMessage?
     var isSender = false
     var chatChannel: ChatChannel?
-    public lazy var mainContainer = ContainerStackView(axis: .horizontal)
+    private lazy var mainContainer = ContainerStackView(axis: .horizontal)
         .withoutAutoresizingMaskConstraints
-    public lazy var subContainer = ContainerStackView(axis: .vertical)
+    private lazy var subContainer = ContainerStackView(axis: .vertical)
+        .withoutAutoresizingMaskConstraints
+    private lazy var loadingIndicator = UIActivityIndicatorView
+        .init()
         .withoutAutoresizingMaskConstraints
     public private(set) var imagePreview: UIImageView!
     public private(set) var videoPreview: VideoAttachmentGalleryPreview!
@@ -71,6 +74,18 @@ class AttachmentPreviewBubble: UITableViewCell {
         subContainer.heightAnchor.constraint(equalToConstant: 200).isActive = true
         subContainer.widthAnchor.constraint(equalToConstant: 260).isActive = true
 
+        addSubview(loadingIndicator)
+        if #available(iOS 13.0, *) {
+            loadingIndicator.style = .medium
+        } else {
+            // Fallback on earlier versions
+        }
+        loadingIndicator.tintColor = .white
+        loadingIndicator.centerYAnchor.constraint(equalTo: subContainer.centerYAnchor).isActive = true
+        loadingIndicator.centerXAnchor.constraint(equalTo: subContainer.centerXAnchor).isActive = true
+        loadingIndicator.startAnimating()
+        loadingIndicator.transform = .mirrorY
+
         let tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(btnTapAttachment))
         mainContainer.addGestureRecognizer(tapGesture)
     }
@@ -82,6 +97,8 @@ class AttachmentPreviewBubble: UITableViewCell {
     }
 
     func configureCell(isSender: Bool) {
+        loadingIndicator.startAnimating()
+        loadingIndicator.isHidden = true
         subContainer.removeAllArrangedSubviews()
         if content?.attachmentCounts[.image] == 1 {
             if imagePreview != nil {
@@ -93,13 +110,14 @@ class AttachmentPreviewBubble: UITableViewCell {
             imagePreview.transform = .mirrorY
             imagePreview.clipsToBounds = true
             imagePreview.layer.cornerRadius = 12
+            loadingIndicator.isHidden = false
             imageTask = Components.default.imageLoader.loadImage(
                 into: imagePreview,
                 url: content?.imageAttachments.first?.payload.imagePreviewURL,
                 imageCDN: Components.default.imageCDN,
-                placeholder: Appearance.default.images.videoAttachmentPlaceholder,
                 completion: { [weak self] _ in
                     self?.imageTask = nil
+                    self?.loadingIndicator.isHidden = true
                 }
             )
             subContainer.addArrangedSubviews([createTimestampLabel(), imageView])

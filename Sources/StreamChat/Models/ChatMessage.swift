@@ -230,8 +230,7 @@ extension ChatMessage {
     }
 
     public var isMultiplePreview: Bool {
-        return (self.attachmentCounts[.image] ?? 0 > 1)
-                || (self.attachmentCounts[.video] ?? 0 > 1)
+        return (self.attachmentCounts[.image] ?? 0) + (self.attachmentCounts[.video] ?? 0) > 1
     }
 
     public var isSinglePreview: Bool {

@@ -25,6 +25,9 @@ open class MediaPreviewCollectionCell:
     public var imageUrl: String?
     public var isVideoPlaying: Bool = false
     public var videoLayer = AVPlayerLayer()
+    private lazy var loadingIndicator = UIActivityIndicatorView
+        .init()
+        .withoutAutoresizingMaskConstraints
     private(set) lazy var btnPlay: UIButton = {
         let btnPlay = UIButton()
         btnPlay.addTarget(self, action: #selector(btnPlayAction), for: .touchUpInside)
@@ -75,6 +78,9 @@ open class MediaPreviewCollectionCell:
         videoLayer.backgroundColor = UIColor.clear.cgColor
         videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         videoLayer.frame = bounds
+        addSubview(loadingIndicator)
+        loadingIndicator.centerYAnchor.pin(equalTo: self.centerYAnchor).isActive = true
+        loadingIndicator.centerXAnchor.pin(equalTo: self.centerXAnchor).isActive = true
     }
 
     open override func layoutSubviews() {
@@ -82,11 +88,13 @@ open class MediaPreviewCollectionCell:
         videoLayer.frame = bounds
     }
 
-    public func configureMedia(attachment: StackedItem, isExpand: Bool) {
+    public func configureMedia(attachment: StackedItem, isExpand: Bool, isLoading: Bool) {
         self.attachment = attachment
         imgPreview.image = nil
         imageTask?.cancel()
         btnPlay.isHidden = true
+        loadingIndicator.isVisible = true
+        loadingIndicator.startAnimating()
         videoURL = nil
         if attachment.attachmentType == .image {
             btnPlay.isHidden = true
@@ -96,37 +104,42 @@ open class MediaPreviewCollectionCell:
                 into: imgPreview,
                 url: attachment.url,
                 imageCDN: Components.default.imageCDN,
-                placeholder: Appearance.default.images.videoAttachmentPlaceholder,
                 completion: { [weak self] result in
+                    self?.loadingIndicator.isVisible = isLoading
                     switch result {
-                    case .failure(let error):
-                        print(error)
-                    case .success(_):
+                    case .failure:
+                        self?.imgPreview.image = Appearance.default.images.videoAttachmentPlaceholder
+                    case .success:
                         break
                     }
                     self?.imageTask = nil
                 }
             )
         } else {
-            btnPlay.isHidden = false
+            btnPlay.isHidden = isLoading
             videoPreview.isHidden = false
             imgPreview.isHidden = true
+            loadingIndicator.isVisible = isLoading
             if !isExpand {
                 videoURL = attachment.url.absoluteString
             } else {
                 videoURL = nil
             }
-            Components.default.videoLoader.loadPreviewForVideo(with: attachment.url, completion: { [weak self] result in
+            Components.default.videoLoader.loadPreviewForVideo(
+                with: attachment.url,
+                completion: { [weak self] result in
                 guard let `self` = self else { return }
                 switch result {
                 case .success(let image, let url):
                     self.videoPreview.image = image
-                case .failure(_):
+                case .failure:
+                    self.imgPreview.image = Appearance.default.images.videoAttachmentPlaceholder
                     self.videoPreview.image = nil
-                    break
                 }
             })
         }
+        imgPreview.alpha = isLoading ? 0.5 : 1
+        videoPreview.alpha = isLoading ? 0.5 : 1
     }
 
     @objc func btnPlayAction() {
