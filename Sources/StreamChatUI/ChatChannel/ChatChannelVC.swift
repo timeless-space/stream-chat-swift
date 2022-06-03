@@ -368,6 +368,9 @@ open class ChatChannelVC:
     }
 
     private func layoutPinnedMessageView() {
+        guard let currentUserID = ChatClient.shared.currentUserId else { return }
+        pinnedMessages = pinnedMessages
+            .filter({ $0.pinDetails?.pinnedBy.id == currentUserID }) ?? []
         guard !pinnedMessages.isEmpty else {
             removePinMessageContainerView()
             return
@@ -382,16 +385,20 @@ open class ChatChannelVC:
             guard let pinIndex = weakSelf.messages
                 .firstIndex(where: { $0.id == message.id }) else { return }
             let indexPath = IndexPath(item: pinIndex, section: 0)
-            guard let cell = weakSelf.messageListVC?.listView
-                .cellForRow(at: indexPath) as? ChatMessageCell else { return }
             weakSelf.messageListVC?.listView.scrollToIndexPath(indexPath: indexPath)
-            let selectionColor = cell.messageContentView?.bubbleView?.backgroundColor
-            UIView.animate(withDuration: 1, delay: 0, options: []) {
-                cell.messageContentView?.bubbleView?.backgroundColor =
-                selectionColor?.withAlphaComponent(0.3)
-                weakSelf.view.layoutIfNeeded()
-            } completion: { status in
-                cell.messageContentView?.bubbleView?.backgroundColor = selectionColor
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                guard let cell = weakSelf.messageListVC?.listView
+                    .cellForRow(at: indexPath) as? ChatMessageCell else {
+                        return
+                    }
+                let selectionColor = cell.messageContentView?.bubbleView?.backgroundColor
+                UIView.animate(withDuration: 1, delay: 0, options: []) {
+                    cell.messageContentView?.bubbleView?.backgroundColor =
+                    selectionColor?.withAlphaComponent(0.3)
+                    weakSelf.view.layoutIfNeeded()
+                } completion: { status in
+                    cell.messageContentView?.bubbleView?.backgroundColor = selectionColor
+                }
             }
         }
         pinnedMessageContainerView?.callbackCloseButton = { [weak self] message in
@@ -422,6 +429,9 @@ open class ChatChannelVC:
             containerView.heightAnchor.constraint(equalToConstant: 54)
         ])
         messageListTopConstraint?.constant = 54
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handlePinnedMessageLongPress))
+        longPress.minimumPressDuration = 0.22
+        pinnedMessageContainerView?.addGestureRecognizer(longPress)
     }
 
     override open func viewDidLoad() {
@@ -571,6 +581,16 @@ open class ChatChannelVC:
     @objc func unPinMessage(_ sender: Any) {
         pinnedMessageContainerView?.removeFromSuperview()
         pinnedMessageContainerView = nil
+    }
+
+    @objc open func handlePinnedMessageLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        let popup = ChatAllPinnedMessageVC()
+        popup.channelController = channelController
+        popup.pinnedMessages = pinnedMessages
+            .sorted(by: { $0.createdAt > $1.createdAt })
+        popup.modalPresentationStyle = .overFullScreen
+        UIApplication.shared.windows.last?.rootViewController?.present(popup, animated: true)
     }
 
     private func getGroupLink() -> String? {

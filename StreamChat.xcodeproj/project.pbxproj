@@ -153,6 +153,8 @@
 		6E4D4FD927C8D03B007FFE83 /* UserListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */; };
 		6E4D4FDB27C8D927007FFE83 /* UserListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */; };
 		6E4D4FDC27C8D927007FFE83 /* UserListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */; };
+		6E51BC16284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E51BC15284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift */; };
+		6E51BC17284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E51BC15284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift */; };
 		6E6A40D627EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */; };
 		6E6A40D727EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */; };
 		6E6A40D827EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E6A40D527EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib */; };
@@ -1781,6 +1783,7 @@
 		6E41867A27C3CD630061E03F /* SFProDisplay-Heavy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProDisplay-Heavy.ttf"; sourceTree = "<group>"; };
 		6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListDataSource.swift; sourceTree = "<group>"; };
 		6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListViewModel.swift; sourceTree = "<group>"; };
+		6E51BC15284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAllPinnedMessageVC.swift; sourceTree = "<group>"; };
 		6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellWallePayBubbleIncoming.swift; sourceTree = "<group>"; };
 		6E6A40D527EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellWallePayBubbleIncoming.xib; sourceTree = "<group>"; };
 		6E92FD3927BCCBAF00DA89B6 /* ChatNavTitleLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatNavTitleLabel.swift; sourceTree = "<group>"; };
@@ -6137,6 +6140,7 @@
 				FC4F2EFA27F4407000A6D729 /* ChannelMemberCountView.swift */,
 				FC4F2EFC27F4407A00A6D729 /* ChannelMemberCountView.xib */,
 				6E3681D12847A30B008A4A63 /* PinMessageContainerView.swift */,
+				6E51BC15284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -7393,6 +7397,7 @@
 				88CABC4325933EE70061BB67 /* ChatMessageReactionsVC.swift in Sources */,
 				EDE9F686278823E900DF4F31 /* WalletStepper.swift in Sources */,
 				6E0D12D327B3C908003DD1AA /* ChatAddFriendVC.swift in Sources */,
+				6E51BC17284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift in Sources */,
 				DB9A3D562582689A00555D36 /* ChatMessageListRouter.swift in Sources */,
 				ED1D14732786C197005A0EAB /* WalletQuickInputViewController.swift in Sources */,
 				AD77030225EFE24F004E2F10 /* DateFormatter+Extensions.swift in Sources */,
@@ -7856,6 +7861,7 @@
 				79DDF80E249CB920002F4412 /* RequestDecoder.swift in Sources */,
 				84DCB853269F569A006CDF32 /* EventsController+SwiftUI.swift in Sources */,
 				6EEFB78727BB83AD007224C2 /* PanModalPresenter.swift in Sources */,
+				6E51BC16284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift in Sources */,
 				88381E65258258C20047A6A3 /* FileUploadPayload.swift in Sources */,
 				7978FBBF26E1667C002CA2DF /* MessageSearchController.swift in Sources */,
 				DAF1BED1250660F8003CEDC0 /* MessageController+SwiftUI.swift in Sources */,

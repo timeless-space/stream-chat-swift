@@ -73,6 +73,7 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
+    open var allowActions: Bool = true
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -229,7 +230,8 @@ open class ChatMessageListVC:
 
         guard
             gesture.state == .began,
-            let indexPath = listView.indexPathForRow(at: location)
+            let indexPath = listView.indexPathForRow(at: location),
+            allowActions
         else { return }
         didSelectMessageCell(at: indexPath)
     }

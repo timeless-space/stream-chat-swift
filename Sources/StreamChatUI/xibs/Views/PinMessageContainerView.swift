@@ -24,6 +24,18 @@ public class PinMessageContainerView: UIView {
     open private(set) lazy var indicatorView: UIView = {
         return UIView(frame: .zero).withoutAutoresizingMaskConstraints
     }()
+    open private(set) lazy var attachmentView: UIView = {
+        let view = UIView(frame: .zero).withoutAutoresizingMaskConstraints
+        view.backgroundColor = .clear
+        return view
+    }()
+    open private(set) lazy var attachmentViewWidthConstraint: NSLayoutConstraint = {
+        return attachmentView.widthAnchor.constraint(equalToConstant: 38)
+    }()
+    open private(set) lazy var titleLeadingConstraint: NSLayoutConstraint = {
+        return labelTitle.leadingAnchor
+            .constraint(equalTo: attachmentView.trailingAnchor, constant: 10)
+    }()
     private lazy var pinMessages = [ChatMessage]()
     private var currentMessageIndex = 0
 
@@ -34,20 +46,23 @@ public class PinMessageContainerView: UIView {
     // MARK: - UI
     public func setupUI(pinMessages: [ChatMessage]) {
         self.pinMessages = pinMessages
+            .sorted(by: { $0.createdAt > $1.createdAt })
         subviews.forEach { $0.removeFromSuperview() }
         // subview
         addSubview(indicatorView)
+        addSubview(attachmentView)
         addSubview(labelTitle)
         addSubview(labelMessage)
         addSubview(unPinCloseButton)
         // layout view
         layoutIndicatorView()
+        layoutAttachmentContainerView()
+        layoutAttachmentView(isVisible: false)
         layoutTitleLabel()
         layoutMessageLabel()
         layoutCloseButton()
         // setup content
         setupIndicatorView()
-        setupTitle()
         setupMessage()
         setupCloseButton()
         // Gesture Recogniser
@@ -74,10 +89,25 @@ public class PinMessageContainerView: UIView {
         ])
     }
 
+    private func layoutAttachmentContainerView() {
+        NSLayoutConstraint.activate([
+            attachmentView.leadingAnchor.constraint(equalTo: indicatorView.leadingAnchor, constant: 10),
+            attachmentView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: 0),
+            attachmentViewWidthConstraint,
+            attachmentView.heightAnchor.constraint(equalToConstant: 38),
+        ])
+    }
+
+    private func layoutAttachmentView(isVisible: Bool) {
+        attachmentViewWidthConstraint.constant = isVisible ? 38 : 0
+        attachmentViewWidthConstraint.isActive = true
+        titleLeadingConstraint.constant = isVisible ? 10 : 5
+        titleLeadingConstraint.isActive = true
+    }
+
     private func layoutTitleLabel() {
         NSLayoutConstraint.activate([
-            labelTitle.leadingAnchor
-                .constraint(equalTo: indicatorView.trailingAnchor, constant: 10),
+            titleLeadingConstraint,
             labelTitle.trailingAnchor.constraint(equalTo: unPinCloseButton
                                                     .leadingAnchor, constant: -20),
             labelTitle.topAnchor.constraint(equalTo: topAnchor, constant: 5),
@@ -112,7 +142,8 @@ public class PinMessageContainerView: UIView {
     }
 
     private func setupTitle() {
-        labelTitle.text = "Pinned Message"
+        let msgNo = currentMessageIndex > 0 ? "#\(currentMessageIndex)" : ""
+        labelTitle.text = "Pinned Message \(msgNo)"
         labelTitle.textColor = Appearance.default.colorPalette.themeBlue
         labelTitle.font = UIFont.systemFont(ofSize: 17)
     }
@@ -124,20 +155,74 @@ public class PinMessageContainerView: UIView {
     }
 
     private func setupMessage() {
+        setupTitle()
         labelMessage.numberOfLines = 1
         guard pinMessages.indices.contains(currentMessageIndex) else {
             return
         }
         labelTitle.alpha = 0.3
         labelMessage.alpha = 0.3
-        layoutIfNeeded()
-        UIView.animate(withDuration: 0.2) {
-            self.labelTitle.alpha = 1.0
-            self.labelMessage.alpha = 1.0
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.labelTitle.alpha = 1.0
+            weakSelf.labelMessage.alpha = 1.0
+            weakSelf.layoutIfNeeded()
         }
         let message = pinMessages[currentMessageIndex]
         labelMessage.text = message.text
-        callbackMessageDidSelect?(message)
+        // attachment
+        attachmentView.subviews.forEach { $0.removeFromSuperview() }
+        if let attachment = message.imageAttachments.first {
+            layoutAttachmentView(isVisible: true)
+            addImageAttachment(imageURL: attachment.imageURL)
+            labelMessage.text = "Image"
+        } else if let attachment = message.videoAttachments.first {
+            layoutAttachmentView(isVisible: true)
+            addVideoAttachment(videoURL: attachment.videoURL)
+            labelMessage.text = "Video"
+        } else {
+            layoutAttachmentView(isVisible: false)
+        }
+    }
+
+    private func addImageAttachment(imageURL: URL?) {
+        let preview = Components().imageAttachmentComposerPreview.init()
+            .withoutAutoresizingMaskConstraints
+        preview.content = imageURL
+        preview.layer.cornerRadius = 0
+        attachmentView.addSubview(preview)
+        NSLayoutConstraint.activate([
+            preview.leadingAnchor
+                .constraint(equalTo: attachmentView.leadingAnchor, constant: 5),
+            preview.trailingAnchor
+                .constraint(equalTo: attachmentView.trailingAnchor, constant: 0),
+            preview.heightAnchor.constraint(equalTo: attachmentView.heightAnchor),
+            preview.widthAnchor.constraint(equalTo: attachmentView.widthAnchor),
+            preview.topAnchor
+                .constraint(equalTo: attachmentView.topAnchor, constant: 0),
+            preview.bottomAnchor
+                .constraint(equalTo: attachmentView.bottomAnchor, constant: 0),
+        ])
+    }
+
+    private func addVideoAttachment(videoURL: URL?) {
+        let preview = Components().videoAttachmentComposerPreview.init()
+            .withoutAutoresizingMaskConstraints
+        preview.content = videoURL
+        preview.layer.cornerRadius = 0
+        attachmentView.addSubview(preview)
+        NSLayoutConstraint.activate([
+            preview.leadingAnchor
+                .constraint(equalTo: attachmentView.leadingAnchor, constant: 0),
+            preview.trailingAnchor
+                .constraint(equalTo: attachmentView.trailingAnchor, constant: 0),
+            preview.heightAnchor.constraint(equalTo: attachmentView.heightAnchor),
+            preview.widthAnchor.constraint(equalTo: attachmentView.widthAnchor),
+            preview.topAnchor
+                .constraint(equalTo: attachmentView.topAnchor, constant: 0),
+            preview.bottomAnchor
+                .constraint(equalTo: attachmentView.bottomAnchor, constant: 0),
+        ])
     }
 
     // MARK: - Actions
@@ -148,6 +233,10 @@ public class PinMessageContainerView: UIView {
             currentMessageIndex = 0
         }
         setupMessage()
+        guard pinMessages.indices.contains(currentMessageIndex) else {
+            return
+        }
+        callbackMessageDidSelect?(pinMessages[currentMessageIndex])
     }
 
     @objc private func didSwipe(_ sender: UISwipeGestureRecognizer) {
@@ -155,16 +244,16 @@ public class PinMessageContainerView: UIView {
         case .up:
             if currentMessageIndex < pinMessages.count - 1 {
                 currentMessageIndex += 1
-                setupMessage()
             }
         case .down:
             if currentMessageIndex > pinMessages.count - 1 {
                 currentMessageIndex -= 1
-                setupMessage()
             }
         default:
             break
         }
+        setupMessage()
+        callbackMessageDidSelect?(pinMessages[currentMessageIndex])
     }
 
     @objc private func closeButtonAction() {
