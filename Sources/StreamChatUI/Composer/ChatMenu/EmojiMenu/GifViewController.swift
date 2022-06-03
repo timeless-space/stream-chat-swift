@@ -207,6 +207,13 @@ class GifViewController: UIViewController {
         errorLabel.isHidden = true
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        if isSearchEnable {
+            NotificationCenter.default.post(name: .updateTextfield, object: nil, userInfo: nil)
+        }
+        super.viewDidDisappear(animated)
+    }
+
     private func setUpBackButton() {
         headerStackView.axis = .horizontal
         headerStackView.distribution = .fill
@@ -215,7 +222,7 @@ class GifViewController: UIViewController {
         backButton.addTarget(self, action: #selector(btnBackPressed), for: .touchUpInside)
         backButton.isHidden = !isSearchEnable
         searchView.backgroundColor = Appearance.default.colorPalette.stickerBg
-        searchView.placeholder = "Search Gifs"
+        searchView.placeholder = "Search GIFs"
         searchView.backgroundImage = UIImage()
         searchView.delegate = self
         if (isSearchEnable) {
@@ -301,7 +308,7 @@ class GifViewController: UIViewController {
     }
 
     @objc func btnBackPressed(sender: UIButton!) {
-        dismiss(animated: true, completion: nil)
+        dismiss(animated: true)
     }
 }
 
@@ -309,9 +316,12 @@ class GifViewController: UIViewController {
 extension GifViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         if !isSearchEnable {
-            let gifVc = GifViewController(with: true)
-            NotificationCenter.default.post(name: .clearTextField, object: nil, userInfo: nil)
-            UIApplication.shared.keyWindow?.rootViewController?.present(gifVc, animated: true, completion: nil)
+            NotificationCenter.default.post(name: .updateTextfield, object: nil, userInfo: nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                let gifVc = GifViewController(with: true)
+                NotificationCenter.default.post(name: .clearTextField, object: nil, userInfo: nil)
+                UIApplication.shared.getTopViewController()?.present(gifVc, animated: true, completion: nil)
+            })
         }
         return isSearchEnable
     }

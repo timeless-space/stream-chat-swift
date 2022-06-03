@@ -53,8 +53,7 @@ open class ChatMessageListRouter:
         popup.transitioningDelegate = messagePopUpTransitionController
 
         messagePopUpTransitionController.selectedMessageId = messageContentView.content?.id
-
-        rootViewController.present(popup, animated: true)
+        UIApplication.shared.windows.last?.rootViewController?.present(popup, animated: true)
     }
 
     /// Handles opening of a link URL.
