@@ -43,6 +43,11 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
         animationPlaceholderImageView.addSubview(playerView)
         playerView.pin(to: animationPlaceholderImageView)
         playerView.pin(anchors: [.height, .width], to: animationPlaceholderImageView)
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(playerDidFinishPlaying(note:)),
+                                               name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                               object: playerView.player.currentItem)
         gradientLayer.frame = frame
     }
     
@@ -73,6 +78,20 @@ open class VideoAttachmentGalleryCell: GalleryCollectionViewCell {
                         self.animationPlaceholderImageView.image = nil
                     }
                 }
+            }
+        }
+    }
+
+    // Play video again in case the current player has finished playing
+    @objc func playerDidFinishPlaying(note: NSNotification) {
+        guard let playerItem = note.object as? AVPlayerItem,
+              let currentPlayer = playerView.player as? AVPlayer else {
+                  return
+              }
+        if let currentItem = currentPlayer.currentItem, currentItem == playerItem {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                currentPlayer.seek(to: CMTime.zero)
+                currentPlayer.play()
             }
         }
     }
