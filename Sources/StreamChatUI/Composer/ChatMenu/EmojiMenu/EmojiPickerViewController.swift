@@ -160,9 +160,9 @@ extension EmojiPickerViewController: UITableViewDelegate, UITableViewDataSource 
 extension EmojiPickerViewController: DownloadStickerDelegate {
 
     func onClickOfDownload(indexPath: IndexPath) {
-        guard let packageId = packages[indexPath.row].packageID else { return }
+        guard let packageId = packages[safe: indexPath.row]?.packageID else { return }
         if packages[indexPath.row].isDownload != "Y" {
-            StickerApiClient.downloadStickers(packageId: packages[indexPath.row].packageID ?? 0) { [weak self] _ in
+            StickerApiClient.downloadStickers(packageId: packageId) { [weak self] _ in
                 guard let `self` = self else { return }
                 self.packages[indexPath.row].isDownload = "Y"
                 self.downloadedPackage.append(packageId)
