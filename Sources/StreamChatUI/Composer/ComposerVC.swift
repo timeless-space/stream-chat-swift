@@ -23,6 +23,7 @@ extension Notification.Name {
     public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
+    public static let updateTextfield = Notification.Name("kUpdateTextfield")
     public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
     public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
     public static let pollSended = Notification.Name("kStreamChatPollSendedAction")
@@ -287,7 +288,7 @@ open class ComposerVC: _ViewController,
     private var menuController: ChatMenuViewController?
     private var emoji: UIViewController?
     private var emojiPickerView: UIViewController?
-    private var isMenuShowing = false
+    var isMenuShowing = false
     private var forceKeyboardClose = false {
         didSet {
             if forceKeyboardClose {
@@ -313,6 +314,7 @@ open class ComposerVC: _ViewController,
             }
         }
     }
+    var shouldToggleEmojiButton = true
 
     @objc func didTapView() {
         hideInputView()
@@ -324,7 +326,9 @@ open class ComposerVC: _ViewController,
 
     @objc fileprivate func keyboardWillHide(notification: Notification) {
         guard !forceKeyboardClose else { return }
-        composerView.inputMessageView.emojiButton.isSelected = false
+        if shouldToggleEmojiButton {
+            composerView.inputMessageView.emojiButton.isSelected = false
+        }
         isMenuShowing = true
         animateMenuButton()
     }
