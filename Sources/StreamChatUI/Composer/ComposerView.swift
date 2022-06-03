@@ -155,7 +155,6 @@ open class ComposerView: _View, ThemeProvider {
         container.addArrangedSubview(bottomContainer)
         container.addArrangedSubview(toolKitView)
         bottomContainer.isHidden = false
-        headerView.isHidden = true
 
         toolKitView.addSubview(toolBarCollectionView)
         toolKitView.heightAnchor.constraint(equalToConstant: 38).isActive = true
