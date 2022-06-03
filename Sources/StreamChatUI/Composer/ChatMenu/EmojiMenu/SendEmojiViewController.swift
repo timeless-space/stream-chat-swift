@@ -58,7 +58,7 @@ class SendEmojiViewController: UIViewController {
                 attachments: [],
                 extraData: ["sendStickerGift": .dictionary(sendStickerParam)],
                 completion: nil)
-        self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
+        view.window?.rootViewController?.dismiss(animated: true, completion: nil)
     }
 
     @IBAction func btnSendSticker(_ sender: Any) {
@@ -92,7 +92,7 @@ class SendEmojiViewController: UIViewController {
     }
 
     @IBAction func btnCloseAction(_ sender: Any) {
-        self.dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
 }
 
