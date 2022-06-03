@@ -13,6 +13,8 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
         }
     }
 
+    open var isDiscardButtonVisible: Bool = true
+
     /// The maximum number of vertical items before scrolling is enabled.
     open var maxNumberOfVerticalItems: Int = 3
 
@@ -79,6 +81,7 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
             let cell = components.messageComposerAttachmentCell.init()
                 .withoutAutoresizingMaskConstraints
             cell.embed(attachmentView: view)
+            cell.discardButton.isHidden = !isDiscardButtonVisible
             cell.discardButtonHandler = { [weak self] in self?.didTapRemoveItemButton?(index) }
             return cell
         }
