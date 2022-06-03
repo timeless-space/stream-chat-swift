@@ -38,4 +38,5 @@ public struct UserdefaultKey {
 
 public struct MessageType {
     public static let giftPacket = "new-gift-packet"
+    public static let newPoll = "new-poll"
 }

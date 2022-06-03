@@ -57,5 +57,24 @@ extension UILabel {
         let customFont = UIFont.init(name: "SFProText-Regular", size: 15) ?? UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.regular)
         self.font = customFont
     }
-    
+
+    public func addImage(systemName: String, afterLabel: Bool = false) {
+        let attachment = NSTextAttachment()
+        if #available(iOS 15.0, *) {
+            attachment.image = UIImage(systemName: systemName)
+            attachment.image = attachment.image?.withTintColor(Appearance.default.colorPalette.subtitleText)
+            attachment.bounds = CGRect(x: 0, y: 0, width: 15.5, height: 10)
+        }
+        let attachmentString = NSAttributedString(attachment: attachment)
+        if afterLabel {
+            let strLabelText = NSMutableAttributedString(string: self.text!)
+            strLabelText.append(attachmentString)
+            self.attributedText = strLabelText
+        } else {
+            let strLabelText = NSAttributedString(string: self.text!)
+            let mutableAttachmentString = NSMutableAttributedString(attributedString: attachmentString)
+            mutableAttachmentString.append(strLabelText)
+            self.attributedText = mutableAttachmentString
+        }
+    }
 }

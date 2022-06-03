@@ -24,6 +24,13 @@ extension Notification.Name {
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
     public static let updateTextfield = Notification.Name("kUpdateTextfield")
+    public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
+    public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
+    public static let pollSended = Notification.Name("kStreamChatPollSendedAction")
+    public static let submitVote = Notification.Name("kStreamChatSubmitVoteTapAction")
+    public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
+    public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
+    public static let getPollData = Notification.Name("kStreamChatGetPollData")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -597,6 +604,10 @@ open class ComposerVC: _ViewController,
             case .dao:
                 self.animateToolkitView(isHide: true)
                 break
+            case .poll:
+                self.animateToolkitView(isHide: true)
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                self.createNewPoll()
             default:
                 break
             }
@@ -889,6 +900,15 @@ open class ComposerVC: _ViewController,
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
         NotificationCenter.default.post(name: .sendGiftCardTapAction, object: nil, userInfo: userInfo)
+    }
+
+    @objc open func createNewPoll() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        guard let channelId = channelController?.channel?.cid else { return }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        NotificationCenter.default.post(name: .createNewPoll, object: nil, userInfo: userInfo)
     }
 
     private func animateMenuButton() {
