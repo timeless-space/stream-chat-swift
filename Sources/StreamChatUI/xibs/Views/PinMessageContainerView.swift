@@ -21,8 +21,8 @@ public class PinMessageContainerView: UIView {
     open private(set) lazy var unPinCloseButton: UIButton = {
         return UIButton().withoutAutoresizingMaskConstraints
     }()
-    open private(set) lazy var indicatorView: UIView = {
-        return UIView(frame: .zero).withoutAutoresizingMaskConstraints
+    open private(set) lazy var indicatorView: PinMessageIndicatorView = {
+        return PinMessageIndicatorView(frame: .zero).withoutAutoresizingMaskConstraints
     }()
     open private(set) lazy var attachmentView: UIView = {
         let view = UIView(frame: .zero).withoutAutoresizingMaskConstraints
@@ -63,7 +63,7 @@ public class PinMessageContainerView: UIView {
         layoutCloseButton()
         // setup content
         setupIndicatorView()
-        setupMessage()
+        setupMessage(animate: false)
         setupCloseButton()
         // Gesture Recogniser
         let swipeGestureRecognizerDown = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe(_:)))
@@ -84,7 +84,7 @@ public class PinMessageContainerView: UIView {
         NSLayoutConstraint.activate([
             indicatorView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
             indicatorView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: 0),
-            indicatorView.heightAnchor.constraint(equalToConstant: 38),
+            indicatorView.heightAnchor.constraint(equalToConstant: 50),
             indicatorView.widthAnchor.constraint(equalToConstant: 2)
         ])
     }
@@ -138,7 +138,8 @@ public class PinMessageContainerView: UIView {
 
     // MARK: - Setup Content
     private func setupIndicatorView() {
-        indicatorView.backgroundColor = Appearance.default.colorPalette.themeBlue
+        indicatorView.numberOfItems = pinMessages.count
+        indicatorView.setupUI()
     }
 
     private func setupTitle() {
@@ -154,19 +155,21 @@ public class PinMessageContainerView: UIView {
         unPinCloseButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)
     }
 
-    private func setupMessage() {
+    private func setupMessage(animate: Bool = true) {
         setupTitle()
         labelMessage.numberOfLines = 1
         guard pinMessages.indices.contains(currentMessageIndex) else {
             return
         }
-        labelTitle.alpha = 0.3
-        labelMessage.alpha = 0.3
-        UIView.animate(withDuration: 0.3) { [weak self] in
-            guard let weakSelf = self else { return }
-            weakSelf.labelTitle.alpha = 1.0
-            weakSelf.labelMessage.alpha = 1.0
-            weakSelf.layoutIfNeeded()
+        if animate {
+            labelTitle.alpha = 0.3
+            labelMessage.alpha = 0.3
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                guard let weakSelf = self else { return }
+                weakSelf.labelTitle.alpha = 1.0
+                weakSelf.labelMessage.alpha = 1.0
+                weakSelf.layoutIfNeeded()
+            }
         }
         let message = pinMessages[currentMessageIndex]
         labelMessage.text = message.text
@@ -237,6 +240,7 @@ public class PinMessageContainerView: UIView {
             return
         }
         callbackMessageDidSelect?(pinMessages[currentMessageIndex])
+        indicatorView.updateIndicatorFor(index: currentMessageIndex)
     }
 
     @objc private func didSwipe(_ sender: UISwipeGestureRecognizer) {
@@ -254,6 +258,7 @@ public class PinMessageContainerView: UIView {
         }
         setupMessage()
         callbackMessageDidSelect?(pinMessages[currentMessageIndex])
+        indicatorView.updateIndicatorFor(index: currentMessageIndex)
     }
 
     @objc private func closeButtonAction() {

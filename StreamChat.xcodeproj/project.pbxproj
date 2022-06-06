@@ -137,6 +137,8 @@
 		6E3DAEC32809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */; };
 		6E3DEF6A27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */; };
 		6E3DEF6B27D3501C0095E0E3 /* JoinGroupRequestVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */; };
+		6E3F7B20284E3762009AEA49 /* PinMessageIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3F7B1F284E3762009AEA49 /* PinMessageIndicatorView.swift */; };
+		6E3F7B21284E3762009AEA49 /* PinMessageIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3F7B1F284E3762009AEA49 /* PinMessageIndicatorView.swift */; };
 		6E41867B27C3CD630061E03F /* SFCompactText-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6E41867527C3CD630061E03F /* SFCompactText-Regular.ttf */; };
 		6E41867C27C3CD630061E03F /* SFCompactText-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6E41867527C3CD630061E03F /* SFCompactText-Regular.ttf */; };
 		6E41867D27C3CD630061E03F /* SFProText-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6E41867627C3CD630061E03F /* SFProText-Semibold.ttf */; };
@@ -1775,6 +1777,7 @@
 		6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellShimmerEffect.swift; sourceTree = "<group>"; };
 		6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellShimmerEffect.xib; sourceTree = "<group>"; };
 		6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupRequestVC.swift; sourceTree = "<group>"; };
+		6E3F7B1F284E3762009AEA49 /* PinMessageIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinMessageIndicatorView.swift; sourceTree = "<group>"; };
 		6E41867527C3CD630061E03F /* SFCompactText-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFCompactText-Regular.ttf"; sourceTree = "<group>"; };
 		6E41867627C3CD630061E03F /* SFProText-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProText-Semibold.ttf"; sourceTree = "<group>"; };
 		6E41867727C3CD630061E03F /* SFProText-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProText-Regular.ttf"; sourceTree = "<group>"; };
@@ -6141,6 +6144,7 @@
 				FC4F2EFC27F4407A00A6D729 /* ChannelMemberCountView.xib */,
 				6E3681D12847A30B008A4A63 /* PinMessageContainerView.swift */,
 				6E51BC15284A3FEA00E7D2CE /* ChatAllPinnedMessageVC.swift */,
+				6E3F7B1F284E3762009AEA49 /* PinMessageIndicatorView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -7372,6 +7376,7 @@
 				792057A326416776002B145B /* ChatMentionSuggestionCollectionViewCell.swift in Sources */,
 				228190EB256733420048D7C6 /* UIFont+Extensions.swift in Sources */,
 				888123D2255D430B00070D5A /* UIView+Extensions.swift in Sources */,
+				6E3F7B21284E3762009AEA49 /* PinMessageIndicatorView.swift in Sources */,
 				E3D2975628252B650026B69F /* GiphyApiCallBaseRestApi.swift in Sources */,
 				ED1D14722786C197005A0EAB /* WalletInputViewController.swift in Sources */,
 				AD158B6526C1873000C104CD /* ChatThreadVC+SwiftUI.swift in Sources */,
@@ -7914,6 +7919,7 @@
 				881506EC258212BF0013935B /* MultipartFormData.swift in Sources */,
 				792A4F472480107A00EAF71D /* Filter.swift in Sources */,
 				22692C8F25D18097007C41D0 /* ChatMessageGiphyAttachment.swift in Sources */,
+				6E3F7B20284E3762009AEA49 /* PinMessageIndicatorView.swift in Sources */,
 				792A4F4B248010A600EAF71D /* QueryOptions.swift in Sources */,
 				792FCB4B24A3D52A000290C7 /* DatabaseSession.swift in Sources */,
 				792A4F1D247FEA2200EAF71D /* ChannelListController.swift in Sources */,

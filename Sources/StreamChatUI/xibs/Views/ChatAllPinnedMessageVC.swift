@@ -59,6 +59,7 @@ open class ChatAllPinnedMessageVC: _ViewController,
         view.backgroundColor = Appearance.default.colorPalette.chatViewBackground
         // color
         let navColor = Appearance.default.colorPalette.walletTabbarBackground
+        navigationSafeAreaView.backgroundColor = navColor
         navigationView.backgroundColor = navColor
         bottomView.backgroundColor = navColor
         // title

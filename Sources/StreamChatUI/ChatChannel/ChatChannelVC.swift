@@ -391,13 +391,15 @@ open class ChatChannelVC:
                     .cellForRow(at: indexPath) as? ChatMessageCell else {
                         return
                     }
-                let selectionColor = cell.messageContentView?.bubbleView?.backgroundColor
+                let selectionColor = cell.messageContentView?
+                    .bubbleView?.backgroundColor
                 UIView.animate(withDuration: 1, delay: 0, options: []) {
                     cell.messageContentView?.bubbleView?.backgroundColor =
                     selectionColor?.withAlphaComponent(0.3)
                     weakSelf.view.layoutIfNeeded()
                 } completion: { status in
-                    cell.messageContentView?.bubbleView?.backgroundColor = selectionColor
+                    cell.messageContentView?
+                        .bubbleView?.backgroundColor = selectionColor
                 }
             }
         }
@@ -585,6 +587,22 @@ open class ChatChannelVC:
 
     @objc open func handlePinnedMessageLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
+        UIView.animate(withDuration: 0.3,
+                       delay: 0,
+                       usingSpringWithDamping: 0.5,
+                       initialSpringVelocity: 3,
+                       options: [.curveEaseInOut],
+                       animations: { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.pinnedMessageContainerView?
+                .transform = CGAffineTransform.identity.scaledBy(x: 0.95, y: 0.95)
+            weakSelf.pinnedMessageContainerView?.alpha = 0.5
+            weakSelf.view.layoutIfNeeded()
+        }, completion: { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.pinnedMessageContainerView?.transform = .identity
+            weakSelf.pinnedMessageContainerView?.alpha = 1.0
+        })
         let popup = ChatAllPinnedMessageVC()
         popup.channelController = channelController
         popup.pinnedMessages = pinnedMessages
