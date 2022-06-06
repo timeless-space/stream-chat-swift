@@ -17,22 +17,22 @@ class PhotoCollectionBubble: _TableViewCell {
     var content: ChatMessage?
     var chatChannel: ChatChannel?
     var isSender = false
+    let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
     weak var delegate: PhotoCollectionAction?
     private var isLoading = false
-    private let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
     private var trailingConstraint: NSLayoutConstraint?
     private var leadingConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     public private(set) var timestampLabel: UILabel?
     public var layoutOptions: ChatMessageLayoutOptions?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
-    public lazy var mainContainer = ContainerStackView(axis: .horizontal)
+    private lazy var mainContainer = ContainerStackView(axis: .horizontal)
         .withoutAutoresizingMaskConstraints
-    public lazy var subContainer = ContainerStackView(axis: .vertical)
+    private lazy var subContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-    public lazy var stickerContainer = ContainerStackView(axis: .vertical)
+    private lazy var stickerContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-    public private(set) var authorAvatarView: ChatAvatarView?
+    private var authorAvatarView: ChatAvatarView?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -42,7 +42,7 @@ class PhotoCollectionBubble: _TableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private func setupUI() {
         mainContainer.addArrangedSubviews([createAvatarView(), subContainer])
         mainContainer.alignment = .bottom
