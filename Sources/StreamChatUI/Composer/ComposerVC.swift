@@ -1026,9 +1026,11 @@ open class ComposerVC: _ViewController,
             let parameter: [String: Any] = [
                 kAmount: walletRequest.extraData?.requestedAmount ?? "0",
                 kChannelId: cid.description,
-                kFlair: walletRequest.extraData?.requestedThemeUrl
+                kFlair: walletRequest.extraData?.requestedThemeUrl,
+                kMessageText: text
             ]
             NotificationCenter.default.post(name: .sendPaymentRequest, object: nil, userInfo: parameter)
+            composerView.inputMessageView.textView.resignFirstResponder()
         } else {
             channelController?.createNewMessage(
                 text: text,
