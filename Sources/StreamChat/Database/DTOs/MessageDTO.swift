@@ -55,7 +55,13 @@ class MessageDTO: NSManagedObject {
 
     /// Makes sure the `defaultSortingKey` value is computed and set.
     fileprivate func prepareDefaultSortKeyIfNeeded() {
-        let newSortingKey = locallyCreatedAt ?? createdAt
+        var newSortingKey = Date()
+        if let locallyCreatedAt = locallyCreatedAt,
+            value(forKey: "locallyCreatedAt") != nil {
+            newSortingKey = locallyCreatedAt
+        } else if value(forKey: "createdAt") != nil {
+            newSortingKey = createdAt
+        }
         if defaultSortingKey != newSortingKey {
             defaultSortingKey = newSortingKey
         }
