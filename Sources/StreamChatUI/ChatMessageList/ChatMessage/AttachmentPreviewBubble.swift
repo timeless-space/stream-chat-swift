@@ -61,8 +61,8 @@ class AttachmentPreviewBubble: UITableViewCell {
 
         contentView.addSubview(mainContainer)
         NSLayoutConstraint.activate([
-            mainContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 4),
-            mainContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -4)
+            mainContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 12),
+            mainContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -12)
         ])
 
         subContainer.alignment = .fill
