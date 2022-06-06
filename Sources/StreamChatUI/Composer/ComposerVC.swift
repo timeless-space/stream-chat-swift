@@ -24,6 +24,13 @@ extension Notification.Name {
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
     public static let updateTextfield = Notification.Name("kUpdateTextfield")
+    public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
+    public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
+    public static let pollSended = Notification.Name("kStreamChatPollSendedAction")
+    public static let submitVote = Notification.Name("kStreamChatSubmitVoteTapAction")
+    public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
+    public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
+    public static let getPollData = Notification.Name("kStreamChatGetPollData")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -439,7 +446,7 @@ open class ComposerVC: _ViewController,
                 self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
             }
         case .edit:
-            composerView.titleLabel.text = L10n.Composer.Title.edit
+            composerView.titleLabel.text = getEditMessageTitle()
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.inputMessageView.sendButton.isHidden = true
@@ -469,18 +476,41 @@ open class ComposerVC: _ViewController,
             command: content.command
         )
 
-        attachmentsVC.content = content.attachments.map {
-            if let provider = $0.payload as? AttachmentPreviewProvider {
-                return provider
-            } else {
-                log.warning("""
-                Attachment \($0) doesn't conform to the `AttachmentPreviewProvider` protocol. Add the conformance \
-                to this protocol to avoid using the attachment preview placeholder in the composer.
-                """)
-                return DefaultAttachmentPreviewProvider()
+        if let editMessage = content.editingMessage, content.attachments.isEmpty {
+            let videos = editMessage.videoAttachments.map(\.asAnyAttachment)
+            let images = editMessage.imageAttachments.map(\.asAnyAttachment)
+            let editAttachments = videos + images
+            // Hiding delete button
+            attachmentsVC.isDiscardButtonVisible = editAttachments.isEmpty
+            attachmentsVC.content = editAttachments.map {
+                if let attachment = $0.attachment(payloadType: ImageAttachmentPayload.self),  let provider = attachment.payload as? AttachmentPreviewProvider {
+                    return provider
+                } else if let attachment = $0.attachment(payloadType: VideoAttachmentPayload.self),  let provider = attachment.payload as? AttachmentPreviewProvider {
+                    return provider
+                } else {
+                    log.warning("""
+                    Attachment \($0) doesn't conform to the `AttachmentPreviewProvider` protocol. Add the conformance \
+                    to this protocol to avoid using the attachment preview placeholder in the composer.
+                    """)
+                    return DefaultAttachmentPreviewProvider()
+                }
             }
+            composerView.inputMessageView.attachmentsViewContainer.isHidden = editAttachments.isEmpty
+        } else {
+            attachmentsVC.isDiscardButtonVisible = true
+            attachmentsVC.content = content.attachments.map {
+                if let provider = $0.payload as? AttachmentPreviewProvider {
+                    return provider
+                } else {
+                    log.warning("""
+                            Attachment \($0) doesn't conform to the `AttachmentPreviewProvider` protocol. Add the conformance \
+                            to this protocol to avoid using the attachment preview placeholder in the composer.
+                            """)
+                    return DefaultAttachmentPreviewProvider()
+                }
+            }
+            composerView.inputMessageView.attachmentsViewContainer.isHidden = content.attachments.isEmpty
         }
-        composerView.inputMessageView.attachmentsViewContainer.isHidden = content.attachments.isEmpty
 
         if content.isInsideThread {
             if channelController?.channel?.isDirectMessageChannel == true {
@@ -521,6 +551,15 @@ open class ComposerVC: _ViewController,
             self.content.attachments.remove(at: index)
             self.composerView.inputMessageView.sendButton.isHidden = self.content.isEmpty && self.content.attachments.isEmpty
         }
+    }
+
+    private func getEditMessageTitle() -> String {
+        if let editMessage = content.editingMessage,
+            (!editMessage.imageAttachments.isEmpty ||
+             !editMessage.videoAttachments.isEmpty) {
+            return L10n.Composer.Title.editCaption
+        }
+        return L10n.Composer.Title.edit
     }
 
     private func bindWalletOption() {
@@ -597,6 +636,10 @@ open class ComposerVC: _ViewController,
             case .dao:
                 self.animateToolkitView(isHide: true)
                 break
+            case .poll:
+                self.animateToolkitView(isHide: true)
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                self.createNewPoll()
             default:
                 break
             }
@@ -889,6 +932,15 @@ open class ComposerVC: _ViewController,
         var userInfo = [String: Any]()
         userInfo["channelId"] = channelId
         NotificationCenter.default.post(name: .sendGiftCardTapAction, object: nil, userInfo: userInfo)
+    }
+
+    @objc open func createNewPoll() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        guard let channelId = channelController?.channel?.cid else { return }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        NotificationCenter.default.post(name: .createNewPoll, object: nil, userInfo: userInfo)
     }
 
     private func animateMenuButton() {
