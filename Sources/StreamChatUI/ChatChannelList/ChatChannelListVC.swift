@@ -137,8 +137,11 @@ open class ChatChannelListVC: _ViewController,
     }
 
     @objc private func pushToChatMessageScreen(_ notification: NSNotification) {
-        navigationController?.popToRootViewController(animated: false)
         guard let cid = notification.userInfo?["channelId"] as? String else {
+            return
+        }
+        let channelController = navigationController?.visibleViewController as? ChatChannelVC
+        if channelController?.channelController?.channel?.cid.description == cid {
             return
         }
         do {
