@@ -294,6 +294,13 @@ open class ChatMessageListVC:
         dataSource?.numberOfMessages(in: self) ?? 0
     }
 
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
+        guard let extraData = message?.extraData,
+              let _ = extraData["fallbackMessage"] else { return }
+        NotificationCenter.default.post(name: .updateAvailable, object: nil)
+    }
+
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         pausePlayVideos()
     }
