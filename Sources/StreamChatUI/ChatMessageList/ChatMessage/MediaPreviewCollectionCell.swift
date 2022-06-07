@@ -46,6 +46,14 @@ open class MediaPreviewCollectionCell:
         return imgPreview
     }()
 
+    private var btnCollapse: UIButton = {
+        let btnCollapse = UIButton()
+        btnCollapse.setImage(Appearance.default.images.collapseStack, for: .normal)
+        btnCollapse.translatesAutoresizingMaskIntoConstraints = false
+        btnCollapse.isUserInteractionEnabled = false
+        return btnCollapse
+    }()
+
     private(set) lazy var videoPreview: UIImageView = {
         let videoPreview = UIImageView()
         videoPreview.clipsToBounds = true
@@ -71,6 +79,8 @@ open class MediaPreviewCollectionCell:
     private func setupUI() {
         embed(imgPreview)
         embed(videoPreview)
+        addSubview(btnCollapse)
+        btnCollapse.translatesAutoresizingMaskIntoConstraints = false
         btnPlay.translatesAutoresizingMaskIntoConstraints = false
         addSubview(btnPlay)
         btnPlay.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
@@ -79,6 +89,8 @@ open class MediaPreviewCollectionCell:
         videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         videoLayer.frame = bounds
         addSubview(loadingIndicator)
+        btnCollapse.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        btnCollapse.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -30).isActive = true
         loadingIndicator.centerYAnchor.pin(equalTo: self.centerYAnchor).isActive = true
         loadingIndicator.centerXAnchor.pin(equalTo: self.centerXAnchor).isActive = true
     }
@@ -90,6 +102,7 @@ open class MediaPreviewCollectionCell:
 
     public func configureMedia(attachment: StackedItem, isExpand: Bool, isLoading: Bool) {
         self.attachment = attachment
+        btnCollapse.isHidden = true
         imgPreview.image = nil
         imageTask?.cancel()
         btnPlay.isHidden = true
@@ -142,7 +155,17 @@ open class MediaPreviewCollectionCell:
         videoPreview.alpha = isLoading ? 0.5 : 1
     }
 
-    @objc func btnPlayAction() {
+    public func configureLastAction() {
+        imgPreview.image = nil
+        imageTask?.cancel()
+        btnPlay.isHidden = true
+        loadingIndicator.isVisible = false
+        backgroundColor = .clear
+        videoURL = nil
+        btnCollapse.isHidden = false
+    }
+
+    @objc private func btnPlayAction() {
         btnPlay.isHidden = true
         videoLayer.player?.play()
     }

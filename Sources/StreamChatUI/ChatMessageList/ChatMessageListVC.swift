@@ -220,20 +220,6 @@ open class ChatMessageListVC:
     @objc open func handleTap(_ gesture: UITapGestureRecognizer) {
         view.endEditing(true)
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        handleExpandState(gesture)
-    }
-
-    private func handleExpandState(_ gesture: UITapGestureRecognizer) {
-        if let index = listView.indexPathForRow(at: gesture.location(in: listView)),
-           !(listView.cellForRow(at: index) is PhotoCollectionBubble) {
-            listView.visibleCells.forEach { cell in
-                if let cell = cell as? PhotoCollectionBubble,
-                   let index = listView.indexPath(for: cell),
-                   cell.stackedItemsView.isExpand {
-                    listView.reloadRows(at: [index], with: .automatic)
-                }
-            }
-        }
     }
 
     /// Handles long press action on collection view.

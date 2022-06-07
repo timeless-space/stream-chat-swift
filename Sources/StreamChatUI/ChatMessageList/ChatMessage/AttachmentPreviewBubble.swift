@@ -61,8 +61,8 @@ class AttachmentPreviewBubble: UITableViewCell {
 
         contentView.addSubview(mainContainer)
         NSLayoutConstraint.activate([
-            mainContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 12),
-            mainContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -12)
+            mainContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 8),
+            mainContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -8)
         ])
 
         subContainer.alignment = .fill
@@ -173,6 +173,9 @@ class AttachmentPreviewBubble: UITableViewCell {
 
     private func handleBubbleConstraints(_ isSender: Bool) {
         let memberCount = chatChannel?.memberCount ?? 0
+        if let authorAvatarView = authorAvatarView {
+            mainContainer.setCustomSpacing((memberCount <= 2) ? 20 : 8, after: authorAvatarView)
+        }
         leadingMainContainer?.isActive = !isSender
         trailingMainContainer?.isActive = isSender
         timestampLabelWidthConstraint?.constant = cellWidth
@@ -204,6 +207,7 @@ class AttachmentPreviewBubble: UITableViewCell {
         }
         timestampLabel.transform = .mirrorY
         timestampLabel.heightAnchor.constraint(equalToConstant: 15).isActive = true
+        timestampLabel.trailingAnchor.constraint(equalTo: self.subContainer.leadingAnchor, constant: -30)
         return timestampLabel!
     }
 }

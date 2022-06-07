@@ -91,7 +91,7 @@ public class StackedItemsLayout: UICollectionViewLayout {
     private let horizontalOffsets: [CGFloat] = [20, 14.5, 10, 9, 5]
 
     // the offset to use
-    private var totalEffectiveHorizontalOffset: CGFloat {
+    var totalEffectiveHorizontalOffset: CGFloat {
         let numberOfItems = min(max(0, numberOfItems - 1), horizontalOffsets.count - 1)
         return ceil(horizontalOffsets.prefix(numberOfItems).reduce(CGFloat(0), +) * pow(perItemScale, CGFloat(horizontalOffsets.count - 1)))
     }

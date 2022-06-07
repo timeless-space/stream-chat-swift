@@ -27,22 +27,28 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
     /// this will be called to configure each cell
     public var configureItemHandler: ConfigureItemHandler?
-    public typealias ConfigureItemHandler = (ItemType, CellType) -> Void
+    public var leftPadding = 0.0
+    private var trailingConst: NSLayoutConstraint?
+    private var leadingConst: NSLayoutConstraint?
+    public typealias ConfigureItemHandler = (ItemType?, CellType) -> Void
 
     /// this will be called when an item is selected
     public var selectionHandler: SelectionHandler?
-    public typealias SelectionHandler = (ItemType, Int) -> Void
+    public typealias SelectionHandler = (ItemType?, Int) -> Void
+    private var btnExpand: CustomButton = {
+        let expandBtn = CustomButton()
+        expandBtn.setImage(Appearance.default.images.expandStack, for: .normal)
+        expandBtn.translatesAutoresizingMaskIntoConstraints = false
+        expandBtn.addTarget(self, action: #selector(expandView), for: .touchUpInside)
+        return expandBtn
+    }()
 
     public var isExpand: Bool {
         return !(collectionView.collectionViewLayout is StackedItemsLayout)
     }
 
     /// The items this view displays
-    public var items = [ItemType]() {
-        didSet {
-            setupCollectionFlowLayout()
-        }
-    }
+    public var items = [ItemType]()
 
     /// the horizontal alignment of the stack inside this view
     public var horizontalAlignment: StackedItemsLayout.HorizontalAlignment {
@@ -99,7 +105,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
     // MARK: UICollectionViewDataSource
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return items.count
+        return isExpand ? (items.count + 1) : items.count
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -124,7 +130,11 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         } else {
             cell.layer.shadowPath = nil
         }
-        configureItemHandler?(items[indexPath.row], cell as! CellType)
+        if indexPath.row >= items.count {
+            configureItemHandler?(nil, cell as! CellType)
+        } else {
+            configureItemHandler?(items[indexPath.row], cell as! CellType)
+        }
 
         return cell
     }
@@ -142,7 +152,11 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     // MARK: UICollectionViewDelegate
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if isExpand || items.count == 1 {
-            selectionHandler?(items[indexPath.row], indexPath.row)
+            if indexPath.row >= items.count {
+                selectionHandler?(nil, indexPath.row)
+            } else {
+                selectionHandler?(items[indexPath.row], indexPath.row)
+            }
         } else if indexPath.row == currentlyFocusedItemIndex {
             collectionView.deselectItem(at: indexPath, animated: true)
             guard let cell = (collectionView.cellForItem(at: indexPath) as? MediaPreviewCollectionCell) else {
@@ -150,7 +164,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             }
             if !isExpand {
                 playSelectedIndex(index: -1)
-                expandView(index: indexPath.row)
+                expandView()
             } else {
                 selectionHandler?(items[indexPath.row], indexPath.row)
             }
@@ -173,6 +187,16 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         collectionView.delegate = self
         collectionView.register(CellType.self, forCellWithReuseIdentifier: "Cell")
         addSubview(collectionView)
+        addSubview(btnExpand)
+        trailingConst = btnExpand.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -30)
+        leadingConst = btnExpand.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 30)
+        btnExpand.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        btnExpand.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        btnExpand.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        setupStackedLayout()
+    }
+
+    private func setupStackedLayout() {
         let layout = StackedItemsLayout()
         layout.didChangeIndex = { [weak self] index in
             guard let `self` = self else { return }
@@ -212,7 +236,20 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
     public override func layoutSubviews() {
         super.layoutSubviews()
-        collectionView.frame = CGRect(origin: .zero, size: bounds.size)
+        var size = bounds.size
+        size.width += stackedItemsLayout.totalEffectiveHorizontalOffset
+        if isExpand {
+            collectionView.frame = CGRect(origin: .init(x: leftPadding, y: 0), size: bounds.size)
+        } else {
+            if self.horizontalAlignment == .leading {
+                collectionView.frame = CGRect(origin:
+                                                    .init(x: -(stackedItemsLayout.totalEffectiveHorizontalOffset - leftPadding),
+                                                          y: 0),
+                                              size: size)
+            } else {
+                collectionView.frame = CGRect(origin: .init(x: leftPadding, y: 0), size: bounds.size)
+            }
+        }
     }
 
     public override init(frame: CGRect) {
@@ -225,25 +262,20 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         setup()
     }
 
-    public func setupCollectionFlowLayout() {
+    public func setupCollectionFlowLayout(_ isSender: Bool) {
         collectionView.isPagingEnabled = true
-        if items.count == 1 {
-            collectionView.collectionViewLayout = collectionFlowLayout
-            collectionView.isScrollEnabled = false
-        } else {
-            collectionView.collectionViewLayout = stackedItemsLayout
-            collectionView.isScrollEnabled = true
-        }
+        collectionView.collectionViewLayout = stackedItemsLayout
+        collectionView.clipsToBounds = true
         collectionView.reloadData()
         collectionView.collectionViewLayout.invalidateLayout()
-        scrollToItem(at: 0, animated: false)
+        scrollToItem(at: 0, animated: true)
+        btnExpand.isHidden = isExpand
+        leadingConst?.isActive = isSender
+        trailingConst?.isActive = !isSender
+        stackedItemsLayout.horizontalAlignment = !isSender ? .leading : .trailing
     }
 
-    public func showLoadingState() {
-
-    }
-
-    public func expandView(index: Int) {
+    @objc private func expandView() {
         if !isExpand && items.count > 1 {
             let focusIndex = currentlyFocusedItemIndex
             let layout = UICollectionViewFlowLayout()
@@ -253,9 +285,11 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             layout.itemSize = .init(width: 200, height: 260)
             collectionView.setCollectionViewLayout(layout, animated: true)
             collectionView.isPagingEnabled = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                guard let `self` = self else { return }
-                self.collectionView.reloadData()
+            btnExpand.isHidden = isExpand
+            collectionView.reloadData()
+            UIView.animate(withDuration: 0.5) {
+                self.layoutSubviews()
+                self.collectionView.scrollToItem(at: .init(row: 0, section: 0), at: .centeredHorizontally, animated: true)
             }
         }
     }
