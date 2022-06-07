@@ -18,6 +18,7 @@ extension Notification.Name {
     public static let joinPrivateGroup = Notification.Name("kJoinPrivateGroup")
     public static let getPrivateGroup = Notification.Name("kGetPrivateGroup")
     public static let sendPaymentRequest = Notification.Name("kSendPaymentRequest")
+    public static let updateAvailable = Notification.Name("kUpdateAvailable")
 }
 
 /// Controller responsible for displaying the channel messages.
