@@ -20,6 +20,7 @@ internal enum L10n {
       /// Ok
       internal static var ok: String { L10n.tr("Localizable", "alert.actions.ok") }
     }
+    internal static var NoInternet: String { L10n.tr("Localizable", "alert.noInternet") }
   }
 
   internal enum Attachment {

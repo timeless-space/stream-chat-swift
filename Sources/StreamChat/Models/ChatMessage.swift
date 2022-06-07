@@ -261,6 +261,13 @@ extension ChatMessage {
         }
     }
 
+    public var isMessagePinned: String? {
+        guard let pinning = extraData["kPinningMessageID"],
+              let messageID = fetchRawData(raw: pinning) as? String
+        else { return nil }
+        return messageID
+    }
+
     public func getExtraData(key: String) -> [String: RawJSON]? {
         if let extraData = extraData[key] {
             switch extraData {

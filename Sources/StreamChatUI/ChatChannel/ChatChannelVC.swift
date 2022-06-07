@@ -193,9 +193,7 @@ open class ChatChannelVC:
 
     private lazy var pinnedMessages = [ChatMessage]() {
         didSet {
-            if oldValue.count != pinnedMessages.count {
-                layoutPinnedMessageView()
-            }
+            setupPinnedMessageView()
         }
     }
 
@@ -367,10 +365,7 @@ open class ChatChannelVC:
         navigationHeaderView.backgroundColor = Appearance.default.colorPalette.chatNavBarBackgroundColor
     }
 
-    private func layoutPinnedMessageView() {
-        guard let currentUserID = ChatClient.shared.currentUserId else { return }
-        pinnedMessages = pinnedMessages
-            .filter({ $0.pinDetails?.pinnedBy.id == currentUserID }) ?? []
+    private func setupPinnedMessageView() {
         guard !pinnedMessages.isEmpty else {
             removePinMessageContainerView()
             return
@@ -424,16 +419,45 @@ open class ChatChannelVC:
             .colorPalette
             .walletTabbarBackground
         view.addSubview(containerView)
+        pinnedMessageContainerView?.alpha = 0
+        pinnedMessageContainerView?.isHidden = false
+        // Constraint
+        layoutPinMessageContainer()
+        // Animate Pinned Message view
+        animatePinnedMessageView()
+        // Adding long gesture on pinned message view
+        addPinnedMessageAction()
+        // Updating Message list top constraint
+        updateMessageListTopConstraint()
+    }
+
+    private func layoutPinMessageContainer() {
+        guard let containerView = pinnedMessageContainerView else { return }
         NSLayoutConstraint.activate([
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             containerView.topAnchor.constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0),
             containerView.heightAnchor.constraint(equalToConstant: 54)
         ])
-        messageListTopConstraint?.constant = 54
+    }
+
+    private func animatePinnedMessageView() {
+        UIView.animate(withDuration: 0.3,
+                       delay: 0,
+                       options: [.transitionCrossDissolve]) { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.pinnedMessageContainerView?.alpha = 1.0
+        }
+    }
+
+    private func addPinnedMessageAction() {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handlePinnedMessageLongPress))
         longPress.minimumPressDuration = 0.22
         pinnedMessageContainerView?.addGestureRecognizer(longPress)
+    }
+
+    private func updateMessageListTopConstraint() {
+        messageListTopConstraint?.constant = 54
     }
 
     override open func viewDidLoad() {

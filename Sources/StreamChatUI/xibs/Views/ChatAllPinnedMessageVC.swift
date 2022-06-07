@@ -19,8 +19,22 @@ open class ChatAllPinnedMessageVC: _ViewController,
     open private(set) lazy var navigationView: UIView = {
         return UIView(frame: .zero).withoutAutoresizingMaskConstraints
     }()
-    open private(set) lazy var bottomView: UIView = {
+    open private(set) lazy var unPinMessageView: UIView = {
         return UIView(frame: .zero).withoutAutoresizingMaskConstraints
+    }()
+    open private(set) lazy var unPinMessageButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.tintColor = .white
+        button.contentEdgeInsets = UIEdgeInsets
+            .init(top: 0, left: 10, bottom: 0, right: 10)
+        button.addTarget(self, action: #selector(unPinAllMessageAction(_:)), for: .touchUpInside)
+        return button.withoutAutoresizingMaskConstraints
+    }()
+    open private(set) lazy var bottomSafeArea: BottomSafeAreaView = {
+        return components
+            .bottomSafeAreaView
+            .init()
+            .withoutAutoresizingMaskConstraints
     }()
     open private(set) lazy var labelTitle: UILabel = {
         return UILabel(frame: .zero).withoutAutoresizingMaskConstraints
@@ -34,36 +48,44 @@ open class ChatAllPinnedMessageVC: _ViewController,
         return button.withoutAutoresizingMaskConstraints
     }()
     /// The message list component responsible to render the messages.
-    open lazy var messageListVC: ChatMessageListVC? = Components()
+    private lazy var messageListVC: ChatMessageListVC? = components
         .messageListVC
         .init()
 
     open lazy var pinnedMessages = [ChatMessage]()
     open var channelController: ChatChannelController?
+    private lazy var navigationBarColor: UIColor = {
+        return Appearance.default.colorPalette.walletTabbarBackground
+    }()
+    private var queueUnpinMessage = DispatchGroup()
 
     // MARK: - View
     override open func setUp() {
         super.setUp()
-        addDismissAction()
         view.addSubview(navigationSafeAreaView)
         view.addSubview(navigationView)
         navigationView.addSubview(backButton)
         navigationView.addSubview(labelTitle)
-        view.addSubview(bottomView)
+        view.addSubview(bottomSafeArea)
+        view.addSubview(unPinMessageView)
+        unPinMessageView.addSubview(unPinMessageButton)
+        messageListVC?.client = channelController?.client
         messageListVC?.dataSource = self
         messageListVC?.allowActions = false
     }
 
     override open func setUpAppearance() {
         super.setUpAppearance()
-        view.backgroundColor = Appearance.default.colorPalette.chatViewBackground
         // color
-        let navColor = Appearance.default.colorPalette.walletTabbarBackground
-        navigationSafeAreaView.backgroundColor = navColor
-        navigationView.backgroundColor = navColor
-        bottomView.backgroundColor = navColor
+        view.backgroundColor = Appearance.default.colorPalette.chatViewBackground
+        navigationSafeAreaView.backgroundColor = navigationBarColor
+        navigationView.backgroundColor = navigationBarColor
+        bottomSafeArea.backgroundColor = navigationBarColor
+        unPinMessageView.backgroundColor = navigationBarColor
+        unPinMessageButton.backgroundColor = navigationBarColor
         // title
-        labelTitle.text = "Pinned Messages"
+        labelTitle.text = "\(pinnedMessages.count) Pinned Messages"
+        unPinMessageButton.setTitle("Unpin All Messages", for: .normal)
     }
 
     override open func setUpLayout() {
@@ -73,7 +95,9 @@ open class ChatAllPinnedMessageVC: _ViewController,
         layoutTitleLabel()
         layoutBackButton()
         layoutMessageList()
-        layoutBottomView()
+        layoutBottomSafeAreaView()
+        layoutUnpinMessageView()
+        layoutUnpinAllMessageButton()
     }
 
     // MARK: - SetupUI
@@ -129,35 +153,70 @@ open class ChatAllPinnedMessageVC: _ViewController,
             messageListVC.view.topAnchor
                 .constraint(equalTo: navigationView.bottomAnchor, constant: 0),
             messageListVC.view.bottomAnchor
-                .constraint(equalTo: bottomView.topAnchor, constant: 0)
+                .constraint(equalTo: unPinMessageView.topAnchor, constant: 0)
         ])
     }
 
-    private func layoutBottomView() {
+    private func layoutUnpinAllMessageButton() {
         NSLayoutConstraint.activate([
-            bottomView.leadingAnchor
-                .constraint(equalTo: view.leadingAnchor, constant: 0),
-            bottomView.trailingAnchor
-                .constraint(equalTo: view.trailingAnchor, constant: 0),
-            bottomView.bottomAnchor
-                .constraint(equalTo: view.bottomAnchor, constant: UIView.safeAreaTop),
-            bottomView.heightAnchor.constraint(equalToConstant: 54)
+            unPinMessageButton.centerXAnchor
+                .constraint(equalTo: unPinMessageView.centerXAnchor),
+            unPinMessageButton.centerYAnchor
+                .constraint(equalTo: unPinMessageView.centerYAnchor),
+            unPinMessageButton.heightAnchor.constraint(equalToConstant: 44)
+        ])
+    }
+
+    private func layoutUnpinMessageView() {
+        NSLayoutConstraint.activate([
+            unPinMessageView.bottomAnchor
+                .constraint(equalTo: bottomSafeArea.topAnchor),
+            unPinMessageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            unPinMessageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            unPinMessageView.heightAnchor.constraint(equalToConstant: 44)
+        ])
+    }
+
+    private func layoutBottomSafeAreaView() {
+        NSLayoutConstraint.activate([
+            bottomSafeArea.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            bottomSafeArea.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomSafeArea.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomSafeArea.heightAnchor
+                .constraint(equalToConstant: UIView.safeAreaBottom)
         ])
     }
 
     // MARK: - Action
     @objc func backAction(_ sender: Any) {
-        self.dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
 
-    private func addDismissAction() {
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTapOnView))
-        tapRecognizer.cancelsTouchesInView = false
-        view.addGestureRecognizer(tapRecognizer)
-    }
-    /// Triggered when `view` is tapped.
-    @objc open func didTapOnView(_ gesture: UITapGestureRecognizer) {
-        dismiss(animated: true)
+    @objc func unPinAllMessageAction(_ sender: UIButton) {
+        guard ChatClient.shared.connectionStatus == .connected else {
+            Snackbar.show(text: L10n.Alert.NoInternet)
+            return
+        }
+        guard let messageListVC = messageListVC else {
+            return
+        }
+        var unPinnedMessageCount = 0
+        for message in pinnedMessages {
+            queueUnpinMessage.enter()
+            messageListVC.unPinMessage(message: message) { [weak self] error in
+                guard let weakSelf = self else { return }
+                if error == nil {
+                    unPinnedMessageCount += 1
+                }
+                weakSelf.queueUnpinMessage.leave()
+            }
+        }
+        queueUnpinMessage.notify(queue: .main) { [weak self] in
+            guard let weakSelf = self else { return }
+            let msg = unPinnedMessageCount == 1 ? "message" : "messages"
+            weakSelf.dismiss(animated: false, completion: nil)
+            Snackbar.show(text: "\(unPinnedMessageCount) \(msg) Unpinned.")
+        }
     }
 }
 

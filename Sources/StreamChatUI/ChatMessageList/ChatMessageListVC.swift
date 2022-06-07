@@ -91,6 +91,7 @@ open class ChatMessageListVC:
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        listView.register(TableviewCellPinMessage.self, forCellReuseIdentifier: TableviewCellPinMessage.reuseID)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -286,21 +287,36 @@ open class ChatMessageListVC:
 
     /// pin Message for given `MessageId`.
     open func pinMessage(message: ChatMessage) {
-        guard let cid = dataSource?.channel(for: self)?.cid else { log.error("Channel is not available"); return }
+        guard ChatClient.shared.connectionStatus == .connected else {
+            Snackbar.show(text: L10n.Alert.NoInternet)
+            return
+        }
+        guard let cid = dataSource?.channel(for: self)?.cid else {
+            return
+        }
         let messageController = client.messageController(
             cid: cid,
             messageId: message.id
         )
         messageController.pin(MessagePinning.noExpiration, completion: { [weak self] error in
+            guard let weakSelf = self else { return }
             if error != nil {
                 Snackbar.show(text: L10n.Message.Actions.pinFailed)
+            } else {
+                weakSelf.sendPinMessage(message: message)
             }
         })
     }
 
     /// unpin Message for given `MessageId`.
     open func unPinMessage(message: ChatMessage, completion: ((Error?) -> Void)? = nil) {
-        guard let cid = dataSource?.channel(for: self)?.cid else { log.error("Channel is not available"); return }
+        guard ChatClient.shared.connectionStatus == .connected else {
+            Snackbar.show(text: L10n.Alert.NoInternet)
+            return
+        }
+        guard let cid = dataSource?.channel(for: self)?.cid else {
+            return
+        }
         let messageController = client.messageController(
             cid: cid,
             messageId: message.id
@@ -311,6 +327,17 @@ open class ChatMessageListVC:
             }
             completion?(error)
         })
+    }
+
+    open func sendPinMessage(message: ChatMessage) {
+        guard let cid = dataSource?.channel(for: self)?.cid else {
+            return
+        }
+        let channelController = client.channelController(for: cid)
+        let extraData: [String: RawJSON] = ["kPinningMessageID": .string(message.id)]
+        let userName = ChatClient.shared.currentUserController().currentUser?.name
+        let text = "\(userName ?? "") pinned \(message.text)"
+        channelController.createNewMessage(text: text, extraData: extraData)
     }
 
     // MARK: - UITableViewDataSource & UITableViewDelegate
@@ -546,6 +573,17 @@ open class ChatMessageListVC:
                 message?.text = fallbackMessageString
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
+                return cell
+            } else if let pinnedID = message?.isMessagePinned {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: TableviewCellPinMessage.reuseID,
+                    for: indexPath) as? TableviewCellPinMessage,
+                      let channel = dataSource?.channel(for: self)
+                else { return UITableViewCell() }
+                let channelController = client.channelController(for: channel.cid)
+                let pinnedMessage = channelController.messages
+                    .filter({ $0.id == pinnedID })
+                cell.message = pinnedMessage.first
                 return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(

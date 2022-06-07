@@ -268,3 +268,40 @@ public class PinMessageContainerView: UIView {
         callbackCloseButton?(pinMessages[currentMessageIndex])
     }
 }
+
+// MARK: - touches
+extension PinMessageContainerView {
+    public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        DispatchQueue.main.async { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.alpha = 1.0
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveLinear, animations: {
+                weakSelf.alpha = 0.5
+            }, completion: nil)
+        }
+    }
+
+    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        DispatchQueue.main.async { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.alpha = 0.5
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveLinear, animations: {
+                weakSelf.alpha = 1.0
+            }, completion: nil)
+        }
+    }
+
+    public override func touchesCancelled(_ touches: Set<UITouch>,
+                                          with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+        DispatchQueue.main.async { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.alpha = 0.5
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveLinear, animations: {
+                weakSelf.alpha = 1.0
+            }, completion: nil)
+        }
+    }
+}
