@@ -23,7 +23,6 @@ public struct SendOneWallet {
     public var channelId: ChannelId?
     //number of fraction digits in transferAmount
     public var fractionDigits: Int = 0
-    public var paymentRequestId: String?
 
     public init() {
     }

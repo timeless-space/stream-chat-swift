@@ -1022,22 +1022,13 @@ open class ComposerVC: _ViewController,
             return
         }
 
-        if let walletRequest = content.attachments.filter( { $0.type == .wallet} ).first?.payload as? WalletAttachmentPayload {
-            let parameter: [String: Any] = [
-                kAmount: walletRequest.extraData?.requestedAmount ?? "0",
-                kChannelId: cid.description,
-                kFlair: walletRequest.extraData?.requestedThemeUrl
-            ]
-            NotificationCenter.default.post(name: .sendPaymentRequest, object: nil, userInfo: parameter)
-        } else {
-            channelController?.createNewMessage(
-                text: text,
-                pinning: nil,
-                attachments: content.attachments,
-                mentionedUserIds: content.mentionedUsers.map(\.id),
-                quotedMessageId: content.quotingMessage?.id
-            )
-        }
+        channelController?.createNewMessage(
+            text: text,
+            pinning: nil,
+            attachments: content.attachments,
+            mentionedUserIds: content.mentionedUsers.map(\.id),
+            quotedMessageId: content.quotingMessage?.id
+        )
     }
 
     /// Updates an existing message.

@@ -182,7 +182,6 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             userInfo["recipientName"] = payload.extraData?.recipientName
             userInfo["recipientUserId"] = payload.extraData?.recipientUserId
             userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
-            userInfo["requestId"] = payload.requestId
             userInfo["channelId"] = channel?.cid
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         } else {
