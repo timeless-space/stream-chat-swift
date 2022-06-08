@@ -500,12 +500,12 @@ open class ChatMessageListVC:
                     for: indexPath) as? ChatMessageStickerBubble else {
                         return UITableViewCell()
                     }
-                let messagesCont = dataSource?.numberOfMessages(in: self) ?? 0
-                cell.content = message
-                cell.chatChannel = dataSource?.channel(for: self) 
-                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.transform = .mirrorY
+                cell.configureCell(
+                    isSender: isMessageFromCurrentUser,
+                    content: message,
+                    chatChannel: dataSource?.channel(for: self),
+                    layoutOptions: cellLayoutOptionsForMessage(at: indexPath)
+                )
                 return cell
             } else if isPollCell(message) {
                 if isMessageFromCurrentUser {
