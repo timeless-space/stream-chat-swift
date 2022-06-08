@@ -183,6 +183,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             userInfo["recipientUserId"] = payload.extraData?.recipientUserId
             userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
             userInfo["channelId"] = channel?.cid
+            userInfo["messageId"] = content?.id
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         } else {
             guard let channelId = channel?.cid else { return }

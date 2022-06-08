@@ -1021,14 +1021,24 @@ open class ComposerVC: _ViewController,
             )
             return
         }
-
-        channelController?.createNewMessage(
-            text: text,
-            pinning: nil,
-            attachments: content.attachments,
-            mentionedUserIds: content.mentionedUsers.map(\.id),
-            quotedMessageId: content.quotingMessage?.id
-        )
+        if content.attachments.filter ({ $0.type == .wallet }).first != nil {
+            // wallet request attachment
+            channelController?.createNewMessage(
+                text: "/payment",
+                pinning: nil,
+                attachments: content.attachments,
+                mentionedUserIds: content.mentionedUsers.map(\.id),
+                quotedMessageId: content.quotingMessage?.id
+            )
+        } else {
+            channelController?.createNewMessage(
+                text: text,
+                pinning: nil,
+                attachments: content.attachments,
+                mentionedUserIds: content.mentionedUsers.map(\.id),
+                quotedMessageId: content.quotingMessage?.id
+            )
+        }
     }
 
     /// Updates an existing message.
