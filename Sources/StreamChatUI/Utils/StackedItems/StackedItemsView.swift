@@ -12,7 +12,8 @@ import UIKit
 public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCell>:
     UIView,
     UICollectionViewDataSource,
-    UICollectionViewDelegate {
+    UICollectionViewDelegate,
+    UICollectionViewDelegateFlowLayout {
 
     public let collectionView = UICollectionView(frame: .zero, collectionViewLayout: StackedItemsLayout())
 
@@ -137,6 +138,17 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
         }
 
         return cell
+    }
+
+    public func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
+        if indexPath.row >= items.count && isExpand {
+            return .init(width: 120, height: 260)
+        }
+        return .init(width: 200, height: 260)
     }
 
     public func collectionView(
@@ -282,7 +294,6 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
             layout.scrollDirection = .horizontal
             layout.minimumLineSpacing = 20
             layout.minimumInteritemSpacing = 20
-            layout.itemSize = .init(width: 200, height: 260)
             collectionView.setCollectionViewLayout(layout, animated: true)
             collectionView.isPagingEnabled = false
             btnExpand.isHidden = isExpand

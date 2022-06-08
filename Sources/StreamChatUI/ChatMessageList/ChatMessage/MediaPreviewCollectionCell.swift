@@ -90,9 +90,9 @@ open class MediaPreviewCollectionCell:
         videoLayer.frame = bounds
         addSubview(loadingIndicator)
         btnCollapse.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        btnCollapse.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -30).isActive = true
-        loadingIndicator.centerYAnchor.pin(equalTo: self.centerYAnchor).isActive = true
-        loadingIndicator.centerXAnchor.pin(equalTo: self.centerXAnchor).isActive = true
+        btnCollapse.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        loadingIndicator.centerYAnchor.pin(equalTo: centerYAnchor).isActive = true
+        loadingIndicator.centerXAnchor.pin(equalTo: centerXAnchor).isActive = true
     }
 
     open override func layoutSubviews() {
@@ -157,6 +157,8 @@ open class MediaPreviewCollectionCell:
 
     public func configureLastAction() {
         imgPreview.image = nil
+        videoPreview.isHidden = true
+        imgPreview.isHidden = true
         imageTask?.cancel()
         btnPlay.isHidden = true
         loadingIndicator.isVisible = false
