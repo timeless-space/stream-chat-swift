@@ -1030,6 +1030,19 @@ open class ComposerVC: _ViewController,
                 mentionedUserIds: content.mentionedUsers.map(\.id),
                 quotedMessageId: content.quotingMessage?.id
             )
+            if !text.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    guard let self = self else {
+                        return
+                    }
+                    self.channelController?.createNewMessage(
+                        text: text,
+                        pinning: nil,
+                        mentionedUserIds: self.content.mentionedUsers.map(\.id),
+                        quotedMessageId: self.content.quotingMessage?.id
+                    )
+                }
+            }
         } else {
             channelController?.createNewMessage(
                 text: text,
