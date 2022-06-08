@@ -72,9 +72,7 @@ open class ChatChannelVC:
     }()
 
     open private(set) var messageListTopConstraint: NSLayoutConstraint?
-
     open private(set) var pinnedMessageContainerView: PinMessageContainerView?
-
     open private(set) lazy var moreButton: UIButton = {
         let button = UIButton()
         button.setImage(Appearance.default.images.moreVertical, for: .normal)
@@ -191,12 +189,9 @@ open class ChatChannelVC:
 
     private var isLoadingPreviousMessages: Bool = false
 
-    private lazy var pinnedMessages = [ChatMessage]() {
-        didSet {
-            setupPinnedMessageView()
-        }
-    }
+    private lazy var pinnedMessages = [ChatMessage]()
 
+    // MARK: - Setup
     override open func setUp() {
         super.setUp()
 
@@ -212,8 +207,7 @@ open class ChatChannelVC:
         channelController?.synchronize { [weak self] _ in
             guard let weakSelf = self else { return }
             weakSelf.messageComposerVC?.updateContent()
-            weakSelf.pinnedMessages = weakSelf.channelController?
-                .channel?.pinnedMessages ?? []
+            weakSelf.setupPinnedMessageView()
         }
     }
 
@@ -363,9 +357,15 @@ open class ChatChannelVC:
         headerView.titleContainerView.subtitleLabel.setChatNavSubtitleColor()
         
         navigationHeaderView.backgroundColor = Appearance.default.colorPalette.chatNavBarBackgroundColor
+        // setting pinned message view
+        setupPinnedMessageView()
     }
 
     private func setupPinnedMessageView() {
+        let data = (channelController?.channel?.pinnedMessages ?? [])
+            .compactMap { $0.id }
+        pinnedMessages = messages
+            .filter { data.contains( $0.id) && $0.isMessagePinned == nil }
         guard !pinnedMessages.isEmpty else {
             removePinMessageContainerView()
             return
@@ -632,7 +632,7 @@ open class ChatChannelVC:
         popup.pinnedMessages = pinnedMessages
             .sorted(by: { $0.createdAt > $1.createdAt })
         popup.modalPresentationStyle = .overFullScreen
-        UIApplication.shared.windows.last?.rootViewController?.present(popup, animated: true)
+        present(popup, animated: true)
     }
 
     private func getGroupLink() -> String? {
@@ -992,7 +992,7 @@ open class ChatChannelVC:
             self.groupCreateMessageView?.contentView.removeFromSuperview()
             self.groupCreateMessageView = nil
         }
-        pinnedMessages = channelController.channel?.pinnedMessages ?? []
+        setupPinnedMessageView()
     }
 
     open func channelController(

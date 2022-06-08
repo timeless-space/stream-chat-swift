@@ -125,8 +125,10 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
                 .channelController(for: content.channel.cid)
             let pinnedMessage = channelController.messages
                 .filter({ $0.id == pinnedID }).first
-            guard let message = pinnedMessage else { return lastMessage.text }
-            let authorName = message.author.name ?? ""
+            guard let message = pinnedMessage else { return L10n.Channel.Item.emptyMessages }
+            let pinAuthor: ChatChannelMember? = channelController.channel?.lastActiveMembers
+                .filter { $0.id == lastMessage.pinnedAuthorID }.first
+            let authorName = pinAuthor?.name ?? ""
             let description = " pinned \"\(message.text)\""
             return "\(authorName) \(description)"
         } else if !lastMessage.text.isEmpty {

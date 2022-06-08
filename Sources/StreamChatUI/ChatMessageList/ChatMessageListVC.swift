@@ -73,7 +73,7 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
-    open var allowActions: Bool = true
+    open var isPinnedMessagePreview: Bool = false
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -231,9 +231,7 @@ open class ChatMessageListVC:
 
         guard
             gesture.state == .began,
-            let indexPath = listView.indexPathForRow(at: location),
-            allowActions
-        else { return }
+            let indexPath = listView.indexPathForRow(at: location) else { return }
         didSelectMessageCell(at: indexPath)
     }
 
@@ -254,12 +252,14 @@ open class ChatMessageListVC:
         )
 
         let actionsController = components.messageActionsVC.init()
+        actionsController.isPinnedMessagePreview = isPinnedMessagePreview
         actionsController.messageController = messageController
         actionsController.channelConfig = dataSource?.channel(for: self)?.config
         actionsController.delegate = self
 
         let reactionsController: ChatMessageReactionsVC? = {
             guard message.localState == nil else { return nil }
+            guard !isPinnedMessagePreview else { return nil }
             guard dataSource?.channel(for: self)?.config.reactionsEnabled == true else {
                 return nil
             }
@@ -334,7 +334,9 @@ open class ChatMessageListVC:
             return
         }
         let channelController = client.channelController(for: cid)
-        let extraData: [String: RawJSON] = ["kPinningMessageID": .string(message.id)]
+        let extraData: [String: RawJSON] = [
+            "kPinningMessageID": .string(message.id),
+            "kPinningAuthorID": .string(ChatClient.shared.currentUserId ?? "")]
         let userName = ChatClient.shared.currentUserController().currentUser?.name
         let text = "\(userName ?? "") pinned \(message.text)"
         channelController.createNewMessage(text: text, extraData: extraData)
@@ -581,9 +583,12 @@ open class ChatMessageListVC:
                       let channel = dataSource?.channel(for: self)
                 else { return UITableViewCell() }
                 let channelController = client.channelController(for: channel.cid)
+                let pinAuthor: ChatChannelMember? = channelController.channel?.lastActiveMembers
+                    .filter { $0.id == message?.pinnedAuthorID }.first
                 let pinnedMessage = channelController.messages
-                    .filter({ $0.id == pinnedID })
-                cell.message = pinnedMessage.first
+                    .filter { $0.id == pinnedID }
+                cell.configureData(message: pinnedMessage.first,
+                                   pinAuthor: pinAuthor)
                 return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(

@@ -15,11 +15,6 @@ open class TableviewCellPinMessage: _TableViewCell {
     private var contentWidth: CGFloat {
         return UIScreen.main.bounds.width - 100
     }
-    public var message: ChatMessage? {
-        didSet {
-            configureData()
-        }
-    }
     private var messageLabel: UILabel!
     // MARK: - Life cycle
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -57,12 +52,12 @@ open class TableviewCellPinMessage: _TableViewCell {
     }
 
     // MARK: - Configure Data
-    private func configureData() {
+    public func configureData(message: ChatMessage?, pinAuthor: ChatChannelMember?) {
         messageLabel.text = ""
-        guard let message = message else {
+        guard let message = message, let pinAuthor = pinAuthor else {
             return
         }
-        let authorName = message.author.name ?? ""
+        let authorName = pinAuthor.name ?? ""
         let description = " pinned \"\(message.text)\""
         var attributes = [NSAttributedString.Key.font :
                             UIFont.boldSystemFont(ofSize: 15)]

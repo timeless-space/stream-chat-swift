@@ -42,6 +42,8 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     /// Class used for buttons in `messageActionsContainerView`.
     open var actionButtonClass: ChatMessageActionControl.Type { ChatMessageActionControl.self }
 
+    open var isPinnedMessagePreview = false
+
     override open func setUpLayout() {
         super.setUpLayout()
         
@@ -62,15 +64,24 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         messageActionsContainerStackView.subviews.forEach {
             messageActionsContainerStackView.removeArrangedSubview($0)
         }
-
-        messageActions.forEach {
-            let actionView = actionButtonClass.init()
-            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
-            actionView.content = $0
-            actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
-            messageActionsContainerStackView.addArrangedSubview(actionView)
+        if isPinnedMessagePreview {
+            pinnedPreviewMessageActions.forEach {
+                addActionItem(item: $0)
+            }
+        } else {
+            messageActions.forEach {
+                addActionItem(item: $0)
+            }
         }
         messageActionsContainerStackView.layoutMarginsDidChange()
+    }
+
+    private func addActionItem(item: ChatMessageActionItem) {
+        let actionView = actionButtonClass.init()
+        actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        actionView.content = item
+        actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
+        messageActionsContainerStackView.addArrangedSubview(actionView)
     }
 
     /// Array of `ChatMessageActionItem`s - override this to setup your own custom actions
@@ -90,7 +101,19 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         actions.append(forwardActionItem())
         return actions
     }
-    
+
+    open var pinnedPreviewMessageActions: [ChatMessageActionItem] {
+        guard
+            messageController.dataStore.currentUser() != nil,
+            let message = message,
+            message.isDeleted == false
+        else { return [] }
+        var actions: [ChatMessageActionItem] = []
+        actions.append(copyActionItem())
+        actions.append(pinMessageActionItem(message: message))
+        return actions
+    }
+
     /// Returns `ChatMessageActionItem` for edit action
     open func editActionItem() -> ChatMessageActionItem {
         EditActionItem(

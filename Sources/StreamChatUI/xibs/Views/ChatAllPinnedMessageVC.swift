@@ -71,7 +71,8 @@ open class ChatAllPinnedMessageVC: _ViewController,
         unPinMessageView.addSubview(unPinMessageButton)
         messageListVC?.client = channelController?.client
         messageListVC?.dataSource = self
-        messageListVC?.allowActions = false
+        messageListVC?.delegate = self
+        messageListVC?.isPinnedMessagePreview = true
     }
 
     override open func setUpAppearance() {
@@ -98,6 +99,11 @@ open class ChatAllPinnedMessageVC: _ViewController,
         layoutBottomSafeAreaView()
         layoutUnpinMessageView()
         layoutUnpinAllMessageButton()
+    }
+
+    private func refreshMessages() {
+        labelTitle.text = "\(pinnedMessages.count) Pinned Messages"
+        messageListVC?.listView.reloadData()
     }
 
     // MARK: - SetupUI
@@ -213,7 +219,7 @@ open class ChatAllPinnedMessageVC: _ViewController,
         }
         queueUnpinMessage.notify(queue: .main) { [weak self] in
             guard let weakSelf = self else { return }
-            let msg = unPinnedMessageCount == 1 ? "message" : "messages"
+            let msg = unPinnedMessageCount == 1 ? "Message" : "Messages"
             weakSelf.dismiss(animated: false, completion: nil)
             Snackbar.show(text: "\(unPinnedMessageCount) \(msg) Unpinned.")
         }
@@ -246,5 +252,39 @@ extension ChatAllPinnedMessageVC: ChatMessageListVCDataSource {
             with: AnyRandomAccessCollection(pinnedMessages),
             appearance: appearance
         )
+    }
+}
+
+// MARK: - ChatMessageListVCDelegate
+extension ChatAllPinnedMessageVC: ChatMessageListVCDelegate {
+    public func chatMessageListVC(_ vc: ChatMessageListVC, willDisplayMessageAt indexPath: IndexPath) {}
+
+    public func chatMessageListVC(_ vc: ChatMessageListVC, scrollViewDidScroll scrollView: UIScrollView) {}
+
+    public func chatMessageListVC(_ vc: ChatMessageListVC, didTapOnAction actionItem: ChatMessageActionItem, for message: ChatMessage) {
+        switch actionItem {
+        case is PinMessageActionItem:
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
+                guard let weakSelf = self, message.isPinned else {
+                    return
+                }
+                weakSelf.messageListVC?.unPinMessage(message: message, completion: { error in
+                    guard error == nil else {
+                        return Snackbar.show(text: L10n.Message.Actions.unPinFailed)
+                    }
+                    guard let mIndex = weakSelf.pinnedMessages
+                        .firstIndex(where: { $0.id == message.id}) else { return }
+                    weakSelf.pinnedMessages.remove(at: mIndex)
+                    Snackbar.show(text: "Message Unpinned.")
+                    guard !weakSelf.pinnedMessages.isEmpty else {
+                        weakSelf.dismiss(animated: true, completion: nil)
+                        return
+                    }
+                    weakSelf.refreshMessages()
+                })
+            }
+        default:
+            return
+        }
     }
 }
