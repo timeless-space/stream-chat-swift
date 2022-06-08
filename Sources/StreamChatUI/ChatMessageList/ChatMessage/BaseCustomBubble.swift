@@ -61,7 +61,12 @@ class BaseCustomBubble: _TableViewCell {
 
     public func addContainerView(_ view: UIView) {
         container.addSubview(view)
-        container.pin(anchors: [.top, .bottom, .leading, .trailing], to: view)
+        NSLayoutConstraint.activate([
+            view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            view.topAnchor.constraint(equalTo: container.topAnchor),
+            view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+        ])
     }
 
     private func handleBubbleConstraints(_ isSender: Bool) {
