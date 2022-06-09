@@ -370,33 +370,25 @@ open class ChatChannelVC:
             removePinMessageContainerView()
             return
         }
+        for message in pinnedMessages {
+            debugPrint("==== \(message.text)")
+        }
+
         if pinnedMessageContainerView == nil {
             addPinMessageContainerView()
         }
         pinnedMessageContainerView?.setupUI(pinMessages: pinnedMessages)
         // callback
         pinnedMessageContainerView?.callbackMessageDidSelect = { [weak self] message in
-            guard let weakSelf = self else { return }
+            guard let weakSelf = self else {
+                return
+            }
             guard let pinIndex = weakSelf.messages
                 .firstIndex(where: { $0.id == message.id }) else { return }
             let indexPath = IndexPath(item: pinIndex, section: 0)
+            weakSelf.messageListVC?.highlightedPinIndexPath = indexPath
             weakSelf.messageListVC?.listView.scrollToIndexPath(indexPath: indexPath)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                guard let cell = weakSelf.messageListVC?.listView
-                    .cellForRow(at: indexPath) as? ChatMessageCell else {
-                        return
-                    }
-                let selectionColor = cell.messageContentView?
-                    .bubbleView?.backgroundColor
-                UIView.animate(withDuration: 1, delay: 0, options: []) {
-                    cell.messageContentView?.bubbleView?.backgroundColor =
-                    selectionColor?.withAlphaComponent(0.3)
-                    weakSelf.view.layoutIfNeeded()
-                } completion: { status in
-                    cell.messageContentView?
-                        .bubbleView?.backgroundColor = selectionColor
-                }
-            }
+            weakSelf.messageListVC?.highlightPinMessage(for: indexPath)
         }
         pinnedMessageContainerView?.callbackCloseButton = { [weak self] message in
             guard let weakSelf = self else { return }

@@ -74,6 +74,7 @@ open class ChatMessageListVC:
 
     var viewEmptyState: UIView = UIView()
     open var isPinnedMessagePreview: Bool = false
+    open var highlightedPinIndexPath: IndexPath?
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -340,6 +341,28 @@ open class ChatMessageListVC:
         let userName = ChatClient.shared.currentUserController().currentUser?.name
         let text = "\(userName ?? "") pinned \(message.text)"
         channelController.createNewMessage(text: text, extraData: extraData)
+    }
+
+    open func highlightPinMessage(for indexPath: IndexPath) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let weakSelf = self, let highlightedPinIndexPath = weakSelf
+                    .highlightedPinIndexPath else { return }
+            guard let cell = weakSelf.listView
+                    .cellForRow(at: highlightedPinIndexPath) as? ChatMessageCell else {
+                        return
+                    }
+            weakSelf.highlightedPinIndexPath = nil
+            let selectionColor = cell.messageContentView?
+                .bubbleView?.backgroundColor
+            UIView.animate(withDuration: 1, delay: 0, options: []) {
+                cell.messageContentView?.bubbleView?.backgroundColor =
+                selectionColor?.withAlphaComponent(0.3)
+                weakSelf.view.layoutIfNeeded()
+            } completion: { status in
+                cell.messageContentView?
+                    .bubbleView?.backgroundColor = selectionColor
+            }
+        }
     }
 
     // MARK: - UITableViewDataSource & UITableViewDelegate
@@ -706,6 +729,9 @@ open class ChatMessageListVC:
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let highlightedPinIndexPath = highlightedPinIndexPath {
+            highlightPinMessage(for: indexPath)
+        }
         guard let cell = cell as? ASVideoTableViewCell else { return }
         ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
     }
