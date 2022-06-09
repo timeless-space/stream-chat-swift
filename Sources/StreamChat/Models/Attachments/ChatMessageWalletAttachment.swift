@@ -14,13 +14,11 @@ public struct WalletAttachmentPayload: AttachmentPayload {
     public static let type: AttachmentType = .wallet
 
     public var paymentType: PaymentType!
-    public var requestId = ""
     public var extraData: [String: RawJSON]?
 
-    public init(paymentType: PaymentType, extraData: [String: RawJSON]?, requestId: String) {
+    public init(paymentType: PaymentType, extraData: [String: RawJSON]?) {
         self.paymentType = paymentType
         self.extraData = extraData
-        self.requestId = requestId
     }
 
     public enum PaymentType: String {
@@ -66,7 +64,6 @@ extension WalletAttachmentPayload: Encodable {
     public func encode(to encoder: Encoder) throws {
         var values = extraData ?? [:]
         values[AttachmentCodingKeys.paymentType.rawValue] = paymentType.map { .string($0.rawValue) }
-        values[AttachmentCodingKeys.requestId.rawValue] = .string(requestId)
         try values.encode(to: encoder)
     }
 }
@@ -77,10 +74,8 @@ extension WalletAttachmentPayload: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: AttachmentCodingKeys.self)
         let paymentType = try container.decodeIfPresent(String.self, forKey: .paymentType)
-        let requestId = try container.decodeIfPresent(String.self, forKey: .requestId)
         self.init(
             paymentType: WalletAttachmentPayload.PaymentType(rawValue: paymentType ?? "") ?? .pay,
-            extraData: try Self.decodeExtraData(from: decoder),
-            requestId: requestId ?? "")
+            extraData: try Self.decodeExtraData(from: decoder))
     }
 }
