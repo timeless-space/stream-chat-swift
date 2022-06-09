@@ -374,6 +374,7 @@ open class ChatChannelVC:
     }
 
     deinit {
+        ChatClientConfiguration.shared.currentChannelId = nil
         if enableKeyboardObserver {
             keyboardHandler.stop()
         }
@@ -507,6 +508,7 @@ open class ChatChannelVC:
     }
 
     private func setupUI() {
+        ChatClientConfiguration.shared.currentChannelId = channelController?.channel?.cid.description
         isChannelMuted = channelController?.channel?.isMuted ?? false
         reloadMenu()
         KeyboardService.shared.observeKeyboard(self.view)
