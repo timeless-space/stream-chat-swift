@@ -150,14 +150,15 @@ open class ChatChannelListVC: _ViewController,
             chatChannelVC.channelController = channelController
             NotificationCenter.default.post(name: .hideTabbar, object: nil)
             pushWithAnimation(controller: chatChannelVC)
+
+            var tempNavigationArray = navigationController?.viewControllers ?? []
             for (index, controller) in (navigationController?.viewControllers ?? []).enumerated() {
                 if let chatChannel = controller as? ChatChannelVC,
                    chatChannel.channelController?.channel?.cid.description != cid {
-                    navigationController?.viewControllers.remove(at: index)
-                } else {
-                    navigationController?.viewControllers.remove(at: index)
+                    tempNavigationArray.remove(at: index)
                 }
             }
+            navigationController?.viewControllers = tempNavigationArray
         } catch {}
     }
 
