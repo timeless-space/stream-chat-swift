@@ -127,6 +127,14 @@
 		6E297C1227CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */; };
 		6E297C5027CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */; };
 		6E297C5127CF963E002BE0AF /* StreamChatCustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */; };
+		6E299BF92851DEAB00CBF89E /* BillSplit.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6E299BF82851DEAB00CBF89E /* BillSplit.storyboard */; };
+		6E299BFA2851DEAB00CBF89E /* BillSplit.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6E299BF82851DEAB00CBF89E /* BillSplit.storyboard */; };
+		6E299BFC2851DFE900CBF89E /* BillSplitVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E299BFB2851DFE900CBF89E /* BillSplitVC.swift */; };
+		6E299BFD2851DFE900CBF89E /* BillSplitVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E299BFB2851DFE900CBF89E /* BillSplitVC.swift */; };
+		6E299BFF2851E21300CBF89E /* BillSplitUserSelectionVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E299BFE2851E21300CBF89E /* BillSplitUserSelectionVC.swift */; };
+		6E299C002851E21300CBF89E /* BillSplitUserSelectionVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E299BFE2851E21300CBF89E /* BillSplitUserSelectionVC.swift */; };
+		6E299C022851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E299C012851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift */; };
+		6E299C032851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E299C012851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift */; };
 		6E3DAEBC280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */; };
 		6E3DAEBD280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */; };
 		6E3DAEC02809B52700B3D7A4 /* TableViewCellShimmerEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */; };
@@ -1768,6 +1776,10 @@
 		6E297C0D27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellGroupDetailsAttachmentsList.swift; sourceTree = "<group>"; };
 		6E297C0E27CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellGroupDetailsAttachmentsList.xib; sourceTree = "<group>"; };
 		6E297C4F27CF963E002BE0AF /* StreamChatCustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamChatCustomButton.swift; sourceTree = "<group>"; };
+		6E299BF82851DEAB00CBF89E /* BillSplit.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BillSplit.storyboard; sourceTree = "<group>"; };
+		6E299BFB2851DFE900CBF89E /* BillSplitVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillSplitVC.swift; sourceTree = "<group>"; };
+		6E299BFE2851E21300CBF89E /* BillSplitUserSelectionVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillSplitUserSelectionVC.swift; sourceTree = "<group>"; };
+		6E299C012851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillSplitUserSelectionViewModel.swift; sourceTree = "<group>"; };
 		6E3DAEBB280960C700B3D7A4 /* SkeletonView+Configure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SkeletonView+Configure.swift"; sourceTree = "<group>"; };
 		6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellShimmerEffect.swift; sourceTree = "<group>"; };
 		6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellShimmerEffect.xib; sourceTree = "<group>"; };
@@ -3221,6 +3233,8 @@
 				6ED3E44027B4D4C900A05C0A /* ChatBaseVC.swift */,
 				6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */,
 				6EC85CD627D5EA3C00063EB8 /* ShareInviteLinkVC.swift */,
+				6E299BFB2851DFE900CBF89E /* BillSplitVC.swift */,
+				6E299BFE2851E21300CBF89E /* BillSplitUserSelectionVC.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -5583,6 +5597,7 @@
 				CD24C70D27844C3500F6378D /* Wallet.storyboard */,
 				CD24C70B27844BC500F6378D /* PrivateGroup.storyboard */,
 				6E0D12C227B3C690003DD1AA /* GroupChat.storyboard */,
+				6E299BF82851DEAB00CBF89E /* BillSplit.storyboard */,
 			);
 			path = Storyboard;
 			sourceTree = "<group>";
@@ -6148,6 +6163,7 @@
 			children = (
 				6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */,
 				FC4F2EFF27F4555900A6D729 /* ChatGroupDetailViewModel.swift */,
+				6E299C012851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -6658,6 +6674,7 @@
 				FC4F2EFD27F4407A00A6D729 /* ChannelMemberCountView.xib in Resources */,
 				DBC8A4BB257E5BFB00B20A82 /* Localizable.stringsdict in Resources */,
 				6E41868027C3CD630061E03F /* SFProText-Regular.ttf in Resources */,
+				6E299BFA2851DEAB00CBF89E /* BillSplit.storyboard in Resources */,
 				6E297C1227CF5496002BE0AF /* TableViewCellGroupDetailsAttachmentsList.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6730,6 +6747,7 @@
 				6E41867D27C3CD630061E03F /* SFProText-Semibold.ttf in Resources */,
 				6EC116A627EB509E00DD49F9 /* TableViewHeaderAlphabetSection.xib in Resources */,
 				6ECB403B27ECA95400044B90 /* TableViewCellEmptyChatListData.xib in Resources */,
+				6E299BF92851DEAB00CBF89E /* BillSplit.storyboard in Resources */,
 				6EE7C58127FC81D6003DD063 /* angry-emoji.json in Resources */,
 				ED5DD0CB27CCAC3A000B3E9A /* AnnouncementTableViewCell.xib in Resources */,
 				6E3DAEC22809B52700B3D7A4 /* TableViewCellShimmerEffect.xib in Resources */,
@@ -7414,6 +7432,7 @@
 				88BA7F5D258B6953006CE0C5 /* ChatLoadingIndicator.swift in Sources */,
 				883051742630366E0069D731 /* CACornerMask+Extensions.swift in Sources */,
 				F86DA1B026413A2B006A7CCA /* MessageActionsTransitionController.swift in Sources */,
+				6E299C032851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift in Sources */,
 				847DD2D82670F75F0084E14B /* VideoAttachmentComposerPreview.swift in Sources */,
 				CDA1FB07278843AF00C2F4BD /* PrivateGroupUsersCVCell.swift in Sources */,
 				847D60292679EDD300FB701D /* GalleryCollectionViewCell.swift in Sources */,
@@ -7438,6 +7457,7 @@
 				847D602B2679EED400FB701D /* VideoAttachmentGalleryCell.swift in Sources */,
 				AD87D097263C7783008B466C /* CommandButton.swift in Sources */,
 				E3D2976328255CD00026B69F /* GiphyApiServiceProtocol.swift in Sources */,
+				6E299BFD2851DFE900CBF89E /* BillSplitVC.swift in Sources */,
 				224165A825910A2C00ED7F78 /* CheckboxControl.swift in Sources */,
 				6E6A40D727EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */,
 				6E3DAEBD280960C700B3D7A4 /* SkeletonView+Configure.swift in Sources */,
@@ -7529,6 +7549,7 @@
 				E73BD9E6264AC21300E208B7 /* FileAttachmentViewInjector.swift in Sources */,
 				CD43C65D27B545FE006C1E0C /* ContextMenu.swift in Sources */,
 				7844B10C25EF92B600B87E89 /* ChatChannelListItemView+SwiftUI.swift in Sources */,
+				6E299C002851E21300CBF89E /* BillSplitUserSelectionVC.swift in Sources */,
 				6EEFB78827BB83AD007224C2 /* PanModalPresenter.swift in Sources */,
 				224FF67B2562F1EA00725DD1 /* ChatChannelReadStatusCheckmarkView.swift in Sources */,
 				6EEFB79A27BB83AD007224C2 /* PanModalPresentationAnimator.swift in Sources */,
@@ -7865,6 +7886,7 @@
 				796CBC2B25F7CDAC003299B0 /* UserChannelBanEventsMiddleware.swift in Sources */,
 				8AC9CBD624C73689006E236C /* NotificationEvents.swift in Sources */,
 				F6FF1DA824FD232C00151735 /* MessageUpdater.swift in Sources */,
+				6E299BFF2851E21300CBF89E /* BillSplitUserSelectionVC.swift in Sources */,
 				7931818C24FD2660002F8C84 /* ChannelListController+Combine.swift in Sources */,
 				790A4C55252F25DA001F4A23 /* DeviceDTO.swift in Sources */,
 				79C5CBE825F66DBD00D98001 /* ChatChannelWatcherListController.swift in Sources */,
@@ -7907,6 +7929,7 @@
 				79B5517524E595CC00CE9FEC /* CurrentUserPayloads.swift in Sources */,
 				6E4D4FDB27C8D927007FFE83 /* UserListViewModel.swift in Sources */,
 				8A0CC9E524C5FEA900705CF9 /* MemberEvents.swift in Sources */,
+				6E299C022851E8C200CBF89E /* BillSplitUserSelectionViewModel.swift in Sources */,
 				DA4AA3BA2502731900FAAF6E /* Publisher+Extensions.swift in Sources */,
 				881506EC258212BF0013935B /* MultipartFormData.swift in Sources */,
 				792A4F472480107A00EAF71D /* Filter.swift in Sources */,
@@ -8044,6 +8067,7 @@
 				882C574A252C767E00E60C44 /* ChannelMemberListPayload.swift in Sources */,
 				DAFAD6A324DD8E1A0043ED06 /* ChannelEditDetailPayload.swift in Sources */,
 				84A43CB326A9A54700302763 /* EventSender.swift in Sources */,
+				6E299BFC2851DFE900CBF89E /* BillSplitVC.swift in Sources */,
 				88BEBCD62536FDBF00D9E8B7 /* MemberListController+SwiftUI.swift in Sources */,
 				88F6DF91252C8845009A8AF0 /* ChannelMemberUpdater.swift in Sources */,
 				79BF83F2248F8F60007611A1 /* Logger.swift in Sources */,

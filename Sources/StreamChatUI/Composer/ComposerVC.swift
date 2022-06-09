@@ -286,6 +286,7 @@ open class ComposerVC: _ViewController,
 
     private var walletInputView: WalletQuickInputViewController?
     private var menuController: ChatMenuViewController?
+    private var billSplitVC: BillSplitVC?
     private var emoji: UIViewController?
     private var emojiPickerView: UIViewController?
     var isMenuShowing = false
@@ -615,9 +616,8 @@ open class ComposerVC: _ViewController,
                 break
             case .crypto:
                 self.showPayment()
-            case .oneN:
-                self.animateToolkitView(isHide: true)
-                break
+            case .billSplit:
+                self.showBillSplitView()
             case .nft:
                 self.animateToolkitView(isHide: true)
             case .redPacket:
@@ -814,6 +814,22 @@ open class ComposerVC: _ViewController,
             }
             UIApplication.shared.windows.first?.rootViewController?.present(walletView, animated: true, completion: nil)
         }
+    }
+
+    open func showBillSplitView() {
+        billSplitVC = BillSplitVC.instantiateController(storyboard: .BillSplit)
+        // callback
+        billSplitVC?.callbackSelectFriend = { [weak self] in
+            guard let weakSelf = self else { return }
+            guard let userSelectionVC = BillSplitUserSelectionVC
+                    .instantiateController(storyboard: .BillSplit) as? BillSplitUserSelectionVC else {
+                        return
+                    }
+            userSelectionVC.channelController = weakSelf.channelController
+            weakSelf.present(userSelectionVC, animated: true, completion: nil)
+        }
+        // add view
+        showInputViewController(billSplitVC)
     }
 
     private func showMessageOption(isHide: Bool) {

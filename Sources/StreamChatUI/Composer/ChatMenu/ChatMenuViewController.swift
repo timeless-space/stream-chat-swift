@@ -100,7 +100,7 @@ enum MenuType: Int, CaseIterable {
     case disburseFund = 2
     case weather = 3
     case crypto = 4
-    case oneN = 5
+    case billSplit = 5
     case nft = 6
     case redPacket = 7
     case dao = 8
@@ -120,7 +120,7 @@ enum MenuType: Int, CaseIterable {
             return "Weather"
         case .crypto:
             return "Crypto"
-        case .oneN:
+        case .billSplit:
             return "1/N"
         case .nft:
             return "NFT"
@@ -151,7 +151,7 @@ enum MenuType: Int, CaseIterable {
             return Appearance.default.images.menuWeather
         case .crypto:
             return Appearance.default.images.menuCrypto
-        case .oneN:
+        case .billSplit:
             return Appearance.default.images.menu1n
         case .nft:
             return Appearance.default.images.menuNft
@@ -177,11 +177,11 @@ enum MenuType: Int, CaseIterable {
     }
 
     static func getNonDaoMenu() -> [MenuType] {
-        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .gift]
+        return [.media, .contact, .weather, .crypto, .billSplit, .nft, .redPacket, .gift]
     }
 
     static func getNonDaoMenuWithoutGift() -> [MenuType] {
-        return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .poll]
+        return [.media, .contact, .weather, .crypto, .billSplit, .nft, .redPacket, .poll]
     }
 }
 

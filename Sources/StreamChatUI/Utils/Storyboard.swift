@@ -12,6 +12,7 @@ public enum StreamChatStoryboard: String {
     case wallet = "Wallet"
     case PrivateGroup = "PrivateGroup"
     case GroupChat = "GroupChat"
+    case BillSplit = "BillSplit"
 }
 
 ///// Instantiate View Controller
