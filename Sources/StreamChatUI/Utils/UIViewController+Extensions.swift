@@ -175,7 +175,7 @@ public class pushTransition: CATransition {}
 
 extension UIViewController {
     public func pushWithAnimation(controller: UIViewController) {
-        self.navigationController?.pushViewController(controller, animated: true)
+        navigationController?.pushViewController(controller, animated: true)
     }
     public func popWithAnimation() {
         self.navigationController?.popViewController(animated: true)
