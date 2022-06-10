@@ -18,8 +18,8 @@ public struct UnknownChannelEvent: Event, Hashable {
     
     /// An event creation date.
     public let createdAt: Date
-    
-    /// A dictionary containing the entire event JSON.
+
+    /// A dictionary with custom fields.
     public let payload: [String: RawJSON]
 }
 

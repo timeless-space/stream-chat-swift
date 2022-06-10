@@ -13,6 +13,8 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
         }
     }
 
+    open var isDiscardButtonVisible: Bool = true
+
     /// The maximum number of vertical items before scrolling is enabled.
     open var maxNumberOfVerticalItems: Int = 3
 
@@ -94,7 +96,7 @@ open class AttachmentsPreviewVC: _ViewController, ComponentsProvider {
     
     override open func setUpLayout() {
         super.setUpLayout()
-        
+
         view.embed(containerStackView)
         
         horizontalScrollView.embed(horizontalStackView)

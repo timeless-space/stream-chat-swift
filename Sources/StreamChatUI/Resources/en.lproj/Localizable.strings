@@ -43,6 +43,7 @@
 "message.deleted-message-placeholder" = "Message deleted";
 
 "composer.title.edit" = "Edit Message";
+"composer.title.editCaption" = "Edit Caption";
 "composer.title.reply" = "Reply to";
 "composer.placeholder.message" = "Send a message";
 "composer.placeholder.giphy" = "Search GIFs";

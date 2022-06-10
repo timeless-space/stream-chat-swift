@@ -129,31 +129,18 @@ open class InputTextView: UITextView, AppearanceProvider {
     @objc open func handleTextChange() {
         placeholderLabel.isHidden = !text.isEmpty
         setTextViewHeight()
-        //NSObject.cancelPreviousPerformRequests(withTarget: self)
-        //perform(#selector(handleKeyboardDisplay), with: nil, afterDelay: 0.3)
     }
 
-//    @objc func handleKeyboardDisplay() {
-//        if text.isEmpty && spellCheckingType == .default {
-//            resignFirstResponder()
-//            spellCheckingType = .no
-//            autocorrectionType = .no
-//            becomeFirstResponder()
-//            setNeedsDisplay()
-//            handleToolkitToggle?(false)
-//        } else if !text.isEmpty && spellCheckingType == .no {
-//            resignFirstResponder()
-//            spellCheckingType = .default
-//            autocorrectionType = .default
-//            becomeFirstResponder()
-//            setNeedsDisplay()
-//            handleToolkitToggle?(true)
-//        }
-//    }
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        let contentHeight = heightToSet()
+        if let oldHeight = heightConstraint?.constant, oldHeight != contentHeight {
+            heightConstraint?.constant = contentHeight
+        }
+    }
 
-    open func setTextViewHeight() {
+    private func heightToSet() -> CGFloat {
         var heightToSet = minimumHeight
-
         if contentSize.height <= minimumHeight {
             heightToSet = minimumHeight
         } else if contentSize.height >= maximumHeight {
@@ -161,9 +148,12 @@ open class InputTextView: UITextView, AppearanceProvider {
         } else {
             heightToSet = contentSize.height
         }
+        return heightToSet
+    }
 
-        heightConstraint?.constant = heightToSet
-        heightConstraint?.isActive = true
+    open func setTextViewHeight() {
+        let contentHeight = heightToSet()
+        heightConstraint?.constant = contentHeight
         layoutIfNeeded()
 
         // This is due to bug in UITextView where the scroll sometimes disables

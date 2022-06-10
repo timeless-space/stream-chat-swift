@@ -62,7 +62,9 @@ public extension EventType {
     static let messageDeleted: Self = "message.deleted"
     /// When a channel was marked as read.
     static let messageRead: Self = "message.read"
-    
+    /// When a poll voted.
+    static let messagePollVoted: Self = "poll_voted"
+
     /// When a member was added to a channel.
     static let memberAdded: Self = "member.added"
     /// When a member was updated.

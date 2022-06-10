@@ -498,6 +498,7 @@ class MessageUpdater: Worker {
         cid: ChannelId,
         messageId: MessageId,
         action: AttachmentAction,
+        poll: [String : RawJSON],
         completion: ((Error?) -> Void)? = nil
     ) {
         database.write({ session in
@@ -520,7 +521,8 @@ class MessageUpdater: Worker {
             let endpoint: Endpoint<MessagePayload.Boxed> = .dispatchEphemeralMessageAction(
                 cid: cid,
                 messageId: messageId,
-                action: action
+                action: action,
+                poll: poll
             )
 
             self.apiClient.request(endpoint: endpoint) {

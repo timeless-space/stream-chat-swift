@@ -104,6 +104,8 @@ open class ChatMessageListVC: _ViewController,
         listView.register(ChatMessageStickerBubble.self, forCellReuseIdentifier: "ChatMessageStickerBubble")
         listView.register(.init(nibName: "AdminMessageTVCell", bundle: nil), forCellReuseIdentifier: "AdminMessageTVCell")
         listView.register(RedPacketAmountBubble.self, forCellReuseIdentifier: "RedPacketAmountBubble")
+        listView.register(PollBubble.self, forCellReuseIdentifier: "PollBubble")
+        listView.register(PollBubble.self, forCellReuseIdentifier: "PollSentBubble")
         listView.register(RedPacketExpired.self, forCellReuseIdentifier: "RedPacketExpired")
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
@@ -367,6 +369,10 @@ open class ChatMessageListVC: _ViewController,
         dataSource?.numberOfMessages(in: self) ?? 0
     }
 
+    public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        pausePlayVideos()
+    }
+
     open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         let currentUserId = ChatClient.shared.currentUserId
@@ -576,6 +582,29 @@ open class ChatMessageListVC: _ViewController,
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
+            } else if isPollCell(message) {
+                if isMessageFromCurrentUser {
+                    guard let cell = tableView.dequeueReusableCell(
+                        withIdentifier: "PollBubble",
+                        for: indexPath) as? PollBubble else {
+                            return UITableViewCell()
+                        }
+                    cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                    cell.content = message
+                    cell.channel = dataSource?.channel(for: self)
+                    cell.configData(isSender: isMessageFromCurrentUser)
+                    return cell
+                }
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PollSentBubble",
+                    for: indexPath) as? PollBubble else {
+                        return UITableViewCell()
+                    }
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.channel = dataSource?.channel(for: self)
+                cell.configData(isSender: isMessageFromCurrentUser)
+                return cell
             } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
                       let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
@@ -659,6 +688,13 @@ open class ChatMessageListVC: _ViewController,
         return type == MessageType.giftPacket
     }
 
+    private func isPollCell(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let messageType = extraData["messageType"] else { return false }
+        let type = fetchRawData(raw: messageType) as? String ?? ""
+        return type == MessageType.newPoll
+    }
+
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
         return (message?.extraData.keys.contains("stickerUrl") ?? false) || (message?.extraData.keys.contains("giphyUrl") ?? false)
     }
@@ -714,6 +750,8 @@ open class ChatMessageListVC: _ViewController,
     }
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let announcementCell = cell as? AnnouncementTableViewCell else { return }
+        announcementCell.getImageFromCache(announcementCell.message)
         delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
     }
 

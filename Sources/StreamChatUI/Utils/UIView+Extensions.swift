@@ -3,6 +3,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 extension UIView {
     // MARK: - `embed` family of helpers
@@ -274,5 +275,38 @@ extension UIView {
         return renderer.image { rendererContext in
             layer.render(in: rendererContext.cgContext)
         }
+    }
+}
+
+
+extension UIView {
+    func fit(subview: UIView, horizontalPadding: CGFloat = 0, verticalPadding: CGFloat = 0) {
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        subview.willMove(toSuperview: self)
+        addSubview(subview)
+        addConstraints(NSLayoutConstraint
+                        .constraints(withVisualFormat: "H:|-(\(horizontalPadding))-[subview]-(\(horizontalPadding))-|",
+                                     options: [],
+                                     metrics: nil,
+                                     views: ["subview": subview]))
+        addConstraints(NSLayoutConstraint
+                        .constraints(withVisualFormat: "V:|-(\(verticalPadding))-[subview]-(\(verticalPadding))-|",
+                                     options: [],
+                                     metrics: nil,
+                                     views: ["subview": subview]))
+        subview.didMoveToSuperview()
+    }
+
+    @available(iOS 13.0, *)
+    func fit<T: View>(subview: T, ignoreSafeArea: Bool = true, enableInteraction: Bool = true, removeFromSuperview: Bool = false) {
+        let hostView = UIHostingController(rootView: subview, ignoreSafeArea: ignoreSafeArea)
+        hostView.view.backgroundColor = .clear
+        if !enableInteraction {
+            hostView.view.isUserInteractionEnabled = false
+        }
+        if removeFromSuperview {
+            hostView.view.removeFromSuperview()
+        }
+        self.fit(subview: hostView.view!)
     }
 }
