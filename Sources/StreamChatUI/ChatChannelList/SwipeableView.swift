@@ -167,14 +167,14 @@ open class SwipeableView: _View, ComponentsProvider, UIGestureRecognizerDelegate
         // by implementing this and set return to true, we deny any other touches to interfere.
         //
         // *This practically means on scrolling the list we don't accidentally reveal the cell actions.
-        false
+        true
     }
 
     public func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
     ) -> Bool {
-        false
+        true
     }
 
     /// Closes the stackView with buttons.
