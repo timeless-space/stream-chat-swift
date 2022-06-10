@@ -118,15 +118,14 @@
                                         <rect key="frame" x="0.0" y="20" width="414" height="44"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ECS-yu-MQS" customClass="StreamChatBackButton" customModule="StreamChatUI">
-                                                <rect key="frame" x="12" y="-1" width="46" height="46"/>
+                                                <rect key="frame" x="12" y="-0.5" width="45" height="45"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" secondItem="ECS-yu-MQS" secondAttribute="height" multiplier="1:1" id="dTO-QC-aqv"/>
-                                                    <constraint firstAttribute="width" constant="46" id="lFU-VZ-3oO"/>
+                                                    <constraint firstAttribute="width" constant="45" id="lFU-VZ-3oO"/>
                                                 </constraints>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <inset key="contentEdgeInsets" minX="8" minY="8" maxX="8" maxY="8"/>
-                                                <state key="normal" image="closePopup"/>
                                                 <connections>
                                                     <action selector="closeAction:" destination="li0-j8-UzR" eventType="touchUpInside" id="uHd-Iy-FSE"/>
                                                 </connections>
@@ -283,27 +282,33 @@
                                             </collectionView>
                                         </subviews>
                                     </stackView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HcA-Uy-01i">
+                                    <button opaque="NO" contentMode="scaleToFill" selected="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HcA-Uy-01i">
                                         <rect key="frame" x="0.0" y="122" width="374" height="18"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="18" id="bHp-MW-xDo"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                                        <color key="tintColor" name="White60%"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal" title="  EVERYONE">
+                                            <color key="titleColor" name="White60%"/>
                                             <imageReference key="image" image="square" catalog="system" symbolScale="large"/>
                                         </state>
-                                        <state key="selected">
-                                            <imageReference key="image" image="checkmark.square" catalog="system" symbolScale="large"/>
+                                        <state key="selected" title="Test">
+                                            <color key="titleColor" name="chatText"/>
+                                            <imageReference key="image" image="checkmark.square" catalog="system" symbolScale="large" renderingMode="original"/>
                                         </state>
+                                        <connections>
+                                            <action selector="everyButtonAction:" destination="li0-j8-UzR" eventType="touchUpInside" id="XcJ-5A-fbw"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                             </stackView>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="VdU-vj-5fN">
-                                <rect key="frame" x="0.0" y="320" width="414" height="576"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" contentInsetAdjustmentBehavior="never" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="VdU-vj-5fN">
+                                <rect key="frame" x="0.0" y="344" width="414" height="552"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
                             </tableView>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AIA-Qe-3GD">
                                 <rect key="frame" x="127" y="789" width="160" height="43"/>
@@ -322,6 +327,9 @@
                                         <real key="value" value="21.5"/>
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="addFriendButtonAction:" destination="li0-j8-UzR" eventType="touchUpInside" id="O6V-88-Vf9"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="pXi-KW-JcZ"/>
@@ -335,7 +343,7 @@
                             <constraint firstItem="1Uh-zo-pnE" firstAttribute="leading" secondItem="pXi-KW-JcZ" secondAttribute="leading" constant="20" id="JIs-Yd-mn7"/>
                             <constraint firstItem="fYf-rb-8Zx" firstAttribute="top" secondItem="pXi-KW-JcZ" secondAttribute="top" id="Jch-Mx-4Xp"/>
                             <constraint firstItem="1Uh-zo-pnE" firstAttribute="top" secondItem="4CN-W5-R60" secondAttribute="bottom" constant="20" id="UjD-oU-Mmw"/>
-                            <constraint firstItem="VdU-vj-5fN" firstAttribute="top" secondItem="1Uh-zo-pnE" secondAttribute="bottom" id="VV5-qV-9Ul"/>
+                            <constraint firstItem="VdU-vj-5fN" firstAttribute="top" secondItem="1Uh-zo-pnE" secondAttribute="bottom" constant="24" id="VV5-qV-9Ul"/>
                             <constraint firstItem="pXi-KW-JcZ" firstAttribute="trailing" secondItem="VdU-vj-5fN" secondAttribute="trailing" id="XpE-5H-AMr"/>
                             <constraint firstItem="pXi-KW-JcZ" firstAttribute="bottom" secondItem="AIA-Qe-3GD" secondAttribute="bottom" constant="30" id="bRK-MJ-Rjl"/>
                             <constraint firstItem="VdU-vj-5fN" firstAttribute="leading" secondItem="pXi-KW-JcZ" secondAttribute="leading" id="dFB-et-iKq"/>
@@ -349,7 +357,11 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="addFriendButton" destination="AIA-Qe-3GD" id="QPU-Ui-B5f"/>
+                        <outlet property="closeButton" destination="ECS-yu-MQS" id="7mK-AP-Amk"/>
+                        <outlet property="everyoneButton" destination="HcA-Uy-01i" id="i2o-kY-yUb"/>
                         <outlet property="lblAddedUser" destination="cgh-Nf-v9E" id="YAf-CH-NmB"/>
+                        <outlet property="mainContainerView" destination="qy5-W4-de4" id="6Yf-cR-6z1"/>
                         <outlet property="searchBarContainerView" destination="DNB-XS-Atb" id="7p1-Ut-eNJ"/>
                         <outlet property="searchField" destination="Up6-fa-Sh4" id="yMI-p1-omC"/>
                         <outlet property="selectedUsersCollectionView" destination="UuC-V6-HBe" id="zMx-jj-rhi"/>
@@ -367,7 +379,6 @@
         <image name="Search" width="16" height="16"/>
         <image name="chat_UserDelete" width="17" height="18"/>
         <image name="checkmark.square" catalog="system" width="128" height="114"/>
-        <image name="closePopup" width="30" height="30"/>
         <image name="square" catalog="system" width="128" height="114"/>
         <namedColor name="White40%">
             <color red="0.44299998879432678" green="0.44699999690055847" blue="0.45100000500679016" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -377,6 +388,9 @@
         </namedColor>
         <namedColor name="White87%">
             <color red="0.87800002098083496" green="0.87800002098083496" blue="0.88200002908706665" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="chatText">
+            <color red="0.52899998426437378" green="0.54500001668930054" blue="0.58399999141693115" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="searchBarBackground">
             <color red="0.10999999940395355" green="0.10999999940395355" blue="0.11800000071525574" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

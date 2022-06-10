@@ -23,6 +23,10 @@ public class BillSplitUserSelectionVC: UIViewController {
     @IBOutlet private weak var lblAddedUser: UILabel!
     @IBOutlet private weak var viewAddedUserLabelContainer: UIView!
     @IBOutlet private weak var tableView: UITableView!
+    @IBOutlet private weak var mainContainerView: UIView!
+    @IBOutlet private weak var closeButton: UIButton!
+    @IBOutlet private weak var addFriendButton: UIButton!
+    @IBOutlet private weak var everyoneButton: UIButton!
 
     // MARK: - Variables
     public var selectedUsers = [ChatChannelMember]()
@@ -50,7 +54,10 @@ public class BillSplitUserSelectionVC: UIViewController {
     // MARK: - Setup
     private func setupUI() {
         setupBackgroundColor()
+        setupCloseButton()
         setupTitleColor()
+        setupEveryoneButton()
+        setupAddFriendButton()
         setupSearchBarView()
         setupSelectedUserView()
         setupCollectionView()
@@ -59,6 +66,10 @@ public class BillSplitUserSelectionVC: UIViewController {
 
     private func setupBackgroundColor() {
         self.view.backgroundColor = Appearance.default.colorPalette.chatViewBackground
+    }
+
+    private func setupCloseButton() {
+        closeButton.setImage(Appearance.default.images.closeCircle, for: .normal)
     }
 
     private func setupTitleColor() {
@@ -74,6 +85,7 @@ public class BillSplitUserSelectionVC: UIViewController {
         //searchField.delegate = self
         searchField.setAttributedPlaceHolder(placeHolder: "Search")
         //searchField.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
+        searchField.tintColor = Appearance.default.colorPalette.statusColorBlue
     }
 
     private func setupSelectedUserView() {
@@ -97,8 +109,9 @@ public class BillSplitUserSelectionVC: UIViewController {
     private func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.tableFooterView = UIView()
-        tableView.tableHeaderView = UIView()
+        let headerView = UIView(frame: .init(x: 0, y: 0, width: 0, height: 1))
+        tableView.tableFooterView = headerView
+        tableView.tableHeaderView = headerView
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.keyboardDismissMode = .onDrag
@@ -108,12 +121,53 @@ public class BillSplitUserSelectionVC: UIViewController {
         tableView.register(TableViewCellChatUser.nib, forCellReuseIdentifier: TableViewCellChatUser.identifier)
         // adding table view to container view
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: UIView.safeAreaBottom, right: 0)
+        tableView.layoutMargins = .zero
     }
 
+    private func setupAddFriendButton() {
+        addFriendButton.isHidden = selectedUsers.isEmpty
+        let count  = selectedUsers.count
+        let strFriend = count == 1 ? "Friend" : "Friends"
+        addFriendButton.setTitle("Add \(count) \(strFriend)", for: .normal)
+    }
+
+    private func setupEveryoneButton() {
+        let tineColor = UIColor.white.withAlphaComponent(0.6)
+        let selectedImage = Appearance.default.images.checkmarkSquare
+        let unSelectedImage = Appearance.default.images.square
+//        if #available(iOS 13.0, *) {
+//            everyoneButton.setImage(unSelectedImage, for: .normal)
+//            everyoneButton.setImage(selectedImage, for: .selected)
+//        } else {
+//            everyoneButton.setImage(unSelectedImage, for: .normal)
+//            everyoneButton.setImage(selectedImage, for: .selected)
+//        }
+        everyoneButton.setTitle(" EVERYONE", for: .normal)
+        everyoneButton.setTitle(" EVERYONE", for: .selected)
+        everyoneButton.setTitleColor(tineColor, for: .normal)
+        everyoneButton.setTitleColor(tineColor, for: .selected)
+
+//        everyoneButton.tintColor = tineColor
+    }
 
     // MARK: - Action
     @IBAction func closeAction(_ sender: UIButton) {
+        dismiss(animated: true)
+    }
 
+    @IBAction func addFriendButtonAction(_ sender: UIButton) {
+        dismiss(animated: true)
+    }
+
+    @IBAction func everyButtonAction(_ sender: UIButton) {
+        if everyoneButton.isSelected {
+            selectedUsers = []
+        } else {
+            selectedUsers = viewModel.channelMembers
+        }
+        setupEveryoneButton()
+        setupAddFriendButton()
+        tableView.reloadData()
     }
 }
 
@@ -154,21 +208,23 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
         }
         if let cell = tableView.cellForRow(at: indexPath) as? TableViewCellChatUser {
             let selectionColor = Appearance.default.colorPalette.placeHolderBalanceBG.withAlphaComponent(0.7)
-            UIView.animate(withDuration: 0.2, delay: 0, options: []) {
+            UIView.animate(withDuration: 0.2, delay: 0, options: []) { [weak self] in
+                guard let weakSelf = self else { return }
                 cell.contentView.backgroundColor = selectionColor
-                self.view.layoutIfNeeded()
-            } completion: { status in
+                weakSelf.view.layoutIfNeeded()
+            } completion: { [weak self] _ in
                 cell.contentView.backgroundColor = .clear
             }
         }
-        var user: ChatUser = viewModel.sectionWiseList[indexPath.section]
-            .users[indexPath.row]
+        let user = viewModel.sectionWiseList[indexPath.section].users[indexPath.row]
         if let index = selectedUsers.firstIndex(where: { $0.id == user.id}) {
             selectedUsers.remove(at: index)
         } else {
-            //selectedUsers.append(user)
+            selectedUsers.append(user)
         }
         tableView.reloadRows(at: [indexPath], with: .fade)
+        setupEveryoneButton()
+        setupAddFriendButton()
     }
 
     public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -181,7 +237,6 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
         }
         header.lblTitle.text = viewModel.sectionWiseList[section].letter.capitalized
         header.titleContainerView.layer.cornerRadius = 12.0
-        header.backgroundColor = .clear
         return header
     }
 
@@ -201,19 +256,18 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     open func loadMoreChannels(tableView: UITableView, forItemAt indexPath: IndexPath) {
-        guard let controller = viewModel.chatMemberController else { return }
-        guard let totalMembers = viewModel.channelController?.channel?.memberCount, totalMembers > 0 else { return }
-        guard viewModel.channelMembers.count != totalMembers else { return }
+        guard let controller = viewModel.chatMemberController,
+              let totalMembers = viewModel.channelController?.channel?.memberCount,
+              totalMembers > 0,
+              viewModel.channelMembers.count != totalMembers  else {
+                  return
+              }
         if controller.state != .remoteDataFetched {
             return
         }
-        guard let lastVisibleIndexPath = tableView.indexPathsForVisibleRows?.last else {
-            return
-        }
-        guard indexPath.row == viewModel.channelMembers.count - 1  else {
-            return
-        }
-        guard !viewModel.loadingMoreMembers else {
+        guard let lastVisibleIndexPath = tableView.indexPathsForVisibleRows?.last,
+              indexPath.row == viewModel.channelMembers.count - 1,
+              !viewModel.loadingMoreMembers else {
             return
         }
         viewModel.loadingMoreMembers = true

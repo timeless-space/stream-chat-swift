@@ -312,6 +312,22 @@ public extension Appearance {
             }
         }()
 
+        public var square: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "square")
+            } else {
+                return nil
+            }
+        }()
+
+        public var checkmarkSquare: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "checkmark.square")
+            } else {
+                return nil
+            }
+        }()
+
         // MARK: - Reactions
         public var angryEmojiWithAnimation = "angry-emoji"
         public var grinningFaceEmojiWithAnimation = "grinning-face-emoji"
