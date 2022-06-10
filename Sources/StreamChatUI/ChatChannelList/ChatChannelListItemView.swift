@@ -112,7 +112,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             if content.channel.latestMessages.first?.author.id == ChatClient.shared.currentUserId {
                 return "Sent ONE"
             } else {
-                return "Received ONE"
+                return "Received successful"
             }
         } else if !lastMessage.imageAttachments.isEmpty {
             return content.channel.isDirectMessageChannel ? "Photo" : "\(authorName) Photo"
