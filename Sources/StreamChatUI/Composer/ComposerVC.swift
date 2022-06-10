@@ -1021,14 +1021,28 @@ open class ComposerVC: _ViewController,
             )
             return
         }
-
-        if let walletRequest = content.attachments.filter( { $0.type == .wallet} ).first?.payload as? WalletAttachmentPayload {
-            let parameter: [String: Any] = [
-                kAmount: walletRequest.extraData?.requestedAmount ?? "0",
-                kChannelId: cid.description,
-                kFlair: walletRequest.extraData?.requestedThemeUrl
-            ]
-            NotificationCenter.default.post(name: .sendPaymentRequest, object: nil, userInfo: parameter)
+        if content.attachments.filter ({ $0.type == .wallet }).first != nil {
+            // wallet request attachment
+            channelController?.createNewMessage(
+                text: "/payment",
+                pinning: nil,
+                attachments: content.attachments,
+                mentionedUserIds: content.mentionedUsers.map(\.id),
+                quotedMessageId: content.quotingMessage?.id
+            )
+            if !text.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    guard let self = self else {
+                        return
+                    }
+                    self.channelController?.createNewMessage(
+                        text: text,
+                        pinning: nil,
+                        mentionedUserIds: self.content.mentionedUsers.map(\.id),
+                        quotedMessageId: self.content.quotingMessage?.id
+                    )
+                }
+            }
         } else {
             channelController?.createNewMessage(
                 text: text,
