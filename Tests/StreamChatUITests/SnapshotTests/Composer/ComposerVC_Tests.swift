@@ -261,4 +261,32 @@ final class ComposerVC_Tests: XCTestCase {
         
         AssertSnapshot(containerVC, variants: [.defaultLight])
     }
+    
+    func test_channelWithSlowModeActive_messageIsSent_SlowModeIsOnWithCountdownShown() {
+        // GIVEN
+        let composerVC = ComposerVC()
+        composerVC.cooldownTracker = CooldownTracker_Mock(timer: ScheduledStreamTimer_Mock())
+        composerVC.appearance = Appearance.default
+        composerVC.content.text = "Test text"
+        composerVC.viewDidLoad()
+        
+        // WHEN
+        composerVC.cooldownTracker.start(with: 120)
+        
+        // THEN
+        AssertSnapshot(composerVC)
+    }
+
+    func test_didUpdateMessages_startsCooldown() {
+        // GIVEN
+        let mockedCooldownTracker = CooldownTracker_Mock(timer: ScheduledStreamTimer_Mock())
+        let composerVC = ComposerVC()
+        composerVC.cooldownTracker = mockedCooldownTracker
+
+        // WHEN
+        composerVC.channelController(ChatChannelController_Mock.mock(), didUpdateMessages: [])
+
+        // THEN
+        XCTAssertEqual(mockedCooldownTracker.startCallCount, 1)
+    }
 }

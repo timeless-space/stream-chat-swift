@@ -20,7 +20,7 @@ final class DatabaseSession_Tests: XCTestCase {
         super.tearDown()
     }
     
-    func test_eventPayloadChannelData_isSavedToDatabase() {
+    func test_eventPayloadChannelData_isSavedToDatabase() throws {
         // Prepare an Event payload with a channel data
         let channelId: ChannelId = .unique
         let channelPayload = dummyPayload(with: channelId)
@@ -33,7 +33,7 @@ final class DatabaseSession_Tests: XCTestCase {
         )
         
         // Save the event payload to DB
-        database.write { session in
+        try database.writeSynchronously { session in
             try session.saveEvent(payload: eventPayload)
         }
         
@@ -122,7 +122,7 @@ final class DatabaseSession_Tests: XCTestCase {
         )
         
         // Save the event payload to DB
-        database.write { session in
+        try database.writeSynchronously { session in
             try session.saveEvent(payload: eventPayload)
         }
         
@@ -186,7 +186,7 @@ final class DatabaseSession_Tests: XCTestCase {
         XCTAssertNotNil(message?.pinnedAt)
         XCTAssertNotNil(message?.pinnedBy)
         XCTAssertEqual(message?.pinned, true)
-        XCTAssertEqual(message?.pinExpires, expireDate)
+        XCTAssertEqual(message?.pinExpires?.bridgeDate, expireDate)
     }
 
     func test_pinMessage_whenNoCurrentUser_throwsError() throws {
@@ -384,7 +384,8 @@ final class DatabaseSession_Tests: XCTestCase {
 
         let messageAfterEvent = database.viewContext.message(id: messageId)
 
-        XCTAssertNil(messageAfterEvent)
+        // XCTAssertNil(messageAfterEvent) This should be uncommented out after: https://stream-io.atlassian.net/browse/CIS-1963
+        XCTAssertTrue(messageAfterEvent?.isHardDeleted == true)
     }
 
     func test_saveEvent_whenMessageDelete_whenNotHardDeleted_shouldNotHardDeleteMessageFromDatabase() throws {

@@ -242,7 +242,17 @@ open class ChatMessageListVC: _ViewController,
         if #available(iOS 13.0, *), isDiffingEnabled {
             updateMessagesSnapshot(with: changes, completion: completion)
         } else {
-            listView.updateMessages(with: changes, completion: completion)
+            // Because we use an inverted table view, we need to avoid animations since they look odd.
+            UIView.performWithoutAnimation {
+                listView.updateMessages(with: changes) { [weak self] in
+                    if let newMessageInserted = changes.first(where: { $0.isInsertion && $0.indexPath.row == 0 })?.item {
+                        if newMessageInserted.isSentByCurrentUser {
+                            self?.listView.scrollToMostRecentMessage()
+                        }
+                    }
+                    completion?()
+                }
+            }
         }
     }
 
@@ -706,6 +716,30 @@ internal extension ChatMessageListVC {
 
                 completion?()
             }
+        }
+    }
+}
+
+private extension ListChange {
+    var isInsertion: Bool {
+        switch self {
+        case .insert:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var indexPath: IndexPath {
+        switch self {
+        case let .insert(_, index):
+            return index
+        case let .move(_, _, toIndex):
+            return toIndex
+        case let .update(_, index):
+            return index
+        case let .remove(_, index):
+            return index
         }
     }
 }
