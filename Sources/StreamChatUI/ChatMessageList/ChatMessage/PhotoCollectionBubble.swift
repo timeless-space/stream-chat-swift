@@ -111,7 +111,7 @@ class PhotoCollectionBubble: _TableViewCell {
             guard let `self` = self,
                   let cell = self.stackedItemsView.cell(at: selectedIndex),
                   let type = type else {
-                      self?.stackedItemsView.setupCollectionFlowLayout(isSender)
+                      self?.stackedItemsView.setupCollectionFlowLayout(isSender, animation: true)
                       UIView.animate(withDuration: 0.5) {
                         self?.stackedItemsView.layoutSubviews()
                       }
