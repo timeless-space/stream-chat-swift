@@ -23,7 +23,7 @@ public struct SendOneWallet {
     public var channelId: ChannelId?
     //number of fraction digits in transferAmount
     public var fractionDigits: Int = 0
-    public var paymentRequestId: String?
+    public var messageId: String?
 
     public init() {
     }
@@ -36,9 +36,10 @@ public struct SendOneWallet {
         dictOut["recipientAddress"] = .string(recipientAddress ?? "")
         dictOut["recipientImageUrl"] = .string(recipientImageUrl?.absoluteString ?? "")
         dictOut["myImageUrl"] = .string(myImageUrl?.absoluteString ?? "")
-        dictOut["transferAmount"] = .number(Double(transferAmount ?? 0))
+        dictOut["transferAmount"] = .number(Double(transferAmount ?? 0).rounded(toPlaces: fractionDigits))
         dictOut["txId"] = .string(txId ?? "")
         dictOut["paymentTheme"] = .string(paymentTheme ?? "")
+        dictOut["prev_message_id"] = .string(messageId ?? "")
         if let channelId = channelId {
             dictOut["channelId"] = .string(channelId.description)
         }

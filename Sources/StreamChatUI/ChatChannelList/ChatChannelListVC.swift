@@ -104,7 +104,7 @@ open class ChatChannelListVC: _ViewController,
 
         collectionView.dataSource = self
         collectionView.delegate = self
-        
+
         userAvatarView.controller = controller.client.currentUserController()
         userAvatarView.addTarget(self, action: #selector(didTapOnCurrentUserAvatar), for: .touchUpInside)
     }

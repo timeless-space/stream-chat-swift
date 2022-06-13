@@ -17,7 +17,6 @@ extension Notification.Name {
     public static let createPrivateGroup = Notification.Name("kCreatePrivateGroup")
     public static let joinPrivateGroup = Notification.Name("kJoinPrivateGroup")
     public static let getPrivateGroup = Notification.Name("kGetPrivateGroup")
-    public static let sendPaymentRequest = Notification.Name("kSendPaymentRequest")
 }
 
 /// Controller responsible for displaying the channel messages.
@@ -35,8 +34,8 @@ open class ChatChannelVC:
     open var isChannelCreated = false
 
     /// Listen to keyboard observer or not
-    open var enableKeyboardObserver = false
-    
+    open var enableKeyboardObserver = true
+
     /// Local variable to toggle channel mute flag
     private var isChannelMuted = false
 
@@ -352,6 +351,32 @@ open class ChatChannelVC:
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateTextFieldLayout),
+            name: .updateTextfield, object: nil
+        )
+        if enableKeyboardObserver {
+            keyboardHandler.start()
+        }
+    }
+
+    @objc func updateTextFieldLayout() {
+        enableKeyboardObserver.toggle()
+        messageComposerVC?.composerView.inputMessageView.emojiButton.isSelected = true
+        if enableKeyboardObserver {
+            messageComposerVC?.shouldToggleEmojiButton = true
+            keyboardHandler.start()
+        } else {
+            messageComposerVC?.shouldToggleEmojiButton = false
+            keyboardHandler.stop()
+        }
+    }
+
+    deinit {
+        if enableKeyboardObserver {
+            keyboardHandler.stop()
+        }
     }
 
     open override func viewWillAppear(_ animated: Bool) {
@@ -364,19 +389,9 @@ open class ChatChannelVC:
         self.navigationController?.isToolbarHidden = true
     }
 
-    override open func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        if enableKeyboardObserver {
-            keyboardHandler.start()
-        }
-    }
-
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         resignFirstResponder()
-        if enableKeyboardObserver {
-            keyboardHandler.stop()
-        }
     }
 
     @objc func backAction(_ sender: Any) {
