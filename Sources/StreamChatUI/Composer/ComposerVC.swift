@@ -7,6 +7,7 @@ import StreamChat
 import UIKit
 import SwiftUI
 import GiphyUISDK
+import CoreLocation
 
 extension Notification.Name {
     public static let sendOneWalletTapAction = Notification.Name("kStreamChatOneWalletTapAction")
@@ -31,6 +32,12 @@ extension Notification.Name {
     public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
     public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
     public static let getPollData = Notification.Name("kStreamChatGetPollData")
+    public static let fetchWeather = Notification.Name("kFetchWeather")
+    public static let showLocationPicker = Notification.Name("kShowLocationPicker")
+    public static let fetchWeatherCompleted = Notification.Name("kFetchWeatherCompleted")
+    public static let locationUpdated = Notification.Name("kLocationUpdated")
+    public static let getWeatherType = Notification.Name("kGetWeatherType")
+    public static let setWeatherType = Notification.Name("kSetWeatherType")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -284,6 +291,7 @@ open class ComposerVC: _ViewController,
         return view
     }()
 
+    private var isAskedForLocationPermission = false
     private var walletInputView: WalletQuickInputViewController?
     private var menuController: ChatMenuViewController?
     private var emoji: UIViewController?
@@ -315,6 +323,11 @@ open class ComposerVC: _ViewController,
         }
     }
     var shouldToggleEmojiButton = true
+    private var locationManager: CLLocationManager = {
+        let locationManager = CLLocationManager()
+        return locationManager
+    }()
+    private var isWeatherButtonTapped = false
 
     @objc func didTapView() {
         hideInputView()
@@ -411,6 +424,9 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(clearTextField), name: .clearTextField, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(sendWeatherMessage(_:)), name: .fetchWeatherCompleted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(editWeatherMessage(_:)), name: .locationUpdated, object: nil)
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
@@ -612,7 +628,23 @@ open class ComposerVC: _ViewController,
                     Snackbar.show(text: "Only admins are allowed to disburse the fund.")
                 }
             case .weather:
-                break
+                self.isWeatherButtonTapped = true
+                self.locationManager.delegate = self
+                self.composerView.inputMessageView.textView.text = nil
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                switch CLLocationManager.authorizationStatus() {
+                case .notDetermined:
+                    self.locationManager.requestWhenInUseAuthorization()
+                    self.locationManager.requestAlwaysAuthorization()
+                    self.locationManager.startUpdatingLocation()
+                    break
+                case .restricted, .denied:
+                    self.showSettingsAlert()
+                    break
+                case .authorizedWhenInUse, .authorizedAlways:
+                    self.showWeather()
+                    break
+                }
             case .crypto:
                 self.showPayment()
             case .oneN:
@@ -943,6 +975,69 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.post(name: .createNewPoll, object: nil, userInfo: userInfo)
     }
 
+    @objc func sendWeatherMessage(_ notification: Notification ) {
+        channelController?
+            .createNewMessage(
+                text: "/weather",
+                extraData: ["weather": .dictionary(getWeatherRequest(notification))],
+                completion: nil
+            )
+    }
+
+    @objc func editWeatherMessage(_ notification: Notification ) {
+        let messageId = notification.userInfo?["messageId"] as? String ?? ""
+        guard let cid = channelController?.cid else { return }
+        let action = AttachmentAction(name: "action", value: "edit", style: .default, type: .button, text: "Edit")
+        ChatClient.shared.messageController(cid: cid, messageId: messageId)
+            .dispatchEphemeralMessageAction(action, getWeatherRequest(notification), key: "weather")
+    }
+
+    func getWeatherRequest(_ notification: Notification) -> [String: RawJSON] {
+        var weatherData = [String: RawJSON]()
+        // Get data from notification
+        let temp = notification.userInfo?["tempreature"] as? String ?? ""
+        let location = notification.userInfo?["location"] as? String ?? ""
+        let iconCode = notification.userInfo?["iconCode"] as? String ?? ""
+        let displayMessage = notification.userInfo?["displayMessage"] as? String ?? ""
+        // Set data
+        weatherData["currentWeather"] = .string(temp)
+        weatherData["currentLocation"] = .string(location)
+        weatherData["iconCode"] = .string(iconCode)
+        weatherData["displayMessage"] = .string(displayMessage)
+        return weatherData
+    }
+
+    func getLocationInfo(currentLocation: CLLocation, completion: @escaping CLGeocodeCompletionHandler) {
+        let geoCoder = CLGeocoder()
+        geoCoder.reverseGeocodeLocation(currentLocation) { placemarks, error in
+            completion(placemarks, error)
+        }
+    }
+
+    func showWeather() {
+        isWeatherButtonTapped = false
+        guard let currentLocation = locationManager.location else { return }
+        getLocationInfo(currentLocation: currentLocation) { [weak self] placemark, error in
+            guard let self = self else { return }
+            var weatherData: [String: Any] = [
+                "latitude": currentLocation.coordinate.latitude,
+                "longitude": currentLocation.coordinate.longitude,
+                "locationName": placemark?.first?.locality]
+            NotificationCenter.default.post(name: .fetchWeather, object: nil, userInfo: weatherData)
+        }
+    }
+
+    private func showSettingsAlert() {
+        let alert = UIAlertController(title: "Permission missing", message: "Please allow location permission from settings to access this feature.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { _ in
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+
     private func animateMenuButton() {
         if !isMenuShowing {
             UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 5, options: .curveEaseInOut, animations: { [weak self] in
@@ -1114,6 +1209,8 @@ open class ComposerVC: _ViewController,
                 sendONEAction()
             } else if commandName == "redpacket" {
                 sendRedPacketAction()
+            } else if commandName == "weather" {
+                showWeather()
             } else {
                 content.addCommand(foundCommand)
                 dismissSuggestions()
@@ -1134,6 +1231,8 @@ open class ComposerVC: _ViewController,
                 self?.sendONEAction()
             } else if commandName == "redpacket" {
                 self?.sendRedPacketAction()
+            } else if commandName == "weather" {
+                self?.showWeather()
             } else {
                 self?.content.addCommand(commandHints[commandIndex])
                 self?.dismissSuggestions()
@@ -1449,5 +1548,25 @@ func searchUsers(_ users: [ChatUser], by searchInput: String, excludingId: Strin
             return $0.id < $1.id
         }
         return dist < 0
+    }
+
+}
+
+// MARK: CLLocationManager Delegate Methods
+extension ComposerVC: CLLocationManagerDelegate {
+
+    public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch CLLocationManager.authorizationStatus() {
+        case .restricted, .denied:
+            if isWeatherButtonTapped {
+                showSettingsAlert()
+            }
+        case .authorizedAlways, .authorizedWhenInUse :
+            if isWeatherButtonTapped {
+                showWeather()
+            }
+        default:
+            break
+        }
     }
 }

@@ -1150,6 +1150,9 @@
 		DBF12128258BAFC1001919C6 /* OnlyLinkTappableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF12127258BAFC1001919C6 /* OnlyLinkTappableTextView.swift */; };
 		DBF17AE825D48865004517B3 /* BackgroundTaskScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF17AE725D48865004517B3 /* BackgroundTaskScheduler.swift */; };
 		E344A5BD2823E16300CA7AC5 /* GiphyCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49728197880002CA91C /* GiphyCollectionCell.swift */; };
+		E3508C5D2848EA5900B7E895 /* WeatherCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3508C5C2848EA5900B7E895 /* WeatherCell.swift */; };
+		E3879E102853652B00F51EB1 /* WeatherHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3879E0F2853652B00F51EB1 /* WeatherHelper.swift */; };
+		E3879E122853654000F51EB1 /* WeatherDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3879E112853654000F51EB1 /* WeatherDetailModel.swift */; };
 		E3C2DCC32822BF3C00CA4F0E /* EmojiPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCB92822BF3C00CA4F0E /* EmojiPickerViewController.swift */; };
 		E3C2DCC42822BF3C00CA4F0E /* EmojiMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCBA2822BF3C00CA4F0E /* EmojiMenuViewController.swift */; };
 		E3C2DCC52822BF3C00CA4F0E /* PickerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCBC2822BF3C00CA4F0E /* PickerTableViewCell.swift */; };
@@ -2750,6 +2753,9 @@
 		DBF17AE725D48865004517B3 /* BackgroundTaskScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskScheduler.swift; sourceTree = "<group>"; };
 		DD4855E5875D07D6210C02AB /* Pods_StreamChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_StreamChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D462C3A1288350E42719FC /* Pods-StreamChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-StreamChat.release.xcconfig"; path = "Target Support Files/Pods-StreamChat/Pods-StreamChat.release.xcconfig"; sourceTree = "<group>"; };
+		E3508C5C2848EA5900B7E895 /* WeatherCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCell.swift; sourceTree = "<group>"; };
+		E3879E0F2853652B00F51EB1 /* WeatherHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHelper.swift; sourceTree = "<group>"; };
+		E3879E112853654000F51EB1 /* WeatherDetailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailModel.swift; sourceTree = "<group>"; };
 		E3C2DCB92822BF3C00CA4F0E /* EmojiPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiPickerViewController.swift; sourceTree = "<group>"; };
 		E3C2DCBA2822BF3C00CA4F0E /* EmojiMenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiMenuViewController.swift; sourceTree = "<group>"; };
 		E3C2DCBC2822BF3C00CA4F0E /* PickerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickerTableViewCell.swift; sourceTree = "<group>"; };
@@ -4903,6 +4909,7 @@
 				EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */,
 				FAC0A751282BACEF00843B52 /* UIHostingController+Extensions.swift */,
 				EDE6D9242818259700FCAB53 /* Utils.swift */,
+				E3879E0F2853652B00F51EB1 /* WeatherHelper.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -5692,6 +5699,7 @@
 				FC1A920B27F5ED22006A1E1A /* ContactModel.swift */,
 				CDB98D112757D43A00CA7CDE /* SendOneWallet.swift */,
 				CD72548C275F556100CD6444 /* RedPacket.swift */,
+				E3879E112853654000F51EB1 /* WeatherDetailModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -5889,6 +5897,7 @@
 				ED0D5144275DE10B00753692 /* RedPacketBubble.swift */,
 				ED0D5146275DED8800753692 /* RedPacketAmountBubble.swift */,
 				224FC4CA280D3BE900F6E135 /* GiftPacketSentBubble.swift */,
+				E3508C5C2848EA5900B7E895 /* WeatherCell.swift */,
 			);
 			path = ChatMessage;
 			sourceTree = "<group>";
@@ -7571,6 +7580,7 @@
 				F838F6A92636D3C30025E1F5 /* ZoomTransitionController.swift in Sources */,
 				CD24C71727846C4300F6378D /* DPOTPView.swift in Sources */,
 				AD81AF0D25ED141A00F17F8F /* ListCollectionViewLayout.swift in Sources */,
+				E3879E122853654000F51EB1 /* WeatherDetailModel.swift in Sources */,
 				8850B92A255C286B003AED69 /* Components.swift in Sources */,
 				AD8D1809268F7290004E3A5C /* TypingSuggester.swift in Sources */,
 				F880DEA32628528B0025AD64 /* GalleryVC.swift in Sources */,
@@ -7584,6 +7594,7 @@
 				E73A8B2B2578EB2B00FBDC56 /* ComposerVC.swift in Sources */,
 				ADFA09C926A99E0A002A6EFA /* ChatThreadHeaderView.swift in Sources */,
 				FC1A921127F5EE31006A1E1A /* UserDefault.swift in Sources */,
+				E3508C5D2848EA5900B7E895 /* WeatherCell.swift in Sources */,
 				6E92FD3B27BCCBAF00DA89B6 /* ChatNavTitleLabel.swift in Sources */,
 				CDFA6EDD2768DB0A00DC3B7F /* ActivityIndicator.swift in Sources */,
 				8800A26F258A04D5006D64C4 /* ChatMessageAttachmentPreviewVC.swift in Sources */,
@@ -7646,6 +7657,7 @@
 				224FF69D2562F5D100725DD1 /* UIImage+Extensions.swift in Sources */,
 				88F0D734257E4EA500F4B050 /* L10n.swift in Sources */,
 				6EEFB78A27BB83AD007224C2 /* PanModalPresentable+Defaults.swift in Sources */,
+				E3879E102853652B00F51EB1 /* WeatherHelper.swift in Sources */,
 				6EC85CDC27D5EB9400063EB8 /* CollectionViewCellGroupUsers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

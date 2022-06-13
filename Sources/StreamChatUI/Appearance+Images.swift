@@ -567,5 +567,7 @@ public extension Appearance {
         // MARK: QR Code Option
         public var shareImageIcon: UIImage = loadImageSafely(with: "share_image_icon")
         public var gif: UIImage = loadImageSafely(with: "gif")
+        public var weatherDay_bg = loadImageSafely(with: "weatherDay_bg")
+        public var weatherNight_bg = loadImageSafely(with: "weatherNight_bg")
     }
 }

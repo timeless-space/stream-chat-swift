@@ -84,7 +84,8 @@ extension Endpoint {
         cid: ChannelId,
         messageId: MessageId,
         action: AttachmentAction,
-        poll: [String: RawJSON]
+        formData: [String: RawJSON],
+        key: String
     ) -> Endpoint<MessagePayload.Boxed> {
         .init(
             path: messageId.actionPath,
@@ -95,11 +96,12 @@ extension Endpoint {
                 cid: cid,
                 messageId: messageId,
                 action: action,
-                poll: poll
+                formData: formData,
+                key: key
             )
         )
     }
-    
+
     static func search(query: MessageSearchQuery) -> Endpoint<MessageSearchResultsPayload> {
         .init(path: "search", method: .get, queryItems: nil, requiresConnectionId: false, body: ["payload": query])
     }

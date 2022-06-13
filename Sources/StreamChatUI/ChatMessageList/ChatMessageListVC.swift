@@ -73,6 +73,7 @@ open class ChatMessageListVC:
     }
 
     var viewEmptyState: UIView = UIView()
+    var currentWeatherType: String = "Fahrenheit"
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -92,6 +93,7 @@ open class ChatMessageListVC:
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        listView.register(WeatherCell.self, forCellReuseIdentifier: "WeatherCell")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -102,6 +104,17 @@ open class ChatMessageListVC:
             name: UIApplication.didBecomeActiveNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(setWeatherType(_:)),
+            name: .setWeatherType,
+            object: nil
+        )
+        NotificationCenter.default.post(name: .getWeatherType, object: nil)
+    }
+
+    @objc private func setWeatherType(_ notification: NSNotification) {
+        currentWeatherType = notification.userInfo?["weatherType"] as? String ?? "Fahrenheit"
     }
 
     override open func setUp() {
@@ -545,7 +558,22 @@ open class ChatMessageListVC:
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
-            } else {
+            }
+            else if isWeatherCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "WeatherCell",
+                    for: indexPath) as? WeatherCell else {
+                        return UITableViewCell()
+                    }
+                cell.weatherType = currentWeatherType
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
+            }
+            else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
                     attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
@@ -558,7 +586,7 @@ open class ChatMessageListVC:
             }
         }
     }
-
+    
     private func setupEmptyState() {
         viewEmptyState = UIView()
         self.view.addSubview(viewEmptyState)
@@ -611,6 +639,13 @@ open class ChatMessageListVC:
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
         return (message?.extraData.keys.contains("stickerUrl") ?? false) || (message?.extraData.keys.contains("giphyUrl") ?? false)
+    }
+
+    private func isWeatherCell(_ message: ChatMessage?) -> Bool {
+        guard let extraData = message?.extraData,
+              let messageType = extraData["messageType"] else { return false }
+        let type = fetchRawData(raw: messageType) as? String ?? ""
+        return type == "weather"
     }
 
     private func isRedPacketExpiredCell(_ message: ChatMessage?) -> Bool {

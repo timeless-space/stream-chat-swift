@@ -18,9 +18,14 @@ public extension Appearance {
         public var headlineBold = UIFont.preferredFont(forTextStyle: .headline).bold
         public var title = UIFont.preferredFont(forTextStyle: .title1)
         public var emoji = UIFont.systemFont(ofSize: 50)
+        public var proSemibold12 = UIFont(name: Name.sfProTextSemibold, size: 12)
+        public var proRegular8 = UIFont(name: Name.sfProTextRegular, size: 8)
+        public var proSemibold10 = UIFont(name: Name.sfProTextSemibold, size: 10)
+        public var proRegular32 = UIFont(name: Name.sfProTextRegular, size: 32)
 
         public enum Name {
-            public static let sfProText = "SFProText-Regular"
+            public static let sfProTextRegular = "SFProText-Regular"
+            public static let sfProTextSemibold = "SFProText-Regular"
         }
     }
 }
