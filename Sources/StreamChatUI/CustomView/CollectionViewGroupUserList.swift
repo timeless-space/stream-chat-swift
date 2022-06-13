@@ -30,7 +30,7 @@ public class CollectionViewGroupUserList: UIView {
 
     public var selectedUsers = [ChatUser]()
     public var callbackSelectedUser: (([ChatUser]) -> Void)?
-    public var isRemovreButtonHidden = true
+    public var isRemoveButtonHidden = true
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -69,12 +69,12 @@ extension CollectionViewGroupUserList: UICollectionViewDelegate , UICollectionVi
             return UICollectionViewCell.init(frame: .zero)
         }
         cell.configCell(user: selectedUsers[indexPath.row])
-        cell.removeUserButton.isHidden = self.isRemovreButtonHidden
+        cell.removeUserButton.isHidden = self.isRemoveButtonHidden
         return cell
     }
     
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if self.isRemovreButtonHidden == false {
+        if self.isRemoveButtonHidden == false {
             selectedUsers.remove(at: indexPath.row)
             collectionView.deleteItems(at: [indexPath])
             self.callbackSelectedUser?(selectedUsers)

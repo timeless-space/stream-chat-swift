@@ -49,7 +49,7 @@ public class ShareInviteLinkVC: UIViewController {
                 self?.dismiss(animated: true, completion: nil)
             }
         }
-        usersCollectionView.isRemovreButtonHidden = false
+        usersCollectionView.isRemoveButtonHidden = false
         usersCollectionView.setupUsers(users: selectedUsers)
         acttivityIndicator.hidesWhenStopped = true
         acttivityIndicator.isHidden = true

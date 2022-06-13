@@ -159,6 +159,8 @@
 		6E4D4FD927C8D03B007FFE83 /* UserListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */; };
 		6E4D4FDB27C8D927007FFE83 /* UserListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */; };
 		6E4D4FDC27C8D927007FFE83 /* UserListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */; };
+		6E4F389928577428003CFD8A /* CollectionCellSelectedMembers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4F389828577428003CFD8A /* CollectionCellSelectedMembers.swift */; };
+		6E4F389A28577428003CFD8A /* CollectionCellSelectedMembers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4F389828577428003CFD8A /* CollectionCellSelectedMembers.swift */; };
 		6E6A40D627EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */; };
 		6E6A40D727EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */; };
 		6E6A40D827EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E6A40D527EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib */; };
@@ -1792,6 +1794,7 @@
 		6E41867A27C3CD630061E03F /* SFProDisplay-Heavy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProDisplay-Heavy.ttf"; sourceTree = "<group>"; };
 		6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListDataSource.swift; sourceTree = "<group>"; };
 		6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListViewModel.swift; sourceTree = "<group>"; };
+		6E4F389828577428003CFD8A /* CollectionCellSelectedMembers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionCellSelectedMembers.swift; sourceTree = "<group>"; };
 		6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellWallePayBubbleIncoming.swift; sourceTree = "<group>"; };
 		6E6A40D527EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellWallePayBubbleIncoming.xib; sourceTree = "<group>"; };
 		6E92FD3927BCCBAF00DA89B6 /* ChatNavTitleLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatNavTitleLabel.swift; sourceTree = "<group>"; };
@@ -5684,6 +5687,7 @@
 				FCAC7B3427E0B21F00A310EC /* ChannelDetailHeaderTVCell.xib */,
 				6E3DAEBE2809B52700B3D7A4 /* TableViewCellShimmerEffect.swift */,
 				6E3DAEBF2809B52700B3D7A4 /* TableViewCellShimmerEffect.xib */,
+				6E4F389828577428003CFD8A /* CollectionCellSelectedMembers.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -7421,6 +7425,7 @@
 				6ED3E44227B4D4C900A05C0A /* ChatBaseVC.swift in Sources */,
 				6EDDA65C27F1923300E5355B /* TableViewCellRedPacketDrop.swift in Sources */,
 				8803E9E726398F4E002B2A7B /* ChatMessageBubbleView.swift in Sources */,
+				6E4F389A28577428003CFD8A /* CollectionCellSelectedMembers.swift in Sources */,
 				6E1BA5C527C62A70004046D2 /* StreamChatBackButton.swift in Sources */,
 				22FF4365256E943F00133910 /* ChatSuggestionsVC.swift in Sources */,
 				22A0921725682880001FE9F0 /* ChatNavigationBar.swift in Sources */,
@@ -8113,6 +8118,7 @@
 				6EEFB78527BB83AD007224C2 /* UIViewController+PanModalPresenter.swift in Sources */,
 				22B54C4C25C80FA90041B357 /* RawJSON.swift in Sources */,
 				6ED3E44827B5337C00A05C0A /* AvatarView.swift in Sources */,
+				6E4F389928577428003CFD8A /* CollectionCellSelectedMembers.swift in Sources */,
 				888E8C4E252B4B1C00195E03 /* ChannelMemberBanRequestPayload.swift in Sources */,
 				79FC85E724ACCBC500A665ED /* Token.swift in Sources */,
 				79877A0E2498E4BC00015F8B /* Channel.swift in Sources */,

@@ -15,6 +15,7 @@ public class BillSplitUserSelectionVC: UIViewController {
         let letter: String
         var users = [ChatChannelMember]()
     }
+
     // MARK: - Outlet
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var searchBarContainerView: UIView!
@@ -26,12 +27,17 @@ public class BillSplitUserSelectionVC: UIViewController {
     @IBOutlet private weak var mainContainerView: UIView!
     @IBOutlet private weak var closeButton: UIButton!
     @IBOutlet private weak var addFriendButton: UIButton!
-    @IBOutlet private weak var everyoneButton: UIButton!
+    @IBOutlet private weak var everyoneContainer: UIView!
+    @IBOutlet private weak var everyoneImage: UIImageView!
+    @IBOutlet private weak var everyoneLabel: UILabel!
 
     // MARK: - Variables
     public var selectedUsers = [ChatChannelMember]()
     public lazy var viewModel = BillSplitUserSelectionViewModel(controller: nil)
     public var channelController: ChatChannelController?
+
+    // callback
+    public var callbackSelectedUser: (([ChatChannelMember]) -> Void)?
 
     // MARK: - View Life cycle
     public override func viewDidLoad() {
@@ -47,6 +53,7 @@ public class BillSplitUserSelectionVC: UIViewController {
             }
             DispatchQueue.main.async {
                 self.tableView.reloadData()
+                self.setupEveryoneContainerView()
             }
         }
     }
@@ -56,12 +63,12 @@ public class BillSplitUserSelectionVC: UIViewController {
         setupBackgroundColor()
         setupCloseButton()
         setupTitleColor()
-        setupEveryoneButton()
+        setupEveryoneContainerView()
         setupAddFriendButton()
         setupSearchBarView()
-        setupSelectedUserView()
         setupCollectionView()
         setupTableView()
+        setupSelectedUserView()
     }
 
     private func setupBackgroundColor() {
@@ -89,8 +96,31 @@ public class BillSplitUserSelectionVC: UIViewController {
     }
 
     private func setupSelectedUserView() {
-        lblAddedUser.text = ""
-        viewAddedUserLabelContainer.isHidden = true
+        let hidden = selectedUsers.isEmpty
+        guard !hidden else {
+            lblAddedUser.text = ""
+            viewAddedUserLabelContainer.isHidden = true
+            selectedUsersCollectionView.isHidden = true
+            selectedUsersCollectionView.reloadData()
+            return
+        }
+        selectedUsersCollectionView.reloadData()
+        selectedUsersCollectionView.layoutIfNeeded()
+        if selectedUsers.count > 1 {
+            let lastIndexPath = IndexPath(item: self.selectedUsers.count - 1,
+                                          section: 0)
+            selectedUsersCollectionView.scrollToItem(at: lastIndexPath,
+                                                     at: .right, animated: true)
+        }
+        UIView.animate(withDuration: 0.2) { [weak self] in
+            guard let weakSelf = self else {
+                return
+            }
+            weakSelf.lblAddedUser.text = hidden ? "" : "ADDED"
+            weakSelf.viewAddedUserLabelContainer.isHidden = hidden
+            weakSelf.selectedUsersCollectionView.isHidden = hidden
+            weakSelf.view.layoutIfNeeded()
+        }
     }
 
     private func setupCollectionView() {
@@ -101,9 +131,10 @@ public class BillSplitUserSelectionVC: UIViewController {
         layout.minimumInteritemSpacing = 0
         layout.sectionInset = .zero
         selectedUsersCollectionView.isHidden = true
-        //selectedUsersCollectionView.dataSource = self
-        //selectedUsersCollectionView.delegate = self
+        selectedUsersCollectionView.dataSource = self
+        selectedUsersCollectionView.delegate = self
         selectedUsersCollectionView.collectionViewLayout = layout
+        viewAddedUserLabelContainer.isHidden = true
     }
 
     private func setupTableView() {
@@ -131,23 +162,20 @@ public class BillSplitUserSelectionVC: UIViewController {
         addFriendButton.setTitle("Add \(count) \(strFriend)", for: .normal)
     }
 
-    private func setupEveryoneButton() {
+    private func setupEveryoneContainerView() {
+        guard !viewModel.channelMembers.isEmpty else {
+            everyoneContainer.isHidden = true
+            return
+        }
+        everyoneContainer.isHidden = false
         let tineColor = UIColor.white.withAlphaComponent(0.6)
         let selectedImage = Appearance.default.images.checkmarkSquare
         let unSelectedImage = Appearance.default.images.square
-//        if #available(iOS 13.0, *) {
-//            everyoneButton.setImage(unSelectedImage, for: .normal)
-//            everyoneButton.setImage(selectedImage, for: .selected)
-//        } else {
-//            everyoneButton.setImage(unSelectedImage, for: .normal)
-//            everyoneButton.setImage(selectedImage, for: .selected)
-//        }
-        everyoneButton.setTitle(" EVERYONE", for: .normal)
-        everyoneButton.setTitle(" EVERYONE", for: .selected)
-        everyoneButton.setTitleColor(tineColor, for: .normal)
-        everyoneButton.setTitleColor(tineColor, for: .selected)
-
-//        everyoneButton.tintColor = tineColor
+        let image = selectedUsers.count == viewModel.channelMembers.count ?
+        selectedImage : unSelectedImage
+        everyoneImage.image = image
+        everyoneLabel.text = "EVERYONE"
+        everyoneLabel.textColor = tineColor
     }
 
     // MARK: - Action
@@ -156,18 +184,29 @@ public class BillSplitUserSelectionVC: UIViewController {
     }
 
     @IBAction func addFriendButtonAction(_ sender: UIButton) {
+        callbackSelectedUser?(selectedUsers)
         dismiss(animated: true)
     }
 
-    @IBAction func everyButtonAction(_ sender: UIButton) {
-        if everyoneButton.isSelected {
+    @IBAction func everyoneButtonAction(_ sender: UIButton) {
+        if selectedUsers.count == viewModel.channelMembers.count {
             selectedUsers = []
         } else {
             selectedUsers = viewModel.channelMembers
         }
-        setupEveryoneButton()
-        setupAddFriendButton()
+        setupSelectedUserView()
+        everyoneContainer.subviews.forEach({ $0.alpha = 1.0 })
         tableView.reloadData()
+        setupEveryoneContainerView()
+        setupAddFriendButton()
+    }
+
+    @IBAction func everyoneButtonActionDown(_ sender: UIButton) {
+        everyoneContainer.subviews.forEach({ $0.alpha = 0.5 })
+    }
+
+    @IBAction func everyoneButtonActionExit(_ sender: UIButton) {
+        everyoneContainer.subviews.forEach({ $0.alpha = 1.0 })
     }
 }
 
@@ -187,15 +226,13 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
             for: indexPath) as? TableViewCellChatUser else {
                 return UITableViewCell()
             }
-        var user: ChatUser = viewModel.sectionWiseList[indexPath.section]
+        let user = viewModel.sectionWiseList[indexPath.section]
             .users[indexPath.row]
-        if user == nil {
-            return UITableViewCell.init(frame: .zero)
-        }
         var accessaryImage: UIImage? = nil
         if self.selectedUsers.firstIndex(where: { $0.id == user.id}) != nil {
             accessaryImage = Appearance.default.images.userSelected
         }
+        cell.accessoryImageView.image = accessaryImage
         cell.config(user: user,selectedImage: accessaryImage)
         cell.backgroundColor = .clear
         cell.selectionStyle = .none
@@ -206,7 +243,9 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
         defer {
             tableView.deselectRow(at: indexPath, animated: true)
         }
-        if let cell = tableView.cellForRow(at: indexPath) as? TableViewCellChatUser {
+        let cell = tableView.cellForRow(at: indexPath) as? TableViewCellChatUser
+        cell?.accessoryImageView.image = nil
+        if let cell = cell {
             let selectionColor = Appearance.default.colorPalette.placeHolderBalanceBG.withAlphaComponent(0.7)
             UIView.animate(withDuration: 0.2, delay: 0, options: []) { [weak self] in
                 guard let weakSelf = self else { return }
@@ -222,8 +261,9 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
         } else {
             selectedUsers.append(user)
         }
-        tableView.reloadRows(at: [indexPath], with: .fade)
-        setupEveryoneButton()
+        tableView.reloadRows(at: [indexPath], with: .none)
+        setupSelectedUserView()
+        setupEveryoneContainerView()
         setupAddFriendButton()
     }
 
@@ -272,5 +312,31 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
         }
         viewModel.loadingMoreMembers = true
         viewModel.loadMoreMembers()
+    }
+}
+
+// MARK: - CollectionView delegate
+extension BillSplitUserSelectionVC: UICollectionViewDataSource, UICollectionViewDelegate {
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        selectedUsers.count
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: CollectionCellSelectedMembers.reuseID,
+            for: indexPath) as? CollectionCellSelectedMembers else {
+            return UICollectionViewCell()
+        }
+        cell.configCell(user: selectedUsers[indexPath.row])
+        return cell
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectedUsers.remove(at: indexPath.row)
+        collectionView.deleteItems(at: [indexPath])
+        setupSelectedUserView()
+        tableView.reloadData()
+        setupEveryoneContainerView()
+        setupAddFriendButton()
     }
 }

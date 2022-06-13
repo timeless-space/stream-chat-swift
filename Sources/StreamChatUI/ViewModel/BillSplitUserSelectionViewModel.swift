@@ -56,10 +56,11 @@ public class BillSplitUserSelectionViewModel: NSObject {
             return
         }
         let nonNilUsers = (memberController.members ?? []).filter({ $0.id != nil && $0.name?.isBlank == false })
-        let filteredUsers = nonNilUsers.filter({ $0.memberRole != .owner })
+        let filteredUsers = nonNilUsers
+            .filter({ $0.id != ChatClient.shared.currentUserId })
         let alphabetUsers = filteredUsers.filter { ($0.name?.isFirstCharacterAlp ?? false) && $0.name?.isBlank == false }.sorted{ $0.name!.localizedCaseInsensitiveCompare($1.name!) == ComparisonResult.orderedAscending}
         let otherUsers = filteredUsers.filter { ($0.name?.isFirstCharacterAlp ?? false) == false }.sorted{ $0.id.localizedCaseInsensitiveCompare($1.id) == ComparisonResult.orderedAscending}
-        channelMembers.append(contentsOf: alphabetUsers)
+        channelMembers = alphabetUsers
         channelMembers.append(contentsOf: otherUsers)
         let groupByName = Dictionary(grouping: alphabetUsers) { (user) -> Substring in
             return user.name!.lowercased().prefix(1)

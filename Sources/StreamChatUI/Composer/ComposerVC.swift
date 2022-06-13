@@ -821,15 +821,25 @@ open class ComposerVC: _ViewController,
         // callback
         billSplitVC?.callbackSelectFriend = { [weak self] in
             guard let weakSelf = self else { return }
-            guard let userSelectionVC = BillSplitUserSelectionVC
-                    .instantiateController(storyboard: .BillSplit) as? BillSplitUserSelectionVC else {
-                        return
-                    }
-            userSelectionVC.channelController = weakSelf.channelController
-            weakSelf.present(userSelectionVC, animated: true, completion: nil)
+            weakSelf.showBillSplitUserSelectionView()
         }
         // add view
         showInputViewController(billSplitVC)
+    }
+
+    open func showBillSplitUserSelectionView() {
+        guard let userSelectionVC = BillSplitUserSelectionVC
+                .instantiateController(storyboard: .BillSplit) as? BillSplitUserSelectionVC else {
+                    return
+                }
+        userSelectionVC.channelController = channelController
+        userSelectionVC.selectedUsers = billSplitVC?.selectedUsers ?? []
+        present(userSelectionVC, animated: true, completion: nil)
+        // callback
+        userSelectionVC.callbackSelectedUser = { [weak self] users in
+            guard let weakSelf = self else { return }
+            weakSelf.billSplitVC?.updateUI(with: users)
+        }
     }
 
     private func showMessageOption(isHide: Bool) {
