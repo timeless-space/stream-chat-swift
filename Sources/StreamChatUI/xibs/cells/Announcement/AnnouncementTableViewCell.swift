@@ -130,6 +130,16 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
         layoutIfNeeded()
     }
 
+    func getImageFromCache(_ message: ChatMessage?) {
+        if let videoAttachment = message?.videoAttachments.first {
+            if let img = cacheVideoThumbnail?[videoAttachment.videoURL] {
+                imageView.image = img
+                imgPlay.isHidden = true
+                imgView.isHidden = false
+            }
+        }
+    }
+
     private func setupUI() {
         videoLayer.backgroundColor = UIColor.clear.cgColor
         videoLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill

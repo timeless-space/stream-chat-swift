@@ -93,7 +93,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             if content.channel.latestMessages.first?.author.id == ChatClient.shared.currentUserId {
                 return "Sent ONE"
             } else {
-                return "Received ONE"
+                return "Received successful"
             }
         } else if !lastMessage.imageAttachments.isEmpty {
             return content.channel.isDirectMessageChannel ? "Photo" : "\(authorName) Photo"
@@ -115,6 +115,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             return "Red Packet Amount Received"
         } else if lastMessage.extraData.keys.contains("gift") {
             return "Gift"
+        } else if lastMessage.extraData.keys.contains("poll") {
+            return "Poll"
         } else if lastMessage.extraData.keys.contains("fallbackMessage") {
             let extraData = lastMessage.extraData
             guard let fallbackMessage = extraData["fallbackMessage"] else { return "" }

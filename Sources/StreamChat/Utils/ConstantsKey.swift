@@ -21,7 +21,3 @@ public let kPrivateGroupPasscode = "kPrivateGroupPasscode"
 public let kPrivateGroupLat = "kPrivateGroupLat"
 public let kPrivateGroupLon = "kPrivateGroupLon"
 public let kGroupId = "kGroupId"
-
-public let kAmount = "kAmount"
-public let kChannelId = "kChannelId"
-public let kFlair = "kFlair"

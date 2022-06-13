@@ -23,6 +23,14 @@ extension Notification.Name {
     public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
+    public static let updateTextfield = Notification.Name("kUpdateTextfield")
+    public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
+    public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
+    public static let pollSended = Notification.Name("kStreamChatPollSendedAction")
+    public static let submitVote = Notification.Name("kStreamChatSubmitVoteTapAction")
+    public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
+    public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
+    public static let getPollData = Notification.Name("kStreamChatGetPollData")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -280,7 +288,7 @@ open class ComposerVC: _ViewController,
     private var menuController: ChatMenuViewController?
     private var emoji: UIViewController?
     private var emojiPickerView: UIViewController?
-    private var isMenuShowing = false
+    var isMenuShowing = false
     private var forceKeyboardClose = false {
         didSet {
             if forceKeyboardClose {
@@ -306,6 +314,7 @@ open class ComposerVC: _ViewController,
             }
         }
     }
+    var shouldToggleEmojiButton = true
 
     @objc func didTapView() {
         hideInputView()
@@ -317,7 +326,9 @@ open class ComposerVC: _ViewController,
 
     @objc fileprivate func keyboardWillHide(notification: Notification) {
         guard !forceKeyboardClose else { return }
-        composerView.inputMessageView.emojiButton.isSelected = false
+        if shouldToggleEmojiButton {
+            composerView.inputMessageView.emojiButton.isSelected = false
+        }
         isMenuShowing = true
         animateMenuButton()
     }
@@ -425,20 +436,21 @@ open class ComposerVC: _ViewController,
             Animate {
                 self.composerView.confirmButton.isHidden = true
                 self.composerView.inputMessageView.sendButton.isHidden = false
-                self.composerView.headerView.isHidden = true
+                self.composerView.container.removeArrangedSubview(self.composerView.headerView)
             }
         case .quote:
-            composerView.titleLabel.text = L10n.Composer.Title.reply
+            let replyTo = content.quotingMessage?.author.name ?? "Message"
+            composerView.titleLabel.text = "\(L10n.Composer.Title.reply) \(replyTo)"
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
-                self.composerView.headerView.isHidden = false
+                self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
             }
         case .edit:
-            composerView.titleLabel.text = L10n.Composer.Title.edit
+            composerView.titleLabel.text = getEditMessageTitle()
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.inputMessageView.sendButton.isHidden = true
-                self.composerView.headerView.isHidden = false
+                self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
             }
         default:
             log.warning("The composer state \(content.state.description) was not handled.")
@@ -464,18 +476,41 @@ open class ComposerVC: _ViewController,
             command: content.command
         )
 
-        attachmentsVC.content = content.attachments.map {
-            if let provider = $0.payload as? AttachmentPreviewProvider {
-                return provider
-            } else {
-                log.warning("""
-                Attachment \($0) doesn't conform to the `AttachmentPreviewProvider` protocol. Add the conformance \
-                to this protocol to avoid using the attachment preview placeholder in the composer.
-                """)
-                return DefaultAttachmentPreviewProvider()
+        if let editMessage = content.editingMessage, content.attachments.isEmpty {
+            let videos = editMessage.videoAttachments.map(\.asAnyAttachment)
+            let images = editMessage.imageAttachments.map(\.asAnyAttachment)
+            let editAttachments = videos + images
+            // Hiding delete button
+            attachmentsVC.isDiscardButtonVisible = editAttachments.isEmpty
+            attachmentsVC.content = editAttachments.map {
+                if let attachment = $0.attachment(payloadType: ImageAttachmentPayload.self),  let provider = attachment.payload as? AttachmentPreviewProvider {
+                    return provider
+                } else if let attachment = $0.attachment(payloadType: VideoAttachmentPayload.self),  let provider = attachment.payload as? AttachmentPreviewProvider {
+                    return provider
+                } else {
+                    log.warning("""
+                    Attachment \($0) doesn't conform to the `AttachmentPreviewProvider` protocol. Add the conformance \
+                    to this protocol to avoid using the attachment preview placeholder in the composer.
+                    """)
+                    return DefaultAttachmentPreviewProvider()
+                }
             }
+            composerView.inputMessageView.attachmentsViewContainer.isHidden = editAttachments.isEmpty
+        } else {
+            attachmentsVC.isDiscardButtonVisible = true
+            attachmentsVC.content = content.attachments.map {
+                if let provider = $0.payload as? AttachmentPreviewProvider {
+                    return provider
+                } else {
+                    log.warning("""
+                            Attachment \($0) doesn't conform to the `AttachmentPreviewProvider` protocol. Add the conformance \
+                            to this protocol to avoid using the attachment preview placeholder in the composer.
+                            """)
+                    return DefaultAttachmentPreviewProvider()
+                }
+            }
+            composerView.inputMessageView.attachmentsViewContainer.isHidden = content.attachments.isEmpty
         }
-        composerView.inputMessageView.attachmentsViewContainer.isHidden = content.attachments.isEmpty
 
         if content.isInsideThread {
             if channelController?.channel?.isDirectMessageChannel == true {
@@ -516,6 +551,15 @@ open class ComposerVC: _ViewController,
             self.content.attachments.remove(at: index)
             self.composerView.inputMessageView.sendButton.isHidden = self.content.isEmpty && self.content.attachments.isEmpty
         }
+    }
+
+    private func getEditMessageTitle() -> String {
+        if let editMessage = content.editingMessage,
+            (!editMessage.imageAttachments.isEmpty ||
+             !editMessage.videoAttachments.isEmpty) {
+            return L10n.Composer.Title.editCaption
+        }
+        return L10n.Composer.Title.edit
     }
 
     private func bindWalletOption() {
@@ -593,6 +637,10 @@ open class ComposerVC: _ViewController,
             case .dao:
                 self.animateToolkitView(isHide: true)
                 break
+            case .poll:
+                self.animateToolkitView(isHide: true)
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                self.createNewPoll()
             default:
                 break
             }
@@ -892,6 +940,15 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.post(name: .sendGiftCardTapAction, object: nil, userInfo: userInfo)
     }
 
+    @objc open func createNewPoll() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        guard let channelId = channelController?.channel?.cid else { return }
+        var userInfo = [String: Any]()
+        userInfo["channelId"] = channelId
+        NotificationCenter.default.post(name: .createNewPoll, object: nil, userInfo: userInfo)
+    }
+
     private func animateMenuButton() {
         if !isMenuShowing {
             UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 5, options: .curveEaseInOut, animations: { [weak self] in
@@ -969,14 +1026,28 @@ open class ComposerVC: _ViewController,
             )
             return
         }
-
-        if let walletRequest = content.attachments.filter( { $0.type == .wallet} ).first?.payload as? WalletAttachmentPayload {
-            let parameter: [String: Any] = [
-                kAmount: walletRequest.extraData?.requestedAmount ?? "0",
-                kChannelId: cid.description,
-                kFlair: walletRequest.extraData?.requestedThemeUrl
-            ]
-            NotificationCenter.default.post(name: .sendPaymentRequest, object: nil, userInfo: parameter)
+        if content.attachments.filter ({ $0.type == .wallet }).first != nil {
+            // wallet request attachment
+            channelController?.createNewMessage(
+                text: "/payment",
+                pinning: nil,
+                attachments: content.attachments,
+                mentionedUserIds: content.mentionedUsers.map(\.id),
+                quotedMessageId: content.quotingMessage?.id
+            )
+            if !text.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    guard let self = self else {
+                        return
+                    }
+                    self.channelController?.createNewMessage(
+                        text: text,
+                        pinning: nil,
+                        mentionedUserIds: self.content.mentionedUsers.map(\.id),
+                        quotedMessageId: self.content.quotingMessage?.id
+                    )
+                }
+            }
         } else {
             channelController?.createNewMessage(
                 text: text,

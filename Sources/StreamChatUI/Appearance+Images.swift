@@ -582,6 +582,7 @@ public extension Appearance {
         public var disburseFund: UIImage = loadImageSafely(with: "disburseFund")
         public var polling: UIImage = loadImageSafely(with: "polling")
         public var contributeToFund: UIImage = loadImageSafely(with: "fundIcon")
+        public var pollChat: UIImage = loadImageSafely(with: "pollChat")
 
         // MARK: QR Code Option
         public var shareImageIcon: UIImage = loadImageSafely(with: "share_image_icon")

@@ -138,7 +138,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
         pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         pickUpButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
         pickUpButton.clipsToBounds = true
-        pickUpButton.layer.cornerRadius = 20
+        pickUpButton.layer.cornerRadius = 16
         // Avatar
         let placeholder = Appearance.default.images.userAvatarPlaceholder1
         if let imageURL = content?.author.imageURL {
@@ -182,8 +182,8 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             userInfo["recipientName"] = payload.extraData?.recipientName
             userInfo["recipientUserId"] = payload.extraData?.recipientUserId
             userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
-            userInfo["requestId"] = payload.requestId
             userInfo["channelId"] = channel?.cid
+            userInfo["messageId"] = content?.id
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         } else {
             guard let channelId = channel?.cid else { return }
