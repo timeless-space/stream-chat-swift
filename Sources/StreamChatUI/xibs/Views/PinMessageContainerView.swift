@@ -46,7 +46,8 @@ public class PinMessageContainerView: UIView {
     // MARK: - UI
     public func setupUI(pinMessages: [ChatMessage]) {
         self.pinMessages = pinMessages
-            .sorted(by: { $0.createdAt > $1.createdAt })
+            .sorted(by: { $0.createdAt < $1.createdAt })
+        currentMessageIndex = pinMessages.count - 1
         subviews.forEach { $0.removeFromSuperview() }
         // subview
         addSubview(indicatorView)

@@ -207,7 +207,7 @@ open class ChatChannelVC:
         channelController?.synchronize { [weak self] _ in
             guard let weakSelf = self else { return }
             weakSelf.messageComposerVC?.updateContent()
-            weakSelf.setupPinnedMessageView()
+            weakSelf.fetchPinnedMessage()
         }
     }
 
@@ -358,22 +358,33 @@ open class ChatChannelVC:
         
         navigationHeaderView.backgroundColor = Appearance.default.colorPalette.chatNavBarBackgroundColor
         // setting pinned message view
-        setupPinnedMessageView()
+        fetchPinnedMessage()
+    }
+
+    private func fetchPinnedMessage() {
+        let pinnedMessageIDs = (channelController?.channel?.pinnedMessages ?? [])
+            .compactMap { $0.id }
+        let pinData = messages
+            .filter { pinnedMessageIDs.contains($0.id) && $0.isMessagePinned == nil }
+        if pinnedMessages.isEmpty {
+            pinnedMessages = pinData
+            setupPinnedMessageView()
+        } else {
+            let result = zip(pinData, pinnedMessages).enumerated().filter() {
+                $1.0.text != $1.1.text
+            }.map{$0.0}
+            if !result.isEmpty || pinData.count != pinnedMessages.count {
+                pinnedMessages = pinData
+                setupPinnedMessageView()
+            }
+        }
     }
 
     private func setupPinnedMessageView() {
-        let data = (channelController?.channel?.pinnedMessages ?? [])
-            .compactMap { $0.id }
-        pinnedMessages = messages
-            .filter { data.contains( $0.id) && $0.isMessagePinned == nil }
         guard !pinnedMessages.isEmpty else {
             removePinMessageContainerView()
             return
         }
-        for message in pinnedMessages {
-            debugPrint("==== \(message.text)")
-        }
-
         if pinnedMessageContainerView == nil {
             addPinMessageContainerView()
         }
@@ -984,7 +995,7 @@ open class ChatChannelVC:
             self.groupCreateMessageView?.contentView.removeFromSuperview()
             self.groupCreateMessageView = nil
         }
-        setupPinnedMessageView()
+        fetchPinnedMessage()
     }
 
     open func channelController(

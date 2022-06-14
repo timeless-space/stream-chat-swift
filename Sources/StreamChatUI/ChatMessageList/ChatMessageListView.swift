@@ -261,7 +261,7 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
     open func scrollToIndexPath(indexPath: IndexPath) {
         let rowsRange = 0..<numberOfRows(inSection: 0)
         if rowsRange.contains(indexPath.row) {
-            scrollToRow(at: indexPath, at: .top, animated: true)
+            scrollToRow(at: indexPath, at: .middle, animated: true)
         }
     }
 }

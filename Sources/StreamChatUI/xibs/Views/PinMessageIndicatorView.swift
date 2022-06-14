@@ -33,6 +33,11 @@ open class PinMessageIndicatorView: UIView {
     }
 
     // MARK: - UI
+    open override func draw(_ rect: CGRect) {
+        super.draw(rect)
+        updateIndicatorToVisibleView()
+    }
+
     open func setupUI() {
         setupHighlightedView()
         setupScrollViewView()
@@ -121,6 +126,23 @@ open class PinMessageIndicatorView: UIView {
     }
 
     // MARK: - Actions
+    private func updateIndicatorToVisibleView() {
+        scrollView?.contentSize = stackView?.frame.size ?? .zero
+        var lastView: UIView?
+        if stackView?.subviews.count ?? 0 > 3 {
+            lastView = stackView?.subviews[3]
+        } else {
+            lastView = stackView?.subviews.last
+        }
+        guard let lastView = lastView else {
+            return
+        }
+        let frame = stackView?
+            .convert(lastView.frame, to: scrollView) ?? .zero
+        scrollView?.scrollRectToVisible(frame, animated: false)
+        highlightedTopConstraint?.constant = abs(frame.origin.y)
+    }
+
     open func updateIndicatorFor(index: Int) {
         guard let lastView = stackView?.subviews[index] else {
             return
