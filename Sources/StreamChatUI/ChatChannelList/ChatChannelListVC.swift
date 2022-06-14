@@ -136,7 +136,6 @@ open class ChatChannelListVC: _ViewController,
 
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.contentInset = .init(top: 0, left: 0, bottom: 65 + UIView.safeAreaBottom, right: 0)
         userAvatarView.controller = controller.client.currentUserController()
         userAvatarView.addTarget(self, action: #selector(didTapOnCurrentUserAvatar), for: .touchUpInside)
     }
@@ -293,11 +292,14 @@ open class ChatChannelListVC: _ViewController,
 //    }
         
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        defer {
-            collectionView.deselectItem(at: indexPath, animated: true)
-        }
-        let channel = controller.channels[indexPath.row]
-        router.showChannel(for: channel.cid)
+        NotificationCenter.default.post(name: .hideTabbar, object: nil)
+         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+             guard let self = self else {
+                 return
+             }
+             let channel = self.controller.channels[indexPath.row]
+             self.router.showChannel(for: channel.cid)
+         }
     }
     
     public func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
