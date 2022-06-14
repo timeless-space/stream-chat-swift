@@ -275,12 +275,16 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
     }
 
     public func setupCollectionFlowLayout(_ isSender: Bool, animation: Bool = false) {
+        var shouldAnimate = animation
+        if items.count == 2 {
+            shouldAnimate = false
+        }
         collectionView.isPagingEnabled = true
-        collectionView.setCollectionViewLayout(stackedItemsLayout, animated: animation)
+        collectionView.setCollectionViewLayout(stackedItemsLayout, animated: shouldAnimate)
         collectionView.clipsToBounds = true
         collectionView.reloadData()
         collectionView.collectionViewLayout.invalidateLayout()
-        DispatchQueue.main.asyncAfter(deadline: .now() + (animation ? 0.2 : 0)) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + (shouldAnimate ? 0.2 : 0)) { [weak self] in
             guard let `self` = self else { return }
             self.scrollToItem(at: 0, animated: true)
         }
