@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -27,7 +27,8 @@ extension ChatClient {
         Appearance.default = appearance
         Components.default = components
         
-        let config = ChatClientConfig(apiKey: APIKey("q95x9hkbyd6p"))
+        var config = ChatClientConfig(apiKey: APIKey("q95x9hkbyd6p"))
+        config.isLocalStorageEnabled = true
         let client = ChatClient(
             config: config
         )

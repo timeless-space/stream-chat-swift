@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -10,7 +10,7 @@ extension Endpoint {
         cids: [ChannelId]
     ) -> Endpoint<MissingEventsPayload> {
         .init(
-            path: "sync",
+            path: .sync,
             method: .post,
             queryItems: nil,
             requiresConnectionId: false,

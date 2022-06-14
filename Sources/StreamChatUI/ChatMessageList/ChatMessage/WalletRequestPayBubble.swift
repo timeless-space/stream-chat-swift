@@ -7,7 +7,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 import AVKit
 
 class WalletRequestPayBubble: UITableViewCell {
@@ -23,13 +22,14 @@ class WalletRequestPayBubble: UITableViewCell {
     public private(set) var pickUpButton: UIButton!
     public private(set) var lblDetails: UILabel!
     private var detailsStack: UIStackView!
+    let imageLoader = Components.default.imageLoader
     private var leadingAnchorForSender: NSLayoutConstraint?
     private var trailingAnchorSender: NSLayoutConstraint?
     private var leadingAnchorReceiver: NSLayoutConstraint?
     private var trailingAnchorReceiver: NSLayoutConstraint?
     public var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     var isSender = false
     var channelId: ChannelId?
     var chatClient: ChatClient?
@@ -164,19 +164,23 @@ class WalletRequestPayBubble: UITableViewCell {
                 if imageUrl.pathExtension == "gif" {
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
-                    Nuke.loadImage(with: themeURL, into: sentThumbImageView)
+                    imageLoader.loadImage(
+                        into: sentThumbImageView,
+                        url: URL(string: themeURL),
+                        imageCDN: StreamImageCDN(),
+                        placeholder: nil)
                 }
             }
             lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
         }
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampLabel?.text = dateFormatter.format(createdAt)
         } else {
             timestampLabel?.text = nil
         }
         if walletPaymentType == .request {
             pickUpButton.isEnabled = false
-            pickUpButton.alpha = 0.5
+            pickUpButton.alpha = 0.2
         } else {
             pickUpButton.isEnabled = true
             pickUpButton.alpha = 1.0

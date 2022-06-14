@@ -9,7 +9,6 @@
 import UIKit
 import StreamChat
 import StreamChatUI
-import Nuke
 
 public class JoinGroupRequestVC: UIViewController {
     // MARK: - OUTLEST

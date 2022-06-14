@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -43,7 +43,7 @@ class NotificationMessageNewEventDTO: EventDTO {
             let messageDTO = session.message(id: message.id)
         else { return nil }
         
-        return NotificationMessageNewEvent(
+        return try? NotificationMessageNewEvent(
             channel: channelDTO.asModel(),
             message: messageDTO.asModel(),
             createdAt: createdAt,
@@ -80,7 +80,7 @@ class NotificationMarkAllReadEventDTO: EventDTO {
     func toDomainEvent(session: DatabaseSession) -> Event? {
         guard let userDTO = session.user(id: user.id) else { return nil }
         
-        return NotificationMarkAllReadEvent(
+        return try? NotificationMarkAllReadEvent(
             user: userDTO.asModel(),
             unreadCount: unreadCount,
             createdAt: createdAt
@@ -121,7 +121,7 @@ class NotificationMarkReadEventDTO: EventDTO {
     func toDomainEvent(session: DatabaseSession) -> Event? {
         guard let userDTO = session.user(id: user.id) else { return nil }
         
-        return NotificationMarkReadEvent(
+        return try? NotificationMarkReadEvent(
             user: userDTO.asModel(),
             cid: cid,
             unreadCount: unreadCount,
@@ -153,7 +153,7 @@ class NotificationMutesUpdatedEventDTO: EventDTO {
     func toDomainEvent(session: DatabaseSession) -> Event? {
         guard let currentUserDTO = session.currentUser else { return nil }
 
-        return NotificationMutesUpdatedEvent(
+        return try? NotificationMutesUpdatedEvent(
             currentUser: currentUserDTO.asModel(),
             createdAt: createdAt
         )
@@ -171,6 +171,9 @@ public struct NotificationAddedToChannelEvent: ChannelSpecificEvent, HasUnreadCo
     /// The unread counts of the current user.
     public let unreadCount: UnreadCount?
     
+    /// The membership information of the current user.
+    public let member: ChatChannelMember
+    
     /// The event timestamp.
     public let createdAt: Date
 }
@@ -178,22 +181,29 @@ public struct NotificationAddedToChannelEvent: ChannelSpecificEvent, HasUnreadCo
 class NotificationAddedToChannelEventDTO: EventDTO {
     let channel: ChannelDetailPayload
     let unreadCount: UnreadCount?
+    // This `member` field is equal to the `membership` field in channel query
+    let member: MemberPayload
     let createdAt: Date
     let payload: EventPayload
     
     init(from response: EventPayload) throws {
         channel = try response.value(at: \.channel)
         unreadCount = try? response.value(at: \.unreadCount)
+        member = try response.value(at: \.memberContainer?.member)
         createdAt = try response.value(at: \.createdAt)
         payload = response
     }
     
     func toDomainEvent(session: DatabaseSession) -> Event? {
-        guard let channelDTO = session.channel(cid: channel.cid) else { return nil }
+        guard
+            let channelDTO = session.channel(cid: channel.cid),
+            let memberDTO = session.member(userId: member.user.id, cid: channel.cid)
+        else { return nil }
 
-        return NotificationAddedToChannelEvent(
+        return try? NotificationAddedToChannelEvent(
             channel: channelDTO.asModel(),
             unreadCount: unreadCount,
+            member: memberDTO.asModel(),
             createdAt: createdAt
         )
     }
@@ -217,6 +227,7 @@ public struct NotificationRemovedFromChannelEvent: ChannelSpecificEvent {
 class NotificationRemovedFromChannelEventDTO: EventDTO {
     let cid: ChannelId
     let user: UserPayload
+    // This `member` field is equal to the `membership` field in channel query
     let member: MemberPayload
     let createdAt: Date
     let payload: EventPayload
@@ -235,7 +246,7 @@ class NotificationRemovedFromChannelEventDTO: EventDTO {
             let memberDTO = session.member(userId: member.user.id, cid: cid)
         else { return nil }
         
-        return NotificationRemovedFromChannelEvent(
+        return try? NotificationRemovedFromChannelEvent(
             user: userDTO.asModel(),
             cid: cid,
             member: memberDTO.asModel(),
@@ -267,7 +278,7 @@ class NotificationChannelMutesUpdatedEventDTO: EventDTO {
     func toDomainEvent(session: DatabaseSession) -> Event? {
         guard let currentUserDTO = session.currentUser else { return nil }
         
-        return NotificationChannelMutesUpdatedEvent(
+        return try? NotificationChannelMutesUpdatedEvent(
             currentUser: currentUserDTO.asModel(),
             createdAt: createdAt
         )
@@ -292,6 +303,7 @@ public struct NotificationInvitedEvent: MemberEvent, ChannelSpecificEvent {
 class NotificationInvitedEventDTO: EventDTO {
     let user: UserPayload
     let cid: ChannelId
+    // This `member` field is equal to the `membership` field in channel query
     let member: MemberPayload
     let createdAt: Date
     let payload: EventPayload
@@ -310,7 +322,7 @@ class NotificationInvitedEventDTO: EventDTO {
             let memberDTO = session.member(userId: member.user.id, cid: cid)
         else { return nil }
         
-        return NotificationInvitedEvent(
+        return try? NotificationInvitedEvent(
             user: userDTO.asModel(),
             cid: cid,
             member: memberDTO.asModel(),
@@ -340,6 +352,7 @@ public struct NotificationInviteAcceptedEvent: MemberEvent, ChannelSpecificEvent
 class NotificationInviteAcceptedEventDTO: EventDTO {
     let user: UserPayload
     let channel: ChannelDetailPayload
+    // This `member` field is equal to the `membership` field in channel query
     let member: MemberPayload
     let createdAt: Date
     let payload: EventPayload
@@ -359,7 +372,7 @@ class NotificationInviteAcceptedEventDTO: EventDTO {
             let memberDTO = session.member(userId: member.user.id, cid: channel.cid)
         else { return nil }
         
-        return NotificationInviteAcceptedEvent(
+        return try? NotificationInviteAcceptedEvent(
             user: userDTO.asModel(),
             channel: channelDTO.asModel(),
             member: memberDTO.asModel(),
@@ -389,6 +402,7 @@ public struct NotificationInviteRejectedEvent: MemberEvent, ChannelSpecificEvent
 class NotificationInviteRejectedEventDTO: EventDTO {
     let user: UserPayload
     let channel: ChannelDetailPayload
+    // This `member` field is equal to the `membership` field in channel query
     let member: MemberPayload
     let createdAt: Date
     let payload: EventPayload
@@ -408,10 +422,45 @@ class NotificationInviteRejectedEventDTO: EventDTO {
             let memberDTO = session.member(userId: member.user.id, cid: channel.cid)
         else { return nil }
         
-        return NotificationInviteRejectedEvent(
+        return try? NotificationInviteRejectedEvent(
             user: userDTO.asModel(),
             channel: channelDTO.asModel(),
             member: memberDTO.asModel(),
+            createdAt: createdAt
+        )
+    }
+}
+
+/// Triggered when a channel is deleted, this event is delivered to all channel members
+public struct NotificationChannelDeletedEvent: ChannelSpecificEvent {
+    /// The cid of the deleted channel
+    public let cid: ChannelId
+
+    /// The channel that was deleted
+    public let channel: ChatChannel
+
+    /// The event timestamp.
+    public let createdAt: Date
+}
+
+class NotificationChannelDeletedEventDTO: EventDTO {
+    let cid: ChannelId
+    let channel: ChannelDetailPayload
+    let createdAt: Date
+    let payload: EventPayload
+
+    init(from response: EventPayload) throws {
+        cid = try response.value(at: \.cid)
+        channel = try response.value(at: \.channel)
+        createdAt = try response.value(at: \.createdAt)
+        payload = response
+    }
+    
+    func toDomainEvent(session: DatabaseSession) -> Event? {
+        guard let channelDTO = session.channel(cid: channel.cid) else { return nil }
+        return try? NotificationChannelDeletedEvent(
+            cid: cid,
+            channel: channelDTO.asModel(),
             createdAt: createdAt
         )
     }

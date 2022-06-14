@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -43,6 +43,7 @@ open class TitleContainerView: _View, AppearanceProvider, SwiftUIRepresentable {
     /// A view that acts as the main container for the subviews
     open private(set) lazy var containerView: ContainerStackView = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "containerView")
     
     /// A view that acts as the title container for the subviews
     open private(set) lazy var titleContainerView: ContainerStackView = ContainerStackView()

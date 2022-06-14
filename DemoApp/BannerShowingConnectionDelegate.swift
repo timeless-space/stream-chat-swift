@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -26,12 +26,15 @@ extension BannerShowingConnectionDelegate: ChatConnectionControllerDelegate {
     public func connectionController(_ controller: ChatConnectionController, didUpdateConnectionStatus status: ConnectionStatus) {
         switch status {
         case .disconnected:
+            bannerView.update(text: "Disconnected")
             showBanner()
         case .connected:
             hideBanner()
-        case .initialized,
-             .disconnecting,
-             .connecting:
+        case .disconnecting:
+            bannerView.update(text: "Disconnecting...")
+        case .connecting:
+            bannerView.update(text: "Connecting...")
+        case .initialized:
             break
         }
     }

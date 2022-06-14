@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -323,10 +323,8 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
 
         setChannelObserver()
         setMessagesObserver()
-    }
-    
-    deinit {
-        markChannelAsOpen(false)
+
+        client.trackChannelController(self)
     }
     
     private func setChannelObserver() {
@@ -342,7 +340,7 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
             let observer = EntityDatabaseObserver(
                 context: self.client.databaseContainer.viewContext,
                 fetchRequest: ChannelDTO.fetchRequest(for: cid),
-                itemCreator: { $0.asModel() as ChatChannel }
+                itemCreator: { try $0.asModel() as ChatChannel }
             ).onChange { [weak self] change in
                 self?.delegateCallback { [weak self] in
                     guard let self = self else {
@@ -375,12 +373,14 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
             guard let cid = self.cid else { return nil }
             let sortAscending = self.messageOrdering == .topToBottom ? false : true
             var deletedMessageVisibility: ChatClientConfig.DeletedMessageVisibility?
+            var shouldShowShadowedMessages: Bool?
             self.client.databaseContainer.viewContext.performAndWait { [weak self] in
                 guard let self = self else {
                     log.warning("Callback called while self is nil")
                     return
                 }
                 deletedMessageVisibility = self.client.databaseContainer.viewContext.deletedMessagesVisibility
+                shouldShowShadowedMessages = self.client.databaseContainer.viewContext.shouldShowShadowedMessages
             }
 
             let observer = ListDatabaseObserver(
@@ -388,9 +388,10 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
                 fetchRequest: MessageDTO.messagesFetchRequest(
                     for: cid,
                     sortAscending: sortAscending,
-                    deletedMessagesVisibility: deletedMessageVisibility ?? .visibleForCurrentUser
+                    deletedMessagesVisibility: deletedMessageVisibility ?? .visibleForCurrentUser,
+                    shouldShowShadowedMessages: shouldShowShadowedMessages ?? false
                 ),
-                itemCreator: { $0.asModel() as ChatMessage }
+                itemCreator: { try $0.asModel() as ChatMessage }
             )
             observer.onChange = { [weak self] changes in
                 self?.delegateCallback { [weak self] in
@@ -407,23 +408,31 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
     }
     
     override public func synchronize(_ completion: ((_ error: Error?) -> Void)? = nil) {
+        synchronize(isInRecoveryMode: false, completion)
+    }
+
+    private func synchronize(isInRecoveryMode: Bool, _ completion: ((_ error: Error?) -> Void)? = nil) {
+        channelQuery.pagination = .init(
+            pageSize: channelQuery.pagination?.pageSize ?? .messagesPageSize,
+            parameter: nil
+        )
+
         let channelCreatedCallback = isChannelAlreadyCreated ? nil : channelCreated(forwardErrorTo: setLocalStateBasedOnError)
         updater.update(
             channelQuery: channelQuery,
+            isInRecoveryMode: isInRecoveryMode,
             channelCreatedCallback: channelCreatedCallback
         ) { result in
             switch result {
             case .success:
-                self.markChannelAsOpen(true) { error in
-                    self.state = error.map { .remoteDataFetchFailed($0) } ?? .remoteDataFetched
-                    self.callback { completion?(error) }
-                }
+                self.state = .remoteDataFetched
+                self.callback { completion?(nil) }
             case let .failure(error):
                 self.state = .remoteDataFetchFailed(ClientError(with: error))
                 self.callback { completion?(error) }
             }
         }
-        
+
         /// Setup observers if we know the channel `cid` (if it's missing, it'll be set in `set(cid:)`
         /// Otherwise they will be set up after channel creation, in `set(cid:)`.
         if let cid = cid {
@@ -514,32 +523,13 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
             }
         ]
     }
-    
-    private func markChannelAsOpen(_ open: Bool, completion: ((ClientError?) -> Void)? = nil) {
-        guard let cid = cid else {
-            completion?(ClientError.ChannelNotCreatedYet())
-            return
+
+    func recoverWatchedChannel(completion: @escaping (Error?) -> Void) {
+        if cid != nil, isChannelAlreadyCreated {
+            startWatching(isInRecoveryMode: true, completion: completion)
+        } else {
+            synchronize(isInRecoveryMode: true, completion)
         }
-                
-        client.databaseContainer.write({ [channelListQuery] session in
-            guard let channelDTO = session.channel(cid: cid) else {
-                throw ClientError.ChannelDoesNotExist(cid: cid)
-            }
-            
-            let query = channelListQuery ?? .unique(for: cid)
-            let queryDTO = session.saveQuery(query: query)
-            
-            if open {
-                queryDTO.openChannels.insert(channelDTO)
-            } else if channelListQuery != nil {
-                queryDTO.openChannels.remove(channelDTO)
-            } else {
-                session.delete(query: query)
-            }
-        }, completion: {
-            let clientError = ($0 as? ClientError) ?? $0.map { ClientError(with: $0) }
-            completion?(clientError)
-        })
     }
 }
 
@@ -554,6 +544,9 @@ public extension ChatChannelController {
     
     /// `true` if the channel has replies enabled. Defaults to `false` if the channel doesn't exist yet.
     var areRepliesEnabled: Bool { channel?.config.repliesEnabled == true }
+    
+    /// `true` if the channel has quotes enabled. Defaults to `false` if the channel doesn't exist yet.
+    var areQuotesEnabled: Bool { channel?.config.quotesEnabled == true }
     
     /// `true` if the channel has read events enabled. Defaults to `false` if the channel doesn't exist yet.
     var areReadEventsEnabled: Bool { channel?.config.readEventsEnabled == true }
@@ -668,17 +661,31 @@ public extension ChatChannelController {
     ///
     /// Removes all of the messages of the channel but doesn't affect the channel data or members.
     ///
-    /// - Parameter completion: The completion. Will be called on a **callbackQueue** when the network request is finished.
+    /// - Parameters:
+    ///   - skipPush: If true, skips sending push notification to channel members.
+    ///   - hardDelete: If true, messages are deleted instead of hiding.
+    ///   - systemMessage: A system message to be added via truncation.
+    ///   - completion: The completion. Will be called on a **callbackQueue** when the network request is finished.
     /// If request fails, the completion will be called with an error.
     ///
-    func truncateChannel(completion: ((Error?) -> Void)? = nil) {
+    func truncateChannel(
+        skipPush: Bool = false,
+        hardDelete: Bool = true,
+        systemMessage: String? = nil,
+        completion: ((Error?) -> Void)? = nil
+    ) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
         guard let cid = cid, isChannelAlreadyCreated else {
             channelModificationFailed(completion)
             return
         }
 
-        updater.truncateChannel(cid: cid) { error in
+        updater.truncateChannel(
+            cid: cid,
+            skipPush: skipPush,
+            hardDelete: hardDelete,
+            systemMessage: systemMessage
+        ) { error in
             self.callback {
                 completion?(error)
             }
@@ -755,7 +762,7 @@ public extension ChatChannelController {
             return
         }
         channelQuery.pagination = MessagesPagination(pageSize: limit, parameter: .lessThan(messageId))
-        updater.update(channelQuery: channelQuery, completion: { result in
+        updater.update(channelQuery: channelQuery, isInRecoveryMode: false, completion: { result in
             switch result {
             case let .success(payload):
                 self.hasLoadedAllPreviousMessages = payload.messages.count < limit
@@ -793,7 +800,7 @@ public extension ChatChannelController {
         
         channelQuery.pagination = MessagesPagination(pageSize: limit, parameter: .greaterThan(messageId))
         
-        updater.update(channelQuery: channelQuery, completion: { result in
+        updater.update(channelQuery: channelQuery, isInRecoveryMode: false, completion: { result in
             self.callback { completion?(result.error) }
         })
     }
@@ -898,8 +905,6 @@ public extension ChatChannelController {
     func createNewMessage(
         text: String,
         pinning: MessagePinning? = nil,
-//        command: String? = nil,
-//        arguments: String? = nil,
         isSilent: Bool = false,
         attachments: [AnyAttachmentPayload] = [],
         mentionedUserIds: [UserId] = [],
@@ -1060,7 +1065,7 @@ public extension ChatChannelController {
     ///
     func markRead(completion: ((Error?) -> Void)? = nil) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
-        guard let cid = cid, isChannelAlreadyCreated else {
+        guard let channel = channel else {
             channelModificationFailed(completion)
             return
         }
@@ -1070,22 +1075,13 @@ public extension ChatChannelController {
             channelFeatureDisabled(feature: "read events", completion: completion)
             return
         }
-        
-        if channel?.isUnread != true {
-            callback {
-                completion?(nil)
-            }
-            return
-        }
 
-        guard let userId = client.currentUserId else {
-            callback {
-                completion?(nil)
-            }
-            return
-        }
-
-        guard channel?.latestMessages.first?.author.id != userId else {
+        guard
+            let currentUserId = client.currentUserId,
+            let currentUserRead = channel.reads.first(where: { $0.user.id == currentUserId }),
+            let lastMessageAt = channel.lastMessageAt,
+            currentUserRead.lastReadAt < lastMessageAt
+        else {
             callback {
                 completion?(nil)
             }
@@ -1098,7 +1094,7 @@ public extension ChatChannelController {
 
         markingRead = true
 
-        updater.markRead(cid: cid, userId: userId) { error in
+        updater.markRead(cid: channel.cid, userId: currentUserId) { error in
             self.callback {
                 self.markingRead = false
                 completion?(error)
@@ -1162,17 +1158,16 @@ public extension ChatChannelController {
     ///
     /// Please check [documentation](https://getstream.io/chat/docs/android/watch_channel/?language=swift) for more information.
     ///
-    /// We keep these functions internal since we're not sure how we should interface this behavior.
-    /// If you have suggestions, please open a ticket or send us an email at support@getstream.io
     ///
     /// - Parameter completion: Called when the API call is finished. Called with `Error` if the remote update fails.
-    internal func startWatching(completion: ((Error?) -> Void)? = nil) {
+    func startWatching(isInRecoveryMode: Bool, completion: ((Error?) -> Void)? = nil) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
         guard let cid = cid, isChannelAlreadyCreated else {
             channelModificationFailed(completion)
             return
         }
-        updater.startWatching(cid: cid) { error in
+        updater.startWatching(cid: cid, isInRecoveryMode: isInRecoveryMode) { error in
+            self.state = error.map { .remoteDataFetchFailed(ClientError(with: $0)) } ?? .remoteDataFetched
             self.callback {
                 completion?(error)
             }
@@ -1192,17 +1187,18 @@ public extension ChatChannelController {
     ///
     /// Please check [documentation](https://getstream.io/chat/docs/android/watch_channel/?language=swift) for more information.
     ///
-    /// We keep these functions internal since we're not sure how we should interface this behavior.
-    /// If you have suggestions, please open a ticket or send us an email at support@getstream.io
+    /// - Warning: If you're using `ChannelListController`, calling this function can disrupt `ChannelListController`'s functions,
+    /// such as updating channel data.
     ///
     /// - Parameter completion: Called when the API call is finished. Called with `Error` if the remote update fails.
-    internal func stopWatching(completion: ((Error?) -> Void)? = nil) {
+    func stopWatching(completion: ((Error?) -> Void)? = nil) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.
         guard let cid = cid, isChannelAlreadyCreated else {
             channelModificationFailed(completion)
             return
         }
         updater.stopWatching(cid: cid) { error in
+            self.state = error.map { .remoteDataFetchFailed(ClientError(with: $0)) } ?? .localDataFetched
             self.callback {
                 completion?(error)
             }
@@ -1299,6 +1295,44 @@ public extension ChatChannelController {
         updater.uploadFile(type: .image, localFileURL: localFileURL, cid: cid, progress: progress) { result in
             self.callback {
                 completion(result)
+            }
+        }
+    }
+    
+    /// Loads the given number of pinned messages based on pagination parameter in the current channel.
+    ///
+    /// - Parameters:
+    ///   - pageSize: The number of pinned messages to load. Equals to `25` by default.
+    ///   - sorting: The sorting options. By default, results are sorted descending by `pinned_at` field.
+    ///   - pagination: The pagination parameter. If `nil` is provided, most recently pinned messages are fetched.
+    ///   - completion: The completion to be called on **callbackQueue** when request is completed.
+    func loadPinnedMessages(
+        pageSize: Int = .messagesPageSize,
+        sorting: [Sorting<PinnedMessagesSortingKey>] = [],
+        pagination: PinnedMessagesPagination? = nil,
+        completion: @escaping (Result<[ChatMessage], Error>) -> Void
+    ) {
+        guard let cid = cid, isChannelAlreadyCreated else {
+            channelModificationFailed { completion(.failure($0 ?? ClientError.ChannelNotCreatedYet())) }
+            return
+        }
+        
+        let query = PinnedMessagesQuery(
+            pageSize: pageSize,
+            sorting: sorting,
+            pagination: pagination
+        )
+        
+        updater.loadPinnedMessages(in: cid, query: query) {
+            switch $0 {
+            case let .success(messages):
+                self.callback {
+                    completion(.success(messages))
+                }
+            case let .failure(error):
+                self.callback {
+                    completion(.failure(error))
+                }
             }
         }
     }
@@ -1408,12 +1442,4 @@ extension ClientError {
 
 extension ClientError {
     class ChannelFeatureDisabled: ClientError {}
-}
-
-extension ChannelListQuery {
-    static func unique(for cid: ChannelId) -> Self {
-        var filter: Filter<ChannelListFilterScope> = .equal(.cid, to: cid)
-        filter.explicitHash = cid.rawValue
-        return .init(filter: filter)
-    }
 }

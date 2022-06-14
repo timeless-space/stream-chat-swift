@@ -1,12 +1,15 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import UIKit
 /// View which wraps inside `SwipeActionButton` for leading layout
 public class CellActionView: _View {
     /// Button wrapped inside this ActionView
-    open var actionButton: UIButton = UIButton().withoutAutoresizingMaskConstraints
+    open var actionButton: UIButton = UIButton()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "actionButton")
+
     /// Action which will be called on `.touchUpInside` of `actionButton`
     open var action: (() -> Void)?
 

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -8,6 +8,11 @@ import StreamChat
 /// Typealias for closure taking `ChatChannel` and `UserId` which returns
 /// the current name of the channel. Use this type when you create closure for naming a channel.
 /// For example usage, see `DefaultChatChannelNamer`
+@available(
+    *,
+    deprecated,
+    message: "Please use a `ChannelNameFormatter` instead"
+)
 public typealias ChatChannelNamer =
     (_ channel: ChatChannel, _ currentUserId: UserId?) -> String?
 
@@ -37,7 +42,7 @@ public typealias ChatChannelNamer =
 public func DefaultChatChannelNamer(
     maxMemberNames: Int = 2,
     separator: String = ","
-) -> ChatChannelNamer {
+) -> (_ channel: ChatChannel, _ currentUserId: UserId?) -> String? {
     { channel, currentUserId in
         if let channelName = channel.name, !channelName.isEmpty {
             // If there's an assigned name and it's not empty, we use it

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,13 +7,23 @@ import Foundation
 /// A namespace for the `FilterKey`s suitable to be used for `ChannelListQuery`. This scope is not aware of any extra data types.
 public protocol AnyChannelListFilterScope {}
 
-/// An extra-data-specific namespace for the `FilterKey`s suitable to be used for `_ChannelListQuery`.
+/// An extra-data-specific namespace for the `FilterKey`s suitable to be used for `ChannelListQuery`.
 public struct ChannelListFilterScope: FilterScope, AnyChannelListFilterScope {}
 
 public extension Filter where Scope: AnyChannelListFilterScope {
     /// Filter to match channels containing members with specified user ids.
     static func containMembers(userIds: [UserId]) -> Filter<Scope> {
         .in(.members, values: userIds)
+    }
+    
+    /// Filter to match channels containing at least one message.
+    static var nonEmpty: Filter<Scope> {
+        .greater(.lastMessageAt, than: Date(timeIntervalSince1970: 0))
+    }
+    
+    /// Filter to match channels that are not related to any team.
+    static var noTeam: Filter<Scope> {
+        .equal(.team, to: nil)
     }
 }
 
@@ -76,7 +86,7 @@ public extension FilterKey where Scope: AnyChannelListFilterScope {
     static var memberCount: FilterKey<Scope, Int> { "member_count" }
     
     /// A filter key for matching the `team` value.
-    static var team: FilterKey<Scope, TeamId> { "team" }
+    static var team: FilterKey<Scope, TeamId?> { "team" }
 }
 
 /// A query is used for querying specific channels from backend.
@@ -91,6 +101,7 @@ public struct ChannelListQuery: Encodable {
         case presence
         case pagination
         case messagesLimit = "message_limit"
+        case membersLimit = "member_limit"
     }
     
     /// A filter for the query (see `Filter`).
@@ -101,8 +112,10 @@ public struct ChannelListQuery: Encodable {
     public var pagination: Pagination
     /// A number of messages inside each channel.
     public let messagesLimit: Int
+    /// Number of members inside each channel.
+    public let membersLimit: Int
     /// Query options.
-    var options: QueryOptions = [.watch]
+    public var options: QueryOptions = [.watch]
     
     /// Init a channels query.
     /// - Parameters:
@@ -114,12 +127,14 @@ public struct ChannelListQuery: Encodable {
         filter: Filter<ChannelListFilterScope>,
         sort: [Sorting<ChannelListSortingKey>] = [],
         pageSize: Int = .channelsPageSize,
-        messagesLimit: Int = .messagesPageSize
+        messagesLimit: Int = .messagesPageSize,
+        membersLimit: Int = .channelMembersPageSize
     ) {
         self.filter = filter
         self.sort = sort.appendingCidSortingKey()
         pagination = Pagination(pageSize: pageSize)
         self.messagesLimit = messagesLimit
+        self.membersLimit = membersLimit
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -131,7 +146,14 @@ public struct ChannelListQuery: Encodable {
         }
         
         try container.encode(messagesLimit, forKey: .messagesLimit)
+        try container.encode(membersLimit, forKey: .membersLimit)
         try options.encode(to: encoder)
         try pagination.encode(to: encoder)
+    }
+}
+
+extension ChannelListQuery: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "Filter: \(filter) | Sort: \(sort)"
     }
 }

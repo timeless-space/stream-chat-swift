@@ -1,13 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 
 /// The view that displays channel information on the message list header
-open class ChatChannelHeaderView:
-    _View,
+open class ChatChannelHeaderView: _View,
     ThemeProvider,
     ChatChannelControllerDelegate {
     /// Controller for observing data changes within the channel.
@@ -18,7 +17,7 @@ open class ChatChannelHeaderView:
     }
 
     /// Returns the date formater function used to represent when the user was last seen online
-    open var lastSeenDateFormatter: (Date) -> String? { DateUtils.timeAgo }
+    open var lastSeenDateFormatter: (Date) -> String? { appearance.formatters.userLastActivity.format }
 
     /// The user id of the current logged in user.
     open var currentUserId: UserId? {
@@ -53,6 +52,7 @@ open class ChatChannelHeaderView:
     open private(set) lazy var titleContainerView: TitleContainerView = components
         .titleContainerView.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "titleContainerView")
 
     override open func setUp() {
         super.setUp()
@@ -113,7 +113,10 @@ open class ChatChannelHeaderView:
     /// The title text used to render the title label. By default it is the channel name.
     open var titleText: String? {
         guard let channel = channelController?.channel else { return nil }
-        return components.channelNamer(channel, currentUserId)
+        return appearance.formatters.channelName.format(
+            channel: channel,
+            forCurrentUserId: currentUserId
+        )
     }
 
     open func opponentWalletAddress(channel: ChatChannel, completion: @escaping ((String?) -> Void)) {
@@ -211,8 +214,7 @@ open class ChatChannelHeaderView:
     ) {
         switch channel {
         case .update, .create:
-            guard !self.isUserTyping else { return }
-            updateContentIfNeeded()
+            updateContent()
         default:
             break
         }

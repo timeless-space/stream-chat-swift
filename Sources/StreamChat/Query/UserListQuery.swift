@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,7 +7,7 @@ import Foundation
 /// A namespace for the `FilterKey`s suitable to be used for `UserListQuery`. This scope is not aware of any extra data types.
 public protocol AnyUserListFilterScope {}
 
-/// An extra-data-specific namespace for the `FilterKey`s suitable to be used for `_UserListQuery`.
+/// An extra-data-specific namespace for the `FilterKey`s suitable to be used for `UserListQuery`.
 ///
 public class UserListFilterScope: FilterScope, AnyUserListFilterScope {}
 
@@ -120,6 +120,25 @@ extension UserListQuery {
     /// - Returns: `UserListQuery` for a specific user
     static func user(withID userId: UserId) -> Self {
         .init(filter: .equal(.id, to: userId))
+    }
+    
+    /// Builds `UserListQuery` for a user with the search term that sorts users by name ascending.
+    ///
+    /// - Parameter term: The search term. If `nil` or empty the pseudo-filter is used to fetch all users
+    /// - Returns: The query.
+    static func search(term: String?) -> Self {
+        var query = UserListQuery(sort: [.init(key: .name, isAscending: true)])
+        
+        if let term = term, !term.isEmpty {
+            query.filter = .or([
+                .autocomplete(.name, text: term),
+                .autocomplete(.id, text: term)
+            ])
+        } else {
+            query.filter = .exists(.id)
+        }
+        
+        return query
     }
 }
 

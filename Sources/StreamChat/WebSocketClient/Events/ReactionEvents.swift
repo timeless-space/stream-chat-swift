@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -50,7 +50,7 @@ class ReactionNewEventDTO: EventDTO {
             )
         else { return nil }
         
-        return ReactionNewEvent(
+        return try? ReactionNewEvent(
             user: userDTO.asModel(),
             cid: cid,
             message: messageDTO.asModel(),
@@ -106,7 +106,7 @@ class ReactionUpdatedEventDTO: EventDTO {
             )
         else { return nil }
         
-        return ReactionUpdatedEvent(
+        return try? ReactionUpdatedEvent(
             user: userDTO.asModel(),
             cid: cid,
             message: messageDTO.asModel(),
@@ -162,7 +162,7 @@ class ReactionDeletedEventDTO: EventDTO {
             )
         else { return nil }
         
-        return ReactionDeletedEvent(
+        return try? ReactionDeletedEvent(
             user: userDTO.asModel(),
             cid: cid,
             message: messageDTO.asModel(),

@@ -3,7 +3,6 @@
 //
 
 import Foundation
-import Nuke
 import StreamChat
 import StreamChatUI
 import UIKit
@@ -214,7 +213,7 @@ extension NameGroupViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         let user: ChatUser = selectedUsers[indexPath.row]
-        cell.config(user: user, selectedImage: nil)
+        cell.config(user: user,selectedImage: nil)
         return cell
     }
     

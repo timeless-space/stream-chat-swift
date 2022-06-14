@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -55,22 +55,5 @@ public class Atomic<T> {
     
     public init(wrappedValue: T) {
         _wrappedValue = wrappedValue
-    }
-}
-
-public extension Atomic where T: Equatable {
-    /// Updates the value to `new` if the current value is `old`
-    /// if the swap happens true is returned
-    func compareAndSwap(old: T, new: T) -> Bool {
-        lock.lock()
-        defer {
-            lock.unlock()
-        }
-        
-        if _wrappedValue == old {
-            _wrappedValue = new
-            return true
-        }
-        return false
     }
 }
