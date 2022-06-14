@@ -349,6 +349,7 @@ open class ChatChannelVC: _ViewController,
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        NotificationCenter.default.post(name: .hideTabbar, object: nil)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateTextFieldLayout),
@@ -379,7 +380,6 @@ open class ChatChannelVC: _ViewController,
 
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
     }
 
     open override func viewWillDisappear(_ animated: Bool) {
