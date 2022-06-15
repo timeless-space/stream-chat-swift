@@ -379,11 +379,6 @@ open class ChatChannelVC:
         }
     }
 
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
-    }
-
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.navigationController?.isToolbarHidden = true

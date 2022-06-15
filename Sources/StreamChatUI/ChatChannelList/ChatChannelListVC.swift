@@ -263,7 +263,6 @@ open class ChatChannelListVC: _ViewController,
 //    }
         
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self = self else {
                 return
