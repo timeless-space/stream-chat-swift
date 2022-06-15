@@ -21,7 +21,6 @@ class WeatherCell: UITableViewCell {
             .withoutAutoresizingMaskConstraints
         timestampLabel.textColor = Appearance.default.colorPalette.subtitleText
         timestampLabel.font = Appearance.default.fonts.footnote
-        timestampLabel.transform = .mirrorY
         return timestampLabel
     }()
     private var dateFormatter: DateFormatter = .makeDefault()
@@ -160,6 +159,7 @@ class WeatherCell: UITableViewCell {
 
         subStackView.addArrangedSubview(subContentView)
         subStackView.addArrangedSubview(onlyVisibleToYouContainer)
+        subStackView.addArrangedSubview(timestampLabel)
 
         mainContainer.addArrangedSubviews([createAvatarView(), subStackView])
         mainContainer.alignment = .bottom
@@ -169,9 +169,8 @@ class WeatherCell: UITableViewCell {
             mainContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             mainContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
         ])
-        widthConstraintForMainContainer = mainContainer.widthAnchor.constraint(equalToConstant: cellWidth)
+//        widthConstraintForMainContainer = mainContainer.widthAnchor.constraint(equalToConstant: cellWidth)
         widthConstraintForMainContainer?.isActive = true
-
         mainContentView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
         mainContentView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
         backgroundImageView.transform = .mirrorY
@@ -229,19 +228,19 @@ class WeatherCell: UITableViewCell {
 
     private func addOnlyVisibleViewContainer() {
         onlyVisibleToYouContainer.transform = .mirrorY
+        onlyVisibleToYouImageView.widthAnchor.constraint(equalToConstant: 20).isActive = true
         onlyVisibleToYouContainer.addArrangedSubview(onlyVisibleToYouImageView)
         onlyVisibleToYouContainer.addArrangedSubview(onlyVisibleToYouLabel)
-        onlyVisibleToYouContainer.addArrangedSubview(timestampLabel)
     }
 
     private func setBubbleConstraints(_ isSender: Bool) {
-        widthConstraintForMainContainer?.constant = isCurrentMessageSend ? 270 : 200
+        leadingMainContainer?.isActive = !isSender
+        trailingMainContainer?.isActive = isSender
+//        widthConstraintForMainContainer?.constant = isCurrentMessageSend ? 270 : 200
         topSubContainer?.constant = isCurrentMessageSend ? 15 : 0
         leadingSubContainer?.constant = isCurrentMessageSend ? 15 : 0
         trailingSubContainer?.constant = isCurrentMessageSend ? -15 : 0
         bottomSubContainer?.constant = isCurrentMessageSend ? -15 : 0
-        leadingMainContainer?.isActive = !isSender
-        trailingMainContainer?.isActive = isSender
     }
 
     private func createActionButton(text: String, type: AttachmentActionType) -> UIButton {
@@ -320,17 +319,17 @@ class WeatherCell: UITableViewCell {
     }
 
     func configureCell(isSender: Bool) {
+
+        isCurrentMessageSend = !(content?.localState == .pendingSend || content?.localState == .sending || content?.type == .ephemeral)
+
         guard let content = content?.extraData,
               let weather = getExtraData(key: "weather"),
               let currentLocation = weather["currentLocation"],
               let currentTemp = weather["currentWeather"],
               let displayMessage = weather["displayMessage"],
-              let weatherCode = weather["iconCode"],
-              let isMessageSend = weather["isMessageSend"] else {
+              let weatherCode = weather["iconCode"] else {
                   return
               }
-
-        isCurrentMessageSend = fetchRawData(raw: isMessageSend) as? Bool ?? true
 
         var temp = Measurement(
             value: Double((fetchRawData(raw: currentTemp) as? String ?? "0.0")) ?? 0,
@@ -364,14 +363,12 @@ class WeatherCell: UITableViewCell {
         if !isCurrentMessageSend {
             subContentView.backgroundColor = .clear
             actionsStackView.isHidden = false
-            onlyVisibleToYouLabel.isHidden = false
-            onlyVisibleToYouImageView.isHidden = false
+            onlyVisibleToYouContainer.isHidden = false
             weatherForOneWalletLabel.isHidden = true
         } else {
             subContentView.backgroundColor = isSender ? Appearance.default.colorPalette.outgoingMessageColor : Appearance.default.colorPalette.incommingMessageColor
             actionsStackView.isHidden = true
-            onlyVisibleToYouLabel.isHidden = true
-            onlyVisibleToYouImageView.isHidden = true
+            onlyVisibleToYouContainer.isHidden = true
             weatherForOneWalletLabel.isHidden = false
         }
 
@@ -387,8 +384,7 @@ class WeatherCell: UITableViewCell {
                     Nuke.loadImage(with: self.content?.author.imageURL, into: authorAvatarView?.imageView ?? .init())
                 }
             }
-            timestampLabel.isHidden = !options.contains(.timestamp)
-            timestampLabel.alpha = isCurrentMessageSend ? 1.0 : 0.0
+            timestampLabel.isHidden = (!options.contains(.timestamp) || !isCurrentMessageSend)
         }
         if let createdAt = self.content?.createdAt,
            let authorName = self.content?.author.name?.trimStringBy(count: 15),

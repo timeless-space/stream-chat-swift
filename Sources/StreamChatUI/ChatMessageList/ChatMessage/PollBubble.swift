@@ -131,6 +131,7 @@ public class PollBubble: UITableViewCell {
     }
 
     func configData(isSender: Bool) {
+        debugPrint("## Poll details :- \(content?.localState)")
         setBubbleConstraints(isSender)
         guard let cid = channel?.cid else {
             return
