@@ -10,7 +10,6 @@ import SwiftUI
 import UIKit
 import StreamChat
 import StreamChatUI
-import SwiftyGif
 import AVKit
 import BigInt
 

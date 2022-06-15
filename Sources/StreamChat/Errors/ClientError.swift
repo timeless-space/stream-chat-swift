@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -64,5 +64,12 @@ extension ClientError: Equatable {
         type(of: lhs) == type(of: rhs)
             && String(describing: lhs.underlyingError) == String(describing: rhs.underlyingError)
             && String(describing: lhs.localizedDescription) == String(describing: rhs.localizedDescription)
+    }
+}
+
+extension ClientError {
+    /// Returns `true` if underlaying error is `ErrorPayload` with code is inside invalid token codes range.
+    var isInvalidTokenError: Bool {
+        (underlyingError as? ErrorPayload)?.isInvalidTokenError == true
     }
 }

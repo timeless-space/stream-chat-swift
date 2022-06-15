@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -11,25 +11,6 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
     private var isInitialized: Bool = false
     /// Used for mapping `ListChanges` to sets of `IndexPath` and verifying possible conflicts
     private let collectionUpdatesMapper = CollectionUpdatesMapper()
-    
-    // In some cases updates coming one by one might require scrolling to bottom.
-    //
-    // Scheduling the action and canceling the previous one ensures the scroll to bottom
-    // is done only once.
-    //
-    // Having a delay gives layout a chance to calculate the correct size for bottom cells
-    // so they are fully visible when scroll to bottom happens.
-    private var scrollToBottomAction: DispatchWorkItem? {
-        didSet {
-            oldValue?.cancel()
-            if let action = scrollToBottomAction {
-                DispatchQueue.main.asyncAfter(
-                    deadline: .now() + .milliseconds(200),
-                    execute: action
-                )
-            }
-        }
-    }
 
     override open func didMoveToSuperview() {
         super.didMoveToSuperview()
@@ -46,7 +27,11 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
     open func setUp() {
         keyboardDismissMode = .onDrag
         rowHeight = UITableView.automaticDimension
-        estimatedRowHeight = 150
+        if #available(iOS 13, *), components._messageListDiffingEnabled {
+            estimatedRowHeight = UITableView.automaticDimension
+        } else {
+            estimatedRowHeight = 150
+        }
         separatorStyle = .none
         transform = .mirrorY
     }
@@ -68,7 +53,7 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
     ) -> String {
         let components = [
             ChatMessageCell.reuseId,
-            String(layoutOptions.rawValue),
+            String(layoutOptions.id),
             String(describing: contentViewClass),
             String(describing: attachmentViewInjectorType)
         ]
@@ -172,39 +157,49 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
         with changes: [ListChange<ChatMessage>],
         completion: (() -> Void)? = nil
     ) {
-        guard let _ = collectionUpdatesMapper.mapToSetsOfIndexPaths(
-            changes: changes,
-            onConflict: {
-                reloadData()
+        defer {
+            let lastMessageInserted = changes.first(where: { $0.isInsertion && $0.indexPath.row == 0 })?.item
+            if lastMessageInserted?.isSentByCurrentUser == true {
+                scrollToMostRecentMessage()
             }
-        ) else { return }
 
-        if changes.count > 1 {
+            completion?()
+        }
+
+        let hasConflictUpdates = collectionUpdatesMapper.mapToSetsOfIndexPaths(changes: changes) == nil
+        if hasConflictUpdates {
             reloadData()
             return
         }
 
-        changes.forEach {
-            switch $0 {
-            case let .insert(message, index: index):
-                UIView.performWithoutAnimation {
-                    self.reloadData()
+        guard changes.count == 1, let change = changes.first else {
+            reloadData()
+            return
+        }
+
+        switch change {
+        case let .insert(message, index: index):
+            UIView.performWithoutAnimation {
+                self.performBatchUpdates {
+                    self.insertRows(at: [index], with: .none)
+                } completion: { _ in
+                    guard self.numberOfRows(inSection: index.section) > index.row + 1 else { return }
+                    // Update previous row to remove timestamp if needed
+                    // +1 instead of -1 because the message list is inverted
+                    let previousIndex = IndexPath(row: index.row + 1, section: index.section)
+                    self.reloadRows(at: [previousIndex], with: .none)
                 }
-                if message.isSentByCurrentUser, index == IndexPath(item: 0, section: 0) {
-                    self.scrollToBottomAction = .init { [weak self] in
-                        self?.scrollToMostRecentMessage()
-                    }
-                }
-
-            case let .move(_, fromIndex: fromIndex, toIndex: toIndex):
-                self.moveRow(at: fromIndex, to: toIndex)
-
-            case let .update(_, index: index):
-                self.reloadRows(at: [index], with: .automatic)
-
-            case .remove:
-                self.reloadData()
             }
+
+        case let .move(_, fromIndex: fromIndex, toIndex: toIndex):
+            moveRow(at: fromIndex, to: toIndex)
+            reloadRows(at: [fromIndex, toIndex], with: .automatic)
+
+        case let .update(_, index: index):
+            reloadRows(at: [index], with: .automatic)
+
+        case .remove:
+            reloadData()
         }
     }
 
@@ -228,12 +223,16 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
                 cellBeforeUpdateReuseIdentifier == cellAfterUpdateReuseIdentifier,
                 cellBeforeUpdateMessage?.id == cellAfterUpdateMessage?.id,
                 cellBeforeUpdateMessage?.type == cellAfterUpdateMessage?.type,
-                cellBeforeUpdateMessage?.deletedAt == cellAfterUpdateMessage?.deletedAt {
+                cellBeforeUpdateMessage?.deletedAt == cellAfterUpdateMessage?.deletedAt,
+                cellBeforeUpdateMessage?.text == cellAfterUpdateMessage?.text,
+                cellBeforeUpdateMessage?.quotedMessage?.text == cellAfterUpdateMessage?.quotedMessage?.text,
+                cellBeforeUpdateMessage?.extraData == cellAfterUpdateMessage?.extraData {
                 // If identifiers and messages match we can simply update the current cell with new content
                 cellBeforeUpdate?.messageContentView?.content = cellAfterUpdateMessage
                 indexPathToReload.append(indexPath)
             } else {
-                // If identifiers does not match we do a reload to let the table view dequeue another cell
+                // If identifiers do not match or the cell size will need to change, ex: Editing text
+                // we do a reload to let the table view dequeue another cell
                 // with the layout fitting the updated message.
                 indexPathToReload.append(indexPath)
             }
@@ -268,4 +267,28 @@ open class ChatMessageListView: UITableView, Customizable, ComponentsProvider {
 
 extension CGAffineTransform {
     static let mirrorY = Self(scaleX: 1, y: -1)
+}
+
+private extension ListChange {
+    var isInsertion: Bool {
+        switch self {
+        case .insert:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var indexPath: IndexPath {
+        switch self {
+        case let .insert(_, index):
+            return index
+        case let .move(_, _, toIndex):
+            return toIndex
+        case let .update(_, index):
+            return index
+        case let .remove(_, index):
+            return index
+        }
+    }
 }

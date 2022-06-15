@@ -26,6 +26,9 @@
 "message.actions.user-unmute" = "Unmute User";
 "message.actions.user-mute" = "Mute User";
 "message.actions.resend" = "Resend";
+"message.actions.flag" = "Flag Message";
+"message.actions.flag.confirmation-title" = "Flag Message";
+"message.actions.flag.confirmation-message" = "Do you want to send a copy of this message to a moderator for further investigation?";
 
 "messageList.typingIndicator.typing-unknown" = "Someone is typing";
 
@@ -34,12 +37,14 @@
 
 "alert.actions.cancel" = "Cancel";
 "alert.actions.delete" = "Delete";
+"alert.actions.flag" = "Flag";
 "alert.actions.ok" = "Ok";
 
 "message.only-visible-to-you" = "Only visible to you";
 "message.deleted-message-placeholder" = "Message deleted";
 
 "composer.title.edit" = "Edit Message";
+"composer.title.editCaption" = "Edit Caption";
 "composer.title.reply" = "Reply to";
 "composer.placeholder.message" = "Send a message";
 "composer.placeholder.giphy" = "Search GIFs";
@@ -48,6 +53,7 @@
 "composer.picker.title" = "Choose attachment type: ";
 "composer.picker.file" = "File";
 "composer.picker.media" = "Photo or Video";
+"composer.picker.camera" = "Camera";
 "composer.picker.cancel" = "Cancel";
 
 "composer.suggestions.commands.header" = "Instant Commands";
@@ -78,3 +84,4 @@
 "dates.time-ago-months-plural" = "last seen %d months ago";
 
 "alert.noInternet" = "Internet connection error";
+"you" = "You";

@@ -31,7 +31,7 @@ class RedPacketSentBubble: UITableViewCell {
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
     var isSender = false
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -155,7 +155,7 @@ class RedPacketSentBubble: UITableViewCell {
         self.isSender = isSender
         handleBubbleConstraints(isSender)
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampLabel?.text = dateFormatter.format(createdAt)
         } else {
             timestampLabel?.text = nil
         }

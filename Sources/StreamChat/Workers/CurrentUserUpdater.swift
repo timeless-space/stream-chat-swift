@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -51,19 +51,19 @@ class CurrentUserUpdater: Worker {
             }
     }
     
-    /// Registers a device to the current user.
+    /// Registers a device for push notifications to the current user.
     /// `setUser` must be called before calling this.
     /// - Parameters:
-    ///   - token: Device token, obtained via `didRegisterForRemoteNotificationsWithDeviceToken` function in `AppDelegate`.
+    ///   - deviceId: The device id.
+    ///   - pushProvider: The push provider.
     ///   - currentUserId: The current user identifier.
     ///   - completion: Called when device is successfully registered, or with error.
     func addDevice(
-        token: Data,
+        deviceId: DeviceId,
+        pushProvider: PushProvider,
         currentUserId: UserId,
         completion: ((Error?) -> Void)? = nil
     ) {
-        let deviceId = token.deviceToken
-        
         func saveCurrentDevice(deviceId: String, completion: ((Error?) -> Void)?) {
             database.write({ (session) in
                 try session.saveCurrentDevice(deviceId)
@@ -80,7 +80,8 @@ class CurrentUserUpdater: Worker {
             .request(
                 endpoint: .addDevice(
                     userId: currentUserId,
-                    deviceId: deviceId
+                    deviceId: deviceId,
+                    pushProvider: pushProvider
                 ),
                 completion: { result in
                     if let error = result.error {
@@ -99,7 +100,7 @@ class CurrentUserUpdater: Worker {
     ///   - currentUserId: The current user identifier.
     ///   If `currentUser.devices` is not up-to-date, please make an `fetchDevices` call.
     ///   - completion: Called when device is successfully deregistered, or with error.
-    func removeDevice(id: String, currentUserId: UserId, completion: ((Error?) -> Void)? = nil) {
+    func removeDevice(id: DeviceId, currentUserId: UserId, completion: ((Error?) -> Void)? = nil) {
         apiClient
             .request(
                 endpoint: .removeDevice(
@@ -134,6 +135,14 @@ class CurrentUserUpdater: Worker {
             } catch {
                 completion?(error)
             }
+        }
+    }
+    
+    /// Marks all channels for a user as read.
+    /// - Parameter completion: Called when the API call is finished. Called with `Error` if the remote update fails.
+    func markAllRead(completion: ((Error?) -> Void)? = nil) {
+        apiClient.request(endpoint: .markAllRead()) {
+            completion?($0.error)
         }
     }
 }

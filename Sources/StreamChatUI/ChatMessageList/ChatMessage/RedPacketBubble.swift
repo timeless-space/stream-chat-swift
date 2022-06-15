@@ -26,7 +26,7 @@ class RedPacketBubble: UITableViewCell {
     private var trailingAnchorReceiver: NSLayoutConstraint?
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     var cellType: CellType!
     var isSender = false
     var channel: ChatChannel?
@@ -172,7 +172,7 @@ class RedPacketBubble: UITableViewCell {
                 nameAndTimeString?.append("\(name)   ")
             }
             if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+                nameAndTimeString?.append("\(dateFormatter.format(createdAt))")
             }
         }
         timestampLabel?.text = nameAndTimeString

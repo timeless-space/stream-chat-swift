@@ -295,7 +295,7 @@ public extension Dictionary where Key == String, Value == RawJSON {
     var topReceivedAmount: String? {
         if let amount = redPacketTopAmountExtraData["receivedAmount"] {
             let dblAmount = fetchRawData(raw: amount) as? Double ?? 0
-            return String(format: "%.2f", dblAmount)
+            return "\(dblAmount)"
         } else {
             return nil
         }

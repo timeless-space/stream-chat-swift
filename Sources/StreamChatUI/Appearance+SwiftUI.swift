@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -7,11 +7,11 @@ import SwiftUI
 
 @available(iOS 13.0, *)
 extension Appearance {
-    /// Used to initialize `_Components` as `ObservableObject`.
+    /// Used to initialize `Components` as `ObservableObject`.
     public var asObservableObject: ObservableObject { .init(self) }
 
     @dynamicMemberLookup
-    /// `_Components` represented as `ObservableObject` class for SwiftUI requirements.
+    /// `Components` represented as `ObservableObject` class for SwiftUI requirements.
     public class ObservableObject: SwiftUI.ObservableObject {
         private let wrappedAppearance: Appearance
 
@@ -48,23 +48,22 @@ public extension View {
     }
 }
 
-@available(iOS 13.0, *)
 extension Color {
-    init(hexString: String, alpha: Double = 1, darker percentage: Double = 0) {
+    init(hexString: String, alpha: Double = 1, darkPercentage: Double = 0) {
         let hex = hexString.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)
-        self.init(hex: Int(int), alpha: alpha, darker: percentage)
+        self.init(hex: Int(int), alpha: alpha, darkPercentage: darkPercentage)
     }
 
-    init(hex: Int, alpha: Double = 1, darker percentage: Double = 0.0) {
+    init(hex: Int, alpha: Double = 1, darkPercentage: Double = 0.0) {
         let components = (
             R: Double((hex >> 16) & 0xff) / 255,
             G: Double((hex >> 08) & 0xff) / 255,
             B: Double((hex >> 00) & 0xff) / 255
         )
 
-        let multiplier = percentage / 100.0
+        let multiplier = darkPercentage / 100.0
         let newRed = min(max(components.R + multiplier * components.R, 0.0), 1.0)
         let newGreen = min(max(components.G + multiplier * components.G, 0.0), 1.0)
         let newBlue = min(max(components.B + multiplier * components.B, 0.0), 1.0)

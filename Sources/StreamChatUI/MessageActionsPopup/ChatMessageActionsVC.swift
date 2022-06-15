@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -38,6 +38,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     /// `ContainerView` for showing message's actions.
     open private(set) lazy var messageActionsContainerStackView = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "messageActionsContainerStackView")
     
     /// Class used for buttons in `messageActionsContainerView`.
     open var actionButtonClass: ChatMessageActionControl.Type { ChatMessageActionControl.self }
@@ -46,11 +47,15 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
 
     override open func setUpLayout() {
         super.setUpLayout()
-        
+        view.embed(messageActionsContainerStackView)
         messageActionsContainerStackView.axis = .vertical
         messageActionsContainerStackView.alignment = .fill
         messageActionsContainerStackView.spacing = 1
-        view.embed(messageActionsContainerStackView)
+
+        // Fix safe area layout issue when message actions go below scroll view
+        messageActionsContainerStackView.insetsLayoutMarginsFromSafeArea = false
+        messageActionsContainerStackView.isLayoutMarginsRelativeArrangement = true
+        messageActionsContainerStackView.layoutMargins = .zero
     }
     
     override open func setUpAppearance() {
@@ -61,9 +66,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
     }
 
     override open func updateContent() {
-        messageActionsContainerStackView.subviews.forEach {
-            messageActionsContainerStackView.removeArrangedSubview($0)
-        }
+        messageActionsContainerStackView.removeAllArrangedSubviews()
         if isPinnedMessagePreview {
             pinnedPreviewMessageActions.forEach {
                 addActionItem(item: $0)
@@ -82,24 +85,54 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         actionView.content = item
         actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
         messageActionsContainerStackView.addArrangedSubview(actionView)
+        actionView.accessibilityIdentifier = "\(type(of: item))"
     }
 
     /// Array of `ChatMessageActionItem`s - override this to setup your own custom actions
     open var messageActions: [ChatMessageActionItem] {
         guard
-            messageController.dataStore.currentUser() != nil,
+            let currentUser = messageController.dataStore.currentUser(),
             let message = message,
             message.isDeleted == false
         else { return [] }
-        var actions: [ChatMessageActionItem] = []
-        actions.append(inlineReplyActionItem())
-        actions.append(copyActionItem())
-        if message.isSentByCurrentUser {
-            actions.append(editActionItem())
+
+        switch message.localState {
+        case nil:
+            var actions: [ChatMessageActionItem] = []
+
+            if channelConfig.quotesEnabled {
+                actions.append(inlineReplyActionItem())
+            }
+
+            /*if channelConfig.repliesEnabled && !message.isPartOfThread {
+                actions.append(threadReplyActionItem())
+            }*/
+
+            actions.append(copyActionItem())
+            //actions.append(translateMessageItem())
+            if message.isSentByCurrentUser {
+                actions += [editActionItem(), deleteActionItem()]
+
+            } else {
+                actions += [flagActionItem()]
+
+                if channelConfig.mutesEnabled {
+                    let isMuted = currentUser.mutedUsers.contains(message.author)
+                    actions.append(isMuted ? unmuteActionItem() : muteActionItem())
+                }
+            }
+
+            return actions
+        case .pendingSend, .sendingFailed, .pendingSync, .syncingFailed, .deletingFailed:
+            return [
+                message.localState == .sendingFailed ? resendActionItem() : nil,
+                editActionItem(),
+                deleteActionItem()
+            ]
+            .compactMap { $0 }
+        case .sending, .syncing, .deleting:
+            return []
         }
-        actions.append(pinMessageActionItem(message: message))
-        actions.append(forwardActionItem())
-        return actions
     }
 
     open var pinnedPreviewMessageActions: [ChatMessageActionItem] {
@@ -234,12 +267,14 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             appearance: appearance
         )
     }
+    
     //TranslateMessageActionItem
     open func translateMessageItem() -> ChatMessageActionItem {
         TranslateMessageActionItem(action: { [weak self] _ in
             guard let self = self else { return }
-            self.delegate?.chatMessageActionsVCDidFinish(self)
-            // ToDo:
+            self.messageController.translate(to: .turkish) { error in
+                self.delegate?.chatMessageActionsVCDidFinish(self)
+            }
         }, appearance: appearance)
     }
 
@@ -249,6 +284,23 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             guard let self = self else { return }
             self.delegate?.chatMessageActionsVCDidFinish(self)
         }, appearance: appearance)
+    }
+    
+    /// Returns `ChatMessageActionItem` for flag action.
+    open func flagActionItem() -> ChatMessageActionItem {
+        FlagActionItem(
+            action: { [weak self] _ in
+                guard let self = self else { return }
+                self.alertsRouter.showMessageFlagConfirmationAlert { confirmed in
+                    guard confirmed else { return }
+                    
+                    self.messageController.flag { _ in
+                        self.delegate?.chatMessageActionsVCDidFinish(self)
+                    }
+                }
+            },
+            appearance: appearance
+        )
     }
 
     /// Triggered for actions which should be handled by `delegate` and not in this view controller.

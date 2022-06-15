@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import UIKit
@@ -175,7 +175,7 @@ public class pushTransition: CATransition {}
 
 extension UIViewController {
     public func pushWithAnimation(controller: UIViewController) {
-        self.navigationController?.pushViewController(controller, animated: true)
+        navigationController?.pushViewController(controller, animated: true)
     }
     public func popWithAnimation() {
         self.navigationController?.popViewController(animated: true)

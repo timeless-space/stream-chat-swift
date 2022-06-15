@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -17,6 +17,10 @@ class CoreDataLazy<T> {
     
     /// The context on whose queue is the `computeValue` closure evaluated.
     weak var context: NSManagedObjectContext?
+    
+    /// The persistent store identifier by the time this wrapper is initialized.
+    /// This is used to detect when there are lingering models in the memory, which will cause a crash when tried to materialize.
+    var persistentStoreIdentifier: String?
     
     var wrappedValue: T {
         var returnValue: T!
@@ -57,6 +61,8 @@ class CoreDataLazy<T> {
         set {
             computeValue = newValue.0
             context = newValue.1
+            persistentStoreIdentifier = context?.persistentStoreCoordinator?.persistentStores.first?.identifier
+            _cached = nil
         }
     }
     

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -191,19 +191,22 @@ public extension CurrentChatUserController {
             self.callback { completion?(error) }
         }
     }
-    
-    /// Registers a device to the current user.
-    /// `connectUser` must be called before calling this.
+
+    /// Registers the current user's device for push notifications.
     /// - Parameters:
-    ///   - token: Device token, obtained via `didRegisterForRemoteNotificationsWithDeviceToken` function in `AppDelegate`.
-    ///   - completion: Called when device is successfully registered, or with error.
-    func addDevice(token: Data, completion: ((Error?) -> Void)? = nil) {
+    ///   - pushDevice: The device information required for the desired push provider.
+    ///   - completion: Callback when device is successfully registered, or failed with error.
+    func addDevice(_ pushDevice: PushDevice, completion: ((Error?) -> Void)? = nil) {
         guard let currentUserId = currentUser?.id else {
             completion?(ClientError.CurrentUserDoesNotExist())
             return
         }
 
-        currentUserUpdater.addDevice(token: token, currentUserId: currentUserId) { error in
+        currentUserUpdater.addDevice(
+            deviceId: pushDevice.deviceId,
+            pushProvider: pushDevice.provider,
+            currentUserId: currentUserId
+        ) { error in
             self.callback {
                 completion?(error)
             }
@@ -216,13 +219,25 @@ public extension CurrentChatUserController {
     ///   - id: Device id to be removed. You can obtain registered devices via `currentUser.devices`.
     ///   If `currentUser.devices` is not up-to-date, please make an `synchronize` call.
     ///   - completion: Called when device is successfully deregistered, or with error.
-    func removeDevice(id: String, completion: ((Error?) -> Void)? = nil) {
+    func removeDevice(id: DeviceId, completion: ((Error?) -> Void)? = nil) {
         guard let currentUserId = currentUser?.id else {
             completion?(ClientError.CurrentUserDoesNotExist())
             return
         }
         
         currentUserUpdater.removeDevice(id: id, currentUserId: currentUserId) { error in
+            self.callback {
+                completion?(error)
+            }
+        }
+    }
+    
+    /// Marks all channels for a user as read.
+    ///
+    /// - Parameter completion: Called when the API call is finished. Called with `Error` if the remote update fails.
+    ///
+    func markAllRead(completion: ((Error?) -> Void)? = nil) {
+        currentUserUpdater.markAllRead { error in
             self.callback {
                 completion?(error)
             }
@@ -237,7 +252,7 @@ extension CurrentChatUserController {
         var currentUserObserverBuilder: (
             _ context: NSManagedObjectContext,
             _ fetchRequest: NSFetchRequest<CurrentUserDTO>,
-            _ itemCreator: @escaping (CurrentUserDTO) -> CurrentChatUser,
+            _ itemCreator: @escaping (CurrentUserDTO) throws -> CurrentChatUser,
             _ fetchedResultsControllerType: NSFetchedResultsController<CurrentUserDTO>.Type
         ) -> EntityDatabaseObserver<CurrentChatUser, CurrentUserDTO> = EntityDatabaseObserver.init
         
@@ -267,7 +282,7 @@ private extension CurrentChatUserController {
         environment.currentUserObserverBuilder(
             client.databaseContainer.viewContext,
             CurrentUserDTO.defaultFetchRequest,
-            { $0.asModel() },
+            { try $0.asModel() },
             NSFetchedResultsController<CurrentUserDTO>.self
         )
     }
@@ -295,5 +310,18 @@ public extension CurrentChatUserController {
     var delegate: CurrentChatUserControllerDelegate? {
         get { multicastDelegate.mainDelegate }
         set { multicastDelegate.set(mainDelegate: newValue) }
+    }
+}
+
+// MARK: - Deprecations
+
+public extension CurrentChatUserController {
+    @available(
+        *,
+        deprecated,
+        message: "use addDevice(_pushDevice:) instead. This deprecated function doesn't correctly support multiple push providers."
+    )
+    func addDevice(token: Data, pushProvider: PushProvider = .apn, completion: ((Error?) -> Void)? = nil) {
+        addDevice(.apn(token: token), completion: completion)
     }
 }

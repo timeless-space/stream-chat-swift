@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -84,7 +84,7 @@ public class ChannelEventsController: EventsController {
         guard let cid = cid else { return false }
         
         let channelEvent = event as? ChannelSpecificEvent
-        let unknownEvent = event as? UnknownEvent
+        let unknownEvent = event as? UnknownChannelEvent
         
         return channelEvent?.cid == cid || unknownEvent?.cid == cid
     }

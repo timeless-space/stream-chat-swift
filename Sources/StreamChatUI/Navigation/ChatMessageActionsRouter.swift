@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -34,6 +34,36 @@ open class AlertsRouter: NavigationRouter<UIViewController> {
             )
         )
 
+        rootViewController.present(alert, animated: true)
+    }
+    
+    /// Shows an alert with confirmation for message flag.
+    ///
+    /// - Parameters:
+    ///     - confirmed: Completion closure with a `Bool` parameter indicating whether the deletion has been confirmed or not.
+    ///
+    open func showMessageFlagConfirmationAlert(confirmed: @escaping (Bool) -> Void) {
+        let alert = UIAlertController(
+            title: L10n.Message.Actions.Flag.confirmationTitle,
+            message: L10n.Message.Actions.Flag.confirmationMessage,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(
+            UIAlertAction(
+                title: L10n.Alert.Actions.cancel,
+                style: .cancel,
+                handler: { _ in confirmed(false) }
+            )
+        )
+        alert.addAction(
+            UIAlertAction(
+                title: L10n.Alert.Actions.flag,
+                style: .destructive,
+                handler: { _ in confirmed(true) }
+            )
+        )
+        
         rootViewController.present(alert, animated: true)
     }
 }

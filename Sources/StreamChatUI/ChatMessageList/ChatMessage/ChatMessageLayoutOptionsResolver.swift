@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,12 +7,18 @@ import StreamChat
 
 /// Resolves layout options for the message at given `indexPath`.
 open class ChatMessageLayoutOptionsResolver {
-    /// The minimum time interval between messages to treat them as a single message group.
-    public let minTimeIntervalBetweenMessagesInGroup: TimeInterval
-
-    /// Creates the `_ChatMessageLayoutOptionsResolver` with the given `minTimeIntervalBetweenMessagesInGroup` value
-    public init(minTimeIntervalBetweenMessagesInGroup: TimeInterval = 30) {
-        self.minTimeIntervalBetweenMessagesInGroup = minTimeIntervalBetweenMessagesInGroup
+    /// The maximum time interval between 2 consecutive messages sent by the same user to treat them as a single message group.
+    public let maxTimeIntervalBetweenMessagesInGroup: TimeInterval
+    
+    // TODO: Propagate via `init` in v5, make it non-optional.
+    /// The config of the `ChatClient` used.
+    public internal(set) var config: ChatClientConfig?
+    
+    /// Creates new `ChatMessageLayoutOptionsResolver`.
+    ///
+    /// - Parameter maxTimeIntervalBetweenMessagesInGroup: The maximum time interval between 2 consecutive messages sent by the same user to treat them as a single message group (`60 sec` by default).
+    public init(maxTimeIntervalBetweenMessagesInGroup: TimeInterval = 60) {
+        self.maxTimeIntervalBetweenMessagesInGroup = maxTimeIntervalBetweenMessagesInGroup
     }
 
     /// Calculates layout options for the message.
@@ -28,6 +34,12 @@ open class ChatMessageLayoutOptionsResolver {
         with messages: AnyRandomAccessCollection<ChatMessage>,
         appearance: Appearance
     ) -> ChatMessageLayoutOptions {
+        // Make sure the message exists. Sometimes when switching channels really fast on iPad's split view,
+        // it can happen that this method is called for old data from a previous channel.
+        guard indexPath.item < messages.count else {
+            return []
+        }
+
         let messageIndex = messages.index(messages.startIndex, offsetBy: indexPath.item)
         let message = messages[messageIndex]
 
@@ -56,8 +68,8 @@ open class ChatMessageLayoutOptionsResolver {
 
         var options: ChatMessageLayoutOptions = []
 
-        // The text should be centered without a bubble for system messages
-        guard message.type != .system else {
+        // The text should be centered without a bubble for system or error messages
+        guard message.type != .system && message.type != .error else {
             return [.text, .centered]
         }
 
@@ -78,13 +90,12 @@ open class ChatMessageLayoutOptionsResolver {
         if isLastInSequence {
             options.insert(.timestamp)
         }
-        if message.isOnlyVisibleForCurrentUser {
-            options.insert(.onlyVisibleForYouIndicator)
+        if showOnlyVisibleToYouIndicator(for: message) {
+            options.insert(.onlyVisibleToYouIndicator)
         }
         if message.textContent?.isEmpty == false {
             options.insert(.text)
         }
-
         guard message.isDeleted == false else {
             return options
         }
@@ -92,9 +103,10 @@ open class ChatMessageLayoutOptionsResolver {
         if isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
             options.insert(.avatar)
         }
-        if isLastInSequence && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
+        if isLastInSequence && !message.isSentByCurrentUser && channel.memberCount > 2 {
             options.insert(.authorName)
         }
+
         if hasQuotedMessage(message) {
             options.insert(.quotedMessage)
         }
@@ -118,6 +130,9 @@ open class ChatMessageLayoutOptionsResolver {
         }
         if message.isLastActionFailed {
             options.insert(.errorIndicator)
+        }
+        if isLastInSequence && canShowDeliveryStatus(for: message, in: channel) {
+            options.insert(.deliveryStatusIndicator)
         }
 
         return options
@@ -148,13 +163,14 @@ open class ChatMessageLayoutOptionsResolver {
 
     /// Says whether the message at given `indexPath` is the last one in a sequence of messages
     /// sent by a single user where the time delta between near by messages
-    /// is `<= minTimeIntervalBetweenMessagesInGroup`.
+    /// is `<= maxTimeIntervalBetweenMessagesInGroup`.
     ///
     /// Returns `true` if one of the following conditions is met:
     ///     1. the message at `messageIndexPath` is the most recent one in the channel
     ///     2. the message sent after the message at `messageIndexPath` has different author
     ///     3. the message sent after the message at `messageIndexPath` has the same author but the
-    ///     time delta between messages is bigger than `minTimeIntervalBetweenMessagesInGroup`
+    ///     time delta between messages is bigger than `maxTimeIntervalBetweenMessagesInGroup`
+    ///     4. the message sent after the message at `messageIndexPath` is of `error` type
     ///
     /// - Parameters:
     ///   - messageIndexPath: The index path of the target message.
@@ -165,22 +181,80 @@ open class ChatMessageLayoutOptionsResolver {
         messages: AnyRandomAccessCollection<ChatMessage>
     ) -> Bool {
         let messageIndex = messages.index(messages.startIndex, offsetBy: messageIndexPath.item)
-        let message = messages[messageIndex]
+        guard let message = messages[safe: messageIndex] else {
+            indexNotFoundAssertion()
+            return true
+        }
 
         // The current message is the last message so it's either a standalone or last in sequence.
         guard messageIndexPath.item > 0 else { return true }
 
         let nextMessageIndex = messages.index(before: messageIndex)
-        let nextMessage = messages[nextMessageIndex]
+        guard let nextMessage = messages[safe: nextMessageIndex] else {
+            indexNotFoundAssertion()
+            return true
+        }
 
         // The message after the current one has different author so the current message
         // is either a standalone or last in sequence.
         guard nextMessage.author == message.author else { return true }
 
+        // The current message should end the group when the next message has type:
+        //  1. `error` (e.g. contains invalid command/didn't pass moderation)
+        //  2. `ephemeral`
+        //  3. `system`
+        guard
+            nextMessage.type != .error,
+            nextMessage.type != .ephemeral,
+            nextMessage.type != .system
+        else { return true }
+        
         let delay = nextMessage.createdAt.timeIntervalSince(message.createdAt)
 
-        // If the message next to the current one is sent with delay > minTimeIntervalBetweenMessagesInGroup,
+        // If the message next to the current one is sent with delay > maxTimeIntervalBetweenMessagesInGroup,
         // the current message ends the sequence.
-        return delay > minTimeIntervalBetweenMessagesInGroup
+        return delay > maxTimeIntervalBetweenMessagesInGroup
+    }
+    
+    /// Determines whether to populate `onlyVisibleToYouIndicator` for the given message.
+    /// - Parameter message: The message.
+    /// - Returns: `true` if `onlyVisibleToYouIndicator` layout option should be included for the given message.
+    open func showOnlyVisibleToYouIndicator(for message: ChatMessage) -> Bool {
+        guard message.isSentByCurrentUser else {
+            return false
+        }
+        
+        switch message.type {
+        case .ephemeral:
+            return true
+        case .deleted:
+            guard let config = config else {
+                log.assertionFailure("The `config` property must be assiged at this point.")
+                return false
+            }
+            
+            return config.deletedMessagesVisibility == .visibleForCurrentUser
+        default:
+            return false
+        }
+    }
+    
+    /// Makes a decision to show the delivery status for the given message in the given channel.
+    ///
+    /// - Parameters:
+    ///   - message: The message to show a delivery status for.
+    ///   - channel: The channel the message is sent to.
+    /// - Returns: `true` if delivery status should be shown.
+    open func canShowDeliveryStatus(for message: ChatMessage, in channel: ChatChannel) -> Bool {
+        guard let status = message.deliveryStatus else { return false }
+        
+        switch status {
+        case .pending:
+            return true
+        case .sent, .read:
+            return channel.config.readEventsEnabled
+        default:
+            return false
+        }
     }
 }
