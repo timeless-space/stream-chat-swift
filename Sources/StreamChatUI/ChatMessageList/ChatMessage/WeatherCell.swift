@@ -127,6 +127,7 @@ class WeatherCell: UITableViewCell {
     var chatChannel: ChatChannel?
     var weatherType: String = ""
     var layoutOptions: ChatMessageLayoutOptions?
+    private var isCurrentMessageSend = false
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -234,11 +235,11 @@ class WeatherCell: UITableViewCell {
     }
 
     private func setBubbleConstraints(_ isSender: Bool) {
-        widthConstraintForMainContainer?.constant = content?.type == .ephemeral ? 200 : 270
-        topSubContainer?.constant = content?.type == .ephemeral ? 0 : 15
-        leadingSubContainer?.constant = content?.type == .ephemeral ? 0 : 15
-        trailingSubContainer?.constant = content?.type == .ephemeral ? 0 : -15
-        bottomSubContainer?.constant = content?.type == .ephemeral ? 0 : -15
+        widthConstraintForMainContainer?.constant = isCurrentMessageSend ? 270 : 200
+        topSubContainer?.constant = isCurrentMessageSend ? 15 : 0
+        leadingSubContainer?.constant = isCurrentMessageSend ? 15 : 0
+        trailingSubContainer?.constant = isCurrentMessageSend ? -15 : 0
+        bottomSubContainer?.constant = isCurrentMessageSend ? -15 : 0
         leadingMainContainer?.isActive = !isSender
         trailingMainContainer?.isActive = isSender
     }
@@ -278,7 +279,12 @@ class WeatherCell: UITableViewCell {
                                       style: .primary,
                                       type: .button,
                                       text: "Send")
-        ChatClient.shared.messageController(cid: cid, messageId: messageId).dispatchEphemeralMessageAction(action)
+//        ChatClient.shared.messageController(cid: cid, messageId: messageId).dispatchEphemeralMessageAction(action)
+
+        guard var weatherData = getExtraData(key: "weather") else { return }
+        weatherData["isMessageSend"] = .bool(true)
+        ChatClient.shared.messageController(cid: cid, messageId: messageId)
+            .dispatchEphemeralMessageAction(action, weatherData, key: "weather")
     }
 
     private func callBackEdit() {
@@ -319,9 +325,12 @@ class WeatherCell: UITableViewCell {
               let currentLocation = weather["currentLocation"],
               let currentTemp = weather["currentWeather"],
               let displayMessage = weather["displayMessage"],
-              let weatherCode = weather["iconCode"] else {
+              let weatherCode = weather["iconCode"],
+              let isMessageSend = weather["isMessageSend"] else {
                   return
               }
+
+        isCurrentMessageSend = fetchRawData(raw: isMessageSend) as? Bool ?? true
 
         var temp = Measurement(
             value: Double((fetchRawData(raw: currentTemp) as? String ?? "0.0")) ?? 0,
@@ -352,7 +361,7 @@ class WeatherCell: UITableViewCell {
 
         authorAvatarView?.isHidden = isSender
 
-        if self.content?.type == .ephemeral {
+        if !isCurrentMessageSend {
             subContentView.backgroundColor = .clear
             actionsStackView.isHidden = false
             onlyVisibleToYouLabel.isHidden = false
@@ -379,7 +388,7 @@ class WeatherCell: UITableViewCell {
                 }
             }
             timestampLabel.isHidden = !options.contains(.timestamp)
-            timestampLabel.alpha = (self.content?.type == .ephemeral) ?? true ? 0.0 : 1.0
+            timestampLabel.alpha = isCurrentMessageSend ? 1.0 : 0.0
         }
         if let createdAt = self.content?.createdAt,
            let authorName = self.content?.author.name?.trimStringBy(count: 15),

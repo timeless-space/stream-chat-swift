@@ -642,10 +642,7 @@ open class ChatMessageListVC:
     }
 
     private func isWeatherCell(_ message: ChatMessage?) -> Bool {
-        guard let extraData = message?.extraData,
-              let messageType = extraData["messageType"] else { return false }
-        let type = fetchRawData(raw: messageType) as? String ?? ""
-        return type == "weather"
+        return (message?.extraData.keys.contains("weather") ?? false)
     }
 
     private func isRedPacketExpiredCell(_ message: ChatMessage?) -> Bool {

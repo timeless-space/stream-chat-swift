@@ -976,12 +976,15 @@ open class ComposerVC: _ViewController,
     }
 
     @objc func sendWeatherMessage(_ notification: Notification ) {
-        channelController?
-            .createNewMessage(
-                text: "/weather",
-                extraData: ["weather": .dictionary(getWeatherRequest(notification))],
-                completion: nil
-            )
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let `self` = self else { return }
+            self.channelController?
+                .createNewMessage(
+                    text: "/weather",
+                    extraData: ["weather": .dictionary(self.getWeatherRequest(notification))],
+                    completion: nil
+                )
+        }
     }
 
     @objc func editWeatherMessage(_ notification: Notification ) {
@@ -1004,6 +1007,7 @@ open class ComposerVC: _ViewController,
         weatherData["currentLocation"] = .string(location)
         weatherData["iconCode"] = .string(iconCode)
         weatherData["displayMessage"] = .string(displayMessage)
+        weatherData["isMessageSend"] = .bool(false)
         return weatherData
     }
 
