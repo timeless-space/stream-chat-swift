@@ -13,7 +13,10 @@ public class BillSplitUserSelectionVC: UIViewController {
 
     public struct SectionData {
         let letter: String
-        var users = [ChatChannelMember]()
+        var users = [ChatUser]()
+    }
+    public enum SearchState {
+        case searching, completed, failed, none
     }
 
     // MARK: - Outlet
@@ -32,12 +35,21 @@ public class BillSplitUserSelectionVC: UIViewController {
     @IBOutlet private weak var everyoneLabel: UILabel!
 
     // MARK: - Variables
-    public var selectedUsers = [ChatChannelMember]()
+    public var selectedUsers = [ChatUser]()
     public lazy var viewModel = BillSplitUserSelectionViewModel(controller: nil)
     public var channelController: ChatChannelController?
+    private var searchUserString: String?
+    private var searchState: SearchState = .none {
+        didSet {
+            if oldValue != searchState {
+                setupUIForSearch()
+            }
+        }
+    }
 
     // callback
-    public var callbackSelectedUser: (([ChatChannelMember]) -> Void)?
+    public var callbackSelectedUser: (([ChatUser]) -> Void)?
+    private var searchOperation: DispatchWorkItem?
 
     // MARK: - View Life cycle
     public override func viewDidLoad() {
@@ -45,17 +57,7 @@ public class BillSplitUserSelectionVC: UIViewController {
         // UI
         setupUI()
         // callback
-        viewModel.channelController = channelController
-        viewModel.initChannelMembers()
-        viewModel.reloadTable = { [weak self] in
-            guard let self = self else {
-                return
-            }
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-                self.setupEveryoneContainerView()
-            }
-        }
+        setupViewModelCallback()
     }
 
     // MARK: - Setup
@@ -69,6 +71,27 @@ public class BillSplitUserSelectionVC: UIViewController {
         setupCollectionView()
         setupTableView()
         setupSelectedUserView()
+    }
+
+    private func setupUIForSearch() {
+        setupEveryoneContainerView()
+        setupAddFriendButton()
+        setupSelectedUserView()
+        switch searchState {
+        case .searching:
+            tableView.isHidden = true
+        case .completed:
+            tableView.isHidden = false
+            tableView.reloadData()
+            selectedUsersCollectionView.reloadData()
+        case .none:
+            viewModel.channelMembers = []
+            tableView.reloadData()
+            tableView.isHidden = false
+            viewModel.fetchChannelMembers()
+        case .failed:
+            tableView.isHidden = true
+        }
     }
 
     private func setupBackgroundColor() {
@@ -89,13 +112,18 @@ public class BillSplitUserSelectionVC: UIViewController {
             .colorPalette
             .searchBarBackground
         searchBarContainerView.layer.cornerRadius = 20.0
-        //searchField.delegate = self
+        searchField.delegate = self
         searchField.setAttributedPlaceHolder(placeHolder: "Search")
-        //searchField.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
+        searchField.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
         searchField.tintColor = Appearance.default.colorPalette.statusColorBlue
     }
 
     private func setupSelectedUserView() {
+        if searchState == .searching {
+            viewAddedUserLabelContainer.isHidden = true
+            selectedUsersCollectionView.isHidden = true
+            return
+        }
         let hidden = selectedUsers.isEmpty
         guard !hidden else {
             lblAddedUser.text = ""
@@ -105,13 +133,12 @@ public class BillSplitUserSelectionVC: UIViewController {
             return
         }
         selectedUsersCollectionView.reloadData()
-        selectedUsersCollectionView.layoutIfNeeded()
-        if selectedUsers.count > 1 {
-            let lastIndexPath = IndexPath(item: self.selectedUsers.count - 1,
-                                          section: 0)
-            selectedUsersCollectionView.scrollToItem(at: lastIndexPath,
-                                                     at: .right, animated: true)
-        }
+//        if selectedUsers.count > 1 {
+//            let lastIndexPath = IndexPath(item: self.selectedUsers.count - 1,
+//                                          section: 0)
+//            selectedUsersCollectionView.scrollToItem(at: lastIndexPath,
+//                                                     at: .right, animated: true)
+//        }
         UIView.animate(withDuration: 0.2) { [weak self] in
             guard let weakSelf = self else {
                 return
@@ -156,6 +183,10 @@ public class BillSplitUserSelectionVC: UIViewController {
     }
 
     private func setupAddFriendButton() {
+        guard searchState == .none || searchState == .completed else {
+            addFriendButton.isHidden = true
+            return
+        }
         addFriendButton.isHidden = selectedUsers.isEmpty
         let count  = selectedUsers.count
         let strFriend = count == 1 ? "Friend" : "Friends"
@@ -163,7 +194,7 @@ public class BillSplitUserSelectionVC: UIViewController {
     }
 
     private func setupEveryoneContainerView() {
-        guard !viewModel.channelMembers.isEmpty else {
+        guard !viewModel.channelMembers.isEmpty, searchState == .none else {
             everyoneContainer.isHidden = true
             return
         }
@@ -176,6 +207,28 @@ public class BillSplitUserSelectionVC: UIViewController {
         everyoneImage.image = image
         everyoneLabel.text = "EVERYONE"
         everyoneLabel.textColor = tineColor
+    }
+
+    private func setupViewModelCallback() {
+        viewModel.channelController = channelController
+        viewModel.fetchChannelMembers()
+        viewModel.reloadTable = { [weak self] in
+            guard let self = self else {
+                return
+            }
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+                self.setupEveryoneContainerView()
+            }
+        }
+        viewModel.callbackSearch = { [weak self] status in
+            guard let self = self else {
+                return
+            }
+            DispatchQueue.main.async {
+                self.searchState = status
+            }
+        }
     }
 
     // MARK: - Action
@@ -208,6 +261,25 @@ public class BillSplitUserSelectionVC: UIViewController {
     @IBAction func everyoneButtonActionExit(_ sender: UIButton) {
         everyoneContainer.subviews.forEach({ $0.alpha = 1.0 })
     }
+
+    @objc private func textDidChange(_ sender: UITextField) {
+        if let searchText = sender.text, !searchText.isEmpty {
+            searchState = .searching
+            searchOperation?.cancel()
+            guard !searchText.isBlank else { return }
+            searchOperation = DispatchWorkItem { [weak self] in
+                guard let weakSelf = self else { return }
+                weakSelf.viewModel.searchUser(with: searchText)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: searchOperation!)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let weakSelf = self else { return }
+                weakSelf.searchState = .none
+            }
+        }
+    }
+
 }
 
 // MARK: - UITableViewDelegate, UITableViewDataSource
@@ -302,7 +374,7 @@ extension BillSplitUserSelectionVC: UITableViewDelegate, UITableViewDataSource {
               viewModel.channelMembers.count != totalMembers  else {
                   return
               }
-        if controller.state != .remoteDataFetched {
+        if controller.state != .remoteDataFetched || searchState != .none {
             return
         }
         guard let lastVisibleIndexPath = tableView.indexPathsForVisibleRows?.last,
@@ -338,5 +410,13 @@ extension BillSplitUserSelectionVC: UICollectionViewDataSource, UICollectionView
         tableView.reloadData()
         setupEveryoneContainerView()
         setupAddFriendButton()
+    }
+}
+
+// MARK: - UITextFieldDelegate
+extension BillSplitUserSelectionVC: UITextFieldDelegate {
+    public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
 }

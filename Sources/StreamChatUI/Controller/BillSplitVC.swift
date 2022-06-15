@@ -20,7 +20,7 @@ public class BillSplitVC: UIViewController {
     // MARK: - Variables
     public var channelController: ChatChannelController?
     public var callbackSelectFriend:(() -> Void)?
-    public var selectedUsers = [ChatChannelMember]()
+    public var selectedUsers = [ChatUser]()
 
     // MARK: - View Life cycle
     public override func viewDidLoad() {
@@ -34,7 +34,7 @@ public class BillSplitVC: UIViewController {
         updateUI(with: selectedUsers)
     }
 
-    public func updateUI(with users: [ChatChannelMember]) {
+    public func updateUI(with users: [ChatUser]) {
         selectedUsers = users
         setupSelectedUserContainerView()
         setupSelectUserButton()
