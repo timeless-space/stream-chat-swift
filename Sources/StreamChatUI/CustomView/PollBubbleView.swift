@@ -369,7 +369,7 @@ extension PollBubbleView {
         }
         if let userInfo = PollBubble.fetchPollDataCallback?(pollID) {
             setDataFromUserInfo(userInfo)
-        } else {
+        } else if !isPreview {
             var userInfo = [String: Any]()
             userInfo["group_id"] = cid.description
             userInfo["poll_id"] = pollID
