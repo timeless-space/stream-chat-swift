@@ -182,14 +182,9 @@ open class ChatChannelListVC: _ViewController,
             NotificationCenter.default.post(name: .hideTabbar, object: nil)
             pushWithAnimation(controller: chatChannelVC)
 
-            var tempNavigationArray = navigationController?.viewControllers ?? []
-            for (index, controller) in (navigationController?.viewControllers ?? []).enumerated() {
-                if let chatChannel = controller as? ChatChannelVC,
-                   chatChannel.channelController?.channel?.cid.description != cid {
-                    tempNavigationArray.remove(at: index)
-                }
+            if let channelListVC = navigationController?.viewControllers.first {
+                navigationController?.viewControllers = [channelListVC, chatChannelVC]
             }
-            navigationController?.viewControllers = tempNavigationArray
         } catch {}
     }
 
@@ -324,6 +319,9 @@ open class ChatChannelListVC: _ViewController,
 //    }
         
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        defer {
+            collectionView.deselectItem(at: indexPath, animated: true)
+        }
         NotificationCenter.default.post(name: .hideTabbar, object: nil)
          DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
              guard let self = self else {
