@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -64,6 +64,5 @@ final class iMessageChatChannelListViewController: ChatChannelListVC {
     
     // MARK: - Helpers
     
-    @objc
-    private func editButtonTapped() {}
+    @objc private func editButtonTapped() {}
 }

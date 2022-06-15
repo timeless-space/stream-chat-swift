@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,6 +7,7 @@ import Foundation
 /// Coding keys for message-related JSON payloads
 enum MessagePayloadsCodingKeys: String, CodingKey, CaseIterable {
     case id
+    case cid
     case type
     case user
     case createdAt = "created_at"
@@ -55,6 +56,8 @@ struct MessageSearchResultsPayload: Decodable {
 /// An object describing the incoming message JSON payload.
 class MessagePayload: Decodable {
     let id: String
+    /// Only messages from `translate` endpoint contain `cid`
+    let cid: ChannelId?
     let type: MessageType
     let user: UserPayload
     let createdAt: Date
@@ -75,8 +78,11 @@ class MessagePayload: Decodable {
     let latestReactions: [MessageReactionPayload]
     let ownReactions: [MessageReactionPayload]
     let reactionScores: [MessageReactionType: Int]
+    let reactionCounts: [MessageReactionType: Int]
     let attachments: [MessageAttachmentPayload]
     let isSilent: Bool
+    let isShadowed: Bool
+    let translations: [TranslationLanguage: String]?
 
     var pinned: Bool
     var pinnedBy: UserPayload?
@@ -90,6 +96,7 @@ class MessagePayload: Decodable {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: MessagePayloadsCodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
+        cid = try container.decodeIfPresent(ChannelId.self, forKey: .cid)
         type = try container.decode(MessageType.self, forKey: .type)
         user = try container.decode(UserPayload.self, forKey: .user)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
@@ -97,6 +104,7 @@ class MessagePayload: Decodable {
         deletedAt = try container.decodeIfPresent(Date.self, forKey: .deletedAt)
         text = try container.decode(String.self, forKey: .text).trimmingCharacters(in: .whitespacesAndNewlines)
         isSilent = try container.decodeIfPresent(Bool.self, forKey: .isSilent) ?? false
+        isShadowed = try container.decodeIfPresent(Bool.self, forKey: .shadowed) ?? false
         command = try container.decodeIfPresent(String.self, forKey: .command)
         args = try container.decodeIfPresent(String.self, forKey: .args)
         parentId = try container.decodeIfPresent(String.self, forKey: .parentId)
@@ -108,9 +116,15 @@ class MessagePayload: Decodable {
         replyCount = try container.decode(Int.self, forKey: .replyCount)
         latestReactions = try container.decode([MessageReactionPayload].self, forKey: .latestReactions)
         ownReactions = try container.decode([MessageReactionPayload].self, forKey: .ownReactions)
+
         reactionScores = try container
             .decodeIfPresent([String: Int].self, forKey: .reactionScores)?
             .mapKeys { MessageReactionType(rawValue: $0) } ?? [:]
+
+        reactionCounts = try container
+            .decodeIfPresent([String: Int].self, forKey: .reactionCounts)?
+            .mapKeys { MessageReactionType(rawValue: $0) } ?? [:]
+
         // Because attachment objects can be malformed, we wrap those into `OptionalDecodable`
         // and if decoding of those fail, it assignes `nil` instead of throwing whole MessagePayload away.
         attachments = try container.decode([OptionalDecodable].self, forKey: .attachments)
@@ -130,10 +144,13 @@ class MessagePayload: Decodable {
         pinnedAt = try container.decodeIfPresent(Date.self, forKey: .pinnedAt)
         pinExpires = try container.decodeIfPresent(Date.self, forKey: .pinExpires)
         quotedMessageId = try container.decodeIfPresent(MessageId.self, forKey: .quotedMessageId)
+        // Translations are only available for messages returned via `message.translate()`
+        translations = (try container.decodeIfPresent(MessageTranslationsPayload.self, forKey: .i18n))?.translated
     }
     
     init(
         id: String,
+        cid: ChannelId? = nil,
         type: MessageType,
         user: UserPayload,
         createdAt: Date,
@@ -153,15 +170,19 @@ class MessagePayload: Decodable {
         latestReactions: [MessageReactionPayload] = [],
         ownReactions: [MessageReactionPayload] = [],
         reactionScores: [MessageReactionType: Int],
+        reactionCounts: [MessageReactionType: Int],
         isSilent: Bool,
+        isShadowed: Bool,
         attachments: [MessageAttachmentPayload],
         channel: ChannelDetailPayload? = nil,
         pinned: Bool = false,
         pinnedBy: UserPayload? = nil,
         pinnedAt: Date? = nil,
-        pinExpires: Date? = nil
+        pinExpires: Date? = nil,
+        translations: [TranslationLanguage: String]? = nil
     ) {
         self.id = id
+        self.cid = cid
         self.type = type
         self.user = user
         self.createdAt = createdAt
@@ -180,7 +201,9 @@ class MessagePayload: Decodable {
         self.latestReactions = latestReactions
         self.ownReactions = ownReactions
         self.reactionScores = reactionScores
+        self.reactionCounts = reactionCounts
         self.isSilent = isSilent
+        self.isShadowed = isShadowed
         self.attachments = attachments
         self.channel = channel
         self.pinned = pinned
@@ -188,6 +211,7 @@ class MessagePayload: Decodable {
         self.pinnedAt = pinnedAt
         self.pinExpires = pinExpires
         self.quotedMessageId = quotedMessageId
+        self.translations = translations
     }
 }
 
@@ -265,9 +289,18 @@ struct MessageRequestBody: Encodable {
     }
 }
 
-/// An object describing the message replies JSON payload.
-struct MessageRepliesPayload: Decodable {
+/// An object describing pinned messages JSON payload.
+typealias PinnedMessagesPayload = MessageListPayload
+
+/// An object describing the message list JSON payload.
+typealias MessageRepliesPayload = MessageListPayload
+
+struct MessageListPayload: Decodable {
     let messages: [MessagePayload]
+}
+
+struct MessageReactionsPayload: Decodable {
+    let reactions: [MessageReactionPayload]
 }
 
 // TODO: Command???

@@ -2,12 +2,48 @@
   "object": {
     "pins": [
       {
+        "package": "Atlantis",
+        "repositoryURL": "https://github.com/ProxymanApp/atlantis",
+        "state": {
+          "branch": null,
+          "revision": "b60ef22babc5cc8997841b378bb2993229fac9eb",
+          "version": "1.16.0"
+        }
+      },
+      {
+        "package": "AutomaticSettings",
+        "repositoryURL": "https://github.com/krzysztofzablocki/AutomaticSettings.git",
+        "state": {
+          "branch": null,
+          "revision": "1e9fbd197e5343a25187c6c22ba69be4ffbb6360",
+          "version": "1.1.0"
+        }
+      },
+      {
+        "package": "Difference",
+        "repositoryURL": "https://github.com/krzysztofzablocki/Difference.git",
+        "state": {
+          "branch": null,
+          "revision": "02fe1111edc8318c4f8a0da96336fcbcc201f38b",
+          "version": "1.0.1"
+        }
+      },
+      {
         "package": "EFQRCode",
         "repositoryURL": "https://github.com/EFPrefix/EFQRCode.git",
         "state": {
           "branch": null,
           "revision": "56278ea800d7fdc20f42cd77bdbf0fecc8c1c0c8",
           "version": "6.2.0"
+        }
+      },
+      {
+        "package": "GDPerformanceView-Swift",
+        "repositoryURL": "https://github.com/dani-gavrilov/GDPerformanceView-Swift",
+        "state": {
+          "branch": null,
+          "revision": "171a656040135d667f4228c3ec82f2384770d87d",
+          "version": "2.1.1"
         }
       },
       {
@@ -20,12 +56,30 @@
         }
       },
       {
-        "package": "Starscream",
-        "repositoryURL": "https://github.com/daltoniam/Starscream.git",
+        "package": "OHHTTPStubs",
+        "repositoryURL": "https://github.com/AliSoftware/OHHTTPStubs.git",
         "state": {
           "branch": null,
-          "revision": "df8d82047f6654d8e4b655d1b1525c64e1059d21",
-          "version": "4.0.4"
+          "revision": "12f19662426d0434d6c330c6974d53e2eb10ecd9",
+          "version": "9.1.0"
+        }
+      },
+      {
+        "package": "Sentry",
+        "repositoryURL": "https://github.com/getsentry/sentry-cocoa.git",
+        "state": {
+          "branch": null,
+          "revision": "3c40cf37f386e169ce2fa34a1614dff0723f9755",
+          "version": "7.16.1"
+        }
+      },
+      {
+        "package": "StreamChatTestHelpers",
+        "repositoryURL": "https://github.com/GetStream/stream-chat-swift-test-helpers.git",
+        "state": {
+          "branch": null,
+          "revision": "246845edb41de52325b249165f68e045fd30d955",
+          "version": null
         }
       },
       {
@@ -33,8 +87,8 @@
         "repositoryURL": "https://github.com/pointfreeco/swift-snapshot-testing.git",
         "state": {
           "branch": null,
-          "revision": "f8a9c997c3c1dab4e216a8ec9014e23144cbab37",
-          "version": "1.9.0"
+          "revision": "c466812aa2e22898f27557e2e780d3aad7a27203",
+          "version": "1.8.2"
         }
       },
       {
@@ -47,12 +101,12 @@
         }
       },
       {
-        "package": "SwiftyGif",
-        "repositoryURL": "https://github.com/kirualex/SwiftyGif.git",
+        "package": "Swifter",
+        "repositoryURL": "https://github.com/httpswift/swifter.git",
         "state": {
           "branch": null,
-          "revision": "db0c122b671bc9760385e0355be00eede3b7bb44",
-          "version": "5.4.3"
+          "revision": "1e4f51c92d7ca486242d8bf0722b99de2c3531aa",
+          "version": null
         }
       }
     ]

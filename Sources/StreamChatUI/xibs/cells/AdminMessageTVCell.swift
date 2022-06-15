@@ -9,6 +9,13 @@
 import UIKit
 import StreamChat
 
+public enum AdminMessageType: String {
+    case daoAddInitialSigners
+    case simpleGroupChat
+    case privateChat
+    case none
+}
+
 class AdminMessageTVCell: UITableViewCell {
 
     // MARK: - Outlets
@@ -18,7 +25,7 @@ class AdminMessageTVCell: UITableViewCell {
     
     // MARK: - Variables
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
 
     // MARK: - View life cycle
     override func awakeFromNib() {
@@ -29,7 +36,7 @@ class AdminMessageTVCell: UITableViewCell {
     // MARK: - Functions
     func configCell(messageCount: Int) {
         if let createdAt = content?.createdAt {
-            lblTime.text = dateFormatter.string(from: createdAt)
+            lblTime.text = dateFormatter.format(createdAt)
         } else {
             lblTime.text = nil
         }
@@ -48,7 +55,7 @@ class AdminMessageTVCell: UITableViewCell {
     
     func configCell(with date: Date?, message: String) {
         if let createdAt = date {
-            lblTime.text = dateFormatter.string(from: createdAt)
+            lblTime.text = dateFormatter.format(createdAt)
         } else {
             lblTime.text = nil
         }

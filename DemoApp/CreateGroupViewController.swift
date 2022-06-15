@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -49,8 +49,8 @@ class CreateGroupViewController: UIViewController {
     
     var searchController: ChatUserSearchController!
     
-    var users: LazyCachedMapCollection<ChatUser> {
-        searchController.users
+    var users: [ChatUser] {
+        searchController.userArray
     }
     
     var selectedUsers = [ChatUser]()

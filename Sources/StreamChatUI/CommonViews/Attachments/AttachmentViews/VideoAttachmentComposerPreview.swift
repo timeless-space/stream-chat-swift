@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import AVKit
@@ -102,8 +102,8 @@ open class VideoAttachmentComposerPreview: _View, ThemeProvider {
                     self?.previewImageView.image = nil
                 }
             }
-            videoDurationLabel.text = DateComponentsFormatter.videoDuration.string(
-                from: components.videoLoader.videoAsset(at: url).duration.seconds
+            videoDurationLabel.text = appearance.formatters.videoDuration.format(
+                components.videoLoader.videoAsset(at: url).duration.seconds
             )
         }
     }

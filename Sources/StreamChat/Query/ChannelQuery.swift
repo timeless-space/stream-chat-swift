@@ -1,12 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
 
 /// A channel query.
 public struct ChannelQuery: Encodable {
-    private enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case data
         case messages
         case members
@@ -24,7 +24,7 @@ public struct ChannelQuery: Encodable {
     /// A number of watchers for the channel to be retrieved.
     public let watchersLimit: Int?
     /// A query options.
-    var options: QueryOptions = .all
+    public var options: QueryOptions = .all
     /// ChannelCreatePayload that is needed only when creating channel
     let channelPayload: ChannelEditDetailPayload?
     

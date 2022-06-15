@@ -7,7 +7,6 @@
 
 import Foundation
 import StreamChat
-import Nuke
 
 class PickerTableViewCell: UITableViewCell {
     //MARK: Outlets
@@ -16,10 +15,26 @@ class PickerTableViewCell: UITableViewCell {
     @IBOutlet private weak var imgPack: UIImageView!
     @IBOutlet private weak var btnDownload: UIButton!
 
+    let imageLoader = Components.default.imageLoader
+
     func configure(with package: PackageList, downloadedPackage: [Int]) {
         lblPackName.text = package.packageName ?? ""
         lblArtistName.text = package.artistName ?? ""
-        Nuke.loadImage(with: URL(string: package.packageImg ?? ""), into: imgPack)
+        //Nuke.loadImage(with: URL(string: package.packageImg ?? ""), into: imgPack)
+        guard let imgUrl = URL(string: package.packageImg ?? "") else {
+            imgPack.image = nil
+            return
+        }
+        imageLoader.loadImage(
+            using: .init(url: imgUrl),
+            cachingKey: package.packageImg) { result in
+                switch result {
+                case .success(let imageResult):
+                    self.imgPack.image = imageResult
+                case .failure:
+                    self.imgPack.image = nil
+                }
+            }
         selectionStyle = .none
         if !downloadedPackage.contains(package.packageID ?? 0) {
             btnDownload.setImage(Appearance.default.images.downloadSticker, for: .normal)

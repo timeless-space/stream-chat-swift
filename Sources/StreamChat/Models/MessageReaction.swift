@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -19,9 +19,9 @@ public struct ChatMessageReaction: Hashable {
     /// The date the reaction was last updated.
     public let updatedAt: Date
     
-    /// Custom data
-    public let extraData: [String: RawJSON]
-    
     /// The author.
     public let author: ChatUser
+
+    /// Custom data
+    public let extraData: [String: RawJSON]
 }

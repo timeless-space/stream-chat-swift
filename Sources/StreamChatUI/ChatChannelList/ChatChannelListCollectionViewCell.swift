@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -23,6 +23,14 @@ open class ChatChannelListCollectionViewCell: _CollectionViewCell,
     override public func prepareForReuse() {
         super.prepareForReuse()
         swipeableView.close()
+    }
+
+    override open var isSelected: Bool {
+        didSet {
+            itemView.backgroundColor = isSelected
+                ? appearance.colorPalette.highlightedBackground
+            : .clear
+        }
     }
 
     override open var isHighlighted: Bool {
@@ -57,6 +65,7 @@ open class ChatChannelListCollectionViewCell: _CollectionViewCell,
             itemView.trailingAnchor.pin(equalTo: swipeableView.contentTrailingAnchor),
             itemView.bottomAnchor.pin(equalTo: contentView.bottomAnchor)
         ])
+        itemView.backgroundColor = .clear
     }
 
     override open func preferredLayoutAttributesFitting(

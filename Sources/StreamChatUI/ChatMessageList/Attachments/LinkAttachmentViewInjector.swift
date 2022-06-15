@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -37,8 +37,7 @@ open class LinkAttachmentViewInjector: AttachmentViewInjector {
     }
     
     /// Triggered when `attachment` is tapped.
-    @objc
-    open func handleTapOnAttachment() {
+    @objc open func handleTapOnAttachment() {
         guard
             let attachment = linkPreviewView.content
         else { return }
