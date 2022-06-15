@@ -163,8 +163,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         loadAvatarsFrom(urls: urls, channelId: channel.cid) { [weak self] avatars, channelId in
             guard let weakSelf = self, channelId == weakSelf.content.channel?.cid
             else { return }
-            DispatchQueue.global(qos: .userInitiated).async {
-                let combinedImage = weakSelf.createMergedAvatar(from: avatars)
+            weakSelf.createMergeAvatarInBackground(avatars: avatars) { combinedImage in
                 DispatchQueue.main.async {
                     weakSelf.loadIntoAvatarImageView(from: nil, placeholder: combinedImage)
                     weakSelf.shimmerView.hideSkeleton()
@@ -181,6 +180,12 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 }
             }
         }
+    }
+
+    private func createMergeAvatarInBackground(
+        avatars: [UIImage],
+        completion: @escaping ((UIImage?) -> Void)) {
+        completion(createMergedAvatar(from: avatars))
     }
     
     /// Loads avatars for the given URLs
