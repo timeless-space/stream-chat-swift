@@ -47,6 +47,13 @@ open class ChatAllPinnedMessageVC: _ViewController,
         button.addTarget(self, action: #selector(backAction), for: .touchUpInside)
         return button.withoutAutoresizingMaskConstraints
     }()
+    open private(set) lazy var activityIndicator: UIActivityIndicatorView = {
+        return UIActivityIndicatorView(style: .whiteLarge)
+            .withoutAutoresizingMaskConstraints
+    }()
+    open private(set) lazy var mainContainerView: UIView = {
+        return UIView(frame: .zero).withoutAutoresizingMaskConstraints
+    }()
     /// The message list component responsible to render the messages.
     private lazy var messageListVC: ChatMessageListVC? = components
         .messageListVC
@@ -57,18 +64,24 @@ open class ChatAllPinnedMessageVC: _ViewController,
     private lazy var navigationBarColor: UIColor = {
         return Appearance.default.colorPalette.walletTabbarBackground
     }()
-    private var queueUnpinMessage = DispatchGroup()
+    private var unPinnedMessageCounter = 0
 
     // MARK: - View
     override open func setUp() {
         super.setUp()
-        view.addSubview(navigationSafeAreaView)
-        view.addSubview(navigationView)
+        view.addSubview(mainContainerView)
+        view.addSubview(activityIndicator)
+        // mainContainerView
+        mainContainerView.addSubview(navigationSafeAreaView)
+        mainContainerView.addSubview(navigationView)
+        mainContainerView.addSubview(bottomSafeArea)
+        mainContainerView.addSubview(unPinMessageView)
+        // navigationView
         navigationView.addSubview(backButton)
         navigationView.addSubview(labelTitle)
-        view.addSubview(bottomSafeArea)
-        view.addSubview(unPinMessageView)
+        // unPinMessageView
         unPinMessageView.addSubview(unPinMessageButton)
+        // messageListVC
         messageListVC?.client = channelController?.client
         messageListVC?.dataSource = self
         messageListVC?.delegate = self
@@ -87,11 +100,15 @@ open class ChatAllPinnedMessageVC: _ViewController,
         // title
         labelTitle.text = "\(pinnedMessages.count) Pinned Messages"
         unPinMessageButton.setTitle("Unpin All Messages", for: .normal)
+        // activity indicator
+        activityIndicator.isHidden = true
     }
 
     override open func setUpLayout() {
         super.setUpLayout()
+        layoutMainContainerView()
         layoutSafeAreaView()
+        layoutActivityIndicatorView()
         layoutNavigationView()
         layoutTitleLabel()
         layoutBackButton()
@@ -107,21 +124,44 @@ open class ChatAllPinnedMessageVC: _ViewController,
     }
 
     // MARK: - SetupUI
+    private func layoutMainContainerView() {
+        NSLayoutConstraint.activate([
+            mainContainerView.leadingAnchor
+                .constraint(equalTo: view.leadingAnchor, constant: 0),
+            mainContainerView.trailingAnchor
+                .constraint(equalTo: view.trailingAnchor, constant: 0),
+            mainContainerView.topAnchor
+                .constraint(equalTo: view.topAnchor, constant: 0),
+            mainContainerView.bottomAnchor
+                .constraint(equalTo: view.bottomAnchor, constant: 0),
+        ])
+    }
+
     private func layoutSafeAreaView() {
         NSLayoutConstraint.activate([
-            navigationSafeAreaView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            navigationSafeAreaView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            navigationSafeAreaView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
+            navigationSafeAreaView.leadingAnchor
+                .constraint(equalTo: mainContainerView.leadingAnchor, constant: 0),
+            navigationSafeAreaView.trailingAnchor
+                .constraint(equalTo: mainContainerView.trailingAnchor, constant: 0),
+            navigationSafeAreaView.topAnchor
+                .constraint(equalTo: mainContainerView.topAnchor, constant: 0),
             navigationSafeAreaView.heightAnchor.constraint(equalToConstant: UIView.safeAreaTop)
         ])
+    }
+
+    private func layoutActivityIndicatorView() {
+        activityIndicator.centerXAnchor
+            .constraint(equalTo: view.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor
+            .constraint(equalTo: view.centerYAnchor).isActive = true
     }
 
     private func layoutNavigationView() {
         NSLayoutConstraint.activate([
             navigationView.leadingAnchor
-                .constraint(equalTo: view.leadingAnchor, constant: 0),
+                .constraint(equalTo: mainContainerView.leadingAnchor, constant: 0),
             navigationView.trailingAnchor
-                .constraint(equalTo: view.trailingAnchor, constant: 0),
+                .constraint(equalTo: mainContainerView.trailingAnchor, constant: 0),
             navigationView.topAnchor
                 .constraint(equalTo: navigationSafeAreaView.bottomAnchor, constant: 0),
             navigationView.heightAnchor.constraint(equalToConstant: 44)
@@ -152,10 +192,12 @@ open class ChatAllPinnedMessageVC: _ViewController,
         guard let messageListVC = messageListVC else {
             return
         }
-        addChildViewController(messageListVC, targetView: view)
+        addChildViewController(messageListVC, targetView: mainContainerView)
         NSLayoutConstraint.activate([
-            messageListVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            messageListVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            messageListVC.view.leadingAnchor
+                .constraint(equalTo: mainContainerView.leadingAnchor, constant: 0),
+            messageListVC.view.trailingAnchor
+                .constraint(equalTo: mainContainerView.trailingAnchor, constant: 0),
             messageListVC.view.topAnchor
                 .constraint(equalTo: navigationView.bottomAnchor, constant: 0),
             messageListVC.view.bottomAnchor
@@ -177,17 +219,17 @@ open class ChatAllPinnedMessageVC: _ViewController,
         NSLayoutConstraint.activate([
             unPinMessageView.bottomAnchor
                 .constraint(equalTo: bottomSafeArea.topAnchor),
-            unPinMessageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            unPinMessageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            unPinMessageView.leadingAnchor.constraint(equalTo: mainContainerView.leadingAnchor),
+            unPinMessageView.trailingAnchor.constraint(equalTo: mainContainerView.trailingAnchor),
             unPinMessageView.heightAnchor.constraint(equalToConstant: 44)
         ])
     }
 
     private func layoutBottomSafeAreaView() {
         NSLayoutConstraint.activate([
-            bottomSafeArea.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            bottomSafeArea.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            bottomSafeArea.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomSafeArea.bottomAnchor.constraint(equalTo: mainContainerView.bottomAnchor),
+            bottomSafeArea.leadingAnchor.constraint(equalTo: mainContainerView.leadingAnchor),
+            bottomSafeArea.trailingAnchor.constraint(equalTo: mainContainerView.trailingAnchor),
             bottomSafeArea.heightAnchor
                 .constraint(equalToConstant: UIView.safeAreaBottom)
         ])
@@ -206,22 +248,35 @@ open class ChatAllPinnedMessageVC: _ViewController,
         guard let messageListVC = messageListVC else {
             return
         }
-        var unPinnedMessageCount = 0
-        for message in pinnedMessages {
-            queueUnpinMessage.enter()
-            messageListVC.unPinMessage(message: message) { [weak self] error in
+        activityIndicator.startAnimating()
+        activityIndicator.isHidden = false
+        view.bringSubviewToFront(activityIndicator)
+        mainContainerView.isUserInteractionEnabled = false
+        mainContainerView.alpha = 0.5
+        // unpin all messages
+        unPinAllMessages()
+    }
+
+    private func unPinAllMessages() {
+        if unPinnedMessageCounter > pinnedMessages.count - 1 {
+            let msg = unPinnedMessageCounter == 1 ? "Message" : "Messages"
+            activityIndicator.stopAnimating()
+            activityIndicator.isHidden = true
+            dismiss(animated: false, completion: nil)
+            Snackbar.show(text: "\(unPinnedMessageCounter) \(msg) Unpinned.")
+        } else {
+            let message = pinnedMessages[unPinnedMessageCounter]
+            messageListVC?.unPinMessage(message: message) { [weak self] error in
                 guard let weakSelf = self else { return }
                 if error == nil {
-                    unPinnedMessageCount += 1
+                    weakSelf.unPinnedMessageCounter += 1
+                } else {
+                    weakSelf.unPinnedMessageCounter = weakSelf.pinnedMessages.count
                 }
-                weakSelf.queueUnpinMessage.leave()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    weakSelf.unPinAllMessages()
+                }
             }
-        }
-        queueUnpinMessage.notify(queue: .main) { [weak self] in
-            guard let weakSelf = self else { return }
-            let msg = unPinnedMessageCount == 1 ? "Message" : "Messages"
-            weakSelf.dismiss(animated: false, completion: nil)
-            Snackbar.show(text: "\(unPinnedMessageCount) \(msg) Unpinned.")
         }
     }
 }

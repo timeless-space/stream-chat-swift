@@ -190,6 +190,7 @@ open class ChatChannelVC:
     private var isLoadingPreviousMessages: Bool = false
 
     private lazy var pinnedMessages = [ChatMessage]()
+    private var pinMessageWorkItem: DispatchWorkItem?
 
     // MARK: - Setup
     override open func setUp() {
@@ -362,18 +363,15 @@ open class ChatChannelVC:
     }
 
     private func fetchPinnedMessage() {
-        let pinnedMessageIDs = (channelController?.channel?.pinnedMessages ?? [])
-            .compactMap { $0.id }
-        let pinData = messages
-            .filter { pinnedMessageIDs.contains($0.id) && $0.isMessagePinned == nil }
-        if pinnedMessages.isEmpty {
+        let pinData = messages.filter { $0.isPinned }
+        if pinData.count != pinnedMessages.count {
             pinnedMessages = pinData
             setupPinnedMessageView()
         } else {
             let result = zip(pinData, pinnedMessages).enumerated().filter() {
                 $1.0.text != $1.1.text
             }.map{$0.0}
-            if !result.isEmpty || pinData.count != pinnedMessages.count {
+            if !result.isEmpty {
                 pinnedMessages = pinData
                 setupPinnedMessageView()
             }
@@ -503,6 +501,8 @@ open class ChatChannelVC:
         messageListVC?.unPinMessage(message: message, completion: { [weak self] error in
             if error != nil {
                 Snackbar.show(text: L10n.Message.Actions.unPinFailed)
+            } else {
+                Snackbar.show(text: "Message Unpinned.")
             }
         })
     }
@@ -995,7 +995,13 @@ open class ChatChannelVC:
             self.groupCreateMessageView?.contentView.removeFromSuperview()
             self.groupCreateMessageView = nil
         }
-        fetchPinnedMessage()
+        pinMessageWorkItem?.cancel()
+        pinMessageWorkItem = DispatchWorkItem { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.fetchPinnedMessage()
+        }
+        DispatchQueue.main
+            .asyncAfter(deadline: .now() + 0.1, execute: pinMessageWorkItem!)
     }
 
     open func channelController(
