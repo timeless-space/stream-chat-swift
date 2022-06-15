@@ -1007,7 +1007,6 @@ open class ComposerVC: _ViewController,
         weatherData["currentLocation"] = .string(location)
         weatherData["iconCode"] = .string(iconCode)
         weatherData["displayMessage"] = .string(displayMessage)
-        weatherData["isMessageSend"] = .bool(false)
         return weatherData
     }
 

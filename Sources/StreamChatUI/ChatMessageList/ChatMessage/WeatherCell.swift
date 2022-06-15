@@ -67,7 +67,7 @@ class WeatherCell: UITableViewCell {
         let onlyVisibleToYouLabel = UILabel()
             .withoutAutoresizingMaskConstraints
         onlyVisibleToYouLabel.textColor = Appearance.default.colorPalette.subtitleText
-        onlyVisibleToYouLabel.text = "Only visible to you"
+        onlyVisibleToYouLabel.text = "Only visible to you  "
         onlyVisibleToYouLabel.font = Appearance.default.fonts.footnote
         onlyVisibleToYouLabel.transform = .mirrorY
         return onlyVisibleToYouLabel
@@ -169,7 +169,6 @@ class WeatherCell: UITableViewCell {
             mainContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             mainContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
         ])
-//        widthConstraintForMainContainer = mainContainer.widthAnchor.constraint(equalToConstant: cellWidth)
         widthConstraintForMainContainer?.isActive = true
         mainContentView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
         mainContentView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
@@ -182,8 +181,8 @@ class WeatherCell: UITableViewCell {
         NSLayoutConstraint.activate([
             weatherImageView.bottomAnchor.constraint(equalTo: mainContentView.bottomAnchor, constant: 5),
             weatherImageView.trailingAnchor.constraint(equalTo: mainContentView.trailingAnchor, constant: 5),
-            weatherImageView.widthAnchor.constraint(equalToConstant: 130),
-            weatherImageView.heightAnchor.constraint(equalToConstant: 130)
+            weatherImageView.widthAnchor.constraint(equalToConstant: 135),
+            weatherImageView.heightAnchor.constraint(equalToConstant: 135)
         ])
 
         NSLayoutConstraint.activate([
@@ -229,6 +228,7 @@ class WeatherCell: UITableViewCell {
     private func addOnlyVisibleViewContainer() {
         onlyVisibleToYouContainer.transform = .mirrorY
         onlyVisibleToYouImageView.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        onlyVisibleToYouContainer.addArrangedSubview(UIView())
         onlyVisibleToYouContainer.addArrangedSubview(onlyVisibleToYouImageView)
         onlyVisibleToYouContainer.addArrangedSubview(onlyVisibleToYouLabel)
     }
@@ -236,7 +236,6 @@ class WeatherCell: UITableViewCell {
     private func setBubbleConstraints(_ isSender: Bool) {
         leadingMainContainer?.isActive = !isSender
         trailingMainContainer?.isActive = isSender
-//        widthConstraintForMainContainer?.constant = isCurrentMessageSend ? 270 : 200
         topSubContainer?.constant = isCurrentMessageSend ? 15 : 0
         leadingSubContainer?.constant = isCurrentMessageSend ? 15 : 0
         trailingSubContainer?.constant = isCurrentMessageSend ? -15 : 0
@@ -278,12 +277,7 @@ class WeatherCell: UITableViewCell {
                                       style: .primary,
                                       type: .button,
                                       text: "Send")
-//        ChatClient.shared.messageController(cid: cid, messageId: messageId).dispatchEphemeralMessageAction(action)
-
-        guard var weatherData = getExtraData(key: "weather") else { return }
-        weatherData["isMessageSend"] = .bool(true)
-        ChatClient.shared.messageController(cid: cid, messageId: messageId)
-            .dispatchEphemeralMessageAction(action, weatherData, key: "weather")
+        ChatClient.shared.messageController(cid: cid, messageId: messageId).dispatchEphemeralMessageAction(action)
     }
 
     private func callBackEdit() {
