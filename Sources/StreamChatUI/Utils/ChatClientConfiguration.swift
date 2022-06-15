@@ -49,8 +49,6 @@ open class ChatClientConfiguration {
     open var getPrivateGroup: ((ChatInviteInfo?) -> Void)?
     // create private group
     open var createPrivateGroup: ((CreatePrivateGroup) -> Void)?
-    // currentChannelId is used to check current chat conversation
-    open var currentChannelId: String?
 
     // MARK: - Init
     public init() {}
