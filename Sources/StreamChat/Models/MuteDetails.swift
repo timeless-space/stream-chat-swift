@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -9,5 +9,5 @@ public struct MuteDetails: Equatable {
     /// The time when the mute action was taken.
     public let createdAt: Date
     /// The time when the mute was updated.
-    public let updatedAt: Date
+    public let updatedAt: Date?
 }

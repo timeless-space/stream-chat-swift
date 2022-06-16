@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -15,12 +15,15 @@ open class CheckboxControl: _Control, AppearanceProvider {
     
     public private(set) lazy var container = ContainerStackView()
         .withoutAutoresizingMaskConstraints
-    
+        .withAccessibilityIdentifier(identifier: "fileNameAndSizeStack")
+
     public private(set) lazy var checkbox = UIImageView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "checkbox")
     
     public private(set) lazy var label = UILabel()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "label")
         
     // MARK: - Overrides
     

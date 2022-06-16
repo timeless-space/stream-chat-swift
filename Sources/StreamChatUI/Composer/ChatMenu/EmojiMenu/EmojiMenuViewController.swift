@@ -9,7 +9,6 @@ import UIKit
 import SwiftUI
 import StreamChat
 import Combine
-import Nuke
 import GiphyUISDK
 
 @available(iOS 13.0, *)

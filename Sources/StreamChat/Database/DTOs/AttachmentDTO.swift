@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -15,9 +15,9 @@ class AttachmentDTO: NSManagedObject {
     }
 
     /// An attachment type.
-    @NSManaged private var type: String
+    @NSManaged private var type: String?
     var attachmentType: AttachmentType {
-        get { .init(rawValue: type) }
+        get { AttachmentType(rawValue: type ?? AttachmentType.unknown.rawValue) }
         set { type = newValue.rawValue }
     }
 
@@ -25,7 +25,9 @@ class AttachmentDTO: NSManagedObject {
     @NSManaged private var localStateRaw: String
     @NSManaged private var localProgress: Double
     var localState: LocalAttachmentState? {
-        get { LocalAttachmentState(rawValue: localStateRaw, progress: localProgress) }
+        get {
+            LocalAttachmentState(rawValue: localStateRaw, progress: localProgress)
+        }
         set {
             localStateRaw = newValue?.rawValue ?? ""
             localProgress = newValue?.progress ?? 0
@@ -40,7 +42,6 @@ class AttachmentDTO: NSManagedObject {
     // MARK: - Relationships
     
     @NSManaged var message: MessageDTO
-    @NSManaged var channel: ChannelDTO
 
     override func willSave() {
         super.willSave()
@@ -89,15 +90,10 @@ extension NSManagedObjectContext: AttachmentDatabaseSession {
             throw ClientError.MessageDoesNotExist(messageId: id.messageId)
         }
 
-        guard let channelDTO = channel(cid: id.cid) else {
-            throw ClientError.ChannelDoesNotExist(cid: id.cid)
-        }
-
         let dto = AttachmentDTO.loadOrCreate(id: id, context: self)
         
         dto.attachmentType = payload.type
         dto.data = try JSONEncoder.default.encode(payload.payload)
-        dto.channel = channelDTO
         dto.message = messageDTO
         
         dto.localURL = nil
@@ -114,10 +110,6 @@ extension NSManagedObjectContext: AttachmentDatabaseSession {
             throw ClientError.MessageDoesNotExist(messageId: id.messageId)
         }
 
-        guard let channelDTO = channel(cid: id.cid) else {
-            throw ClientError.ChannelDoesNotExist(cid: id.cid)
-        }
-
         let dto = AttachmentDTO.loadOrCreate(id: id, context: self)
         
         dto.attachmentType = attachment.type
@@ -126,7 +118,6 @@ extension NSManagedObjectContext: AttachmentDatabaseSession {
         dto.localState = attachment.localFileURL == nil ? .uploaded : .pendingUpload
 
         dto.data = try JSONEncoder.stream.encode(attachment.payload.asAnyEncodable)
-        dto.channel = channelDTO
         dto.message = messageDTO
         
         return dto
@@ -221,6 +212,8 @@ extension AttachmentDTO {
 extension LocalAttachmentState {
     var rawValue: String {
         switch self {
+        case .unknown:
+            return ""
         case .pendingUpload:
             return "pendingUpload"
         case .uploading:
@@ -251,8 +244,10 @@ extension LocalAttachmentState {
             self = .uploadingFailed
         case LocalAttachmentState.uploaded.rawValue:
             self = .uploaded
+        case LocalAttachmentState.unknown.rawValue:
+            self = .unknown
         default:
-            return nil
+            self = .unknown
         }
     }
 }

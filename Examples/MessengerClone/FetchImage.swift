@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Nuke
@@ -76,7 +76,7 @@ public final class FetchImage: ObservableObject, Identifiable {
         self.request = request
 
         // Try to display the regular image if it is available in memory cache
-        guard let imageURL = request.url else { return }
+        guard let imageURL = request.urlRequest?.url else { return }
         if let container = pipeline.cache[imageURL] {
             image = container.image
             return // Nothing to do

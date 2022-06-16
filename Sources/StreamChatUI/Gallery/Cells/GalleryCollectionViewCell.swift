@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -56,8 +56,7 @@ open class GalleryCollectionViewCell: _CollectionViewCell, UIScrollViewDelegate,
     }
     
     /// Triggered when scroll view is double tapped.
-    @objc
-    open func handleDoubleTapOnScrollView() {
+    @objc open func handleDoubleTapOnScrollView() {
         if scrollView.zoomScale != scrollView.minimumZoomScale {
             scrollView.setZoomScale(scrollView.minimumZoomScale, animated: true)
         } else {
@@ -70,8 +69,7 @@ open class GalleryCollectionViewCell: _CollectionViewCell, UIScrollViewDelegate,
     }
     
     /// Triggered when scroll view is single tapped.
-    @objc
-    open func handleSingleTapOnScrollView() {
+    @objc open func handleSingleTapOnScrollView() {
         didTapOnce?()
     }
     

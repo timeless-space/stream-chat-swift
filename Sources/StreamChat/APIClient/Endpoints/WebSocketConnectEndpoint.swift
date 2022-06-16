@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -9,7 +9,7 @@ extension Endpoint {
         userInfo: UserInfo
     ) -> Endpoint<EmptyResponse> {
         .init(
-            path: "connect",
+            path: .connect,
             method: .get,
             queryItems: nil,
             requiresConnectionId: false,

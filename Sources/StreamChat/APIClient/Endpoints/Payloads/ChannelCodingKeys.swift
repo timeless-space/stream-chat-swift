@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -26,6 +26,8 @@ public enum ChannelCodingKeys: String, CodingKey, CaseIterable {
     case updatedAt = "updated_at"
     /// A deleted date.
     case deletedAt = "deleted_at"
+    /// A truncated date.
+    case truncatedAt = "truncated_at"
     /// Hidden flag.
     case hidden
     /// A channel config.
