@@ -516,6 +516,7 @@ open class ChatChannelVC: _ViewController,
                 showPinViewButton()
             }
         }
+        // workaround: add delay coz markRead api not called when redirect from the notification when app killed
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self = self else {
                 return
