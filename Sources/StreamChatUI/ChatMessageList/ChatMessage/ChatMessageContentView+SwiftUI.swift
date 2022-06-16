@@ -1,26 +1,27 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
+import Combine
 import StreamChat
 import SwiftUI
 
 @available(iOS 13.0, *)
-/// Protocol of `_ChatMessageContentView` wrapper for use in SwiftUI.
+/// Protocol of `ChatMessageContentView` wrapper for use in SwiftUI.
 public protocol ChatMessageContentViewSwiftUIView: View {
     init(dataSource: ChatMessageContentView.ObservedObject<Self>)
 }
 
 @available(iOS 13.0, *)
 extension ChatMessageContentView {
-    /// Data source of `_ChatMessageContentView` represented as `ObservedObject`.
+    /// Data source of `ChatMessageContentView` represented as `ObservedObject`.
     public typealias ObservedObject<Content: SwiftUIView> = SwiftUIWrapper<Content>
 
-    /// `_ChatMessageContentView` represented in SwiftUI.
+    /// `ChatMessageContentView` represented in SwiftUI.
     public typealias SwiftUIView = ChatMessageContentViewSwiftUIView
 
-    /// SwiftUI wrapper of `_ChatMessageContentView`.
-    /// Servers to wrap custom SwiftUI view as a UIKit view so it can be easily injected into `_Components`.
+    /// SwiftUI wrapper of `ChatMessageContentView`.
+    /// Servers to wrap custom SwiftUI view as a UIKit view so it can be easily injected into `Components`.
     public class SwiftUIWrapper<Content: SwiftUIView>: ChatMessageContentView, ObservableObject {
         var hostingController: UIViewController?
 

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -80,16 +80,14 @@ open class ChatSuggestionsVC: _ViewController,
             \.contentSize,
             options: [.new],
             changeHandler: { [weak self] collectionView, change in
-                DispatchQueue.main.async {
-                    guard let self = self, let newSize = change.newValue else { return }
-
-                    // NOTE: The defaultRowHeight height value will be used only once to set visibleCells
-                    // once again, not looping it to 0 value so this controller can resize again.
-                    let cellHeight = collectionView.visibleCells.first?.bounds.height ?? self.defaultRowHeight
-
-                    let newHeight = min(newSize.height, cellHeight * self.numberOfVisibleRows)
-                    self.heightConstraints.constant = newHeight
-                }
+                guard let self = self, let newSize = change.newValue else { return }
+                
+                // NOTE: The defaultRowHeight height value will be used only once to set visibleCells
+                // once again, not looping it to 0 value so this controller can resize again.
+                let cellHeight = collectionView.visibleCells.first?.bounds.height ?? self.defaultRowHeight
+                
+                let newHeight = min(newSize.height, cellHeight * self.numberOfVisibleRows)
+                self.heightConstraints.constant = newHeight
             }
         )
     }
@@ -180,7 +178,12 @@ open class ChatMessageComposerSuggestionsCommandDataSource: NSObject, UICollecti
         ) as! ChatCommandSuggestionCollectionViewCell
 
         cell.components = components
-        cell.commandView.content = commands[indexPath.row]
+        guard let command = commands[safe: indexPath.row] else {
+            indexNotFoundAssertion()
+            return cell
+        }
+
+        cell.commandView.content = command
 
         return cell
     }
@@ -248,7 +251,10 @@ open class ChatMessageComposerSuggestionsMentionDataSource: NSObject,
             for: indexPath
         ) as! ChatMentionSuggestionCollectionViewCell
 
-        let user = usersCache[indexPath.row]
+        guard let user = usersCache[safe: indexPath.row] else {
+            indexNotFoundAssertion()
+            return cell
+        }
         // We need to make sure we set the components before accessing the mentionView,
         // so the mentionView is created with the most up-to-dated components.
         cell.components = components
@@ -260,7 +266,7 @@ open class ChatMessageComposerSuggestionsMentionDataSource: NSObject,
         _ controller: ChatUserSearchController,
         didChangeUsers changes: [ListChange<ChatUser>]
     ) {
-        usersCache = searchController.users.map { $0 }
+        usersCache = searchController.userArray
         collectionView.reloadData()
     }
 }

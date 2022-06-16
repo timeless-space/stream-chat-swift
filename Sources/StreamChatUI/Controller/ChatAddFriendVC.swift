@@ -5,7 +5,6 @@
 //  Created by Jitendra Sharma on 08/02/22.
 //
 
-import Nuke
 import StreamChat
 import StreamChatUI
 import UIKit

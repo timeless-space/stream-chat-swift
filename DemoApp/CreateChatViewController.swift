@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -18,13 +18,20 @@ class CreateChatViewController: UIViewController {
         override func createNewMessage(text: String) {
             guard let navController = parent?.parent as? UINavigationController,
                   let controller = channelController else { return }
+
+            let createMessage: (String) -> Void = {
+                super.createNewMessage(text: $0)
+            }
+
             // Create the Channel on backend
-            controller.synchronize { error in
-                // TODO: handle error
-                if let error = error { print("###", error) }
+            controller.synchronize { [weak self] error in
+                if let error = error {
+                    self?.presentAlert(title: "Error when creating the channel", message: error.localizedDescription)
+                    return
+                }
                 
                 // Send the message
-                super.createNewMessage(text: text)
+                createMessage(text)
                 
                 // Present the new chat and controller
                 let vc = ChatChannelVC()
@@ -65,8 +72,8 @@ class CreateChatViewController: UIViewController {
     
     var searchController: ChatUserSearchController!
     
-    var users: LazyCachedMapCollection<ChatUser> {
-        searchController.users
+    var users: [ChatUser] {
+        searchController.userArray
     }
     
     var selectedUserIds: Set<String> {
@@ -352,6 +359,10 @@ extension CreateChatViewController: UITableViewDelegate, UITableViewDataSource {
         } catch {
             print(error.localizedDescription)
         }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        72
     }
     
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {

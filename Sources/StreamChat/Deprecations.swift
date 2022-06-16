@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -210,3 +210,6 @@ public typealias NotificationInviteRejected = NotificationInviteRejectedEvent
 
 @available(*, deprecated, renamed: "NotificationInviteAcceptedEvent")
 public typealias NotificationInviteAccepted = NotificationInviteAcceptedEvent
+
+@available(*, deprecated, renamed: "UnknownChannelEvent")
+public typealias UnknownEvent = UnknownChannelEvent

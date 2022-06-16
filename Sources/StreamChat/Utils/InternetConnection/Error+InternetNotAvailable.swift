@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -28,6 +28,14 @@ extension Error {
     var isBackendErrorWith400StatusCode: Bool {
         if let error = (self as? ClientError)?.underlyingError as? ErrorPayload,
            error.statusCode == 400 {
+            return true
+        }
+        return false
+    }
+    
+    var isRateLimitError: Bool {
+        if let error = (self as? ClientError)?.underlyingError as? ErrorPayload,
+           error.statusCode == 429 {
             return true
         }
         return false

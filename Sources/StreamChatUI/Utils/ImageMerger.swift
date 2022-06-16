@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import UIKit
@@ -50,7 +50,7 @@ open class DefaultImageMerger: ImageMerging {
             dimensions.height += image.size.height
         }
 
-        UIGraphicsBeginImageContext(dimensions)
+        UIGraphicsBeginImageContextWithOptions(dimensions, true, UIScreen.main.scale)
 
         var lastY: CGFloat = 0
         for image in images {
@@ -75,7 +75,7 @@ open class DefaultImageMerger: ImageMerging {
             dimensions.height = max(dimensions.height, image.size.height)
         }
 
-        UIGraphicsBeginImageContext(dimensions)
+        UIGraphicsBeginImageContextWithOptions(dimensions, true, UIScreen.main.scale)
 
         var lastX: CGFloat = 0
         for image in images {

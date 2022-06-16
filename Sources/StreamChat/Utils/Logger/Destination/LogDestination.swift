@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -19,16 +19,16 @@ public enum LogLevel: Int {
 
 /// Encapsulates the components of a log message.
 public struct LogDetails {
-    let loggerIdentifier: String
+    public let loggerIdentifier: String
     
-    let level: LogLevel
-    let date: Date
-    let message: String
-    let threadName: String
+    public let level: LogLevel
+    public let date: Date
+    public let message: String
+    public let threadName: String
     
-    let functionName: StaticString
-    let fileName: StaticString
-    let lineNumber: UInt
+    public let functionName: StaticString
+    public let fileName: StaticString
+    public let lineNumber: UInt
 }
 
 public protocol LogDestination {
@@ -47,6 +47,20 @@ public protocol LogDestination {
     var showLineNumber: Bool { get set }
     var showFunctionName: Bool { get set }
     
+    init(
+        identifier: String,
+        level: LogLevel,
+        subsystems: LogSubsystem,
+        showDate: Bool,
+        dateFormatter: DateFormatter,
+        formatters: [LogFormatter],
+        showLevel: Bool,
+        showIdentifier: Bool,
+        showThreadName: Bool,
+        showFileName: Bool,
+        showLineNumber: Bool,
+        showFunctionName: Bool
+    )
     func isEnabled(level: LogLevel) -> Bool
     func isEnabled(level: LogLevel, subsystems: LogSubsystem) -> Bool
     func process(logDetails: LogDetails)

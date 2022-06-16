@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -13,7 +13,7 @@ final class SlackChatMessageContentView: ChatMessageContentView {
         super.layout(options: options)
 
         mainContainer.alignment = .leading
-        bubbleThreadMetaContainer.changeOrdering()
+        bubbleThreadFootnoteContainer.changeOrdering()
         bubbleContentContainer.directionalLayoutMargins = .zero
     }
 

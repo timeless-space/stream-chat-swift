@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import AVKit
@@ -75,7 +75,7 @@ final class YTLiveVideoViewController: UIViewController {
             playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
         }
         
-        isPlaying = !isPlaying
+        isPlaying.toggle()
     }
     
     // MARK: - Private Helpers

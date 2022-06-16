@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import AVKit
@@ -52,7 +52,6 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
     private var playerStatusObserver: NSKeyValueObservation?
     private var playerItemObserver: NSKeyValueObservation?
     private var itemDurationObserver: NSKeyValueObservation?
-    private var itemEndPlayingObserver: Any?
     
     /// A content displayed by the view.
     open var content: Content = .initial {
@@ -101,6 +100,10 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
     /// A container for playback button and time labels.
     open private(set) lazy var rootContainer: ContainerStackView = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "rootContainer")
+
+    /// A formatter to convert video duration to textual representation.
+    open lazy var videoDurationFormatter: VideoDurationFormatter = appearance.formatters.videoDuration
     
     override open func setUp() {
         super.setUp()
@@ -142,16 +145,16 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
         super.setUpAppearance()
         
         playPauseButton.setTitleColor(.black, for: .normal)
-        timestampLabel.text = DateComponentsFormatter.videoDuration.string(from: 0)
-        durationLabel.text = DateComponentsFormatter.videoDuration.string(from: 0)
+        timestampLabel.text = videoDurationFormatter.format(0)
+        durationLabel.text = videoDurationFormatter.format(0)
     }
     
     override open func updateContent() {
         super.updateContent()
         
         timeSlider.value = .init(content.playingProgress)
-        timestampLabel.text = DateComponentsFormatter.videoDuration.string(from: content.currentTime)
-        durationLabel.text = DateComponentsFormatter.videoDuration.string(from: content.videoDuration)
+        timestampLabel.text = videoDurationFormatter.format(content.currentTime)
+        durationLabel.text = videoDurationFormatter.format(content.videoDuration)
                 
         switch content.videoState {
         case .playing:
@@ -206,18 +209,16 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
     /// Unsubscribes from all notifications.
     /// Is invoked with old player when new player is set or when current view is deallocated.
     open func unsubscribeFromPlayerNotifications(_ player: AVPlayer?) {
-        if let observer = playerTimeChangesObserver {
-            player?.removeTimeObserver(observer)
-            playerTimeChangesObserver = nil
-        }
-        
+        playerTimeChangesObserver.map { player?.removeTimeObserver($0) }
+        playerTimeChangesObserver = nil
+
+        playerStatusObserver?.invalidate()
         playerStatusObserver = nil
+
+        playerItemObserver?.invalidate()
         playerItemObserver = nil
-        
-        if let observer = itemEndPlayingObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
-        
+
+        itemDurationObserver?.invalidate()
         itemDurationObserver = nil
     }
     
@@ -258,7 +259,6 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
                 self?.content.videoDuration = item.duration.isNumeric ? item.duration.seconds : 0
             }
             
-            NotificationCenter.default.removeObserver(self)
             NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(self.handleItemDidPlayToEndTime),
@@ -269,6 +269,7 @@ open class VideoPlaybackControlView: _View, ThemeProvider {
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
         unsubscribeFromPlayerNotifications(player)
     }
 }

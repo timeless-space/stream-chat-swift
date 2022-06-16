@@ -12,7 +12,7 @@ extension Notification.Name {
     public static let showWalletQRCode = Notification.Name("kStreamChatShowWalletQRCode")
 }
 
-public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider {
+public class ChatGroupDetailsVC: _ViewController,  AppearanceProvider, ThemeProvider {
     
     // MARK: - Variables
     var viewModel: ChatGroupDetailViewModel!
@@ -324,8 +324,8 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
                 withIdentifier: "ChannelDetailHeaderTVCell",
                 for: indexPath) as? ChannelDetailHeaderTVCell,
                   let controller = viewModel.channelController else {
-                return UITableViewCell()
-            }
+                      return UITableViewCell()
+                  }
             cell.cellDelegate = self
             cell.configCell(
                 controller: controller,
@@ -337,8 +337,8 @@ extension ChatGroupDetailsVC: UITableViewDelegate, UITableViewDataSource {
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: TableViewCellChatUser.identifier,
                 for: indexPath) as? TableViewCellChatUser else {
-                      return UITableViewCell()
-                  }
+                    return UITableViewCell()
+                }
             let user: ChatChannelMember = viewModel.channelMembers[indexPath.row]
             cell.configGroupDetails(channelMember: user, selectedImage: nil)
             cell.backgroundColor = .clear

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -9,7 +9,7 @@ public extension ChatMessage {
     /// A boolean value that checks if actions are available on the message (e.g. `edit`, `delete`, `resend`, etc.).
     var isInteractionEnabled: Bool {
         guard
-            type != .ephemeral, type != .system,
+            type != .ephemeral, type != .system, type != .error,
             isDeleted == false
         else { return false }
 
@@ -30,7 +30,7 @@ public extension ChatMessage {
 
     /// A boolean value that checks if the message is the root of a thread.
     var isRootOfThread: Bool {
-        replyCount > 0
+        replyCount > 0 || !latestReplies.isEmpty
     }
 
     /// A boolean value that checks if the message is part of a thread.
@@ -45,15 +45,6 @@ public extension ChatMessage {
         }
 
         return isDeleted ? L10n.Message.deletedMessagePlaceholder : text
-    }
-
-    /// A boolean value that checks if the message is visible for current user only.
-    var isOnlyVisibleForCurrentUser: Bool {
-        guard isSentByCurrentUser else {
-            return false
-        }
-
-        return isDeleted || type == .ephemeral
     }
 
     /// Returns last active thread participant.
@@ -80,5 +71,21 @@ public extension ChatMessage {
     var shouldRenderAsJumbomoji: Bool {
         guard attachmentCounts.isEmpty, let textContent = textContent, !textContent.isEmpty else { return false }
         return textContent.count <= 3 && textContent.containsOnlyEmoji
+    }
+}
+
+public extension ChatMessage {
+    /// A boolean value that checks if the message is visible for current user only.
+    @available(
+        *,
+        deprecated,
+        message: "This property is deprecated because it does not take `deletedMessagesVisability` setting into account."
+    )
+    var isOnlyVisibleForCurrentUser: Bool {
+        guard isSentByCurrentUser else {
+            return false
+        }
+
+        return isDeleted || type == .ephemeral
     }
 }

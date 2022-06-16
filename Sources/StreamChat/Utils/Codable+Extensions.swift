@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -141,7 +141,7 @@ extension DateFormatter {
 // MARK: - Helper AnyEncodable
 
 struct AnyEncodable: Encodable {
-    private let encodable: Encodable
+    let encodable: Encodable
     
     init(_ encodable: Encodable) {
         self.encodable = encodable

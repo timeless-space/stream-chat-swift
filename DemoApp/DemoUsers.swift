@@ -1,12 +1,19 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
+import StreamChat
 
 public let apiKeyString = "8br4watad788"
 public let applicationGroupIdentifier = "group.io.getstream.iOS.ChatDemoApp"
 public let currentUserIdRegisteredForPush = "currentUserIdRegisteredForPush"
+
+enum DemoUserType {
+    case credentials(UserCredentials)
+    case anonymous
+    case guest(String)
+}
 
 public struct UserCredentials {
     let id: String
@@ -17,8 +24,17 @@ public struct UserCredentials {
 }
 
 public extension UserCredentials {
+    var userInfo: UserInfo {
+        .init(
+            id: id,
+            name: name,
+            imageURL: avatarURL,
+            extraData: [ChatUser.birthLandFieldName: .string(birthLand)]
+        )
+    }
+    
     static func builtInUsersByID(id: String) -> UserCredentials? {
-        builtInUsers.filter { $0.id == id }.first
+        builtInUsers.first { $0.id == id }
     }
 
     static let builtInUsers: [UserCredentials] = [

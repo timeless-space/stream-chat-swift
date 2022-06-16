@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -41,9 +41,10 @@ public class DatabaseContainer: NSPersistentContainer {
         let context = newBackgroundContext()
         context.automaticallyMergesChangesFromParent = true
         context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        context.perform { [localCachingSettings, deletedMessageVisibility] in
+        context.perform { [localCachingSettings, deletedMessageVisibility, shouldShowShadowedMessages] in
             context.localCachingSettings = localCachingSettings
             context.deletedMessagesVisibility = deletedMessageVisibility
+            context.shouldShowShadowedMessages = shouldShowShadowedMessages
         }
         return context
     }()
@@ -60,9 +61,10 @@ public class DatabaseContainer: NSPersistentContainer {
         let context = newBackgroundContext()
         context.automaticallyMergesChangesFromParent = true
         context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        context.perform { [localCachingSettings, deletedMessageVisibility] in
+        context.perform { [localCachingSettings, deletedMessageVisibility, shouldShowShadowedMessages] in
             context.localCachingSettings = localCachingSettings
             context.deletedMessagesVisibility = deletedMessageVisibility
+            context.shouldShowShadowedMessages = shouldShowShadowedMessages
         }
         return context
     }()
@@ -70,6 +72,7 @@ public class DatabaseContainer: NSPersistentContainer {
     private var loggerNotificationObserver: NSObjectProtocol?
     private let localCachingSettings: ChatClientConfig.LocalCaching?
     private let deletedMessageVisibility: ChatClientConfig.DeletedMessageVisibility?
+    private let shouldShowShadowedMessages: Bool?
     
     /// All `NSManagedObjectContext`s this container owns.
     private lazy var allContext: [NSManagedObjectContext] = [viewContext, backgroundReadOnlyContext, writableContext]
@@ -93,8 +96,9 @@ public class DatabaseContainer: NSPersistentContainer {
         modelName: String = "StreamChatModel",
         bundle: Bundle? = .streamChat,
         localCachingSettings: ChatClientConfig.LocalCaching? = nil,
-        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility? = nil
-    ) throws {
+        deletedMessagesVisibility: ChatClientConfig.DeletedMessageVisibility? = nil,
+        shouldShowShadowedMessages: Bool? = nil
+    ) {
         // It's safe to unwrap the following values because this is not settable by users and it's always a programmer error.
         let bundle = bundle ?? Bundle(for: DatabaseContainer.self)
         let modelURL = bundle.url(forResource: modelName, withExtension: "momd")!
@@ -102,9 +106,63 @@ public class DatabaseContainer: NSPersistentContainer {
         
         self.localCachingSettings = localCachingSettings
         deletedMessageVisibility = deletedMessagesVisibility
+        self.shouldShowShadowedMessages = shouldShowShadowedMessages
 
         super.init(name: modelName, managedObjectModel: model)
         
+        setUpPersistentStoreDescription(with: kind)
+        
+        let persistentStoreCreatedCompletion: (Error?) -> Void = { [weak self] error in
+            if let error = error {
+                log.error("Failed to initialize the local storage with error: \(error). Falling back to the in-memory option.")
+                self?.setUpPersistentStoreDescription(with: .inMemory)
+                self?.recreatePersistentStore { error in
+                    if let error = error {
+                        fatalError(
+                            "Failed to initialize the in-memory storage with error: \(error). This is a non-recoverable error."
+                        )
+                    }
+                    if shouldResetEphemeralValuesOnStart {
+                        self?.resetEphemeralValues()
+                    }
+                }
+                return
+            }
+            if shouldResetEphemeralValuesOnStart {
+                self?.resetEphemeralValues()
+            }
+        }
+                
+        if shouldFlushOnStart {
+            recreatePersistentStore(completion: persistentStoreCreatedCompletion)
+        } else {
+            setupPersistentStore(completion: persistentStoreCreatedCompletion)
+        }
+        
+        viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        viewContext.automaticallyMergesChangesFromParent = true
+        if Thread.current.isMainThread {
+            viewContext.localCachingSettings = localCachingSettings
+            viewContext.deletedMessagesVisibility = deletedMessagesVisibility
+            viewContext.shouldShowShadowedMessages = shouldShowShadowedMessages
+        } else {
+            viewContext.perform { [viewContext, localCachingSettings, deletedMessagesVisibility, shouldShowShadowedMessages] in
+                viewContext.localCachingSettings = localCachingSettings
+                viewContext.deletedMessagesVisibility = deletedMessagesVisibility
+                viewContext.shouldShowShadowedMessages = shouldShowShadowedMessages
+            }
+        }
+        
+        setupLoggerForDatabaseChanges()
+    }
+    
+    deinit {
+        if let observer = loggerNotificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+    
+    private func setUpPersistentStoreDescription(with kind: Kind) {
         let description = NSPersistentStoreDescription()
         
         switch kind {
@@ -123,39 +181,9 @@ public class DatabaseContainer: NSPersistentContainer {
         }
         
         persistentStoreDescriptions = [description]
-                
-        if shouldFlushOnStart {
-            try recreatePersistentStore()
-        } else {
-            try setupPersistentStore()
-        }
-        
-        viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        viewContext.automaticallyMergesChangesFromParent = true
-        if Thread.current.isMainThread {
-            viewContext.localCachingSettings = localCachingSettings
-            viewContext.deletedMessagesVisibility = deletedMessagesVisibility
-        } else {
-            viewContext.perform { [viewContext, localCachingSettings, deletedMessagesVisibility] in
-                viewContext.localCachingSettings = localCachingSettings
-                viewContext.deletedMessagesVisibility = deletedMessagesVisibility
-            }
-        }
-        
-        setupLoggerForDatabaseChanges()
-        
-        if shouldResetEphemeralValuesOnStart {
-            resetEphemeralValues()
-        }
     }
     
-    deinit {
-        if let observer = loggerNotificationObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
-    }
-    
-    /// Use this method to safely mutate the content of the database.
+    /// Use this method to safely mutate the content of the database. This method is asynchronous.
     ///
     /// - Parameter actions: A block that performs the actual mutation.
     func write(_ actions: @escaping (DatabaseSession) throws -> Void) {
@@ -165,7 +193,7 @@ public class DatabaseContainer: NSPersistentContainer {
     // This 👆 overload shouldn't be needed, but when a default parameter for completion 👇 is used,
     // the compiler gets confused and incorrectly evaluates `write { /* changes */ }`.
     
-    /// Use this method to safely mutate the content of the database.
+    /// Use this method to safely mutate the content of the database. This method is asynchronous.
     ///
     /// - Parameters:
     ///   - actions: A block that performs the actual mutation.
@@ -212,17 +240,20 @@ public class DatabaseContainer: NSPersistentContainer {
     /// messages pedning sent. You can use this option to warn a user about potential data loss.
     ///   - completion: Called when the operation is completed. If the error is present, the operation failed.
     ///
-    public func removeAllData(force: Bool = true) throws {
+    public func removeAllData(force: Bool = true, completion: ((Error?) -> Void)? = nil) {
         if !force {
             fatalError("Non-force flush is not implemented yet.")
         }
-        
-        sendNotificationForAllContexts(name: Self.WillRemoveAllDataNotification)
 
-        // If the current persistent store is a SQLite store, this method will reset and recreate it.
-        try recreatePersistentStore()
-
-        sendNotificationForAllContexts(name: Self.DidRemoveAllDataNotification)
+        writableContext.perform {
+            self.sendNotificationForAllContexts(name: Self.WillRemoveAllDataNotification)
+            
+            // If the current persistent store is a SQLite store, this method will reset and recreate it.
+            self.recreatePersistentStore { error in
+                self.sendNotificationForAllContexts(name: Self.DidRemoveAllDataNotification)
+                completion?(error)
+            }
+        }
     }
     
     private func sendNotificationForAllContexts(name: Notification.Name) {
@@ -248,22 +279,20 @@ public class DatabaseContainer: NSPersistentContainer {
     /// Tries to load a persistent store.
     ///
     /// If it fails, for example because of non-matching models, it removes the store, recreates is, and tries to load it again.
-    /// If the second loading fails, too, it throws an error.
     ///
-    private func setupPersistentStore() throws {
-        var storeLoadingError: Error?
-        
+    private func setupPersistentStore(completion: ((Error?) -> Void)? = nil) {
         loadPersistentStores { _, error in
-            storeLoadingError = error
-        }
-        
-        if storeLoadingError != nil {
-            try recreatePersistentStore()
+            if let error = error {
+                log.debug("Persistent store setup failed with \(error). Trying to recreate persistent store")
+                self.recreatePersistentStore(completion: completion)
+            } else {
+                completion?(nil)
+            }
         }
     }
     
     /// Removes the loaded persistent store and tries to recreate it.
-    func recreatePersistentStore() throws {
+    func recreatePersistentStore(completion: ((Error?) -> Void)? = nil) {
         log.assert(
             persistentStoreDescriptions.count == 1,
             "DatabaseContainer always assumes 1 persistent store description. Existing descriptions: \(persistentStoreDescriptions)",
@@ -271,30 +300,45 @@ public class DatabaseContainer: NSPersistentContainer {
         )
         
         guard let storeDescription = persistentStoreDescriptions.first else {
-            throw ClientError("No persisten store descriptions available.")
+            completion?(ClientError("No persistent store descriptions available."))
+            return
         }
+        
+        log.debug("Removing DB persistent store", subsystems: .database)
 
         // Remove all loaded persistent stores first
-        try persistentStoreCoordinator.persistentStores.forEach { store in
-            try persistentStoreCoordinator.remove(store)
+        do {
+            try persistentStoreCoordinator.persistentStores.forEach { store in
+                try persistentStoreCoordinator.remove(store)
+            }
+        } catch {
+            completion?(error)
+            return
         }
+        
+        log.debug("Removing DB file", subsystems: .database)
         
         // If the store was SQLite store, remove the actual DB file
         if storeDescription.type == NSSQLiteStoreType,
            let storeURL = storeDescription.url,
            storeURL.absoluteString.hasSuffix("/dev/null") == false {
-            try persistentStoreCoordinator.destroyPersistentStore(at: storeURL, ofType: NSSQLiteStoreType, options: nil)
-            try FileManager.default.removeItem(at: storeURL)
+            do {
+                try persistentStoreCoordinator.destroyPersistentStore(at: storeURL, ofType: NSSQLiteStoreType, options: nil)
+            } catch {
+                completion?(error)
+                return
+            }
         }
-    
-        var storeLoadingError: Error?
-        
+
+        log.debug("Reloading persistent store", subsystems: .database)
+
         loadPersistentStores { _, error in
-            storeLoadingError = error
-        }
-        
-        if let error = storeLoadingError {
-            throw error
+            if let error = error {
+                log.error("Persistent store reload error: \(error)")
+            } else {
+                log.debug("Persistent store reloaded")
+            }
+            completion?(error)
         }
     }
     

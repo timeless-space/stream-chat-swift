@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -225,9 +225,7 @@ public extension Appearance {
         public var moreVertical: UIImage = loadImageSafely(with: "more-vertical")
         public var scrollDownArrow: UIImage = loadImageSafely(with: "arrow_down")
         public var backCircle: UIImage = loadImageSafely(with: "back_circle")
-        public var messageSent: UIImage = loadImageSafely(with: "checkmark_grey")
         public var whiteCheckmark: UIImage = loadImageSafely(with: "checkmark_white")
-        public var readByAll: UIImage = loadImageSafely(with: "checkmark_double")
         public var confirmCheckmark: UIImage = loadImageSafely(with: "checkmark_confirm")
         public var bigConfirmCheckmark: UIImage = loadImageSafely(with: "checkmark_confirm_big")
         public var folder: UIImage = loadImageSafely(with: "folder")
@@ -270,6 +268,13 @@ public extension Appearance {
             }
         }()
 
+        // MARK: - Message Receipts
+        public var messageDeliveryStatusSending: UIImage = loadImageSafely(with: "message_receipt_sending")
+        public var messageDeliveryStatusSent: UIImage = loadImageSafely(with: "message_receipt_sent")
+        public var messageDeliveryStatusRead: UIImage = loadImageSafely(with: "message_receipt_read")
+        public var messageDeliveryStatusFailed: UIImage = loadImageSafely(with: "message_receipt_failed")
+        
+        // MARK: - Reactions
         public var menuKeyboard: UIImage? = {
             if #available(iOS 13.0, *) {
                 return UIImage(systemName: "keyboard")?.withRenderingMode(.alwaysTemplate)
@@ -458,6 +463,7 @@ public extension Appearance {
         public var messageActionMuteUser: UIImage = loadImageSafely(with: "icn_mute_user")
         public var messageActionDelete: UIImage = loadImageSafely(with: "icn_delete")
         public var messageActionResend: UIImage = loadImageSafely(with: "icn_resend")
+        public var messageActionFlag: UIImage = loadImageSafely(with: "icn_flag")
 
         // MARK: - Placeholders
 

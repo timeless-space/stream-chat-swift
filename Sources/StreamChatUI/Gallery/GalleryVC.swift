@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -8,8 +8,7 @@ import UIKit
 
 /// A viewcontroller to showcase and slide through multiple attachments
 /// (images and videos by default).
-open class GalleryVC:
-    _ViewController,
+open class GalleryVC: _ViewController,
     UIGestureRecognizerDelegate,
     AppearanceProvider,
     UICollectionViewDataSource,
@@ -46,19 +45,11 @@ open class GalleryVC:
         return videos + images
     }
     
-    /// Returns the date formater function used to represent when the user was last seen online
-    open var lastSeenDateFormatter: (Date) -> String? { DateUtils.timeAgo }
+    /// Returns the date formatter function used to represent when the user was last seen online.
+    open var lastSeenDateFormatter: (Date) -> String? { appearance.formatters.userLastActivity.format }
 
     /// Controller for handling the transition for dismissal
     open var transitionController: ZoomTransitionController!
-    
-    /// `DateComponentsFormatter` for showing when the message was sent.
-    open private(set) lazy var dateFormatter: DateComponentsFormatter = {
-        let df = DateComponentsFormatter()
-        df.allowedUnits = [.minute]
-        df.unitsStyle = .full
-        return df
-    }()
     
     /// `UICollectionViewFlowLayout` instance for `attachmentsCollectionView`.
     open private(set) lazy var attachmentsFlowLayout: UICollectionViewFlowLayout = .init()
@@ -71,40 +62,61 @@ open class GalleryVC:
     .withoutAutoresizingMaskConstraints
     
     /// Bar view displayed at the top.
-    open private(set) lazy var topBarView: UIView = UIView()
+    open private(set) lazy var topBarView = UIView()
         .withoutAutoresizingMaskConstraints
-    
+        .withAccessibilityIdentifier(identifier: "topBarView")
+
+    /// Stack view inside the `topBarView`'s view hierarchy
+    open private(set) lazy var topBarContainerStackView = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "topBarContainerStackView")
+
+    /// Stack view that displays user and date label.
+    open private(set) lazy var infoContainerStackView = ContainerStackView()
+        .withAccessibilityIdentifier(identifier: "infoContainerStackView")
+
     /// Label to show information about the user that sent the message.
-    open private(set) lazy var userLabel: UILabel = UILabel()
+    open private(set) lazy var userLabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
         .withAdjustingFontForContentSizeCategory
+        .withAccessibilityIdentifier(identifier: "userLabel")
     
     /// Label to show information about the date the message was sent at.
-    open private(set) lazy var dateLabel: UILabel = UILabel()
+    open private(set) lazy var dateLabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
         .withAdjustingFontForContentSizeCategory
+        .withAccessibilityIdentifier(identifier: "dateLabel")
     
     /// Bar view displayed at the bottom.
-    open private(set) lazy var bottomBarView: UIView = UIView()
+    open private(set) lazy var bottomBarView = UIView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "bottomBarView")
+
+    /// Stack view inside the `bottomBarView`'s view hierarchy
+    open private(set) lazy var bottomBarContainerStackView = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "bottomBarContainerStackView")
     
     /// Label to show which photo is currently being displayed.
-    open private(set) lazy var currentPhotoLabel: UILabel = UILabel()
+    open private(set) lazy var currentPhotoLabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
         .withAdjustingFontForContentSizeCategory
+        .withAccessibilityIdentifier(identifier: "currentPhotoLabel")
     
     /// Button for closing this view controller.
-    open private(set) lazy var closeButton: UIButton = components
+    open private(set) lazy var closeButton = components
         .closeButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "closeButton")
     
     /// View that controls the video player of currently visible cell.
     open private(set) lazy var videoPlaybackBar: VideoPlaybackControlView = components
         .videoPlaybackControlView.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "videoPlaybackBar")
 
     open private(set) lazy var textViewMessageContainerView: UIView = UIView()
         .withoutAutoresizingMaskConstraints
@@ -113,9 +125,10 @@ open class GalleryVC:
         .withoutAutoresizingMaskConstraints
     
     /// Button for sharing content.
-    open private(set) lazy var shareButton: UIButton = components
+    open private(set) lazy var shareButton = components
         .shareButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "shareButton")
     
     /// A constaint between `topBarView.topAnchor` and `view.topAnchor`.
     open private(set) var topBarTopConstraint: NSLayoutConstraint?
@@ -200,16 +213,13 @@ open class GalleryVC:
         topBarView.pin(anchors: [.leading, .trailing], to: view)
         topBarTopConstraint = topBarView.topAnchor.constraint(equalTo: view.topAnchor)
         topBarTopConstraint?.isActive = true
-        
-        let topBarContainerStackView = ContainerStackView()
-            .withoutAutoresizingMaskConstraints
+
         topBarView.embed(topBarContainerStackView)
         topBarContainerStackView.preservesSuperviewLayoutMargins = true
         topBarContainerStackView.isLayoutMarginsRelativeArrangement = true
         
         topBarContainerStackView.addArrangedSubview(closeButton)
-        
-        let infoContainerStackView = ContainerStackView()
+
         infoContainerStackView.axis = .vertical
         infoContainerStackView.alignment = .center
         infoContainerStackView.spacing = 4
@@ -235,6 +245,7 @@ open class GalleryVC:
         bottomBarView.embed(bottomBarContainerStackView)
 
         shareButton.setContentHuggingPriority(.streamRequire, for: .horizontal)
+        shareButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         bottomBarContainerStackView.addArrangedSubview(shareButton)
 
         currentPhotoLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -303,7 +314,7 @@ open class GalleryVC:
     }
     
     override open func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+        super.viewWillDisappear(animated)
         
         videoPlaybackBar.player?.pause()
     }
@@ -352,8 +363,7 @@ open class GalleryVC:
     }
     
     /// Called whenever user pans with a given `gestureRecognizer`.
-    @objc
-    open func handlePan(with gestureRecognizer: UIPanGestureRecognizer) {
+    @objc open func handlePan(with gestureRecognizer: UIPanGestureRecognizer) {
         switch gestureRecognizer.state {
         case .began:
             transitionController.isInteractive = true
@@ -369,14 +379,12 @@ open class GalleryVC:
     }
     
     /// Called when `closeButton` is tapped.
-    @objc
-    open func closeButtonTapped() {
+    @objc open func closeButtonTapped() {
         dismiss(animated: true, completion: nil)
     }
     
     /// Called when `shareButton` is tapped.
-    @objc
-    open func shareButtonTapped() {
+    @objc open func shareButtonTapped() {
         guard let shareItem = shareItem(at: currentItemIndexPath) else {
             log.assertionFailure("Share item is missing for item at \(currentItemIndexPath).")
             return
@@ -410,8 +418,10 @@ open class GalleryVC:
             withReuseIdentifier: reuseIdentifier,
             for: indexPath
         ) as! GalleryCollectionViewCell
-        
-        cell.content = items[indexPath.item]
+
+        guard let item = getItem(at: indexPath) else { return cell }
+
+        cell.content = item
         
         cell.didTapOnce = { [weak self] in
             self?.handleSingleTapOnCell(at: indexPath)
@@ -458,20 +468,37 @@ open class GalleryVC:
     
     /// A currently visible gallery item.
     open var currentItem: AnyChatMessageAttachment {
-        items[currentItemIndexPath.item]
+        items.assertIndexIsPresent(currentItemIndexPath.item)
+        return items[currentItemIndexPath.item]
     }
     
     /// Returns a share item for the gallery item at given index path.
     /// - Parameter indexPath: An index path.
     /// - Returns: An item to share.
     open func shareItem(at indexPath: IndexPath) -> Any? {
-        let item = items[indexPath.item]
-        
-        if let image = item.attachment(payloadType: ImageAttachmentPayload.self) {
-            return image.imageURL
-        } else if let video = item.attachment(payloadType: VideoAttachmentPayload.self) {
-            return video.videoURL
-        } else {
+        guard let item = getItem(at: indexPath) else { return nil }
+
+        switch item.type {
+        case .image:
+            let cell = attachmentsCollectionView
+                .cellForItem(at: indexPath) as? ImageAttachmentGalleryCell
+            return cell?.imageView.image
+        case .video:
+            guard let itemAttachment = item.attachment(payloadType: VideoAttachmentPayload.self),
+                  let urlData = try? Data(contentsOf: itemAttachment.videoURL) else {
+                return nil
+            }
+
+            let fileName = itemAttachment.payload.title ?? itemAttachment.id.messageId.lowercased() + ".mp4"
+            let filePath = NSTemporaryDirectory().appending("\(fileName)")
+            let url = URL(fileURLWithPath: filePath)
+            do {
+                try urlData.write(to: url)
+                return url
+            } catch {
+                return nil
+            }
+        default:
             return nil
         }
     }
@@ -480,8 +507,8 @@ open class GalleryVC:
     /// - Parameter indexPath: An index path.
     /// - Returns: A cell reuse identifier.
     open func cellReuseIdentifierForItem(at indexPath: IndexPath) -> String? {
-        let item = items[indexPath.item]
-        
+        guard let item = getItem(at: indexPath) else { return nil }
+
         switch item.type {
         case .image:
             return components.imageAttachmentGalleryCell.reuseId
@@ -512,8 +539,9 @@ open class GalleryVC:
     /// Returns an image view to animate during interactive dismissing.
     open var imageViewToAnimateWhenDismissing: UIImageView? {
         let indexPath = currentItemIndexPath
-        
-        switch items[indexPath.item].type {
+        guard let item = getItem(at: indexPath) else { return nil }
+
+        switch item.type {
         case .image:
             let cell = attachmentsCollectionView
                 .cellForItem(at: indexPath) as? ImageAttachmentGalleryCell
@@ -525,5 +553,11 @@ open class GalleryVC:
         default:
             return nil
         }
+    }
+
+    private func getItem(at indexPath: IndexPath) -> AnyChatMessageAttachment? {
+        let index = indexPath.item
+        items.assertIndexIsPresent(index)
+        return items[safe: index]
     }
 }
