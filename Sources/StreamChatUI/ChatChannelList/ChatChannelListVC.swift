@@ -180,10 +180,10 @@ open class ChatChannelListVC: _ViewController,
             let channelController = try ChatClient.shared.channelController(for: .init(cid: cid))
             chatChannelVC.channelController = channelController
             NotificationCenter.default.post(name: .hideTabbar, object: nil)
-            pushWithAnimation(controller: chatChannelVC)
+            pushWithAnimation(controller: chatChannelVC, with: router.rootNavigationController)
 
-            if let channelListVC = navigationController?.viewControllers.first {
-                navigationController?.viewControllers = [channelListVC, chatChannelVC]
+            if let channelListVC = router.rootNavigationController?.viewControllers.first {
+                router.rootNavigationController?.viewControllers = [channelListVC, chatChannelVC]
             }
         } catch {}
     }
@@ -322,7 +322,6 @@ open class ChatChannelListVC: _ViewController,
         defer {
             collectionView.deselectItem(at: indexPath, animated: true)
         }
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
          DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
              guard let self = self else {
                  return

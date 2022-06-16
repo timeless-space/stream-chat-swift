@@ -174,8 +174,12 @@ extension UIViewController {
 public class pushTransition: CATransition {}
 
 extension UIViewController {
-    public func pushWithAnimation(controller: UIViewController) {
-        navigationController?.pushViewController(controller, animated: true)
+    public func pushWithAnimation(controller: UIViewController, with navController: UINavigationController? = nil) {
+        if let rootNav = navController {
+            rootNav.pushViewController(controller, animated: true)
+        } else {
+            navigationController?.pushViewController(controller, animated: true)
+        }
     }
     public func popWithAnimation() {
         self.navigationController?.popViewController(animated: true)
