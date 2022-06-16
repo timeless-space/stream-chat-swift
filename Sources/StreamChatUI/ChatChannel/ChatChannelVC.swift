@@ -516,7 +516,12 @@ open class ChatChannelVC: _ViewController,
                 showPinViewButton()
             }
         }
-        channelController?.markRead()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else {
+                return
+            }
+            self.channelController?.markRead()
+        }
     }
 
     private func showPinViewButton() {
