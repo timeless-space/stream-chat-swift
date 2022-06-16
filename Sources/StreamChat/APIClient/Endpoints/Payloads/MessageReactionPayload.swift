@@ -1,12 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
 
 /// The type describes the incoming message-reaction JSON.
 struct MessageReactionPayload: Decodable {
-    private enum CodingKeys: String, CodingKey, CaseIterable {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case type
         case score
         case messageId = "message_id"

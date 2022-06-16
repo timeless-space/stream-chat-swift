@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -12,7 +12,7 @@ final class iMessageChatMessageContentView: ChatMessageContentView {
     override func layout(options: ChatMessageLayoutOptions) {
         super.layout(options: options)
 
-        metadataContainer?.alignment = .center
+        footnoteContainer?.alignment = .center
     }
 
     override func createTimestampLabel() -> UILabel {

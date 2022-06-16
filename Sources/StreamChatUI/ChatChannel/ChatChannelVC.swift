@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -21,8 +21,7 @@ extension Notification.Name {
 
 /// Controller responsible for displaying the channel messages.
 @available(iOSApplicationExtension, unavailable)
-open class ChatChannelVC:
-    _ViewController,
+open class ChatChannelVC: _ViewController,
     ThemeProvider,
     ChatMessageListVCDataSource,
     ChatMessageListVCDelegate,
@@ -174,17 +173,16 @@ open class ChatChannelVC:
         .channelAvatarView.init()
         .withoutAutoresizingMaskConstraints
 
+    /// The message composer bottom constraint used for keyboard animation handling.
     public var messageComposerBottomConstraint: NSLayoutConstraint?
 
-    private var loadingPreviousMessages: Bool = false
-    
+    private var isLoadingPreviousMessages: Bool = false
+
     /// A boolean value indicating wether the last message is fully visible or not.
     /// If the value is `true` it means the message list is fully scrolled to the bottom.
     open var isLastMessageFullyVisible: Bool {
         messageListVC?.listView.isLastCellFullyVisible ?? false
     }
-
-    private var isLoadingPreviousMessages: Bool = false
 
     override open func setUp() {
         super.setUp()
@@ -377,11 +375,6 @@ open class ChatChannelVC:
         if enableKeyboardObserver {
             keyboardHandler.stop()
         }
-    }
-
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
     }
 
     open override func viewWillDisappear(_ animated: Bool) {
@@ -771,13 +764,21 @@ open class ChatChannelVC:
         if channelController?.state != .remoteDataFetched {
             return
         }
+        
+        guard messageListVC?.listView.isTrackingOrDecelerating ?? false else {
+            return
+        }
+        
         if indexPath.row < (channelController?.messages.count ?? 0) - 10 {
             return
         }
-        guard !loadingPreviousMessages else {
+        
+        guard !isLoadingPreviousMessages else {
             return
         }
-        loadingPreviousMessages = true
+        
+        isLoadingPreviousMessages = true
+        
         channelController?.loadPreviousMessages { [weak self] _ in
             self?.isLoadingPreviousMessages = false
         }
@@ -807,16 +808,9 @@ open class ChatChannelVC:
         }
     }
 
-    var didReadAllMessages: Bool {
-        messageListVC?.listView.isLastCellFullyVisible ?? false
-    }
-
     open func chatMessageListVC(_ vc: ChatMessageListVC, scrollViewDidScroll scrollView: UIScrollView) {
-        if didReadAllMessages {
+        if isLastMessageFullyVisible {
             channelController?.markRead()
-        }
-        if messageListVC?.listView.isLastCellFullyVisible ?? false, channelController?.channel?.isUnread == true {
-            // Hide the badge immediately. Temporary solution until CIS-881 is implemented.
             messageListVC?.scrollToLatestMessageButton.content = .noUnread
         }
     }
@@ -835,7 +829,7 @@ open class ChatChannelVC:
         _ channelController: ChatChannelController,
         didUpdateMessages changes: [ListChange<ChatMessage>]
     ) {
-        if didReadAllMessages {
+        if isLastMessageFullyVisible {
             channelController.markRead()
         }
         messageListVC?.updateMessages(with: changes)

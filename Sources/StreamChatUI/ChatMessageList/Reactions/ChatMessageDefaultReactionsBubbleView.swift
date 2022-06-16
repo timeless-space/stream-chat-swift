@@ -1,11 +1,11 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 
-open class ChatMessageDefaultReactionsBubbleView: ChatReactionPickerBubbleView {
+open class DefaultChatReactionPickerBubbleView: ChatReactionPickerBubbleView {
     // MARK: - Subviews
 
     public let contentViewBackground = UIView().withoutAutoresizingMaskConstraints

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -57,7 +57,7 @@ public struct ChatClientConfig {
     
     /// Determines whether `ChatClient` caches the data locally. This makes it possible to browse the existing chat data also
     /// when the internet connection is not available.
-    public var isLocalStorageEnabled: Bool = false
+    public var isLocalStorageEnabled: Bool = true
     
     /// If set to `true`, `ChatClient` resets the local cache on the start.
     ///
@@ -142,7 +142,12 @@ public struct ChatClientConfig {
     }
 
     /// Specifies the visibility of deleted messages.
-    public var deletedMessagesVisibility: DeletedMessageVisibility = .visibleForCurrentUser
+    /// By default, all deleted messages are visible with their content hidden.
+    public var deletedMessagesVisibility: DeletedMessageVisibility = .alwaysVisible
+    
+    /// Specifies whether `shadowed` messages should be shown in Message list.
+    /// For more information, please check "Shadow Bans" docs.
+    public var shouldShowShadowedMessages = false
 
     public init(apiKey: APIKey) {
         self.apiKey = apiKey

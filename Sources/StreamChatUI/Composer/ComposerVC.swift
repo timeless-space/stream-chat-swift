@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -84,10 +84,17 @@ open class ComposerVC: _ViewController,
         public var mentionedUsers: Set<ChatUser>
         /// The command of the message.
         public let command: Command?
+        /// The extra data assigned to message.
+        public var extraData: [String: RawJSON]
 
         /// A boolean that checks if the message contains any content.
         public var isEmpty: Bool {
-            text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && attachments.isEmpty
+            // If there is a command and it doesn't require an arg, content is not empty
+            if let command = command, command.args.isEmpty {
+                return false
+            }
+            // All other cases
+            return text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && attachments.isEmpty
         }
 
         /// A boolean that checks if the composer is replying in a thread
@@ -103,7 +110,8 @@ open class ComposerVC: _ViewController,
             threadMessage: ChatMessage?,
             attachments: [AnyAttachmentPayload],
             mentionedUsers: Set<ChatUser>,
-            command: Command?
+            command: Command?,
+            extraData: [String: RawJSON] = [:]
         ) {
             self.text = text
             self.state = state
@@ -113,6 +121,7 @@ open class ComposerVC: _ViewController,
             self.attachments = attachments
             self.mentionedUsers = mentionedUsers
             self.command = command
+            self.extraData = extraData
         }
 
         /// Creates a new content struct with all empty data.
@@ -125,7 +134,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: nil,
                 attachments: [],
                 mentionedUsers: [],
-                command: nil
+                command: nil,
+                extraData: [:]
             )
         }
 
@@ -139,7 +149,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: [],
                 mentionedUsers: [],
-                command: nil
+                command: nil,
+                extraData: [:]
             )
         }
 
@@ -155,7 +166,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: attachments,
                 mentionedUsers: message.mentionedUsers,
-                command: command
+                command: command,
+                extraData: message.extraData
             )
         }
 
@@ -171,7 +183,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: attachments,
                 mentionedUsers: mentionedUsers,
-                command: command
+                command: command,
+                extraData: extraData
             )
         }
 
@@ -184,7 +197,8 @@ open class ComposerVC: _ViewController,
                 threadMessage: threadMessage,
                 attachments: [],
                 mentionedUsers: mentionedUsers,
-                command: command
+                command: command,
+                extraData: extraData
             )
         }
     }
@@ -268,6 +282,16 @@ open class ComposerVC: _ViewController,
         picker.sourceType = .savedPhotosAlbum
         picker.delegate = self
         return picker
+    }()
+    
+    /// The View Controller for taking a picture.
+    open private(set) lazy var cameraVC: UIViewController = {
+        let camera = UIImagePickerController()
+        camera.sourceType = .camera
+        camera.modalPresentationStyle = .overFullScreen
+        camera.mediaTypes = UIImagePickerController.availableMediaTypes(for: .camera) ?? ["public.image"]
+        camera.delegate = self
+        return camera
     }()
 
     /// The view controller for selecting file attachments.
@@ -437,6 +461,7 @@ open class ComposerVC: _ViewController,
                 self.composerView.confirmButton.isHidden = true
                 self.composerView.inputMessageView.sendButton.isHidden = false
                 self.composerView.container.removeArrangedSubview(self.composerView.headerView)
+                self.composerView.headerView.isHidden = true
             }
         case .quote:
             let replyTo = content.quotingMessage?.author.name ?? "Message"
@@ -444,6 +469,7 @@ open class ComposerVC: _ViewController,
             composerView.inputMessageView.textView.becomeFirstResponder()
             Animate {
                 self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
+                self.composerView.headerView.isHidden = false
             }
         case .edit:
             composerView.titleLabel.text = getEditMessageTitle()
@@ -451,6 +477,7 @@ open class ComposerVC: _ViewController,
             Animate {
                 self.composerView.inputMessageView.sendButton.isHidden = true
                 self.composerView.container.insertArrangedSubview(self.composerView.headerView, at: 0)
+                self.composerView.headerView.isHidden = false
             }
         default:
             log.warning("The composer state \(content.state.description) was not handled.")
@@ -724,6 +751,10 @@ open class ComposerVC: _ViewController,
     open func showFilePicker() {
         present(filePickerVC, animated: true)
     }
+    
+    open func showCamera() {
+        present(cameraVC, animated: true)
+    }
 
     /// Returns actions for attachments picker.
     open var attachmentsPickerActions: [UIAlertAction] {
@@ -739,31 +770,52 @@ open class ComposerVC: _ViewController,
             handler: { [weak self] _ in self?.showMediaPicker() }
         )
 
+        let showCameraAction = UIAlertAction(
+            title: L10n.Composer.Picker.camera,
+            style: .default,
+            handler: { [weak self] _ in self?.showCamera() }
+        )
+
         let cancelAction = UIAlertAction(
             title: L10n.Composer.Picker.cancel,
             style: .cancel
         )
+        
+        let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
+        
+        if isCameraAvailable {
+            return [showCameraAction, showMediaPickerAction, showFilePickerAction, cancelAction]
+        }
 
         return [showMediaPickerAction, showFilePickerAction, cancelAction]
     }
 
     /// Action that handles tap on attachments button in composer.
+//    @objc open func showAttachmentsPicker(sender: UIButton = UIButton()) {
+//        // The UI doesn't support mix of image and file attachments so we are limiting this option.
+//        // Files in the message composer are scrolling vertically and images horizontally.
+//        // There is no techical limitation for multiple attachment types.
+//        if content.attachments.isEmpty {
+//            presentAlert(
+//                message: L10n.Composer.Picker.title,
+//                preferredStyle: .actionSheet,
+//                actions: attachmentsPickerActions,
+//                sourceView: sender
+//            )
+//        } else if content.attachments.contains(where: { $0.type == .file }) {
+//            showFilePicker()
+//        } else if content.attachments.contains(where: { $0.type == .image || $0.type == .video }) {
+//            showMediaPicker()
+//        }
+//    }
+
     @objc open func showAttachmentsPicker(sender: UIButton = UIButton()) {
-        // The UI doesn't support mix of image and file attachments so we are limiting this option.
-        // Files in the message composer are scrolling vertically and images horizontally.
-        // There is no techical limitation for multiple attachment types.
-        if content.attachments.isEmpty {
-            presentAlert(
-                message: L10n.Composer.Picker.title,
-                preferredStyle: .actionSheet,
-                actions: attachmentsPickerActions,
-                sourceView: sender
-            )
-        } else if content.attachments.contains(where: { $0.type == .file }) {
-            showFilePicker()
-        } else if content.attachments.contains(where: { $0.type == .image || $0.type == .video }) {
-            showMediaPicker()
-        }
+        presentAlert(
+            message: L10n.Composer.Picker.title,
+            preferredStyle: .actionSheet,
+            actions: attachmentsPickerActions,
+            sourceView: sender
+        )
     }
 
     @objc open func shrinkInput(sender: UIButton) {
@@ -1022,7 +1074,8 @@ open class ComposerVC: _ViewController,
                 attachments: content.attachments,
                 mentionedUserIds: content.mentionedUsers.map(\.id),
                 showReplyInChannel: composerView.checkboxControl.isSelected,
-                quotedMessageId: content.quotingMessage?.id
+                quotedMessageId: content.quotingMessage?.id,
+                extraData: content.extraData
             )
             return
         }
@@ -1071,7 +1124,7 @@ open class ComposerVC: _ViewController,
         )
         // TODO: Adjust LLC to edit attachments also
         // TODO: Adjust LLC to edit mentions
-        messageController?.editMessage(text: newText)
+        messageController?.editMessage(text: newText, extraData: content.extraData)
     }
 
     /// Returns a potential user mention in case the user is currently typing a username.
@@ -1140,7 +1193,11 @@ open class ComposerVC: _ViewController,
             } else if commandName == "redpacket" {
                 self?.sendRedPacketAction()
             } else {
-                self?.content.addCommand(commandHints[commandIndex])
+                guard let hintCommand = commandHints[safe: commandIndex] else {
+                    indexNotFoundAssertion()
+                    return
+                }
+                self?.content.addCommand(hintCommand)
                 self?.dismissSuggestions()
             }
         }
@@ -1160,7 +1217,7 @@ open class ComposerVC: _ViewController,
     /// user searching logic.
     ///
     /// - Parameter typingMention: The potential user mention the current user is typing.
-    /// - Returns: `_UserListQuery` instance that will be used for searching users.
+    /// - Returns: `UserListQuery` instance that will be used for searching users.
     open func queryForMentionSuggestionsSearch(typingMention term: String) -> UserListQuery {
         UserListQuery(
             filter: .or([
@@ -1191,7 +1248,7 @@ open class ComposerVC: _ViewController,
             )
         } else {
             usersCache = searchUsers(
-                channel.lastActiveWatchers.map { $0 } + channel.lastActiveMembers.map { $0 },
+                channel.lastActiveMembers,
                 by: typingMention,
                 excludingId: currentUserId
             )
@@ -1208,9 +1265,12 @@ open class ComposerVC: _ViewController,
             guard dataSource.usersCache.count >= userIndex else {
                 return
             }
+            guard let user = dataSource.usersCache[safe: userIndex] else {
+                indexNotFoundAssertion()
+                return
+            }
 
             let textView = self.composerView.inputMessageView.textView
-            let user = dataSource.usersCache[userIndex]
             let text = textView.text as NSString
             let mentionText = self.mentionText(for: user)
             let newText = text.replacingCharacters(in: mentionRange, with: mentionText)
@@ -1364,15 +1424,19 @@ open class ComposerVC: _ViewController,
     // MARK: - UIDocumentPickerViewControllerDelegate
 
     open func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        let type: AttachmentType = .file
-
         for fileURL in urls {
+            var attachmentType = AttachmentType(fileExtension: fileURL.pathExtension)
+            // Remove this condition when doing: https://stream-io.atlassian.net/browse/CIS-1740
+            // This is a fallback right now to treat audios as files until we actually support audios
+            if attachmentType == .audio {
+                attachmentType = .file
+            }
             do {
-                try addAttachmentToContent(from: fileURL, type: type)
+                try addAttachmentToContent(from: fileURL, type: attachmentType)
             } catch {
                 handleAddAttachmentError(
                     attachmentURL: fileURL,
-                    attachmentType: type,
+                    attachmentType: attachmentType,
                     error: error
                 )
                 break
@@ -1441,7 +1505,7 @@ func searchUsers(_ users: [ChatUser], by searchInput: String, excludingId: Strin
     let searchInput = normalize(searchInput)
 
     let matchingUsers = users.filter { $0.id != excludingId }
-        .filter { searchInput == "" || $0.id.contains(searchInput) || (normalize($0.name ?? "").contains(searchInput)) }
+        .filter { searchInput.isEmpty || $0.id.contains(searchInput) || (normalize($0.name ?? "").contains(searchInput)) }
 
     let distance: (ChatUser) -> Int = {
         min($0.id.levenshtein(searchInput), $0.name?.levenshtein(searchInput) ?? 1000)

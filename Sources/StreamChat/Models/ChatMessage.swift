@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -68,8 +68,17 @@ public struct ChatMessage {
     ///
     public let isSilent: Bool
     
+    /// A flag indicating whether the message is a shadowed message.
+    ///
+    /// Shadowed message are special messages that are sent from shadow banned users.
+    ///
+    public let isShadowed: Bool
+    
     /// The reactions to the message created by any user.
     public let reactionScores: [MessageReactionType: Int]
+
+    /// The number of reactions per reaction type.
+    public let reactionCounts: [MessageReactionType: Int]
     
     /// The user which is the author of the message.
     ///
@@ -140,10 +149,30 @@ public struct ChatMessage {
 
     /// The message pinning information. Is `nil` if the message is not pinned.
     public let pinDetails: MessagePinDetails?
-    
+
     public var firstAttachmentId: AttachmentId? {
         return _attachments.first?.id
     }
+    /// Internationalization and localization for the message. Only available for translated messages.
+    public let translations: [TranslationLanguage: String]?
+
+    /// If the message is authored by the current user this field contains the list of channel members
+    /// who read this message (excluding the current user).
+    ///
+    /// - Note: For the message authored by other members this field is always empty.
+    /// - Important: The `readBy` loades and evaluates user models. If you're interested only in `count`,
+    /// it's recommended to use `readByCount` instead of `readBy.count` for better performance.
+    public var readBy: Set<ChatUser> { _readBy }
+    
+    @CoreDataLazy internal var _readBy: Set<ChatUser>
+    
+    /// For the message authored by the current user this field contains number of channel members
+    /// who has read this message (excluding the current user).
+    ///
+    /// - Note: For the message authored by other channel members this field always returns `0`.
+    public var readByCount: Int { readBy.count }
+    
+    @CoreDataLazy internal var _readByCount: Int
     
     internal init(
         id: MessageId,
@@ -162,7 +191,9 @@ public struct ChatMessage {
         extraData: [String: RawJSON],
         quotedMessage: @escaping () -> ChatMessage?,
         isSilent: Bool,
+        isShadowed: Bool,
         reactionScores: [MessageReactionType: Int],
+        reactionCounts: [MessageReactionType: Int],
         author: @escaping () -> ChatUser,
         mentionedUsers: @escaping () -> Set<ChatUser>,
         threadParticipants: @escaping () -> [ChatUser],
@@ -174,6 +205,9 @@ public struct ChatMessage {
         currentUserReactions: @escaping () -> Set<ChatMessageReaction>,
         isSentByCurrentUser: Bool,
         pinDetails: MessagePinDetails?,
+        translations: [TranslationLanguage: String]?,
+        readBy: @escaping () -> Set<ChatUser>,
+        readByCount: @escaping () -> Int,
         underlyingContext: NSManagedObjectContext?
     ) {
         self.id = id
@@ -191,11 +225,14 @@ public struct ChatMessage {
         self.replyCount = replyCount
         self.extraData = extraData
         self.isSilent = isSilent
+        self.isShadowed = isShadowed
         self.reactionScores = reactionScores
+        self.reactionCounts = reactionCounts
         self.localState = localState
         self.isFlaggedByCurrentUser = isFlaggedByCurrentUser
         self.isSentByCurrentUser = isSentByCurrentUser
         self.pinDetails = pinDetails
+        self.translations = translations
         
         $_author = (author, underlyingContext)
         $_mentionedUsers = (mentionedUsers, underlyingContext)
@@ -205,13 +242,99 @@ public struct ChatMessage {
         $_latestReactions = (latestReactions, underlyingContext)
         $_currentUserReactions = (currentUserReactions, underlyingContext)
         $_quotedMessage = (quotedMessage, underlyingContext)
+        $_readBy = (readBy, underlyingContext)
+        $_readByCount = (readByCount, underlyingContext)
     }
 }
 
-extension ChatMessage {
+public extension ChatMessage {
     /// Indicates whether the message is pinned or not.
-    public var isPinned: Bool {
+    var isPinned: Bool {
         pinDetails != nil
+    }
+
+//    public var isWalletRequestPayCell: Bool {
+//        if let wallet = attachments(payloadType: WalletAttachmentPayload.self).first {
+//            return true
+//        }
+//        return false
+//    }
+//
+//    public var isOneWalletCell: Bool {
+//        extraData.keys.contains("oneWalletTx") ?? false
+//    }
+//
+//    public var isRedPacketCell: Bool {
+//        extraData.keys.contains("redPacketPickup") ?? false
+//    }
+//
+//    public var isRedPacketAmountCell: Bool {
+//        return extraData.keys.contains("RedPacketOtherAmountReceived") ?? false
+//    }
+//
+//    public var isRedPacketReceivedCell: Bool {
+//        extraData.keys.contains("RedPacketTopAmountReceived") ?? false
+//    }
+//
+//    public var isRedPacketExpiredCell: Bool {
+//        guard let redPacket = getExtraData(key: "RedPacketExpired") else {
+//            return false
+//        }
+//        if let userName = redPacket["highestAmountUserName"] {
+//            let strUserName = fetchRawData(raw: userName) as? String ?? ""
+//            return !strUserName.isEmpty
+//        } else {
+//            return false
+//        }
+//    }
+//
+//    public var isRedPacketNoPickUpCell: Bool {
+//        guard let redPacket = getExtraData(key: "RedPacketExpired") else {
+//            return false
+//        }
+//        if let userName = redPacket["highestAmountUserName"] {
+//            let strUserName = fetchRawData(raw: userName) as? String ?? ""
+//            return strUserName.isEmpty
+//        } else {
+//            return false
+//        }
+//    }
+//
+//    public func getExtraData(key: String) -> [String: RawJSON]? {
+//        if let extraData = extraData[key] {
+//            switch extraData {
+//            case .dictionary(let dictionary):
+//                return dictionary
+//            default:
+//                return nil
+//            }
+//        } else {
+//            return nil
+//        }
+//    }
+//
+//    public func fetchRawData(raw: RawJSON) -> Any? {
+//        switch raw {
+//        case .number(let double):
+//            return double
+//        case .string(let string):
+//            return string
+//        case .bool(let bool):
+//            return bool
+//        case .dictionary(let dictionary):
+//            return dictionary
+//        case .array(let array):
+//            return array
+//        case .nil:
+//            return nil
+//        @unknown default:
+//            return nil
+//        }
+//    }
+
+    /// The total number of reactions.
+    var totalReactionsCount: Int {
+        reactionCounts.values.reduce(0, +)
     }
 
     public var isWalletRequestPayCell: Bool {
@@ -302,16 +425,7 @@ extension ChatMessage {
             return nil
         }
     }
-}
 
-public enum AdminMessageType: String {
-    case daoAddInitialSigners
-    case simpleGroupChat
-    case privateChat
-    case none
-}
-
-public extension ChatMessage {
     /// Returns all the attachments with the payload of the provided type.
     ///
     /// - Important: Attachments are loaded lazily and cached to maintain high performance.
@@ -371,9 +485,29 @@ public extension ChatMessage {
     func attachment(with id: AttachmentId) -> AnyChatMessageAttachment? {
         _attachments.first { $0.id == id }
     }
-
-    func isAttachmentAdded() -> Bool {
-        return _attachments.count > 0
+    
+    /// The message delivery status.
+    /// Always returns `nil` when the message is authored by another user.
+    /// Always returns `nil` when the message is `system/error/ephemeral/deleted`.
+    var deliveryStatus: MessageDeliveryStatus? {
+        guard isSentByCurrentUser else {
+            // Delivery status exists only for messages sent by the current user.
+            return nil
+        }
+        
+        guard type == .regular || type == .reply else {
+            // Delivery status only makes sense for regular messages and thread replies.
+            return nil
+        }
+        
+        switch localState {
+        case .pendingSend, .sending, .pendingSync, .syncing, .deleting:
+            return .pending
+        case .sendingFailed, .syncingFailed, .deletingFailed:
+            return .failed
+        case nil:
+            return readByCount > 0 ? .read : .sent
+        }
     }
 }
 
@@ -420,7 +554,7 @@ public struct MessagePinDetails {
     public let pinnedBy: ChatUser
 
     /// Date when the message pin expires. An nil value means that message does not expire
-    public let expiresAt: Date
+    public let expiresAt: Date?
 }
 
 /// A possible additional local state of the message. Applies only for the messages of the current user.
@@ -443,4 +577,48 @@ public enum LocalMessageState: String {
     case deleting
     /// Deleting of the message failed after multiple of tries. The system is not trying to delete this message anymore.
     case deletingFailed
+}
+
+public enum LocalReactionState: String {
+    ///  The reaction state is unknown
+    case unknown = ""
+    
+    /// The reaction is waiting to be sent to the server
+    case pendingSend
+
+    /// The reaction is being sent
+    case sending
+
+    /// Creating the reaction failed and cannot be fulfilled
+    case sendingFailed
+
+    /// The reaction is waiting to be deleted from the server
+    case pendingDelete
+    
+    /// The reaction is being deleted
+    case deleting
+    
+    /// Deleting of the reaction failed and cannot be fulfilled
+    case deletingFailed
+}
+
+/// The type describing message delivery status.
+public struct MessageDeliveryStatus: RawRepresentable, Hashable {
+    public let rawValue: String
+    
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+    
+    /// The message delivery state for message that is being sent/edited/deleted.
+    public static let pending = Self(rawValue: "pending")
+    
+    /// The message delivery state for message that is successfully sent.
+    public static let sent = Self(rawValue: "sent")
+    
+    /// The message delivery state for message that is successfully sent and read by at least one channel member.
+    public static let read = Self(rawValue: "read")
+    
+    /// The message delivery state for message failed to be sent/edited/deleted.
+    public static let failed = Self(rawValue: "failed")
 }

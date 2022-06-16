@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -22,6 +22,10 @@ extension Bundle {
             .flatMap(Bundle.init(url:))!
         #elseif SWIFT_PACKAGE
         return Bundle.module
+        #elseif STATIC_LIBRARY
+        return Bundle.main
+            .url(forResource: "StreamChatUI", withExtension: "bundle")
+            .flatMap(Bundle.init(url:))!
         #else
         return Bundle(for: BundleIdentifyingClass.self)
         #endif

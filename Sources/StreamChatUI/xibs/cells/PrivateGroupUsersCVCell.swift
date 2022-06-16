@@ -8,7 +8,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 
 class PrivateGroupUsersCVCell: UICollectionViewCell {
 

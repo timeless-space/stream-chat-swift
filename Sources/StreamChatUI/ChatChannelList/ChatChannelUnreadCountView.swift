@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -12,6 +12,7 @@ open class ChatChannelUnreadCountView: _View, ThemeProvider, SwiftUIRepresentabl
         .withoutAutoresizingMaskConstraints
         .withAdjustingFontForContentSizeCategory
         .withBidirectionalLanguagesSupport
+        .withAccessibilityIdentifier(identifier: "unreadCountLabel")
 
     /// The data this view component shows.
     open var content: ChannelUnreadCount = .noUnread {

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -89,7 +89,6 @@ open class ChatMessageReactionItemView: _View, AppearanceProvider {
 }
 
 // MARK: - Content
-
 extension ChatMessageReactionItemView {
     public struct Content {
         public let useAnimatedIcon: Bool
@@ -109,7 +108,6 @@ extension ChatMessageReactionItemView {
 }
 
 // MARK: - Private
-
 private extension ChatMessageReactionItemView {
     var reactionImage: String? {
         guard let content = content else { return nil }
@@ -125,5 +123,4 @@ private extension ChatMessageReactionItemView {
             .clear:
             .clear
     }
-    
 }

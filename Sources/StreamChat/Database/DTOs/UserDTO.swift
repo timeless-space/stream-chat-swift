@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -23,8 +23,7 @@ class UserDTO: NSManagedObject {
 
     @NSManaged var members: Set<MemberDTO>?
     @NSManaged var currentUser: CurrentUserDTO?
-    @NSManaged var teams: Set<TeamDTO>?
-    @NSManaged var channelMutes: Set<ChannelMuteDTO>
+    @NSManaged var teams: [TeamId]
 
     /// Returns a fetch request for the dto with the provided `userId`.
     static func user(withID userId: UserId) -> NSFetchRequest<UserDTO> {
@@ -87,6 +86,7 @@ extension UserDTO {
         
         let new = NSEntityDescription.insertNewObject(forEntityName: Self.entityName, into: context) as! UserDTO
         new.id = id
+        new.teams = []
         return new
     }
     
@@ -132,8 +132,7 @@ extension NSManagedObjectContext: UserDatabaseSession {
             dto.extraData = Data()
         }
 
-        let teams = try payload.teams.map { try saveTeam(teamId: $0) }
-        dto.teams = Set(teams)
+        dto.teams = payload.teams
 
         // payloadHash doesn't cover the query
         if let query = query, let queryDTO = try saveQuery(query: query) {
@@ -145,7 +144,7 @@ extension NSManagedObjectContext: UserDatabaseSession {
 
 extension UserDTO {
     /// Snapshots the current state of `UserDTO` and returns an immutable model object from it.
-    func asModel() -> ChatUser { .create(fromDTO: self) }
+    func asModel() throws -> ChatUser { try .create(fromDTO: self) }
     
     /// Snapshots the current state of `UserDTO` and returns its representation for used in API calls.
     func asRequestBody() -> UserRequestBody {
@@ -195,7 +194,9 @@ extension UserDTO {
 }
 
 extension ChatUser {
-    fileprivate static func create(fromDTO dto: UserDTO) -> ChatUser {
+    fileprivate static func create(fromDTO dto: UserDTO) throws -> ChatUser {
+        guard dto.isValid else { throw InvalidModel(dto) }
+
         let extraData: [String: RawJSON]
         do {
             extraData = try JSONDecoder.default.decode([String: RawJSON].self, from: dto.extraData)
@@ -218,7 +219,7 @@ extension ChatUser {
             createdAt: dto.userCreatedAt,
             updatedAt: dto.userUpdatedAt,
             lastActiveAt: dto.lastActivityAt,
-            teams: Set(dto.teams?.map(\.id) ?? []),
+            teams: Set(dto.teams),
             extraData: extraData
         )
     }

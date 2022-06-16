@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -27,6 +27,7 @@ class EventPayload: Decodable {
         case banReason = "reason"
         case banExpiredAt = "expiration"
         case parentId = "parent_id"
+        case hardDelete = "hard_delete"
     }
     
     let eventType: EventType
@@ -46,6 +47,7 @@ class EventPayload: Decodable {
     let banReason: String?
     let banExpiredAt: Date?
     let parentId: MessageId?
+    let hardDelete: Bool
 
     init(
         eventType: EventType,
@@ -64,7 +66,8 @@ class EventPayload: Decodable {
         isChannelHistoryCleared: Bool? = nil,
         banReason: String? = nil,
         banExpiredAt: Date? = nil,
-        parentId: MessageId? = nil
+        parentId: MessageId? = nil,
+        hardDelete: Bool = false
     ) {
         self.eventType = eventType
         self.connectionId = connectionId
@@ -83,6 +86,7 @@ class EventPayload: Decodable {
         self.banReason = banReason
         self.banExpiredAt = banExpiredAt
         self.parentId = parentId
+        self.hardDelete = hardDelete
     }
     
     required init(from decoder: Decoder) throws {
@@ -96,7 +100,7 @@ class EventPayload: Decodable {
         user = try container.decodeIfPresent(UserPayload.self, forKey: .user)
         createdBy = try container.decodeIfPresent(UserPayload.self, forKey: .createdBy)
         memberContainer = try container.decodeIfPresent(MemberContainerPayload.self, forKey: .memberContainer)
-        channel = try container.decodeIfPresent(ChannelDetailPayload.self, forKey: .channel)
+        channel = try? container.decodeIfPresent(ChannelDetailPayload.self, forKey: .channel)
         message = try container.decodeIfPresent(MessagePayload.self, forKey: .message)
         reaction = try container.decodeIfPresent(MessageReactionPayload.self, forKey: .reaction)
         watcherCount = try container.decodeIfPresent(Int.self, forKey: .watcherCount)
@@ -106,6 +110,7 @@ class EventPayload: Decodable {
         banReason = try container.decodeIfPresent(String.self, forKey: .banReason)
         banExpiredAt = try container.decodeIfPresent(Date.self, forKey: .banExpiredAt)
         parentId = try container.decodeIfPresent(MessageId.self, forKey: .parentId)
+        hardDelete = try container.decodeIfPresent(Bool.self, forKey: .hardDelete) ?? false
     }
     
     func event() throws -> Event {
@@ -121,5 +126,21 @@ extension EventPayload {
         }
         
         return value
+    }
+}
+
+extension Array where Element == EventPayload {
+    /// Decodes events from event payloads. If decoding of some event fails the error is logged without interrupting the chain.
+    ///
+    /// - Returns: The array of successfully decoded events.
+    func asEvents() -> [Event] {
+        compactMap {
+            do {
+                return try $0.event()
+            } catch {
+                log.error("Failed to decode event from event payload: \($0)")
+                return nil
+            }
+        }
     }
 }

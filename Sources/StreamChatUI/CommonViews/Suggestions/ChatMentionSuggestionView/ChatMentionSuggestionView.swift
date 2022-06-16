@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -14,7 +14,7 @@ open class ChatMentionSuggestionView: _View, ThemeProvider {
         }
     }
 
-    /// `_ChatChannelAvatarView` instance which holds photo of user for tagging.
+    /// `ChatChannelAvatarView` instance which holds photo of user for tagging.
     open private(set) lazy var avatarView: ChatUserAvatarView = components
         .mentionAvatarView
         .init()
@@ -39,6 +39,7 @@ open class ChatMentionSuggestionView: _View, ThemeProvider {
     /// ContainerStackView which holds username and userTag labels in vertical axis by default.
     open private(set) lazy var textContainer = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "textContainer")
 
     override open func setUpAppearance() {
         super.setUpAppearance()
@@ -65,21 +66,11 @@ open class ChatMentionSuggestionView: _View, ThemeProvider {
 
     override open func updateContent() {
         usernameLabel.text = content?.name
-
-        if let subtitle = content?.id {
-            usernameTagLabel.text = "@" + subtitle
-        } else {
-            usernameTagLabel.text = ""
-        }
-
-        if content?.name == nil {
-            usernameLabel.isHidden = true
-        }
-
-        if content?.id == nil {
-            usernameTagLabel.isHidden = true
-        }
-
+        usernameLabel.isHidden = usernameLabel.text?.isEmpty ?? true
+        
+        usernameTagLabel.text = content.map { "@" + $0.id }
+        usernameTagLabel.isHidden = usernameTagLabel.text?.isEmpty ?? true
+        
         avatarView.content = content
     }
 

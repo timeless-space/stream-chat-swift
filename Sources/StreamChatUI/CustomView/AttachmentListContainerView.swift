@@ -8,12 +8,11 @@
 
 import UIKit
 import CoreGraphics
-import Nuke
 import StreamChatUI
 import StreamChat
 import CoreData
 
-public class AttachmentListContainerView: UIView {
+public class AttachmentListContainerView: UIView, ThemeProvider {
     
     public var lblEmptyMessage = UILabel()
     
@@ -90,21 +89,19 @@ extension AttachmentListContainerView: UICollectionViewDelegate, UICollectionVie
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cellID = AttachmentListCollectionViewCell.reuseID
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath as IndexPath) as? AttachmentListCollectionViewCell
-        cell?.backgroundColor = .clear
-        cell?.attachmentImageView.layer.cornerRadius = 8.0
-        //cell?.attachmentImageView.image =
-        
-//        let images = arrChatMessages[indexPath.item].imageAttachments.map(\.asAnyAttachment)
-//        
-        let data = arrChatMessages[indexPath.item].imageAttachments.first
-        
-        if let imageURL = data?.imageURL {
-            Nuke.loadImage(with: imageURL, into: cell!.attachmentImageView)
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath as IndexPath) as? AttachmentListCollectionViewCell else {
+            return UICollectionViewCell()
         }
-        return cell!
+        cell.backgroundColor = .clear
+        cell.attachmentImageView.layer.cornerRadius = 8.0
+        let data = arrChatMessages[indexPath.item].imageAttachments.first
+        if let imageURL = data?.imageURL {
+            components.imageLoader.loadImage(
+                into: cell.attachmentImageView,
+                url: imageURL,
+                imageCDN: StreamImageCDN(),
+                placeholder: nil)
+        }
+        return cell
     }
-    
-    
-    
 }

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -54,7 +54,7 @@ class MessageNewEventDTO: EventDTO {
             let channelDTO = session.channel(cid: cid)
         else { return nil }
         
-        return MessageNewEvent(
+        return try? MessageNewEvent(
             user: userDTO.asModel(),
             message: messageDTO.asModel(),
             channel: channelDTO.asModel(),
@@ -105,7 +105,7 @@ class MessageUpdatedEventDTO: EventDTO {
             let channelDTO = session.channel(cid: cid)
         else { return nil }
         
-        return MessageUpdatedEvent(
+        return try? MessageUpdatedEvent(
             user: userDTO.asModel(),
             channel: channelDTO.asModel(),
             message: messageDTO.asModel(),
@@ -130,6 +130,9 @@ public struct MessageDeletedEvent: ChannelSpecificEvent {
     
     /// The event timestamp.
     public let createdAt: Date
+
+    /// A Boolean value indicating wether it is an hard delete or not.
+    public let isHardDelete: Bool
 }
 
 class MessageDeletedEventDTO: EventDTO {
@@ -138,6 +141,7 @@ class MessageDeletedEventDTO: EventDTO {
     let message: MessagePayload
     let createdAt: Date
     let payload: EventPayload
+    let hardDelete: Bool
     
     init(from response: EventPayload) throws {
         user = try? response.value(at: \.user)
@@ -145,21 +149,22 @@ class MessageDeletedEventDTO: EventDTO {
         message = try response.value(at: \.message)
         createdAt = try response.value(at: \.createdAt)
         payload = response
+        hardDelete = response.hardDelete
     }
     
     func toDomainEvent(session: DatabaseSession) -> Event? {
         guard
             let messageDTO = session.message(id: message.id),
-            let channelDTO = session.channel(cid: cid)
+            let channelDTO = session.channel(cid: cid),
+            let userDTO = user.flatMap({ session.user(id: $0.id) })
         else { return nil }
-        
-        let userDTO = user.flatMap { session.user(id: $0.id) }
-        
-        return MessageDeletedEvent(
-            user: userDTO?.asModel(),
+
+        return try? MessageDeletedEvent(
+            user: userDTO.asModel(),
             channel: channelDTO.asModel(),
             message: messageDTO.asModel(),
-            createdAt: createdAt
+            createdAt: createdAt,
+            isHardDelete: hardDelete
         )
     }
 }
@@ -206,7 +211,7 @@ class MessageReadEventDTO: EventDTO {
             let channelDTO = session.channel(cid: cid)
         else { return nil }
         
-        return MessageReadEvent(
+        return try? MessageReadEvent(
             user: userDTO.asModel(),
             channel: channelDTO.asModel(),
             createdAt: createdAt,

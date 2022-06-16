@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -28,6 +28,17 @@ public class DataController: Controller {
             }
         }
     }
+
+    /// Determines whether the controller can be recovered. A failure fetching remote data can mean that we failed to fetch the data that is present on the server, or
+    /// that we failed to synchronize a locally created channel
+    var canBeRecovered: Bool {
+        switch state {
+        case .remoteDataFetched, .remoteDataFetchFailed:
+            return true
+        case .initialized, .localDataFetched, .localDataFetchFailed:
+            return false
+        }
+    }
     
     /// Synchronize local data with remote.
     ///
@@ -38,9 +49,12 @@ public class DataController: Controller {
     /// - Parameter completion: Called when the controller has finished fetching remote data. If the data fetching fails,
     /// the `error` variable contains more details about the problem.
     ///
+    // swiftlint:disable unavailable_function
     public func synchronize(_ completion: ((_ error: Error?) -> Void)? = nil) {
         fatalError("`synchronize` method must be overriden by the subclass.")
     }
+
+    // swiftlint:enable unavailable_function
 
     /// The queue which is used to perform callback calls. The default value is `.main`.
     public var callbackQueue: DispatchQueue = .main
