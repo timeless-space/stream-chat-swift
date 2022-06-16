@@ -8,7 +8,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 
 class AttachmentPreviewBubble: UITableViewCell {
     var layoutOptions: ChatMessageLayoutOptions?
@@ -147,7 +146,12 @@ class AttachmentPreviewBubble: UITableViewCell {
                 if !options.contains(.authorName) {
                     authorAvatarView?.imageView.image = nil
                 } else {
-                    Nuke.loadImage(with: content?.author.imageURL, into: authorAvatarView?.imageView ?? .init())
+                    Components.default.imageLoader
+                        .loadImage(
+                        into: authorAvatarView?.imageView ?? .init(),
+                        url: content?.author.imageURL,
+                        imageCDN: StreamImageCDN(),
+                        placeholder: Appearance.default.images.userAvatarPlaceholder4)
                 }
             }
             timestampLabel?.isHidden = !options.contains(.timestamp)

@@ -8,7 +8,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 import AVKit
 
 class PhotoCollectionBubble: _TableViewCell {
@@ -31,6 +30,7 @@ class PhotoCollectionBubble: _TableViewCell {
     private lazy var subContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
     private var authorAvatarView: ChatAvatarView?
+    private let imageLoader = Components.default.imageLoader
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -130,7 +130,12 @@ class PhotoCollectionBubble: _TableViewCell {
                 if !options.contains(.authorName) {
                     authorAvatarView?.imageView.image = nil
                 } else {
-                    Nuke.loadImage(with: content?.author.imageURL, into: authorAvatarView?.imageView ?? .init())
+                    imageLoader.loadImage(
+                        into: authorAvatarView?.imageView ?? .init(),
+                        url: content?.author.imageURL,
+                        imageCDN: StreamImageCDN(),
+                        placeholder: Appearance.default.images.userAvatarPlaceholder4)
+
                 }
             }
             timestampLabel?.isHidden = !options.contains(.timestamp)
