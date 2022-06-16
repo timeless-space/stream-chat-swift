@@ -543,6 +543,19 @@ open class ChatMessageListVC:
                 cell.channel = dataSource?.channel(for: self)
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
+            } else if isWeatherCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "WeatherCell",
+                    for: indexPath) as? WeatherCell else {
+                        return UITableViewCell()
+                    }
+                cell.weatherType = currentWeatherType
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
             } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
                       let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
@@ -558,22 +571,7 @@ open class ChatMessageListVC:
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
-            }
-            else if isWeatherCell(message) {
-                guard let cell = tableView.dequeueReusableCell(
-                    withIdentifier: "WeatherCell",
-                    for: indexPath) as? WeatherCell else {
-                        return UITableViewCell()
-                    }
-                cell.weatherType = currentWeatherType
-                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
-                cell.content = message
-                cell.chatChannel = dataSource?.channel(for: self)
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.transform = .mirrorY
-                return cell
-            }
-            else {
+            } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
                     attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
