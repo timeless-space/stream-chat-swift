@@ -322,13 +322,8 @@ open class ChatChannelListVC: _ViewController,
         defer {
             collectionView.deselectItem(at: indexPath, animated: true)
         }
-         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-             guard let self = self else {
-                 return
-             }
-             let channel = self.controller.channels[indexPath.row]
-             self.router.showChannel(for: channel.cid)
-         }
+        let channel = controller.channels[indexPath.row]
+        router.showChannel(for: channel.cid)
     }
     
     public func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
