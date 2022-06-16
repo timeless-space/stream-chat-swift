@@ -62,27 +62,37 @@ public class BillSplitUserSelectionViewModel: NSObject {
     }
 
     public func searchUser(with name: String) {
-        if searchListController == nil {
-            searchListController = ChatClient.shared.userSearchController()
+        let filteredData = channelMembers.filter { user in
+            guard let userName = user.name else { return false }
+            return userName.lowercased().contains(name.lowercased())
         }
-        var newQuery = UserListQuery()
-        newQuery.filter = .and([
-            .autocomplete(.name, text: name),
-            .exists(.lastActiveAt),
-            .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
-        ])
-        searchListController?.search(query: newQuery) { [weak self] error in
-            guard let weakSelf = self else { return }
-            if let error = error {
-                weakSelf.callbackSearch?(BillSplitUserSelectionVC.SearchState.failed)
-            } else {
-                let users = weakSelf.searchListController?.users ?? []
-                let nonNilUsers = users
-                    .filter({ $0.id != nil && $0.name?.isBlank == false })
-                weakSelf.sortChannelMembers(nonNilUsers: nonNilUsers)
-                weakSelf.callbackSearch?(BillSplitUserSelectionVC.SearchState.completed)
-            }
-        }
+        sortChannelMembers(nonNilUsers: filteredData)
+        callbackSearch?(BillSplitUserSelectionVC.SearchState.completed)
+//        guard let channelController = channelController else {
+//            return
+//        }
+//        if searchListController == nil {
+//            searchListController = ChatClient.shared.userSearchController()
+//        }
+//        var newQuery = UserListQuery()
+//        newQuery.filter = .and([
+//            .autocomplete(.name, text: name),
+//            .exists(.lastActiveAt),
+//            .equal(.id, to: channelController.channel!.cid.id),
+//            .notEqual(.id, to: ChatClient.shared.currentUserId ?? ""),
+//        ])
+//        searchListController?.search(query: newQuery) { [weak self] error in
+//            guard let weakSelf = self else { return }
+//            if let error = error {
+//                weakSelf.callbackSearch?(BillSplitUserSelectionVC.SearchState.failed)
+//            } else {
+//                let users = weakSelf.searchListController?.users ?? []
+//                let nonNilUsers = users
+//                    .filter({ $0.id != nil && $0.name?.isBlank == false })
+//                weakSelf.sortChannelMembers(nonNilUsers: nonNilUsers)
+//                weakSelf.callbackSearch?(BillSplitUserSelectionVC.SearchState.completed)
+//            }
+//        }
     }
 
     private func sortChannelMembers(nonNilUsers: [ChatUser]) {
