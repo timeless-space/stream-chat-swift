@@ -1002,11 +1002,13 @@ open class ComposerVC: _ViewController,
         let location = notification.userInfo?["location"] as? String ?? ""
         let iconCode = notification.userInfo?["iconCode"] as? String ?? ""
         let displayMessage = notification.userInfo?["displayMessage"] as? String ?? ""
+        let description = notification.userInfo?["description"] as? String ?? ""
         // Set data
         weatherData["currentWeather"] = .string(temp)
         weatherData["currentLocation"] = .string(location)
         weatherData["iconCode"] = .string(iconCode)
         weatherData["displayMessage"] = .string(displayMessage)
+        weatherData["description"] = .string(description)
         return weatherData
     }
 
