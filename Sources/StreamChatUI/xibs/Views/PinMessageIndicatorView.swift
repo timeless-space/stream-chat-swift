@@ -10,9 +10,6 @@ import UIKit
 
 open class PinMessageIndicatorView: UIView {
     // MARK: - Variables
-    open private(set) lazy var tableView: UITableView = {
-        return UITableView()
-    }()
     open private(set) var scrollView: UIScrollView?
     open private(set) var stackView: UIStackView?
     open private(set) var highlightedView: UIView?

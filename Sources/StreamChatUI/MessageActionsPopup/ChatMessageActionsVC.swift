@@ -111,16 +111,17 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
             actions.append(copyActionItem())
             //actions.append(translateMessageItem())
             if message.isSentByCurrentUser {
-                actions += [editActionItem(), deleteActionItem()]
-
-            } else {
-                actions += [flagActionItem()]
-
-                if channelConfig.mutesEnabled {
-                    let isMuted = currentUser.mutedUsers.contains(message.author)
-                    actions.append(isMuted ? unmuteActionItem() : muteActionItem())
-                }
+                actions += [editActionItem()]
             }
+//            else {
+//                actions += [flagActionItem()]
+//
+//                if channelConfig.mutesEnabled {
+//                    let isMuted = currentUser.mutedUsers.contains(message.author)
+//                    actions.append(isMuted ? unmuteActionItem() : muteActionItem())
+//                }
+//            }
+            actions += [pinMessageActionItem(message: message), forwardActionItem()]
 
             return actions
         case .pendingSend, .sendingFailed, .pendingSync, .syncingFailed, .deletingFailed:

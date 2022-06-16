@@ -79,6 +79,7 @@ public class PinMessageContainerView: UIView {
         labelTitle.isUserInteractionEnabled = false
         labelMessage.isUserInteractionEnabled = false
         isUserInteractionEnabled = true
+        setNeedsDisplay()
     }
 
     private func layoutIndicatorView() {
@@ -141,6 +142,7 @@ public class PinMessageContainerView: UIView {
     private func setupIndicatorView() {
         indicatorView.numberOfItems = pinMessages.count
         indicatorView.setupUI()
+        indicatorView.setNeedsDisplay()
     }
 
     private func setupTitle() {

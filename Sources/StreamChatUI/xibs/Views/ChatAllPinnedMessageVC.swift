@@ -283,6 +283,10 @@ open class ChatAllPinnedMessageVC: _ViewController,
 
 // MARK: - ChatMessageListVCDataSource
 extension ChatAllPinnedMessageVC: ChatMessageListVCDataSource {
+    public var messages: [ChatMessage] {
+        return pinnedMessages
+    }
+
     public func channel(for vc: ChatMessageListVC) -> ChatChannel? {
         return channelController?.channel
     }
@@ -312,6 +316,9 @@ extension ChatAllPinnedMessageVC: ChatMessageListVCDataSource {
 
 // MARK: - ChatMessageListVCDelegate
 extension ChatAllPinnedMessageVC: ChatMessageListVCDelegate {
+    public func chatMessageListVC(_ vc: ChatMessageListVC, didTapOnMessageListView messageListView: ChatMessageListView, with gestureRecognizer: UITapGestureRecognizer) {
+    }
+
     public func chatMessageListVC(_ vc: ChatMessageListVC, willDisplayMessageAt indexPath: IndexPath) {}
 
     public func chatMessageListVC(_ vc: ChatMessageListVC, scrollViewDidScroll scrollView: UIScrollView) {}
