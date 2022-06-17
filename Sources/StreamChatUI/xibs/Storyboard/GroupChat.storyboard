@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -649,7 +648,7 @@
                                                         <color key="textColor" white="1" alpha="0.2988739013671875" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
-                                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZzE-gT-n96">
+                                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="ZzE-gT-n96">
                                                         <rect key="frame" x="101.5" y="0.0" width="51" height="24"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="24" id="yUD-Xo-jES"/>
@@ -953,6 +952,7 @@
                         <outlet property="descriptionContainerView" destination="OjL-Eu-jPg" id="guy-uS-nni"/>
                         <outlet property="groupDescriptionField" destination="d9i-Sw-F4z" id="gje-2e-bvA"/>
                         <outlet property="heightSafeAreaView" destination="Glx-Iz-s0k" id="tG3-1x-BGR"/>
+                        <outlet property="isDiscoverable" destination="ZzE-gT-n96" id="mc1-GZ-0Bm"/>
                         <outlet property="lblFriendCount" destination="0fQ-Bb-8Nq" id="LBk-Im-aMf"/>
                         <outlet property="lblGroupNameCount" destination="ZX6-EO-Rux" id="c3H-oy-n1U"/>
                         <outlet property="lblHashtagCount" destination="VMj-eX-SlU" id="55T-6D-w7S"/>

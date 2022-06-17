@@ -8,6 +8,7 @@ import SwiftUI
 
 public extension Notification.Name {
     static let pushToDaoChatMessageScreen = Notification.Name("pushToDaoChatMessageScreen")
+    static let presentCommunityChat = Notification.Name("presentCommunityChat")
 }
 
 /// A `UIViewController` subclass  that shows list of channels.
@@ -62,6 +63,14 @@ open class ChatChannelListVC: _ViewController,
         button.setImage(appearance.images.editCircle, for: .normal)
         button.tintColor = .white
         button.addTarget(self, action: #selector(didTapCreateNewChannel), for: .touchUpInside)
+        return button.withoutAutoresizingMaskConstraints
+    }()
+
+    open private(set) lazy var communityButton: UIButton = {
+        let button = UIButton()
+        button.setImage(appearance.images.glassCircle, for: .normal)
+        button.tintColor = .white
+        button.addTarget(self, action: #selector(didTapOpenCommunityChat), for: .touchUpInside)
         return button.withoutAutoresizingMaskConstraints
     }()
     open var createChannelAction: (() -> Void)?
@@ -208,6 +217,14 @@ open class ChatChannelListVC: _ViewController,
             createChannelButton.heightAnchor.constraint(equalToConstant: 32),
             createChannelButton.widthAnchor.constraint(equalToConstant: 32),
         ])
+
+        headerView.addSubview(communityButton)
+        NSLayoutConstraint.activate([
+            communityButton.trailingAnchor.constraint(equalTo: createChannelButton.trailingAnchor, constant: -37),
+            communityButton.centerYAnchor.constraint(equalTo: createChannelButton.centerYAnchor, constant: 0),
+            communityButton.heightAnchor.constraint(equalToConstant: 32),
+            communityButton.widthAnchor.constraint(equalToConstant: 32),
+        ])
         //
         headerView.addSubview(lblTitle)
         NSLayoutConstraint.activate([
@@ -250,6 +267,10 @@ open class ChatChannelListVC: _ViewController,
 
     @objc func didTapCreateNewChannel(_ sender: Any) {
         createChannelAction?()
+    }
+
+    @objc func didTapOpenCommunityChat(_ sender: Any) {
+        NotificationCenter.default.post(name: .presentCommunityChat, object: nil)
     }
 
     open func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

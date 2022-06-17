@@ -26,6 +26,7 @@ public class NameGroupViewController: ChatBaseVC {
     @IBOutlet private var tagViewPlaceHolderView: UIView!
     @IBOutlet private weak var heightSafeAreaView: NSLayoutConstraint!
     @IBOutlet private weak var nextButtonBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var isDiscoverable: UISwitch!
     // MARK: - VARIABLES
     public var client: ChatClient?
     public var selectedUsers: [ChatUser]!
@@ -122,7 +123,7 @@ public class NameGroupViewController: ChatBaseVC {
         do {
             let channelController = try ChatClient.shared.channelController(
                 createChannelWithId: .init(
-                    type: .messaging,
+                    type: isDiscoverable.isOn ? .custom("public") : .messaging,
                     id: groupId), name: name,
                 members: Set(selectedUsers.map(\.id)), extraData: extraData)
             channelController.synchronize { [weak self] error in
