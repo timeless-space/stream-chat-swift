@@ -633,8 +633,11 @@ open class ChatMessageListVC:
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let cell = cell as? ASVideoTableViewCell else { return }
-        ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
+        if let cell = cell as? ASVideoTableViewCell {
+            ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
+        } else if let cell = cell as? ChatMessageStickerBubble {
+            cell.sentThumbStickerView = nil
+        }
     }
 
     open func scrollViewDidScroll(_ scrollView: UIScrollView) {

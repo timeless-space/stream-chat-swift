@@ -32,6 +32,7 @@ class ChatMessageStickerBubble: _TableViewCell {
     var chatChannel: ChatChannel?
     var isSender = false
     private var cellWidth: CGFloat = 100.0
+    var sentThumbStickerView: AnimationView? = nil
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -86,12 +87,11 @@ class ChatMessageStickerBubble: _TableViewCell {
             sentThumbGifView.setGifFromURL(gifUrl)
             stickerContainer.addArrangedSubview(sentThumbGifView)
         } else if content?.extraData.stickerUrl?.contains(".json") ?? false, let lottie = URL(string: content?.extraData.stickerUrl ?? "") {
-            var sentThumbStickerView: AnimationView? = nil
             sentThumbStickerView = .init(url: lottie, closure: { [weak self] _ in
                 guard let `self` = self else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    sentThumbStickerView?.play()
-                    sentThumbStickerView?.loopMode = .loop
+                    self.sentThumbStickerView?.play()
+                    self.sentThumbStickerView?.loopMode = .loop
                 }
             })
             if let stickerView = sentThumbStickerView {
