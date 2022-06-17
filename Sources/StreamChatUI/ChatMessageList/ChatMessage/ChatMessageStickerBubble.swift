@@ -33,17 +33,24 @@ class ChatMessageStickerBubble: _TableViewCell {
     var isSender = false
     private var cellWidth: CGFloat = 100.0
     var sentThumbStickerView: AnimationView? = nil
+    var tapGesture: UITapGestureRecognizer? = nil
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setLayout()
+        tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(onTapOfLottie))
+        tapGesture?.numberOfTapsRequired = 1
+    }
+
+    @objc func onTapOfLottie() {
+        if !(sentThumbStickerView?.isAnimationPlaying ?? true) {
+            sentThumbStickerView?.play(completion: nil)
+        }
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
-
-
 
     private func setLayout() {
         selectionStyle = .none
@@ -91,7 +98,7 @@ class ChatMessageStickerBubble: _TableViewCell {
                 guard let `self` = self else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     self.sentThumbStickerView?.play()
-                    self.sentThumbStickerView?.loopMode = .loop
+                    self.sentThumbStickerView?.loopMode = .playOnce
                 }
             })
             if let stickerView = sentThumbStickerView {
@@ -104,6 +111,9 @@ class ChatMessageStickerBubble: _TableViewCell {
                 stickerView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
                 stickerView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
                 stickerContainer.addArrangedSubview(stickerView)
+                if let tapGesture = tapGesture {
+                    stickerView.addGestureRecognizer(tapGesture)
+                }
             }
         } else if let sticker = content?.extraData.stickerUrl?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
             let sentThumbStickerView = SPUIStickerView()
