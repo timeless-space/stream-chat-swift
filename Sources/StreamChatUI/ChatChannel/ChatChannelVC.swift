@@ -647,7 +647,6 @@ open class ChatChannelVC: _ViewController,
         popup.channelController = channelController
         popup.pinnedMessages = pinnedMessages
             .sorted(by: { $0.createdAt > $1.createdAt })
-        popup.modalPresentationStyle = .overFullScreen
         present(popup, animated: true)
     }
 

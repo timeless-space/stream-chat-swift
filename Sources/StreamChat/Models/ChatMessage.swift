@@ -398,6 +398,12 @@ public extension ChatMessage {
         return authorID
     }
 
+    public func isFallbackMessage() -> Bool {
+        guard let fallbackMessage = extraData["fallbackMessage"] else { return false }
+        let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
+        return !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     public func getExtraData(key: String) -> [String: RawJSON]? {
         if let extraData = extraData[key] {
             switch extraData {

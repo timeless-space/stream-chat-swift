@@ -41,7 +41,7 @@ open class ChatAllPinnedMessageVC: _ViewController,
     }()
     open private(set) lazy var backButton: UIButton = {
         let button = UIButton()
-        button.setImage(Appearance.default.images.backCircle, for: .normal)
+        button.setImage(Appearance.default.images.closeCircle, for: .normal)
         button.tintColor = .white
         button.contentEdgeInsets = UIEdgeInsets.init(top: 8, left: 8, bottom: 8, right: 8)
         button.addTarget(self, action: #selector(backAction), for: .touchUpInside)
@@ -145,7 +145,7 @@ open class ChatAllPinnedMessageVC: _ViewController,
                 .constraint(equalTo: mainContainerView.trailingAnchor, constant: 0),
             navigationSafeAreaView.topAnchor
                 .constraint(equalTo: mainContainerView.topAnchor, constant: 0),
-            navigationSafeAreaView.heightAnchor.constraint(equalToConstant: UIView.safeAreaTop)
+            navigationSafeAreaView.heightAnchor.constraint(equalToConstant: 20)
         ])
     }
 

@@ -153,7 +153,7 @@ public class PinMessageContainerView: UIView {
     }
 
     private func setupCloseButton() {
-        unPinCloseButton.setImage(Appearance.default.images.closeBold, for: .normal)
+        unPinCloseButton.setImage(Appearance.default.images.messageActionUnpin, for: .normal)
         unPinCloseButton.tintColor = .white
         unPinCloseButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)
     }

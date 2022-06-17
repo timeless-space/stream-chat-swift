@@ -121,8 +121,10 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
 //                    actions.append(isMuted ? unmuteActionItem() : muteActionItem())
 //                }
 //            }
-            actions += [pinMessageActionItem(message: message), forwardActionItem()]
-
+            if !message.isFallbackMessage() {
+                actions.append(pinMessageActionItem(message: message))
+            }
+            actions.append(forwardActionItem())
             return actions
         case .pendingSend, .sendingFailed, .pendingSync, .syncingFailed, .deletingFailed:
             return [
