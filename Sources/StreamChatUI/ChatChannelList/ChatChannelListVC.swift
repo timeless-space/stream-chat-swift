@@ -179,7 +179,6 @@ open class ChatChannelListVC: _ViewController,
             let chatChannelVC = ChatChannelVC.init()
             let channelController = try ChatClient.shared.channelController(for: .init(cid: cid))
             chatChannelVC.channelController = channelController
-            NotificationCenter.default.post(name: .hideTabbar, object: nil)
             pushWithAnimation(controller: chatChannelVC, with: router.rootNavigationController)
 
             if let channelListVC = router.rootNavigationController?.viewControllers.first {
