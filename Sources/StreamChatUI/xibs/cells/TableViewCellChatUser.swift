@@ -8,7 +8,6 @@
 import StreamChat
 import StreamChatUI
 import UIKit
-import Nuke
 import SkeletonView
 
 public class TableViewCellChatUser: _TableViewCell, AppearanceProvider {
@@ -27,6 +26,7 @@ public class TableViewCellChatUser: _TableViewCell, AppearanceProvider {
 
     // MARK: - Variables
     private var user: ChatUser?
+    let imageLoader = Components.default.imageLoader
 
     //MARK: - LIFE CYCEL
     public override func awakeFromNib() {
@@ -66,12 +66,12 @@ extension TableViewCellChatUser {
 
     public func config(user: ChatUser, selectedImage: UIImage?) {
         if let imageURL = user.imageURL {
-            let options = ImageLoadingOptions(
-                placeholder: Appearance.default.images.userAvatarPlaceholder4,
-                transition: .fadeIn(duration: 0.1),
-                failureImage: Appearance.default.images.userAvatarPlaceholder4
+            imageLoader.loadImage(
+                into: avatarView,
+                url: imageURL,
+                imageCDN: StreamImageCDN(),
+                placeholder: Appearance.default.images.userAvatarPlaceholder4
             )
-            Nuke.loadImage(with: imageURL, options: options, into: avatarView)
         }
         avatarView.backgroundColor = .clear
         nameLabel.setChatTitleColor()
@@ -88,9 +88,9 @@ extension TableViewCellChatUser {
             descriptionLabel.textColor = Appearance.default.colorPalette.statusColorBlue
             descriptionLabel.text = "Online"
         } else if let lastActive = user.lastActiveAt {
-            descriptionLabel.text = "Last seen: " + DTFormatter.formatter.string(from: lastActive)
+            descriptionLabel.text = "Last seen: " + Appearance.default.formatters.chatUserList.format(lastActive)
         } else if let lastActive = user.lastActiveAt {
-            descriptionLabel.text = "Last seen: " + DTFormatter.formatter.string(from: lastActive)
+            descriptionLabel.text = "Last seen: " + Appearance.default.formatters.chatUserList.format(lastActive)
         } else {
             descriptionLabel.text = "Never seen"
         }

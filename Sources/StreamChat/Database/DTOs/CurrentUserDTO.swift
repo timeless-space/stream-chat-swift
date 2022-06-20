@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -10,10 +10,9 @@ class CurrentUserDTO: NSManagedObject {
     @NSManaged var unreadChannelsCount: Int64
     @NSManaged var unreadMessagesCount: Int64
     
-    /// Into this field the creation date of last locally received event is saved.
-    /// The date later serves as reference date for `/sync` endpoint
-    /// that returns all events that happen after the given date
-    @NSManaged var lastReceivedEventDate: Date?
+    /// Contains the timestamp when last sync process was finished.
+    /// The date later serves as reference date for the last event synced using `/sync` endpoint
+    @NSManaged var lastSynchedEventDate: Date?
 
     @NSManaged var flaggedUsers: Set<UserDTO>
     @NSManaged var flaggedMessages: Set<MessageDTO>
@@ -21,6 +20,7 @@ class CurrentUserDTO: NSManagedObject {
     @NSManaged var user: UserDTO
     @NSManaged var devices: Set<DeviceDTO>
     @NSManaged var currentDevice: DeviceDTO?
+    @NSManaged var channelMutes: Set<ChannelMuteDTO>
     
     /// Returns a default fetch request for the current user.
     static var defaultFetchRequest: NSFetchRequest<CurrentUserDTO> {
@@ -69,10 +69,11 @@ extension NSManagedObjectContext: CurrentUserDatabaseSession {
         let mutedUsers = try payload.mutedUsers.map { try saveUser(payload: $0.mutedUser) }
         dto.mutedUsers = Set(mutedUsers)
 
-        dto.user.channelMutes.forEach { delete($0) }
-        dto.user.channelMutes = Set(
+        let channelMutes = Set(
             try payload.mutedChannels.map { try saveChannelMute(payload: $0) }
         )
+        dto.channelMutes.subtracting(channelMutes).forEach { delete($0) }
+        dto.channelMutes = channelMutes
         
         if let unreadCount = payload.unreadCount {
             try saveCurrentUserUnreadCount(count: unreadCount)
@@ -164,13 +165,12 @@ extension NSManagedObjectContext: CurrentUserDatabaseSession {
 
 extension CurrentUserDTO {
     /// Snapshots the current state of `CurrentUserDTO` and returns an immutable model object from it.
-    func asModel() -> CurrentChatUser { .create(fromDTO: self) }
+    func asModel() throws -> CurrentChatUser { try .create(fromDTO: self) }
 }
 
 extension CurrentChatUser {
-    fileprivate static func create(fromDTO dto: CurrentUserDTO) -> CurrentChatUser {
-        let context = dto.managedObjectContext!
-
+    fileprivate static func create(fromDTO dto: CurrentUserDTO) throws -> CurrentChatUser {
+        guard dto.isValid, let context = dto.managedObjectContext else { throw InvalidModel(dto) }
         let user = dto.user
 
         let extraData: [String: RawJSON]
@@ -184,19 +184,15 @@ extension CurrentChatUser {
             extraData = [:]
         }
 
-        let mutedUsers: [ChatUser] = dto.mutedUsers.map { $0.asModel() }
-        let flaggedUsers: [ChatUser] = dto.flaggedUsers.map { $0.asModel() }
+        let mutedUsers: [ChatUser] = try dto.mutedUsers.map { try $0.asModel() }
+        let flaggedUsers: [ChatUser] = try dto.flaggedUsers.map { try $0.asModel() }
         let flaggedMessagesIDs: [MessageId] = dto.flaggedMessages.map(\.id)
 
         let fetchMutedChannels: () -> Set<ChatChannel> = {
-            Set(
-                ChannelMuteDTO
-                    .load(userId: user.id, context: context)
-                    .map { $0.channel.asModel() }
-            )
+            Set(dto.channelMutes.compactMap { try? $0.channel.asModel() })
         }
 
-        return CurrentChatUser(
+        return try CurrentChatUser(
             id: user.id,
             name: user.name,
             imageURL: user.imageURL,
@@ -206,9 +202,9 @@ extension CurrentChatUser {
             createdAt: user.userCreatedAt,
             updatedAt: user.userUpdatedAt,
             lastActiveAt: user.lastActivityAt,
-            teams: Set(user.teams?.map(\.id) ?? []),
+            teams: Set(user.teams),
             extraData: extraData,
-            devices: dto.devices.map { $0.asModel() },
+            devices: dto.devices.map { try $0.asModel() },
             currentDevice: dto.currentDevice?.asModel(),
             mutedUsers: Set(mutedUsers),
             flaggedUsers: Set(flaggedUsers),

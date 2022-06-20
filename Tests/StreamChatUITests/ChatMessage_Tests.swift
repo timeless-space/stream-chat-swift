@@ -1,8 +1,9 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 @testable import StreamChat
+@testable import StreamChatTestTools
 @testable import StreamChatUI
 import XCTest
 
@@ -218,17 +219,46 @@ final class ChatMessage_Tests: XCTestCase {
         XCTAssertFalse(threadPartMessage.isRootOfThread)
     }
 
-    func test_isRootOfThread_whenMessageIsRootOfThread_returnsTrue() {
+    func test_isRootOfThread_whenReplyCountIsNonZero_returnsTrue() {
         let threadRootMessage: ChatMessage = .mock(
             id: .unique,
             cid: .unique,
             text: .unique,
             author: .mock(id: .unique),
             parentMessageId: nil,
-            replyCount: 10
+            replyCount: 10,
+            latestReplies: []
         )
 
         XCTAssertTrue(threadRootMessage.isRootOfThread)
+    }
+
+    func test_isRootOfThread_whenRepliesIsNotEmpty_returnsTrue() {
+        let threadRootMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: .unique,
+            text: .unique,
+            author: .mock(id: .unique),
+            parentMessageId: nil,
+            replyCount: 0,
+            latestReplies: [.mock(id: .unique, cid: .unique, text: .unique, author: .mock(id: .unique))]
+        )
+
+        XCTAssertTrue(threadRootMessage.isRootOfThread)
+    }
+
+    func test_isRootOfThread_whenNoReplyCountNorReplies_returnsFalse() {
+        let threadRootMessage: ChatMessage = .mock(
+            id: .unique,
+            cid: .unique,
+            text: .unique,
+            author: .mock(id: .unique),
+            parentMessageId: nil,
+            replyCount: 0,
+            latestReplies: []
+        )
+
+        XCTAssertFalse(threadRootMessage.isRootOfThread)
     }
 
     func test_isRootOfThread_whenMessageDoesNotBelongToThread_returnsFalse() {
@@ -319,62 +349,6 @@ final class ChatMessage_Tests: XCTestCase {
         )
 
         XCTAssertEqual(nonDeletedNonEphemeralMessage.textContent, nonDeletedNonEphemeralMessage.text)
-    }
-
-    // MARK: - isOnlyVisibleForCurrentUser
-
-    func test_isOnlyVisibleForCurrentUser_whenMessageIsEphemeralAndSentByCurrentUser_returnsTrue() {
-        let ephemeralMessageFromCurrentUser: ChatMessage = .mock(
-            id: .unique,
-            cid: .unique,
-            text: .unique,
-            type: .ephemeral,
-            author: .mock(id: .unique),
-            isSentByCurrentUser: true
-        )
-
-        XCTAssertTrue(ephemeralMessageFromCurrentUser.isOnlyVisibleForCurrentUser)
-    }
-
-    func test_isOnlyVisibleForCurrentUser_whenMessageIsDeletedAndSentByCurrentUser_returnsTrue() {
-        let deletedMessageFromCurrentUser: ChatMessage = .mock(
-            id: .unique,
-            cid: .unique,
-            text: .unique,
-            author: .mock(id: .unique),
-            deletedAt: .unique,
-            isSentByCurrentUser: true
-        )
-
-        XCTAssertTrue(deletedMessageFromCurrentUser.isOnlyVisibleForCurrentUser)
-    }
-
-    func test_isOnlyVisibleForCurrentUser_whenMessageIsDeletedEphemeralAndSentByCurrentUser_returnsTrue() {
-        let deletedEphemeralMessageFromCurrentUser: ChatMessage = .mock(
-            id: .unique,
-            cid: .unique,
-            text: .unique,
-            type: .ephemeral,
-            author: .mock(id: .unique),
-            deletedAt: .unique,
-            isSentByCurrentUser: true
-        )
-
-        XCTAssertTrue(deletedEphemeralMessageFromCurrentUser.isOnlyVisibleForCurrentUser)
-    }
-
-    func test_isOnlyVisibleForCurrentUser_whenMessageIsSentNotByCurrentUser_returnsFalse() {
-        let deletedEphemeralMessageFromAnotherUser: ChatMessage = .mock(
-            id: .unique,
-            cid: .unique,
-            text: .unique,
-            type: .ephemeral,
-            author: .mock(id: .unique),
-            deletedAt: .unique,
-            isSentByCurrentUser: false
-        )
-
-        XCTAssertFalse(deletedEphemeralMessageFromAnotherUser.isOnlyVisibleForCurrentUser)
     }
 
     // MARK: - isDeleted

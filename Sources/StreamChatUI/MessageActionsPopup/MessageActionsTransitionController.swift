@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,7 +7,7 @@ import StreamChat
 import UIKit
 
 /// Transitions controller for `ChatMessagePopupVC`.
-open class MessageActionsTransitionController: NSObject, UIViewControllerTransitioningDelegate,
+open class ChatMessageActionsTransitionController: NSObject, UIViewControllerTransitioningDelegate,
     UIViewControllerAnimatedTransitioning {
         /// Indicates if the transition is for presenting or dismissing.
         open var isPresenting: Bool = false
@@ -132,7 +132,7 @@ open class MessageActionsTransitionController: NSObject, UIViewControllerTransit
 
             transitionSubviews.forEach(transitionContext.containerView.addSubview)
             messageView.mainContainer.layoutMargins = originalMessageContentView.mainContainer.layoutMargins
-            messageView.bubbleThreadMetaContainer.layoutMargins = originalMessageContentView.bubbleThreadMetaContainer.layoutMargins
+            messageView.bubbleThreadFootnoteContainer.layoutMargins = originalMessageContentView.bubbleThreadFootnoteContainer.layoutMargins
 
             let duration = transitionDuration(using: transitionContext)
             UIView.animate(

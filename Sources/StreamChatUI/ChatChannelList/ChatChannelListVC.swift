@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -21,7 +21,6 @@ open class ChatChannelListVC: _ViewController,
     SwipeableViewDelegate {
     /// The `ChatChannelListController` instance that provides channels data.
     public var controller: ChatChannelListController!
-
     private var loadingPreviousMessages: Bool = false
 
     open private(set) lazy var loadingIndicator: UIActivityIndicatorView = {
@@ -45,6 +44,7 @@ open class ChatChannelListVC: _ViewController,
     open private(set) lazy var collectionView: UICollectionView =
         UICollectionView(frame: .zero, collectionViewLayout: collectionViewLayout)
             .withoutAutoresizingMaskConstraints
+            .withAccessibilityIdentifier(identifier: "collectionView")
 
     open private(set) lazy var headerSafeAreaView: UIView = UIView(frame: .zero).withoutAutoresizingMaskConstraints
 
@@ -82,6 +82,38 @@ open class ChatChannelListVC: _ViewController,
 
     /// Used for mapping `ListChanges` to sets of `IndexPath` and verifying possible conflicts
     private let collectionUpdatesMapper = CollectionUpdatesMapper()
+    
+    /// Create a new `ChatChannelListViewController`
+    /// - Parameters:
+    ///   - controller: Your created `ChatChannelListController` with required query
+    ///   - storyboard: The storyboard to instantiate your `ViewController` from
+    ///   - storyboardId: The `storyboardId` that is set in your `UIStoryboard` reference
+    /// - Returns: A newly created `ChatChannelListViewController`
+    public static func make(
+        with controller: ChatChannelListController,
+        storyboard: UIStoryboard? = nil,
+        storyboardId: String? = nil
+    ) -> Self {
+        var chatChannelListVC: Self!
+        
+        // Check if we have a UIStoryboard and/or StoryboardId
+        if let storyboardId = storyboardId, let storyboard = storyboard {
+            // Safely unwrap the ViewController from the Storyboard
+            guard let localViewControllerFromStoryboard = storyboard
+                .instantiateViewController(withIdentifier: storyboardId) as? Self else {
+                fatalError("Failed to load from UIStoryboard, please check your storyboardId and/or UIStoryboard reference.")
+            }
+            chatChannelListVC = localViewControllerFromStoryboard
+        } else {
+            chatChannelListVC = Self()
+        }
+        
+        // Set the Controller on the ViewController
+        chatChannelListVC.controller = controller
+
+        // Return the newly created ChatChannelListVC
+        return chatChannelListVC
+    }
 
     override open func setUp() {
         super.setUp()
@@ -104,7 +136,6 @@ open class ChatChannelListVC: _ViewController,
 
         collectionView.dataSource = self
         collectionView.delegate = self
-
         userAvatarView.controller = controller.client.currentUserController()
         userAvatarView.addTarget(self, action: #selector(didTapOnCurrentUserAvatar), for: .touchUpInside)
     }
@@ -134,8 +165,8 @@ open class ChatChannelListVC: _ViewController,
         navigationController?.popToRootViewController(animated: false)
         guard let controller = notification.userInfo?["channelController"] as? ChatChannelController,
               let cid = controller.cid else {
-            return
-        }
+                  return
+              }
         let chatChannelVC = ChatChannelVC.init()
         let channelController = ChatClient.shared.channelController(
             for: .init(type: .dao,
@@ -233,7 +264,6 @@ open class ChatChannelListVC: _ViewController,
             withReuseIdentifier: collectionViewCellReuseIdentifier,
             for: indexPath
         ) as! ChatChannelListCollectionViewCell
-    
         cell.components = components
         cell.itemView.content = .init(
             channel: controller.channels[indexPath.row],
@@ -246,7 +276,6 @@ open class ChatChannelListVC: _ViewController,
             guard let cell = cell else { return nil }
             return self?.collectionView.indexPath(for: cell)
         }
-        
         return cell
     }
     
@@ -263,13 +292,18 @@ open class ChatChannelListVC: _ViewController,
 //    }
         
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            guard let self = self else {
-                return
-            }
-            let channel = self.controller.channels[indexPath.row]
-            self.router.showChannel(for: channel.cid)
+         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+             guard let self = self else {
+                 return
+             }
+             let channel = self.controller.channels[indexPath.row]
+             self.router.showChannel(for: channel.cid)
+         }
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        if let cell = collectionView.cellForItem(at: indexPath) {
+            cell.contentView.backgroundColor = nil
         }
     }
         
@@ -294,7 +328,6 @@ open class ChatChannelListVC: _ViewController,
     }
 
     open func loadMoreChannels(collectionView: UICollectionView, forItemAt indexPath: IndexPath) {
-        
         if controller.state != .remoteDataFetched {
             return
         }
@@ -324,7 +357,6 @@ open class ChatChannelListVC: _ViewController,
     }
 
     open func swipeableViewActionViews(for indexPath: IndexPath) -> [UIView] {
-
         let controller = self.controller.client.channelController(for: self.controller.channels[indexPath.row].cid)
         if controller.channelQuery.type == .announcement {
             let muteAction = CellActionView().withoutAutoresizingMaskConstraints
@@ -397,7 +429,8 @@ open class ChatChannelListVC: _ViewController,
     /// This function is called when more button is pressed from action items of a cell.
     /// - Parameter indexPath: IndexPath of given cell to fetch the content of it.
     open func moreButtonPressedForCell(at indexPath: IndexPath) {
-        router.didTapMoreButton(for: controller.channels[indexPath.row].cid)
+        guard let channel = getChannel(at: indexPath) else { return }
+        router.didTapMoreButton(for: channel.cid)
     }
     
     // MARK: - ChatChannelListControllerDelegate
@@ -412,40 +445,48 @@ open class ChatChannelListVC: _ViewController,
         didChangeChannels changes: [ListChange<ChatChannel>]
     ) {
         guard let indices = collectionUpdatesMapper.mapToSetsOfIndexPaths(
-            changes: changes,
-            onConflict: {
-                channelsCount = controller.channels.count
-                collectionView.reloadData()
-            }
-        ) else { return }
+            changes: changes
+        ) else {
+            channelsCount = controller.channels.count
+            collectionView.reloadData()
+            return
+        }
+        UIView.performWithoutAnimation {
+            collectionView.performBatchUpdates(
+                {
+                    collectionView.deleteItems(at: Array(indices.remove))
+                    collectionView.insertItems(at: Array(indices.insert))
+                    UIView.performWithoutAnimation {
+                        collectionView.reloadItems(at: Array(indices.update))
+                    }
+                    indices.move.forEach {
+                        collectionView.moveItem(at: $0.fromIndex, to: $0.toIndex)
+                    }
 
-        collectionView.performBatchUpdates(
-            {
-                collectionView.deleteItems(at: Array(indices.remove))
-                collectionView.insertItems(at: Array(indices.insert))
-                collectionView.reloadItems(at: Array(indices.update))
-                indices.move.forEach {
-                    collectionView.moveItem(at: $0.fromIndex, to: $0.toIndex)
+                    channelsCount = controller.channels.count
+                },
+                completion: { _ in
+                    // Move changes from NSFetchController also can mean an update of the content.
+                    // Since a `moveItem` in collections do not update the content of the cell, we need to reload those cells.
+                    let moveIndexes = Array(indices.move.map(\.toIndex))
+                    if !moveIndexes.isEmpty {
+                        self.collectionView.reloadItems(at: moveIndexes)
+                    }
                 }
-                
-                channelsCount = controller.channels.count
-            },
-            completion: { _ in
-                // Move changes from NSFetchController also can mean an update of the content.
-                // Since a `moveItem` in collections do not update the content of the cell, we need to reload those cells.
-                self.collectionView.reloadItems(at: Array(indices.move.map(\.toIndex)))
-            }
-        )
+            )
+        }
     }
-    
+
+    @available(*, deprecated, message: "Please use `filter` when initializing a `ChatChannelListController`")
     open func controller(_ controller: ChatChannelListController, shouldAddNewChannelToList channel: ChatChannel) -> Bool {
-        true
+        channel.membership != nil
     }
-    
+
+    @available(*, deprecated, message: "Please use `filter` when initializing a `ChatChannelListController`")
     open func controller(_ controller: ChatChannelListController, shouldListUpdatedChannel channel: ChatChannel) -> Bool {
-        true
+        channel.membership != nil
     }
-    
+
     // MARK: - DataControllerStateDelegate
     
     open func controller(_ controller: DataController, didChangeState state: DataController.State) {
@@ -459,5 +500,11 @@ open class ChatChannelListVC: _ViewController,
         default:
             loadingIndicator.stopAnimating()
         }
+    }
+
+    private func getChannel(at indexPath: IndexPath) -> ChatChannel? {
+        let index = indexPath.row
+        controller.channels.assertIndexIsPresent(index)
+        return controller.channels[safe: index]
     }
 }

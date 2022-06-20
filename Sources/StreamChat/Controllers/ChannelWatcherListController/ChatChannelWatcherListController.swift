@@ -1,12 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
 import Foundation
 
 extension ChatClient {
-    /// Creates a new `_ChatChannelWatcherListController` with the provided query.
+    /// Creates a new `ChatChannelWatcherListController` with the provided query.
     /// - Parameter query: The query specifying the pagination options for watchers the controller should fetch.
     /// - Returns: A new instance of `ChatChannelMemberListController`.
     public func watcherListController(query: ChannelWatcherListQuery) -> ChatChannelWatcherListController {
@@ -14,7 +14,7 @@ extension ChatClient {
     }
 }
 
-/// `_ChatChannelWatcherListController` is a controller class which allows observing
+/// `ChatChannelWatcherListController` is a controller class which allows observing
 /// a list of chat watchers based on the provided query.
 ///
 public class ChatChannelWatcherListController: DataController, DelegateCallable, DataStoreProvider {
@@ -59,7 +59,7 @@ public class ChatChannelWatcherListController: DataController, DelegateCallable,
     
     private let environment: Environment
     
-    /// Creates a new `_ChatChannelWatcherListController`
+    /// Creates a new `ChatChannelWatcherListController`
     /// - Parameters:
     ///   - query: The query used for filtering and sorting the channel watchers.
     ///   - client: The `Client` this controller belongs to.
@@ -91,7 +91,7 @@ public class ChatChannelWatcherListController: DataController, DelegateCallable,
         let observer = environment.watcherListObserverBuilder(
             client.databaseContainer.viewContext,
             UserDTO.watcherFetchRequest(cid: query.cid),
-            { $0.asModel() as ChatUser },
+            { try $0.asModel() as ChatUser },
             NSFetchedResultsController<UserDTO>.self
         )
         
@@ -131,7 +131,7 @@ extension ChatChannelWatcherListController {
         var watcherListObserverBuilder: (
             _ context: NSManagedObjectContext,
             _ fetchRequest: NSFetchRequest<UserDTO>,
-            _ itemCreator: @escaping (UserDTO) -> ChatUser,
+            _ itemCreator: @escaping (UserDTO) throws -> ChatUser,
             _ controllerType: NSFetchedResultsController<UserDTO>.Type
         ) -> ListDatabaseObserver<ChatUser, UserDTO> = ListDatabaseObserver.init
     }

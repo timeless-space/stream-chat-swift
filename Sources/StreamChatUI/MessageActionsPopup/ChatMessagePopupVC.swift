@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -38,9 +38,11 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     /// Initial frame of a message.
     public var messageViewFrame: CGRect!
     /// `_ChatMessageActionsVC` instance for showing actions.
-    public var actionsController: ChatMessageActionsVC!
+    public var actionsController: ChatMessageActionsVC?
     /// `_ChatMessageReactionsVC` instance for showing reactions.
     public var reactionsController: ChatMessageReactionsVC?
+    /// `ChatMessageReactionAuthorsVC` instance for showing the authors of the reactions.
+    public var reactionAuthorsController: ChatMessageReactionAuthorsVC?
     /// empty padding view
     private lazy var spacingView = UIView()
     /// reactionViewFrame
@@ -51,11 +53,21 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
     public var messageContentYPosition: CGFloat = 0
     /// actionMenuMaxHeight
     private var actionMenuMaxHeight: CGFloat {
-        return CGFloat(actionsController.messageActions.count * 50)
+        return CGFloat(actionsController?.messageActions.count ?? 0 * 50)
     }
     /// actionMenuMaxHeight
     private var topPadding: CGFloat {
         return (UIView.safeAreaTop + 50)
+    }
+    /// The height of the reactions author view. By default it depends on the number of total reactions.
+    open var reactionAuthorsViewHeight: CGFloat {
+        message.totalReactionsCount > 4 ? 320 : 180
+    }
+
+    /// The width percentage of the reactions author view in relation with the popup's width.
+    /// By default it depends on the number of total reactions.
+    open var reactionAuthorsViewWidthMultiplier: CGFloat {
+        message.totalReactionsCount >= 4 ? 0.90 : 0.75
     }
 
     override open func setUp() {
@@ -83,7 +95,8 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
         let contentSizeHeight = (abs(messageContentView.frame.origin.y)
                                  + messageContentView.frame.height
                                  + actionMenuMaxHeight
-                                 + messageContentViewPadding)
+                                 + messageContentViewPadding
+                                 + reactionAuthorsViewHeight)
         scrollView.contentSize = CGSize(width: UIScreen.main.bounds.width,
                                         height: contentSizeHeight)
         let point = CGPoint(x: 0, y: scrollView.contentSize.height
@@ -155,10 +168,6 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             }
         }
 
-        constraints.append(
-            actionsController.view.widthAnchor.pin(equalTo: contentView.widthAnchor, multiplier: 0.6)
-        )
-
         spacingView.translatesAutoresizingMaskIntoConstraints = false
         if let timeStampLabel = messageContentView.timestampLabel {
             constraints.append(
@@ -178,25 +187,7 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
             messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
         ]
 
-        let actionsContainerStackView = ContainerStackView()
-        actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
-        messageContainerStackView.addArrangedSubview(actionsContainerStackView)
-
-        actionsController.view.translatesAutoresizingMaskIntoConstraints = false
-        addChildViewController(actionsController, targetView: actionsContainerStackView)
-
-        if message.isSentByCurrentUser {
-            constraints.append(
-                actionsController.view.trailingAnchor.constraint(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
-            )
-        } else {
-            constraints.append(
-                actionsController.view.leadingAnchor.pin(
-                    equalTo: messageContentContainerView.leadingAnchor,
-                    constant: messageBubbleViewInsets.left
-                )
-            )
-        }
+        layoutActionController(&constraints)
 
         if message.isSentByCurrentUser {
             messageContainerStackView.alignment = .trailing
@@ -232,17 +223,93 @@ open class ChatMessagePopupVC: _ViewController, ComponentsProvider {
                     equalTo: contentView.topAnchor,
                     constant: messageViewFrame.minY
                 )
-                .with(priority: .streamLow)
+                    .with(priority: .streamLow)
             ]
         }
+        addReactionAuthorsView()
+        layoutReactionAuthorsView()
+        NSLayoutConstraint.activate(constraints)
+    }
+
+    private func layoutActionController(_ constraints: inout [NSLayoutConstraint]) {
+        guard let controller = actionsController else {
+            return
+        }
+        let actionsContainerStackView = ContainerStackView()
+        actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
+        messageContainerStackView.addArrangedSubview(actionsContainerStackView)
+
+        constraints.append(
+            controller.view.widthAnchor.pin(equalTo: scrollView.widthAnchor, multiplier: 0.6)
+        )
+
+        controller.view.translatesAutoresizingMaskIntoConstraints = false
+        addChildViewController(controller, targetView: actionsContainerStackView)
+
+        if message.isSentByCurrentUser {
+            constraints.append(
+                controller.view.trailingAnchor.constraint(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
+            )
+        } else {
+            constraints.append(
+                controller.view.leadingAnchor.pin(
+                    equalTo: messageContentContainerView.leadingAnchor,
+                    constant: messageBubbleViewInsets.left
+                )
+            )
+        }
+    }
+
+    /// Add the reaction authors to the view hierarchy.
+    open func addReactionAuthorsView() {
+        let reactionsContainerStackView = ContainerStackView()
+        reactionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
+        messageContainerStackView.addArrangedSubview(reactionsContainerStackView)
+
+        guard let reactionAuthorsController = reactionAuthorsController else { return }
+        addChildViewController(reactionAuthorsController, targetView: reactionsContainerStackView)
+    }
+
+    /// Layouts the reaction authors view, by default, at the bottom. It can display
+    /// the message actions instead depending on where the popup is being presented from.
+    open func layoutReactionAuthorsView() {
+        guard let reactionAuthorsController = self.reactionAuthorsController else {
+            return
+        }
+        reactionAuthorsController.view.translatesAutoresizingMaskIntoConstraints = false
+        var constraints: [NSLayoutConstraint] = [
+            reactionAuthorsController.view.heightAnchor.pin(
+                equalToConstant: reactionAuthorsViewHeight
+            ),
+            reactionAuthorsController.view.widthAnchor.pin(
+                equalTo: scrollView.widthAnchor,
+                multiplier: reactionAuthorsViewWidthMultiplier
+            )
+        ]
+
+        if message.isSentByCurrentUser {
+            constraints += [
+                reactionAuthorsController.view.trailingAnchor.constraint(
+                    equalTo: messageContentContainerView.trailingAnchor,
+                    constant: -messageBubbleViewInsets.right)
+            ]
+        } else {
+            constraints += [
+                reactionAuthorsController.view.leadingAnchor.pin(
+                    equalTo: messageContentContainerView.leadingAnchor,
+                    constant: messageBubbleViewInsets.left
+                )
+            ]
+        }
+
         NSLayoutConstraint.activate(constraints)
     }
 
     /// Triggered when `view` is tapped.
     @objc open func didTapOnView(_ gesture: UITapGestureRecognizer) {
-        let actionsLocation = gesture.location(in: actionsController.view)
+        let actionsLocation = gesture.location(in: actionsController?.view)
         let reactionsLocation = gesture.location(in: reactionsController?.view)
-        let isGestureInActionsView = actionsController.view.frame.contains(actionsLocation)
+        let isGestureInActionsView = actionsController?.view.frame.contains(actionsLocation) == true
         let isGestureInReactionsView = reactionsController?.view.frame.contains(reactionsLocation) == true
 
         if isGestureInActionsView || isGestureInReactionsView {

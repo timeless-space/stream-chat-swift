@@ -1,13 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 
 /// The view that displays channel information on the thread header
-open class ChatThreadHeaderView:
-    _View,
+open class ChatThreadHeaderView: _View,
     ThemeProvider,
     ChatChannelControllerDelegate {
     /// Controller for observing data changes within the channel.
@@ -22,6 +21,7 @@ open class ChatThreadHeaderView:
     open private(set) lazy var titleContainerView: TitleContainerView = components
         .titleContainerView.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "titleContainerView")
 
     override open func setUp() {
         super.setUp()
@@ -54,7 +54,10 @@ open class ChatThreadHeaderView:
     /// The subtitle text used in the subtitle label. By default it is the channel name.
     open var subtitleText: String? {
         guard let channel = channelController?.channel else { return nil }
-        let channelName = components.channelNamer(channel, currentUserId)
+        let channelName = appearance.formatters.channelName.format(
+            channel: channel,
+            forCurrentUserId: currentUserId
+        )
         return channelName.map { L10n.Message.Threads.replyWith($0) }
     }
 

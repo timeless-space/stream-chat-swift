@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -39,13 +39,13 @@ struct DefaultRequestDecoder: RequestDecoder {
             throw ClientError.Unexpected("Expecting `HTTPURLResponse` but received: \(response?.description ?? "nil").")
         }
         
-        guard let data = data, data.isEmpty == false else {
+        guard let data = data, !data.isEmpty else {
             throw ClientError.ResponseBodyEmpty()
         }
         
         log.debug("URL request response: \(httpResponse), data:\n\(data.debugPrettyPrintedJSON))", subsystems: .httpRequests)
         
-        guard httpResponse.statusCode < 400 else {
+        guard httpResponse.statusCode < 300 else {
             guard let serverError = try? JSONDecoder.default.decode(ErrorPayload.self, from: data) else {
                 log
                     .error(
@@ -55,7 +55,7 @@ struct DefaultRequestDecoder: RequestDecoder {
                 throw ClientError.Unknown("Unknown error. Server response: \(httpResponse).")
             }
             
-            if ErrorPayload.tokenInvadlidErrorCodes ~= serverError.code {
+            if serverError.isInvalidTokenError {
                 log.info("Request failed because of an experied token.", subsystems: .httpRequests)
                 throw ClientError.ExpiredToken()
             }
@@ -67,7 +67,11 @@ struct DefaultRequestDecoder: RequestDecoder {
                 )
             throw ClientError(with: serverError)
         }
-        
+
+        if let responseAsData = data as? ResponseType {
+            return responseAsData
+        }
+
         do {
             let decodedPayload = try JSONDecoder.default.decode(ResponseType.self, from: data)
             return decodedPayload
@@ -80,6 +84,9 @@ struct DefaultRequestDecoder: RequestDecoder {
 
 extension ClientError {
     class ExpiredToken: ClientError {}
+    class RefreshingToken: ClientError {}
+    class TokenRefreshed: ClientError {}
+    class ConnectionError: ClientError {}
     class TooManyTokenRefreshAttempts: ClientError {
         override var localizedDescription: String {
             "Authentication failed on expired tokens after too many refresh attempts, please check that your user tokens are created correctly."
@@ -88,5 +95,34 @@ extension ClientError {
 
     class ResponseBodyEmpty: ClientError {
         override var localizedDescription: String { "Response body is empty." }
+    }
+    
+    static let temporaryErrors: Set<Int> = [
+        NSURLErrorCancelled,
+        NSURLErrorNetworkConnectionLost,
+        NSURLErrorTimedOut,
+        NSURLErrorCannotFindHost,
+        NSURLErrorCannotConnectToHost,
+        NSURLErrorNetworkConnectionLost,
+        NSURLErrorDNSLookupFailed,
+        NSURLErrorNotConnectedToInternet,
+        NSURLErrorBadServerResponse,
+        NSURLErrorUserCancelledAuthentication,
+        NSURLErrorCannotLoadFromNetwork,
+        NSURLErrorDataNotAllowed
+    ]
+
+    // returns true if the error is related to a temporary condition
+    // you can use this to check if it makes sense to retry an API call
+    static func isEphemeral(error: Error) -> Bool {
+        if temporaryErrors.contains((error as NSError).code) {
+            return true
+        }
+
+        if error.isRateLimitError {
+            return true
+        }
+
+        return false
     }
 }

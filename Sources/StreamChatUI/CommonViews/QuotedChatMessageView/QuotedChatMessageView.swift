@@ -1,7 +1,8 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
+import AVKit
 import StreamChat
 import UIKit
 
@@ -52,29 +53,35 @@ open class QuotedChatMessageView: _View, ThemeProvider, SwiftUIRepresentable {
             && content.message.imageAttachments.isEmpty
             && content.message.linkAttachments.isEmpty
             && content.message.giphyAttachments.isEmpty
+            && content.message.videoAttachments.isEmpty
     }
 
     /// The container view that holds the `authorAvatarView` and the `contentContainerView`.
     open private(set) lazy var containerView: ContainerStackView = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "containerView")
 
     /// The avatar view of the author's quoted message.
     open private(set) lazy var authorAvatarView: ChatAvatarView = components
         .avatarView.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "authorAvatarView")
 
     /// The container view that holds the `textView` and the `attachmentPreview`.
     open private(set) lazy var contentContainerView: ContainerStackView = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "contentContainerView")
 
     /// The `UITextView` that contains quoted message content.
     open private(set) lazy var textView: UITextView = UITextView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "textView")
 
     /// The attachments preview view if the quoted message has attachments.
     /// The default logic is that the first attachment is displayed on the preview view.
     open private(set) lazy var attachmentPreviewView: UIImageView = UIImageView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "attachmentPreviewView")
 
     /// The size of the avatar view that belongs to the author of the quoted message.
     open var authorAvatarSize: CGSize { .init(width: 24, height: 24) }
@@ -225,6 +232,10 @@ open class QuotedChatMessageView: _View, ThemeProvider, SwiftUIRepresentable {
             attachmentPreviewView.contentMode = .scaleAspectFill
             setAttachmentPreviewImage(url: giphyPayload.previewURL)
             textView.text = message.text.isEmpty ? "Giphy" : message.text
+        } else if let videoPayload = message.videoAttachments.first?.payload {
+            attachmentPreviewView.contentMode = .scaleAspectFill
+            setVideoAttachmentPreviewImage(url: videoPayload.videoURL)
+            textView.text = message.text.isEmpty ? videoPayload.title : message.text
         }
     }
     
@@ -234,8 +245,25 @@ open class QuotedChatMessageView: _View, ThemeProvider, SwiftUIRepresentable {
         components.imageLoader.loadImage(
             into: attachmentPreviewView,
             url: url,
-            imageCDN: components.imageCDN
+            imageCDN: components.imageCDN,
+            preferredSize: attachmentPreviewSize
         )
+    }
+    
+    /// Set the image from the given URL into `attachmentPreviewImage.image`
+    /// - Parameter url: The URL from which to generate the image on the video
+    open func setVideoAttachmentPreviewImage(url: URL?) {
+        guard let url = url else { return }
+        
+        components.videoLoader.loadPreviewForVideo(at: url) { [weak self] in
+            switch $0 {
+            case let .success(preview):
+                self?.attachmentPreviewView.image = preview
+            case let .failure(error):
+                self?.attachmentPreviewView.image = nil
+                log.error("This \(error) received for processing Video Preview image.")
+            }
+        }
     }
 
     /// Show the attachment preview view.

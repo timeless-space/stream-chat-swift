@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import UIKit
@@ -39,6 +39,11 @@ extension UIView {
     
     var withoutAutoresizingMaskConstraints: Self {
         translatesAutoresizingMaskIntoConstraints = false
+        return self
+    }
+
+    func withAccessibilityIdentifier(identifier: String) -> Self {
+        accessibilityIdentifier = identifier
         return self
     }
 

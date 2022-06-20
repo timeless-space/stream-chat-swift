@@ -1,11 +1,12 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 import Lottie
 
+/// The view that shows the list of reactions attached to the message.
 open class ChatMessageReactionsView: _View, ThemeProvider {
     public var content: Content? {
         didSet { updateContentIfNeeded() }
@@ -15,19 +16,9 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
         components.messageReactionItemView
     }
 
-    // returns the selection of reactions that should be rendered by this view
-    open var reactions: [ChatMessageReactionData] {
-        guard let content = content else { return [] }
-        return content.reactions.filter { reaction in
-            guard appearance.images.availableReactions[reaction.type] != nil else {
-                log
-                    .warning(
-                        "reaction with type \(reaction.type) is not registered in appearance.images.availableReactions, skipping"
-                    )
-                return false
-            }
-            return true
-        }
+    /// The sorting order of how the reactions data will be displayed.
+    open var reactionsSorting: ((ChatMessageReactionData, ChatMessageReactionData) -> Bool) {
+        components.reactionsSorting
     }
 
     // MARK: - Subviews
@@ -52,12 +43,10 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
             $0.removeFromSuperview()
         }
         guard let content = content else { return }
+
         content.reactions.forEach { reaction in
             if appearance.images.availableReactions[reaction.type] == nil {
-                log
-                    .warning(
-                        "reaction with type \(reaction.type) is not registered in appearance.images.availableReactions, skipping"
-                    )
+                logWarning(unavailableReaction: reaction)
                 return
             }
             let itemView = reactionItemView.init()
@@ -89,6 +78,12 @@ open class ChatMessageReactionsView: _View, ThemeProvider {
                 })
             }
         }
+    }
+
+    private func logWarning(unavailableReaction reaction: ChatMessageReactionData) {
+        log.warning(
+            "reaction with type \(reaction.type) is not registered in appearance.images.availableReactions, skipping"
+        )
     }
 }
 

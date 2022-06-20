@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -101,15 +101,16 @@ public struct Components {
     /// The view that shows a playing video.
     public var playerView: PlayerView.Type = PlayerView.self
 
-    //  MARK: -  Message List components
+    // MARK: - Message List components
 
-    /// The View Controller used to display content of the message, i.e. in the channel detail message list.
+    /// The view controller responsible for rendering a list of messages.
+    /// Used in both the Channel and Thread view controllers.
     @available(iOSApplicationExtension, unavailable)
     public var messageListVC: ChatMessageListVC.Type = ChatMessageListVC.self
-
+    
     /// The controller that handles `ChatMessageListVC <-> ChatMessagePopUp` transition.
-    public var messageActionsTransitionController: MessageActionsTransitionController.Type =
-        MessageActionsTransitionController.self
+    public var messageActionsTransitionController: ChatMessageActionsTransitionController.Type =
+        ChatMessageActionsTransitionController.self
 
     /// The view that shows the message list.
     public var messageListView: ChatMessageListView.Type = ChatMessageListView
@@ -119,16 +120,30 @@ public struct Components {
     public var messageListScrollOverlayView: ChatMessageListScrollOverlayView.Type =
         ChatMessageListScrollOverlayView.self
 
-    /// The View Controller by default used to display message actions after long-pressing on the message.
+    /// The date separator view that groups messages from the same day.
+    public var messageListDateSeparatorView: ChatMessageListDateSeparatorView.Type = ChatMessageListDateSeparatorView.self
+
+    /// A boolean value that determines wether the date overlay should be displayed while scrolling.
+    public var messageListDateOverlayEnabled = true
+
+    /// A boolean value that determines wether date separators should be shown between each message.
+    public var messageListDateSeparatorEnabled = false
+
+    /// A boolean value that determines whether the message list should use a diffable data source.
+    /// Note: This is currently an experimental feature that we are actively
+    /// working on and testing to make sure it is stable.
+    public var _messageListDiffingEnabled = false
+
+    /// The view controller used to perform message actions.
     public var messageActionsVC: ChatMessageActionsVC.Type = ChatMessageActionsVC.self
 
-    /// The View Controller by default used to display long-press menu of the message.
+    /// The view controller that is presented when long-pressing a message.
     public var messagePopupVC: ChatMessagePopupVC.Type = ChatMessagePopupVC.self
 
-    /// The View Controller used for showing detail of a file message attachment.
+    /// The view controller used for showing the detail of a file message attachment.
     public var filePreviewVC: ChatMessageAttachmentPreviewVC.Type = ChatMessageAttachmentPreviewVC.self
 
-    /// The View Controller used for show image and video attachments.
+    /// The view controller responsible to render image and video attachments.
     public var galleryVC: GalleryVC.Type = GalleryVC.self
     
     /// The view used to control the player for currently visible vide attachment.
@@ -157,6 +172,10 @@ public struct Components {
 
     /// The injector used for injecting file attachment views
     public var filesAttachmentInjector: AttachmentViewInjector.Type = FilesAttachmentViewInjector.self
+
+    /// The injector used to combine multiple types of attachment views.
+    /// By default, it is a combination of a file injector and a gallery injector.
+    public var mixedAttachmentInjector: MixedAttachmentViewInjector.Type = MixedAttachmentViewInjector.self
 
     /// The button for taking an action on attachment being uploaded.
     public var attachmentActionButton: AttachmentActionButton.Type = AttachmentActionButton.self
@@ -213,66 +232,28 @@ public struct Components {
     /// The view that shows a number of unread messages on the Scroll-To-Latest-Message button in the Message List.
     public var messageListUnreadCountView: ChatMessageListUnreadCountView.Type =
         ChatMessageListUnreadCountView.self
-
-    // MARK: - Reaction components, deprecated
-
-    /// The Reaction picker VC.
-    @available(*, deprecated, message: "Use reactionPickerVC instead")
-    public var messageReactionsVC: ChatMessageReactionsVC.Type = ChatMessageReactionsVC.self {
-        didSet {
-            reactionPickerVC = messageReactionsVC
-        }
-    }
-
-    /// The view that shows reactions of a message. This is used by the message component.
-    @available(*, deprecated, message: "Use messageReactionsBubbleView instead")
-    public var chatReactionsBubbleView: ChatReactionBubbleBaseView.Type = ChatReactionsBubbleView.self {
-        didSet {
-            messageReactionsBubbleView = chatReactionsBubbleView
-        }
-    }
-
-    /// The view that shows reactions bubble, this is used by the reaction picker.
-    @available(*, deprecated, message: "Use reactionPickerBubbleView instead")
-    public var reactionsBubbleView: ChatReactionPickerBubbleView.Type = ChatMessageDefaultReactionsBubbleView.self {
-        didSet {
-            reactionPickerBubbleView = reactionsBubbleView
-        }
-    }
-
-    /// The view that shows reactions list. This component is used by both message and reaction picker components.
-    @available(*, deprecated, message: "Use reactionPickerReactionsView and/or messageReactionsView")
-    public var reactionsView: ChatMessageReactionsView.Type = ChatMessageReactionsView.self {
-        didSet {
-            reactionPickerReactionsView = reactionsView
-            messageReactionsView = reactionsView
-        }
-    }
-
-    /// The view that shows a single reaction. This component is used by the reactionsView component.
-    @available(*, deprecated, message: "Use reactionPickerReactionItemView and/or messageReactionItemView")
-    public var reactionItemView: ChatMessageReactionItemView.Type = ChatMessageReactionItemView.self {
-        didSet {
-            reactionPickerReactionItemView = reactionItemView
-            messageReactionItemView = reactionItemView
-        }
-    }
     
-    // MARK: - Reaction Picker components
+    /// The view that shows messages delivery status.
+    public var messageDeliveryStatusView: ChatMessageDeliveryStatusView.Type =
+        ChatMessageDeliveryStatusView.self
+    
+    /// The view that shows messages delivery status checkmark in channel preview and in message view.
+    public var messageDeliveryStatusCheckmarkView: ChatMessageDeliveryStatusCheckmarkView.Type =
+        ChatMessageDeliveryStatusCheckmarkView.self
+
+    // MARK: - Reactions
     
     /// The Reaction picker VC.
-    public var reactionPickerVC: ChatMessageReactionsVC.Type = ChatMessageReactionsVC.self
+    public var reactionPickerVC: ChatMessageReactionsPickerVC.Type = ChatMessageReactionsPickerVC.self
 
     /// The view that shows reactions bubble.
-    public var reactionPickerBubbleView: ChatMessageReactionsBubbleView.Type = ChatMessageDefaultReactionsBubbleView.self
+    public var reactionPickerBubbleView: ChatReactionPickerBubbleView.Type = DefaultChatReactionPickerBubbleView.self
 
     /// The view that shows the list of reaction toggles/buttons.
     public var reactionPickerReactionsView: ChatMessageReactionsView.Type = ChatReactionPickerReactionsView.self
 
     /// The view that renders a single reaction view button.
     public var reactionPickerReactionItemView: ChatMessageReactionItemView.Type = ChatMessageReactionItemView.self
-    
-    // MARK: - Message Reaction components
 
     /// The view that shows reactions of a message. This is used by the message component.
     public var messageReactionsBubbleView: ChatReactionBubbleBaseView.Type = ChatReactionsBubbleView.self
@@ -283,9 +264,20 @@ public struct Components {
     /// The view that renders a single reaction attached to the message.
     public var messageReactionItemView: ChatMessageReactionItemView.Type = ChatMessageReactionItemView.self
 
+    /// A view controller that renders the reaction and it's author avatar for all the reactions of a message.
+    public var reactionAuthorsVC: ChatMessageReactionAuthorsVC.Type = ChatMessageReactionAuthorsVC.self
+
+    /// A view cell that displays an individual reaction author of a message.
+    public var reactionAuthorCell: ChatMessageReactionAuthorViewCell.Type = ChatMessageReactionAuthorViewCell.self
+
+    /// The sorting order of how the reactions data will be displayed.
+    public var reactionsSorting: ((ChatMessageReactionData, ChatMessageReactionData) -> Bool) = {
+        $0.type.rawValue < $1.type.rawValue
+    }
+
     // MARK: - Thread components
 
-    /// The View Controller used to display the detail of a message thread.
+    /// The view controller used to display the detail of a message thread.
     public var threadVC: ChatThreadVC.Type = ChatThreadVC.self
 
     /// The view that displays channel information on the thread header.
@@ -299,9 +291,6 @@ public struct Components {
 
     /// The view that displays channel information on the channel header.
     public var channelHeaderView: ChatChannelHeaderView.Type = ChatChannelHeaderView.self
-
-    /// The logic to generate a name for the given channel.
-    public var channelNamer: ChatChannelNamer = DefaultChatChannelNamer()
 
     /// The collection view layout of the channel list.
     public var channelListLayout: UICollectionViewLayout.Type = ListCollectionViewLayout.self
@@ -323,10 +312,6 @@ public struct Components {
 
     /// The view that shows a number of unread messages in channel.
     public var channelUnreadCountView: ChatChannelUnreadCountView.Type = ChatChannelUnreadCountView.self
-
-    /// The view that shows a read/unread status of the last message in channel.
-    public var channelReadStatusView: ChatChannelReadStatusCheckmarkView.Type =
-        ChatChannelReadStatusCheckmarkView.self
 
     // MARK: - Composer components
 
@@ -426,4 +411,23 @@ public struct Components {
 
 public extension Components {
     static var `default` = Self()
+}
+
+// MARK: Deprecations
+
+public extension Components {
+    /// The logic to generate a name for the given channel.
+    @available(
+        *,
+        deprecated,
+        message: "Please use `Appearance.default.formatters.channelName` instead"
+    )
+    var channelNamer: ChatChannelNamer {
+        get {
+            DefaultChannelNameFormatter.channelNamer
+        }
+        set {
+            DefaultChannelNameFormatter.channelNamer = newValue
+        }
+    }
 }

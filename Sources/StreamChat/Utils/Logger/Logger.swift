@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -17,7 +17,7 @@ public struct LogSubsystem: OptionSet {
     }
     
     /// All subsystems within the SDK.
-    public static let all: LogSubsystem = [.database, .httpRequests, .webSocket, .other]
+    public static let all: LogSubsystem = [.database, .httpRequests, .webSocket, .other, .offlineSupport]
     
     /// The subsystem responsible for any other part of the SDK.
     /// This is the default subsystem value for logging, to be used when `subsystem` is not specified.
@@ -29,6 +29,8 @@ public struct LogSubsystem: OptionSet {
     public static let httpRequests = Self(rawValue: 1 << 2)
     /// The subsystem responsible for websocket operations.
     public static let webSocket = Self(rawValue: 1 << 3)
+    /// The subsystem responsible for offline support.
+    public static let offlineSupport = Self(rawValue: 1 << 4)
 }
 
 public enum LogConfig {
@@ -121,25 +123,37 @@ public enum LogConfig {
         }
     }
     
+    /// Destination types this logger will use.
+    ///
+    /// Logger will initialize the destinations with its own parameters. If you want full control on the parameters, use `destinations` directly,
+    /// where you can pass parameters to destination initializers yourself.
+    public static var destinationTypes: [LogDestination.Type] = [ConsoleLogDestination.self] {
+        didSet {
+            invalidateLogger()
+        }
+    }
+    
     /// Destinations for the default logger. Please see `LogDestination`.
     /// Defaults to only `ConsoleLogDestination`, which only prints the messages.
     ///
     /// - Important: Other options in `ChatClientConfig.Logging` will not take affect if this is changed.
     public static var destinations: [LogDestination] = {
-        let consoleLogDestination = ConsoleLogDestination(
-            level: level,
-            subsystems: subsystems,
-            showDate: showDate,
-            dateFormatter: dateFormatter,
-            formatters: formatters,
-            showLevel: showLevel,
-            showIdentifier: showIdentifier,
-            showThreadName: showThreadName,
-            showFileName: showFileName,
-            showLineNumber: showLineNumber,
-            showFunctionName: showFunctionName
-        )
-        return [consoleLogDestination]
+        destinationTypes.map {
+            $0.init(
+                identifier: identifier,
+                level: level,
+                subsystems: subsystems,
+                showDate: showDate,
+                dateFormatter: dateFormatter,
+                formatters: formatters,
+                showLevel: showLevel,
+                showIdentifier: showIdentifier,
+                showThreadName: showThreadName,
+                showFileName: showFileName,
+                showLineNumber: showLineNumber,
+                showFunctionName: showFunctionName
+            )
+        }
     }() {
         didSet {
             invalidateLogger()
@@ -201,7 +215,7 @@ public class Logger {
     public func callAsFunction(
         _ level: LogLevel,
         functionName: StaticString = #function,
-        fileName: StaticString = #file,
+        fileName: StaticString = #filePath,
         lineNumber: UInt = #line,
         message: @autoclosure () -> Any,
         subsystems: LogSubsystem = .other
@@ -364,7 +378,9 @@ public class Logger {
         lineNumber: UInt = #line
     ) {
         guard !condition() else { return }
-        Swift.assert(condition(), String(describing: message()), file: fileName, line: lineNumber)
+        if StreamRuntimeCheck.assertionsEnabled {
+            Swift.assert(condition(), String(describing: message()), file: fileName, line: lineNumber)
+        }
         log(
             .error,
             functionName: functionName,
@@ -387,7 +403,9 @@ public class Logger {
         fileName: StaticString = #file,
         lineNumber: UInt = #line
     ) {
-        Swift.assertionFailure(String(describing: message()), file: fileName, line: lineNumber)
+        if StreamRuntimeCheck.assertionsEnabled {
+            Swift.assertionFailure(String(describing: message()), file: fileName, line: lineNumber)
+        }
         log(
             .error,
             functionName: functionName,

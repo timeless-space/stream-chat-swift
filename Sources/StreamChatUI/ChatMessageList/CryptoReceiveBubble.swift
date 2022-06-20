@@ -8,7 +8,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 
 class CryptoReceiveBubble: UITableViewCell {
 
@@ -19,9 +18,10 @@ class CryptoReceiveBubble: UITableViewCell {
     public private(set) var descriptionLabel: UILabel!
     public private(set) var sentCryptoLabel: UILabel!
     public private(set) var blockExplorerButton: UIButton!
+    let imageLoader = Components.default.imageLoader
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     public var blockExpAction: ((URL) -> Void)?
     var client: ChatClient?
 
@@ -181,7 +181,7 @@ class CryptoReceiveBubble: UITableViewCell {
                 nameAndTimeString?.append("\(name)   ")
             }
             if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+                nameAndTimeString?.append("\(dateFormatter.format(createdAt))")
             }
         }
         timestampLabel?.text = nameAndTimeString
@@ -216,10 +216,19 @@ class CryptoReceiveBubble: UITableViewCell {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
-                Nuke.loadImage(with: imageUrl, into: sentThumbImageView)
+                imageLoader.loadImage(
+                    into: sentThumbImageView,
+                    url: imageUrl,
+                    imageCDN: StreamImageCDN(),
+                    placeholder: Appearance.default.images.userAvatarPlaceholder4)
             }
         } else {
-            Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
+            //Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
+            imageLoader.loadImage(
+                into: sentThumbImageView,
+                url: URL(string: defaultURL),
+                imageCDN: StreamImageCDN(),
+                placeholder: Appearance.default.images.userAvatarPlaceholder4)
         }
     }
 

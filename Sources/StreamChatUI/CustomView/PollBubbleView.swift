@@ -7,7 +7,6 @@
 
 import SwiftUI
 import StreamChat
-import Nuke
 
 @available(iOS 15.0, *)
 struct PollBubbleView {
@@ -24,7 +23,8 @@ struct PollBubbleView {
     var isSender: Bool
     var isPreview = false
     var showYourFirstPoll = false
-
+    let imageLoader = Components.default.imageLoader
+    
     // MARK: - Properties
     @State private var selectedAnswersID: [String] = []
     @State private var voted = false
@@ -283,18 +283,18 @@ extension PollBubbleView {
 
     struct ListMemberAvatar: View {
         var avatarURL = ""
+        let imageLoader = Components.default.imageLoader
         @State private var avatarUIImageView = UIImageView()
         @State private var avatarUIImage: UIImage?
 
         var body: some View {
-            if avatarUIImage == nil {
-                DispatchQueue.main.async {
-                    Nuke.loadImage(with: avatarURL, into: avatarUIImageView) { result in
-                        switch result {
-                        case .success(let imageResult):
-                            avatarUIImage = imageResult.image
-                        case .failure: break
-                        }
+            if avatarUIImage == nil, let urlReq = avatarUrlReq() {
+                imageLoader.loadImage(using: urlReq, cachingKey: avatarURL) { result in
+                    switch result {
+                    case .success(let imageResult):
+                        avatarUIImage = imageResult
+                    default:
+                        break
                     }
                 }
             }
@@ -317,6 +317,16 @@ extension PollBubbleView {
                 )
                 .cornerRadius(.infinity)
         }
+
+        private func avatarUrlReq() -> URLRequest? {
+            if let avatarUrl = URL(string: avatarURL) {
+                var avatarUrlReq = URLRequest(url: avatarUrl)
+                avatarUrlReq.httpMethod = "GET"
+                return avatarUrlReq
+            } else {
+                return nil
+            }
+        }
     }
 
     private func memberAvatar(_ avatarURL: String) -> some View {
@@ -335,6 +345,7 @@ extension PollBubbleView {
 // MARK: - Methods
 @available(iOS 15.0, *)
 extension PollBubbleView {
+
     private func onAppearHandler() {
         if !imageUrl.isEmpty, !isGifMedia, uploadedImage == nil {
             let pathExtension = imageUrl.components(separatedBy: "?")
@@ -343,22 +354,35 @@ extension PollBubbleView {
             if mediaType == "gif" {
                 isGifMedia = true
             } else {
-                Nuke.loadImage(with: imageUrl, into: uiImageView) { result in
-                    switch result {
-                    case .success(let imageViewResult):
-                        uploadedImage = imageViewResult.image
-                    case .failure: break
+                if let mediaReq = mediaUrlReq() {
+                    imageLoader.loadImage(using: mediaReq, cachingKey: imageUrl) { result in
+                        switch result {
+                        case .success(let imageResult):
+                            uiImageView.image = imageResult
+                            uploadedImage = imageResult
+                        default:
+                            break
+                        }
                     }
                 }
             }
         }
         if let userInfo = PollBubble.fetchPollDataCallback?(pollID) {
             setDataFromUserInfo(userInfo)
-        } else {
+        } else if !isPreview {
             var userInfo = [String: Any]()
             userInfo["group_id"] = cid.description
             userInfo["poll_id"] = pollID
             NotificationCenter.default.post(name: .getPollData, object: nil, userInfo: userInfo)
+        }
+    }
+    private func mediaUrlReq() -> URLRequest? {
+        if let mediaUrl = URL(string: imageUrl) {
+            var mediaUrlReq = URLRequest(url: mediaUrl)
+            mediaUrlReq.httpMethod = "GET"
+            return mediaUrlReq
+        } else {
+            return nil
         }
     }
 

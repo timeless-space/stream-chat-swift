@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -45,7 +45,8 @@ extension DeviceDTO {
 }
 
 extension DeviceDTO {
-    func asModel() -> Device {
-        Device(id, createdAt: createdAt)
+    func asModel() throws -> Device {
+        guard isValid else { throw InvalidModel(self) }
+        return Device(id: id, createdAt: createdAt)
     }
 }

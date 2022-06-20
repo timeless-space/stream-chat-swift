@@ -1,16 +1,15 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
-
 import CoreData
 import Foundation
 
 extension ChatClient {
-    /// Creates a new `_ChatUserSearchController` with the provided user query.
+    /// Creates a new `ChatUserSearchController` with the provided user query.
     ///
     /// - Parameter query: The query specify the filter and sorting of the users the controller should fetch.
     ///
-    /// - Returns: A new instance of `_ChatUserSearchController`.
+    /// - Returns: A new instance of `ChatUserSearchController`.
     ///
     public func userSearchController() -> ChatUserSearchController {
         .init(client: self)
@@ -21,105 +20,43 @@ extension ChatClient {
 public class ChatUserSearchController: DataController, DelegateCallable, DataStoreProvider {
     /// The `ChatClient` instance this controller belongs to.
     public let client: ChatClient
-    
-    /// Filter hash this controller observes.
-    let explicitFilterHash = UUID().uuidString
-    
-    public lazy var query: UserListQuery = {
-        // Filter is just a mock, explicit hash will override it
-        var query = UserListQuery(filter: .exists(.id), sort: [.init(key: .name, isAscending: true)])
-        // Setting `shouldBeObserved` to false prevents NewUserQueryUpdater to pick this query up
-        query.shouldBeUpdatedInBackground = false
-        // The initial DB fetch will return 0 users and this is expected
-        // In the future we'll implement DB search too
-        query.filter?.explicitHash = explicitFilterHash
-        
-        return query
-    }()
-    
+
     /// Copy of last search query made, used for getting next page.
-    var lastQuery: UserListQuery?
-    
-    /// The users matching the query of this controller.
-    ///
-    /// To observe changes of the users, set your class as a delegate of this controller or use the provided
-    /// `Combine` publishers.
-    ///
-    public var users: LazyCachedMapCollection<ChatUser> {
-        startUserListObserverIfNeeded()
-        return userListObserver.items
+    private(set) var query: UserListQuery?
+
+    /// The users matching the last query of this controller.
+    private var _users: [ChatUser] = []
+    public var userArray: [ChatUser] {
+        setLocalDataFetchedStateIfNeeded()
+        return _users
     }
-    
+
+    @available(*, deprecated, message: "Please, switch to `userArray: [ChatUser]`")
+    public var users: LazyCachedMapCollection<ChatUser> {
+        .init(source: userArray, map: { $0 })
+    }
+
     lazy var userQueryUpdater = self.environment
         .userQueryUpdaterBuilder(
             client.databaseContainer,
             client.apiClient
         )
-    
-    /// Used for observing the database for changes.
-    lazy var userListObserver: ListDatabaseObserver<ChatUser, UserDTO> = {
-        let request = UserDTO.userListFetchRequest(query: query)
-        
-        let observer = self.environment.createUserListDatabaseObserver(
-            client.databaseContainer.viewContext,
-            request,
-            { $0.asModel() }
-        )
-        
-        observer.onChange = { [weak self] changes in
-            self?.delegateCallback { [weak self] in
-                guard let self = self else {
-                    log.warning("Callback called while self is nil")
-                    return
-                }
 
-                $0.controller(self, didChangeUsers: changes)
-            }
-        }
-        
-        return observer
-    }()
-    
     /// A type-erased delegate.
     var multicastDelegate: MulticastDelegate<ChatUserSearchControllerDelegate> = .init() {
         didSet {
             stateMulticastDelegate.set(mainDelegate: multicastDelegate.mainDelegate)
             stateMulticastDelegate.set(additionalDelegates: multicastDelegate.additionalDelegates)
-            
-            // After setting delegate local changes will be fetched and observed.
-            startUserListObserverIfNeeded()
+
+            setLocalDataFetchedStateIfNeeded()
         }
     }
-    
+
     private let environment: Environment
-    
+
     init(client: ChatClient, environment: Environment = .init()) {
         self.client = client
         self.environment = environment
-    }
-    
-    deinit {
-        let query = self.query
-        client.databaseContainer.write { session in
-            session.deleteQuery(query)
-        }
-    }
-    
-    /// If the `state` of the controller is `initialized`, this method calls `startObserving` on the
-    /// `userListObserver` to fetch the local data and start observing the changes. It also changes
-    /// `state` based on the result.
-    ///
-    /// It's safe to call this method repeatedly.
-    ///
-    private func startUserListObserverIfNeeded() {
-        guard state == .initialized else { return }
-        do {
-            try userListObserver.startObserving()
-            state = .localDataFetched
-        } catch {
-            state = .localDataFetchFailed(ClientError(with: error))
-            log.error("Failed to perform fetch request with error: \(error). This is an internal error.")
-        }
     }
 
     /// Searches users for the given term.
@@ -134,106 +71,9 @@ public class ChatUserSearchController: DataController, DelegateCallable, DataSto
     ///   - completion: Called when the controller has finished fetching remote data.
     ///   If the data fetching fails, the error variable contains more details about the problem.
     public func search(term: String?, completion: ((_ error: Error?) -> Void)? = nil) {
-            startUserListObserverIfNeeded()
-            /* Commented by Jit
-             4 Feb 2022
-            var query = UserListQuery(sort: [.init(key: .name, isAscending: true)])
-            /*if let term = term, !term.isEmpty {
-                query.filter = .or([
-                    .autocomplete(.name, text: term),
-                    .autocomplete(.id, text: term)
-                ])
-            } else {
-                query.filter = .exists(.id) // Pseudo-filter to fetch all users
-            }*/
-            if let term = term, !term.isEmpty {
-                query.filter = .and([
-                    .autocomplete(.name, text: term),
-                    .notEqual(.role, to: .admin),
-                    .notEqual(.id, to: client.currentUserId ?? ""),
-                ])
-            } else {
-                //query.filter = .exists(.id) // Pseudo-filter to fetch all users
-                query.filter = .and([
-                    .exists(.id),
-                    .notEqual(.role, to: .admin),
-                    .notEqual(.id, to: client.currentUserId ?? ""),
-                ])
-            }
-            // Backend suggest not sorting by name
-            // so we only sort client-side
-            query.filter?.explicitHash = explicitFilterHash
-            query.shouldBeUpdatedInBackground = false
+        fetch(.search(term: term), completion: completion)
+    }
 
-            lastQuery = query
-            userQueryUpdater.update(userListQuery: query, policy: .replace) { error in
-                self.state = error == nil ? .remoteDataFetched : .remoteDataFetchFailed(ClientError(with: error))
-                self.callback { completion?(error) }
-            }
-             */
-            // Added 4 feb 2022
-            var newQuery = query
-
-            /*if let term = term, !term.isEmpty {
-                query.filter = .or([
-                    .autocomplete(.name, text: term),
-                    .autocomplete(.id, text: term)
-                ])
-            } else {
-                query.filter = .exists(.id) // Pseudo-filter to fetch all users
-            }*/
-            if let term = term, !term.isEmpty {
-    //            newQuery.filter = .or([
-    //                .autocomplete(.name, text: term),
-    //                .and([
-    //                    .exists(.id),
-    //                    .notEqual(.role, to: .admin),
-    //                    .notEqual(.id, to: client.currentUserId ?? "")
-    //                ])
-    //            ])
-                newQuery.filter = .and([
-                    .autocomplete(.name, text: term),
-                    .exists(.lastActiveAt),
-                    .notEqual(.role, to: .admin),
-                    .notEqual(.id, to: client.currentUserId ?? ""),
-                ])
-            } else {
-                //query.filter = .exists(.id) // Pseudo-filter to fetch all users
-                newQuery.filter = .and([
-                    .exists(.id),
-                    .exists(.lastActiveAt),
-                    .notEqual(.role, to: .admin),
-                    .notEqual(.id, to: client.currentUserId ?? "")
-                ])
-            }
-            // Backend suggest not sorting by name
-            // so we only sort client-side
-
-    //        newQuery.filter = .and([
-    //            .exists(.id, exists: true),
-    //        ])
-    //
-            newQuery.filter?.explicitHash = explicitFilterHash
-            newQuery.shouldBeUpdatedInBackground = false
-            //
-            lastQuery = newQuery
-            //
-
-            userQueryUpdater.update(userListQuery: newQuery, policy: .replace) { [weak self] result in
-                guard let weakSelf = self else {
-                    completion?(nil)
-                    return
-                }
-                switch result {
-                case .success:
-                    weakSelf.state = .remoteDataFetched
-                    weakSelf.callback { completion?(nil) }
-                case let .failure(error):
-                    weakSelf.state = .remoteDataFetchFailed(ClientError(with: error))
-                    weakSelf.callback { completion?(error) }
-                }
-            }
-        }
     /// Searches users for the given query.
     ///
     /// When this function is called, `users` property of this controller will refresh with new users matching the term.
@@ -246,30 +86,9 @@ public class ChatUserSearchController: DataController, DelegateCallable, DataSto
     ///   - completion: Called when the controller has finished fetching remote data.
     ///   If the data fetching fails, the error variable contains more details about the problem.
     public func search(query: UserListQuery, completion: ((_ error: Error?) -> Void)? = nil) {
-        startUserListObserverIfNeeded()
-        
-        var query = query
-        query.filter?.explicitHash = explicitFilterHash
-        query.shouldBeUpdatedInBackground = false
-        
-        lastQuery = query
-        
-        userQueryUpdater.update(userListQuery: query, policy: .replace) { [weak self] result in
-            guard let weakSelf = self else {
-                completion?(nil)
-                return
-            }
-            switch result {
-            case .success:
-                weakSelf.state = .remoteDataFetched
-                weakSelf.callback { completion?(nil) }
-            case let .failure(error):
-                weakSelf.state = .remoteDataFetchFailed(ClientError(with: error))
-                weakSelf.callback { completion?(error) }
-            }
-        }
+        fetch(query, completion: completion)
     }
-    
+
     /// Loads next users from backend.
     ///
     /// - Parameters:
@@ -281,25 +100,133 @@ public class ChatUserSearchController: DataController, DelegateCallable, DataSto
         limit: Int = 25,
         completion: ((Error?) -> Void)? = nil
     ) {
-        guard let lastQuery = lastQuery else {
+        guard let lastQuery = query else {
             completion?(ClientError("You should make a search before calling for next page."))
             return
         }
-        
+
         var updatedQuery = lastQuery
-        updatedQuery.pagination = Pagination(pageSize: limit, offset: users.count)
-        userQueryUpdater.update(userListQuery: updatedQuery) { [weak self] result in
-            guard let weakSelf = self else {
-                completion?(nil)
-                return
-            }
+        updatedQuery.pagination = Pagination(pageSize: limit, offset: userArray.count)
+
+        fetch(updatedQuery, completion: completion)
+    }
+}
+
+private extension ChatUserSearchController {
+    /// Fetches the given query from the API, saves the loaded page to the database, updates the list of users and notifies the delegate.
+    ///
+    /// - Parameters:
+    ///   - query: The query to fetch.
+    ///   - completion: The completion that is triggered when the query is processed.
+    func fetch(_ query: UserListQuery, completion: ((Error?) -> Void)? = nil) {
+        // TODO: Remove with the next major
+        //
+        // This is needed to make the delegate fire about state changes at the same time with the same
+        // values as it was when query was persisted.
+        setLocalDataFetchedStateIfNeeded()
+
+        userQueryUpdater.fetch(userListQuery: query) { [weak self] result in
             switch result {
-            case let .success(payload):
-                weakSelf.callback { completion?(nil) }
+            case let .success(page):
+                self?.save(page: page) { loadedUsers in
+                    let listChanges = self?.prepareListChanges(
+                        loadedPage: loadedUsers,
+                        updatePolicy: query.pagination?.offset == 0 ? .replace : .merge
+                    )
+
+                    self?.query = query
+                    if let listChanges = listChanges, let users = self?.userList(after: listChanges) {
+                        self?._users = users
+                    }
+                    self?.state = .remoteDataFetched
+
+                    self?.callback {
+                        self?.multicastDelegate.invoke {
+                            guard let self = self, let listChanges = listChanges else { return }
+                            $0.controller(self, didChangeUsers: listChanges)
+                        }
+                        completion?(nil)
+                    }
+                }
             case let .failure(error):
-                weakSelf.callback { completion?(error) }
+                self?.state = .remoteDataFetchFailed(ClientError(with: error))
+                self?.callback { completion?(error) }
             }
         }
+    }
+
+    /// Saves the given payload to the database and returns database independent models.
+    ///
+    /// - Parameters:
+    ///   - page: The page of users fetched from the API.
+    ///   - completion: The completion that will be called with user models when database write is completed.
+    func save(page: UserListPayload, completion: @escaping ([ChatUser]) -> Void) {
+        var loadedUsers: [ChatUser] = []
+
+        client.databaseContainer.write({ session in
+            loadedUsers = page
+                .users
+                .compactMap { try? session.saveUser(payload: $0).asModel() }
+
+        }, completion: { _ in
+            completion(loadedUsers)
+        })
+    }
+
+    /// Creates the list of changes based on current list, the new page, and the policy.
+    ///
+    /// - Parameters:
+    ///   - loadedPage: The next page of users.
+    ///   - updatePolicy: The update policy.
+    /// - Returns: The list of changes that can be applied to the current list of users.
+    func prepareListChanges(loadedPage: [ChatUser], updatePolicy: UpdatePolicy) -> [ListChange<ChatUser>] {
+        switch updatePolicy {
+        case .replace:
+            let deletions = userArray.enumerated().reversed().map { (index, user) in
+                ListChange.remove(user, index: .init(item: index, section: 0))
+            }
+
+            let insertions = loadedPage.enumerated().map { (index, user) in
+                ListChange.insert(user, index: .init(item: index, section: 0))
+            }
+
+            return deletions + insertions
+        case .merge:
+            let insertions = loadedPage.enumerated().map { (index, user) in
+                ListChange.insert(user, index: .init(item: index + userArray.count, section: 0))
+            }
+
+            return insertions
+        }
+    }
+
+    /// Applies the given changes to the current list of users and returns the updated list.
+    ///
+    /// - Parameter changes: The changes to apply.
+    /// - Returns: The user list after the given changes applied.
+    ///
+    func userList(after changes: [ListChange<ChatUser>]) -> [ChatUser] {
+        var users = _users
+
+        for change in changes {
+            switch change {
+            case let .insert(user, indexPath):
+                users.insert(user, at: indexPath.item)
+            case let .remove(_, indexPath):
+                users.remove(at: indexPath.item)
+            default:
+                log.assertionFailure("Unsupported list change observed: \(change)")
+            }
+        }
+
+        return users
+    }
+
+    /// Sets state to `localDataFetched` if current state is `initialized`.
+    func setLocalDataFetchedStateIfNeeded() {
+        guard state == .initialized else { return }
+
+        state = .localDataFetched
     }
 }
 
@@ -309,7 +236,7 @@ extension ChatUserSearchController {
             _ database: DatabaseContainer,
             _ apiClient: APIClient
         ) -> UserListUpdater = UserListUpdater.init
-        
+
         var createUserListDatabaseObserver: (
             _ context: NSManagedObjectContext,
             _ fetchRequest: NSFetchRequest<UserDTO>,
