@@ -460,7 +460,6 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
                     let chatChannelVC = ChatChannelVC()
                     chatChannelVC.channelController = controller
                     if let firstVC = weakSelf.navigationController?.viewControllers.first {
-                        NotificationCenter.default.post(name: .hideTabbar, object: nil)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                             guard let self = self else {
                                 return
