@@ -93,6 +93,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     var viewEmptyState: UIView = UIView()
+    var currentWeatherType: String = "Fahrenheit"
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,6 +113,7 @@ open class ChatMessageListVC: _ViewController,
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        listView.register(WeatherCell.self, forCellReuseIdentifier: "WeatherCell")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -122,6 +124,17 @@ open class ChatMessageListVC: _ViewController,
             name: UIApplication.didBecomeActiveNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(setWeatherType(_:)),
+            name: .setWeatherType,
+            object: nil
+        )
+        NotificationCenter.default.post(name: .getWeatherType, object: nil)
+    }
+
+    @objc private func setWeatherType(_ notification: NSNotification) {
+        currentWeatherType = notification.userInfo?["weatherType"] as? String ?? "Fahrenheit"
     }
 
     /// A formatter that converts the message date to textual representation.
@@ -605,6 +618,19 @@ open class ChatMessageListVC: _ViewController,
                 cell.channel = dataSource?.channel(for: self)
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
+            } else if isWeatherCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "WeatherCell",
+                    for: indexPath) as? WeatherCell else {
+                        return UITableViewCell()
+                    }
+                cell.weatherType = currentWeatherType
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
             } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
                       let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
@@ -644,7 +670,7 @@ open class ChatMessageListVC: _ViewController,
             }
         }
     }
-
+    
     private func setupEmptyState() {
         viewEmptyState = UIView()
         self.view.addSubview(viewEmptyState)
@@ -697,6 +723,10 @@ open class ChatMessageListVC: _ViewController,
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
         return (message?.extraData.keys.contains("stickerUrl") ?? false) || (message?.extraData.keys.contains("giphyUrl") ?? false)
+    }
+
+    private func isWeatherCell(_ message: ChatMessage?) -> Bool {
+        return (message?.extraData.keys.contains("weather") ?? false)
     }
 
     private func isRedPacketExpiredCell(_ message: ChatMessage?) -> Bool {
