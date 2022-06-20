@@ -20,7 +20,7 @@ open class VideoAttachmentGalleryPreview: _View, ThemeProvider {
     open var didTapOnUploadingActionButton: ((ChatMessageVideoAttachment) -> Void)?
     
     /// An image view used to display video preview image
-    open lazy var imageView = UIImageView()
+    open private(set) lazy var imageView = UIImageView()
         .withoutAutoresizingMaskConstraints
 
     /// A loading indicator that is shown when preview is being loaded

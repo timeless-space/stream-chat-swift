@@ -15,7 +15,6 @@ class PhotoCollectionBubble: _TableViewCell {
     // MARK: Variables
     var content: ChatMessage?
     var chatChannel: ChatChannel?
-    var isSender = false
     let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
     weak var delegate: PhotoCollectionAction?
     private var isLoading = false

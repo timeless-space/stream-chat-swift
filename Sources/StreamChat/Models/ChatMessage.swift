@@ -352,7 +352,7 @@ public extension ChatMessage {
         extraData.keys.contains("redPacketPickup") ?? false
     }
 
-    public var isMultiplePreview: Bool {
+    public var isPhotoCollectionCell: Bool {
         return (self.attachmentCounts[.image] ?? 0) + (self.attachmentCounts[.video] ?? 0) > 1
     }
 

@@ -13,7 +13,6 @@ class AttachmentPreviewBubble: UITableViewCell {
     var layoutOptions: ChatMessageLayoutOptions?
     weak var delegate: PhotoCollectionAction?
     var content: ChatMessage?
-    var isSender = false
     var chatChannel: ChatChannel?
     private lazy var mainContainer = ContainerStackView(axis: .horizontal)
         .withoutAutoresizingMaskConstraints
@@ -33,9 +32,6 @@ class AttachmentPreviewBubble: UITableViewCell {
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     private var isImagePreview: Bool {
         return content?.attachmentCounts[.image] != nil
-    }
-    private var imageTask: Cancellable? {
-        didSet { oldValue?.cancel() }
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -110,13 +106,13 @@ class AttachmentPreviewBubble: UITableViewCell {
             imagePreview.clipsToBounds = true
             imagePreview.layer.cornerRadius = 12
             loadingIndicator.isHidden = false
-            imageTask = Components.default.imageLoader.loadImage(
+            Components.default.imageLoader.loadImage(
                 into: imagePreview,
                 url: content?.imageAttachments.first?.payload.imagePreviewURL,
                 imageCDN: Components.default.imageCDN,
                 completion: { [weak self] _ in
-                    self?.imageTask = nil
-                    self?.loadingIndicator.isHidden = true
+                    guard let `self` = self else { return }
+                    self.loadingIndicator.isHidden = true
                 }
             )
             subContainer.addArrangedSubviews([createTimestampLabel(), imageView])

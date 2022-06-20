@@ -634,7 +634,7 @@ open class ChatMessageListVC: _ViewController,
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 return cell
-            } else if message?.isMultiplePreview ?? false {
+            } else if message?.isPhotoCollectionCell ?? false {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "PhotoCollectionBubble",
                     for: indexPath) as? PhotoCollectionBubble else {
