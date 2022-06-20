@@ -552,6 +552,7 @@ open class ChatMessageListVC:
                 cell.weatherType = currentWeatherType
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
+                cell.url = "https://res.cloudinary.com/timeless/video/upload/app/Wallet/1W%20Tips/1W_-_NFT_PFP.mp4"
                 cell.chatChannel = dataSource?.channel(for: self)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY

@@ -14,7 +14,7 @@ enum AttachmentActionType: Int {
     case send, edit, cancel
 }
 
-class WeatherCell: UITableViewCell {
+class WeatherCell: ASVideoTableViewCell {
     // MARK: - Variables
     private var timestampLabel: UILabel = {
         let timestampLabel = UILabel()
@@ -114,12 +114,19 @@ class WeatherCell: UITableViewCell {
         stack.distribution = .fillProportionally
         return stack
     }()
-
     private var subStackView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
         return stack
     }()
+    private var playerView: UIView = {
+        let view = UIView()
+        view.transform = .mirrorY
+        view.cornerRadius = 18
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    var url = ""
 
     // Message details
     var content: ChatMessage?
@@ -127,6 +134,7 @@ class WeatherCell: UITableViewCell {
     var weatherType: String = ""
     var layoutOptions: ChatMessageLayoutOptions?
     private var isCurrentMessageSend = false
+    private let containerPadding = 65
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -138,6 +146,12 @@ class WeatherCell: UITableViewCell {
     }
 
     private func setLayout() {
+
+
+        videoLayer.backgroundColor = UIColor.clear.cgColor
+        playerView.layer.addSublayer(videoLayer)
+        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: 200, height: 200)
+
         selectionStyle = .none
         backgroundColor = .clear
 
@@ -175,6 +189,7 @@ class WeatherCell: UITableViewCell {
         backgroundImageView.transform = .mirrorY
         weatherImageView.transform = .mirrorY
         mainContentView.addSubview(backgroundImageView)
+        mainContentView.addSubview(playerView)
         mainContentView.addSubview(weatherImageView)
         mainContentView.addSubview(imageDetailsStackView)
 
@@ -190,6 +205,13 @@ class WeatherCell: UITableViewCell {
             backgroundImageView.trailingAnchor.constraint(equalTo: mainContentView.trailingAnchor, constant: 0),
             backgroundImageView.topAnchor.constraint(equalTo: mainContentView.topAnchor, constant: 0),
             backgroundImageView.leadingAnchor.constraint(equalTo: mainContentView.leadingAnchor, constant: 0),
+        ])
+
+        NSLayoutConstraint.activate([
+            playerView.bottomAnchor.constraint(equalTo: mainContentView.bottomAnchor, constant: 0),
+            playerView.trailingAnchor.constraint(equalTo: mainContentView.trailingAnchor, constant: 0),
+            playerView.topAnchor.constraint(equalTo: mainContentView.topAnchor, constant: 0),
+            playerView.leadingAnchor.constraint(equalTo: mainContentView.leadingAnchor, constant: 0),
         ])
 
         NSLayoutConstraint.activate([
@@ -394,6 +416,15 @@ class WeatherCell: UITableViewCell {
             }
         } else {
             timestampLabel.text = nil
+        }
+
+        if !url.isEmpty {
+            backgroundImageView.isHidden = true
+            weatherImageView.isHidden = true
+            playerView.isHidden = false
+            videoURL = url
+            ASVideoPlayerController.sharedVideoPlayer.pauseVideo(forLayer: videoLayer, url: url)
+            ASVideoPlayerController.sharedVideoPlayer.playVideo(withLayer: videoLayer, url: url)
         }
     }
 
