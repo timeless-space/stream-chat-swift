@@ -385,6 +385,10 @@ open class ChatChannelVC: _ViewController,
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         resignFirstResponder()
+        // Added work around until we fix navigation deinit issue
+        messageListVC?.delegate = nil
+        messageListVC?.dataSource = nil
+        channelController?.delegate = nil
     }
 
     @objc func backAction(_ sender: Any) {
