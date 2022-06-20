@@ -8,13 +8,14 @@
 
 import UIKit
 import Nuke
+import AVFoundation
 import StreamChat
 
 enum AttachmentActionType: Int {
     case send, edit, cancel
 }
 
-class WeatherCell: ASVideoTableViewCell {
+class WeatherCell: UITableViewCell {
     // MARK: - Variables
     private var timestampLabel: UILabel = {
         let timestampLabel = UILabel()
@@ -134,7 +135,9 @@ class WeatherCell: ASVideoTableViewCell {
     var weatherType: String = ""
     var layoutOptions: ChatMessageLayoutOptions?
     private var isCurrentMessageSend = false
-    private let containerPadding = 65
+    var tapGesture: UITapGestureRecognizer? = nil
+    var player: AVPlayer?
+    private var playerLayer: AVPlayerLayer?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -147,10 +150,10 @@ class WeatherCell: ASVideoTableViewCell {
 
     private func setLayout() {
 
+        playerView.backgroundColor = .green
 
-        videoLayer.backgroundColor = UIColor.clear.cgColor
-        playerView.layer.addSublayer(videoLayer)
-        videoLayer.frame = CGRect.init(x: playerView.frame.origin.x, y: playerView.frame.origin.y, width: 200, height: 200)
+        tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(onTapOfWeatherCell))
+        tapGesture?.numberOfTapsRequired = 1
 
         selectionStyle = .none
         backgroundColor = .clear
@@ -192,10 +195,9 @@ class WeatherCell: ASVideoTableViewCell {
         mainContentView.addSubview(playerView)
         mainContentView.addSubview(weatherImageView)
         mainContentView.addSubview(imageDetailsStackView)
-
         NSLayoutConstraint.activate([
-            weatherImageView.bottomAnchor.constraint(equalTo: mainContentView.bottomAnchor, constant: 5),
-            weatherImageView.trailingAnchor.constraint(equalTo: mainContentView.trailingAnchor, constant: 5),
+            weatherImageView.bottomAnchor.constraint(equalTo: mainContentView.bottomAnchor, constant: -3),
+            weatherImageView.trailingAnchor.constraint(equalTo: mainContentView.trailingAnchor, constant: -8),
             weatherImageView.widthAnchor.constraint(equalToConstant: 135),
             weatherImageView.heightAnchor.constraint(equalToConstant: 135)
         ])
@@ -208,10 +210,10 @@ class WeatherCell: ASVideoTableViewCell {
         ])
 
         NSLayoutConstraint.activate([
-            playerView.bottomAnchor.constraint(equalTo: mainContentView.bottomAnchor, constant: 0),
-            playerView.trailingAnchor.constraint(equalTo: mainContentView.trailingAnchor, constant: 0),
-            playerView.topAnchor.constraint(equalTo: mainContentView.topAnchor, constant: 0),
-            playerView.leadingAnchor.constraint(equalTo: mainContentView.leadingAnchor, constant: 0),
+            playerView.bottomAnchor.constraint(equalTo: weatherImageView.bottomAnchor, constant: -3),
+            playerView.trailingAnchor.constraint(equalTo: weatherImageView.trailingAnchor, constant: -8),
+            playerView.widthAnchor.constraint(equalToConstant: 135),
+            playerView.heightAnchor.constraint(equalToConstant: 135)
         ])
 
         NSLayoutConstraint.activate([
@@ -234,6 +236,13 @@ class WeatherCell: ASVideoTableViewCell {
 
         leadingMainContainer = mainContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8)
         trailingMainContainer = mainContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8)
+    }
+
+    @objc private func onTapOfWeatherCell() {
+        if !(player?.rate != 0 && player?.error == nil) {
+            player?.seek(to: .zero)
+            player?.play()
+        }
     }
 
     private func addImageDetailLabels() {
@@ -334,7 +343,7 @@ class WeatherCell: ASVideoTableViewCell {
         }
     }
 
-    func configureCell(isSender: Bool) {
+    func configureCell(isSender: Bool, playerCurrentTime: CMTime?) {
 
         isCurrentMessageSend = !(content?.localState == .pendingSend || content?.localState == .sending || content?.type == .ephemeral)
 
@@ -419,12 +428,30 @@ class WeatherCell: ASVideoTableViewCell {
         }
 
         if !url.isEmpty {
-            backgroundImageView.isHidden = true
             weatherImageView.isHidden = true
             playerView.isHidden = false
-            videoURL = url
-            ASVideoPlayerController.sharedVideoPlayer.pauseVideo(forLayer: videoLayer, url: url)
-            ASVideoPlayerController.sharedVideoPlayer.playVideo(withLayer: videoLayer, url: url)
+            if let tapGesture = tapGesture {
+                playerView.addGestureRecognizer(tapGesture)
+            }
+            var fileName = URL(string: url)?.lastPathComponent ?? ""
+            let downloadStatus = VideoDownloadHelper.shared.checkIfFileExists(fileName: fileName ?? "")
+            if (downloadStatus.0) {
+                var cacheUrl = VideoDownloadHelper.shared.getCacheDirectory()
+                debugPrint("### Download status - \(cacheUrl.appendingPathComponent(fileName))")
+                guard let url = cacheUrl.appendingPathComponent(fileName) as? URL else { return }
+                debugPrint("### URL - \(url)")
+                player = AVPlayer(url: url)
+            } else {
+                guard let videoUrl = URL(string: url) else { return }
+                player = AVPlayer(url: videoUrl)
+            }
+
+            playerLayer = AVPlayerLayer(player: player)
+            guard let layer = playerLayer else { return }
+            playerView.layer.addSublayer(layer)
+            layer.frame = playerView.bounds
+            player?.seek(to: playerCurrentTime ?? .zero)
+            player?.play()
         }
     }
 
@@ -438,5 +465,10 @@ class WeatherCell: ASVideoTableViewCell {
         authorAvatarView?.widthAnchor.pin(equalToConstant: messageAuthorAvatarSize.width).isActive = true
         authorAvatarView?.heightAnchor.pin(equalToConstant: messageAuthorAvatarSize.height).isActive = true
         return authorAvatarView!
+    }
+
+    func finishPlaying() {
+        player = nil
+        playerLayer = nil
     }
 }

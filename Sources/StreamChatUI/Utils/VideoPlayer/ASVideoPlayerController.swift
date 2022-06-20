@@ -186,7 +186,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
         }
     }
 
-    private func removeObserverFor(url: String) {
+    func removeObserverFor(url: String) {
         if let videoContainer = self.videoCache.object(forKey: url as NSString) {
             if let currentItem = videoContainer.player.currentItem, observingURLs[url] == true {
                 currentItem.removeObserver(self,

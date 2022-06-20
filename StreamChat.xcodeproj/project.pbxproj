@@ -1151,6 +1151,7 @@
 		DBF17AE825D48865004517B3 /* BackgroundTaskScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF17AE725D48865004517B3 /* BackgroundTaskScheduler.swift */; };
 		E344A5BD2823E16300CA7AC5 /* GiphyCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DAF49728197880002CA91C /* GiphyCollectionCell.swift */; };
 		E3508C5D2848EA5900B7E895 /* WeatherCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3508C5C2848EA5900B7E895 /* WeatherCell.swift */; };
+		E368A5A12860A1B600031D69 /* DownloadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E368A5A02860A1B600031D69 /* DownloadHelper.swift */; };
 		E3879E102853652B00F51EB1 /* WeatherHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3879E0F2853652B00F51EB1 /* WeatherHelper.swift */; };
 		E3879E122853654000F51EB1 /* WeatherDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3879E112853654000F51EB1 /* WeatherDetailModel.swift */; };
 		E3C2DCC32822BF3C00CA4F0E /* EmojiPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C2DCB92822BF3C00CA4F0E /* EmojiPickerViewController.swift */; };
@@ -2754,6 +2755,7 @@
 		DD4855E5875D07D6210C02AB /* Pods_StreamChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_StreamChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D462C3A1288350E42719FC /* Pods-StreamChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-StreamChat.release.xcconfig"; path = "Target Support Files/Pods-StreamChat/Pods-StreamChat.release.xcconfig"; sourceTree = "<group>"; };
 		E3508C5C2848EA5900B7E895 /* WeatherCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCell.swift; sourceTree = "<group>"; };
+		E368A5A02860A1B600031D69 /* DownloadHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadHelper.swift; sourceTree = "<group>"; };
 		E3879E0F2853652B00F51EB1 /* WeatherHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHelper.swift; sourceTree = "<group>"; };
 		E3879E112853654000F51EB1 /* WeatherDetailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailModel.swift; sourceTree = "<group>"; };
 		E3C2DCB92822BF3C00CA4F0E /* EmojiPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiPickerViewController.swift; sourceTree = "<group>"; };
@@ -4910,6 +4912,7 @@
 				FAC0A751282BACEF00843B52 /* UIHostingController+Extensions.swift */,
 				EDE6D9242818259700FCAB53 /* Utils.swift */,
 				E3879E0F2853652B00F51EB1 /* WeatherHelper.swift */,
+				E368A5A02860A1B600031D69 /* DownloadHelper.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -7538,6 +7541,7 @@
 				E73BD9E6264AC21300E208B7 /* FileAttachmentViewInjector.swift in Sources */,
 				CD43C65D27B545FE006C1E0C /* ContextMenu.swift in Sources */,
 				7844B10C25EF92B600B87E89 /* ChatChannelListItemView+SwiftUI.swift in Sources */,
+				E368A5A12860A1B600031D69 /* DownloadHelper.swift in Sources */,
 				6EEFB78827BB83AD007224C2 /* PanModalPresenter.swift in Sources */,
 				224FF67B2562F1EA00725DD1 /* ChatChannelReadStatusCheckmarkView.swift in Sources */,
 				6EEFB79A27BB83AD007224C2 /* PanModalPresentationAnimator.swift in Sources */,

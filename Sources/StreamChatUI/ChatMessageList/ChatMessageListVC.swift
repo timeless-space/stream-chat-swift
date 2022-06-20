@@ -5,6 +5,7 @@
 import StreamChat
 import UIKit
 import SafariServices
+import CoreMedia
 
 /// Controller that shows list of messages and composer together in the selected channel.
 @available(iOSApplicationExtension, unavailable)
@@ -74,6 +75,8 @@ open class ChatMessageListVC:
 
     var viewEmptyState: UIView = UIView()
     var currentWeatherType: String = "Fahrenheit"
+    var weatherPlayerTime = [CMTime?]()
+    var weatherUrls = [String]()
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -553,8 +556,12 @@ open class ChatMessageListVC:
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
                 cell.url = "https://res.cloudinary.com/timeless/video/upload/app/Wallet/1W%20Tips/1W_-_NFT_PFP.mp4"
+                if !weatherUrls.contains(cell.url) {
+                    weatherUrls.append(cell.url)
+                    VideoDownloadHelper.shared.loadFileAsync(url: URL(string: cell.url), completion: {_,_ in })
+                }
                 cell.chatChannel = dataSource?.channel(for: self)
-                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.configureCell(isSender: isMessageFromCurrentUser, playerCurrentTime: weatherPlayerTime[safe: indexPath.row] ?? .zero)
                 cell.transform = .mirrorY
                 return cell
             } else if isFallbackMessage(message) {
@@ -701,8 +708,18 @@ open class ChatMessageListVC:
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let cell = cell as? ASVideoTableViewCell else { return }
-        ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
+        if let cell = cell as? ASVideoTableViewCell {
+            ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
+        } else {
+            guard let cell = cell as? WeatherCell else { return }
+            if weatherPlayerTime.count > indexPath.row {
+                weatherPlayerTime[indexPath.row] = cell.player?.currentTime()
+            } else {
+                weatherPlayerTime.append(cell.player?.currentTime())
+            }
+            cell.finishPlaying()
+            return
+        }
     }
 
     open func scrollViewDidScroll(_ scrollView: UIScrollView) {
