@@ -186,6 +186,8 @@ public class PinMessageContainerView: UIView {
             layoutAttachmentView(isVisible: true)
             addVideoAttachment(videoURL: attachment.videoURL)
             labelMessage.text = "Video"
+        } else if let attachment = message.fileAttachments.first {
+            labelMessage.text = "File"
         } else {
             layoutAttachmentView(isVisible: false)
         }

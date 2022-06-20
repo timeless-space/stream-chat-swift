@@ -360,6 +360,11 @@ open class ChatChannelVC: _ViewController,
     }
 
     private func fetchPinnedMessage() {
+        guard channelController?.channel?.pinnedMessages.count ?? 0 > 0 else {
+            pinnedMessages = []
+            setupPinnedMessageView()
+            return
+        }
         let pinData = messages.filter { $0.isPinned }
         if pinData.count != pinnedMessages.count {
             pinnedMessages = pinData

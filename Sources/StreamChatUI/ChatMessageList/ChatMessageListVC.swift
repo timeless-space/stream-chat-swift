@@ -337,18 +337,21 @@ open class ChatMessageListVC: _ViewController,
             client: client
         )
     }
-
     /// pin Message for given `MessageId`.
     open func pinMessage(message: ChatMessage) {
         guard ChatClient.shared.connectionStatus == .connected else {
             Snackbar.show(text: L10n.Alert.NoInternet)
             return
         }
-        guard let cid = dataSource?.channel(for: self)?.cid else {
+        guard let channel = dataSource?.channel(for: self) else {
+            return
+        }
+        guard channel.pinnedMessages.count < 20 else {
+            Snackbar.show(text: "Max pinned. Pls unpin others first")
             return
         }
         let messageController = client.messageController(
-            cid: cid,
+            cid: channel.cid,
             messageId: message.id
         )
         messageController.pin(MessagePinning.noExpiration, completion: { [weak self] error in
