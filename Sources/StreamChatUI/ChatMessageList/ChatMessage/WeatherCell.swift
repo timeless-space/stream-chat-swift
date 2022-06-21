@@ -15,6 +15,10 @@ enum AttachmentActionType: Int {
     case send, edit, cancel
 }
 
+protocol WeatherCellAction: NSObject {
+    func didStartPlaying(indexPath: IndexPath?)
+}
+
 class WeatherCell: UITableViewCell {
     // MARK: - Variables
     private var timestampLabel: UILabel = {
@@ -138,7 +142,9 @@ class WeatherCell: UITableViewCell {
     var tapGesture: UITapGestureRecognizer? = nil
     var player: AVPlayer?
     private var playerLayer: AVPlayerLayer?
-    private var playerItem: AVPlayerItem?
+    var isVideoPlaying = false
+    var indexPath: IndexPath? = nil
+    weak var delegate: WeatherCellAction? = nil
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -150,9 +156,6 @@ class WeatherCell: UITableViewCell {
     }
 
     private func setLayout() {
-
-        playerView.backgroundColor = .green
-
         tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(onTapOfWeatherCell))
         tapGesture?.numberOfTapsRequired = 1
 
@@ -272,6 +275,7 @@ class WeatherCell: UITableViewCell {
         leadingSubContainer?.constant = isCurrentMessageSend ? 15 : 0
         trailingSubContainer?.constant = isCurrentMessageSend ? -15 : 0
         bottomSubContainer?.constant = isCurrentMessageSend ? -15 : 0
+        layoutIfNeeded()
     }
 
     private func createActionButton(text: String, type: AttachmentActionType) -> UIButton {
@@ -345,11 +349,9 @@ class WeatherCell: UITableViewCell {
     }
 
     func configureCell(isSender: Bool, playerCurrentTime: CMTime?) {
-        debugPrint("### Configure Cell")
-        player?.pause()
-        player = nil
-        playerLayer?.removeFromSuperlayer()
-        playerLayer = nil
+
+        debugPrint("### Configure cell")
+
         isCurrentMessageSend = !(content?.localState == .pendingSend || content?.localState == .sending || content?.type == .ephemeral)
 
         guard let content = content?.extraData,
@@ -431,6 +433,13 @@ class WeatherCell: UITableViewCell {
         }
 
         if !url.isEmpty {
+            debugPrint("### Video playing - \(isVideoPlaying)")
+            if player != nil {
+                debugPrint("### Returning from here - \(isVideoPlaying)")
+                return;
+            }
+
+            delegate?.didStartPlaying(indexPath: indexPath)
             weatherImageView.isHidden = true
             playerView.isHidden = false
             if let tapGesture = tapGesture {
@@ -438,21 +447,21 @@ class WeatherCell: UITableViewCell {
             }
             var fileName = URL(string: url)?.lastPathComponent ?? ""
             let downloadStatus = VideoDownloadHelper.shared.checkIfFileExists(fileName: fileName ?? "")
-            if (downloadStatus.0) {
+            if downloadStatus.0 {
                 var cacheUrl = VideoDownloadHelper.shared.getCacheDirectory()
                 guard let url = cacheUrl.appendingPathComponent(fileName) as? URL else { return }
-                playerItem = AVPlayerItem(url: url)
+                let string = url.absoluteString.replacingOccurrences(of: ".mp4", with: ".mov")
+                player = AVPlayer(url: URL(string: string)!)
             } else {
                 guard let videoUrl = URL(string: url) else { return }
-                playerItem = AVPlayerItem(url: videoUrl)
+                player = AVPlayer(url: videoUrl)
             }
-            player = AVPlayer()
-            player?.replaceCurrentItem(with: playerItem)
             playerLayer = AVPlayerLayer(player: player)
             guard let layer = playerLayer else { return }
+            playerLayer?.removeFromSuperlayer()
             playerView.layer.addSublayer(layer)
             layer.frame = playerView.bounds
-            player?.seek(to: playerCurrentTime ?? .zero)
+//            player?.seek(to: playerCurrentTime ?? .zero)
             player?.play()
         } else {
             weatherImageView.isHidden = false
@@ -474,6 +483,7 @@ class WeatherCell: UITableViewCell {
     }
 
     func finishPlaying() {
+        isVideoPlaying = false
         playerLayer?.removeFromSuperlayer()
         player = nil
         playerLayer = nil

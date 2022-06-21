@@ -40,6 +40,7 @@ public class PollBubble: UITableViewCell {
     // MARK: - Methods
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        debugPrint("## Poll Bubble set layout")
         setLayout()
     }
 

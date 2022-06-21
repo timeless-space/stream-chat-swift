@@ -77,6 +77,7 @@ open class ChatMessageListVC:
     var currentWeatherType: String = "Fahrenheit"
     var weatherPlayerTime = [CMTime?]()
     var weatherUrls = [String]()
+    var weatherVideoStatus = [Int: Bool]()
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -317,6 +318,12 @@ open class ChatMessageListVC:
     open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         let currentUserId = ChatClient.shared.currentUserId
+
+        if weatherVideoStatus[indexPath.row] == nil {
+            debugPrint("### Updating value to false")
+            weatherVideoStatus[indexPath.row] = false
+        }
+
         let isMessageFromCurrentUser = message?.author.id == currentUserId
         if channelType == .announcement {
             guard let cell = listView.dequeueReusableCell(
@@ -552,6 +559,12 @@ open class ChatMessageListVC:
                     for: indexPath) as? WeatherCell else {
                         return UITableViewCell()
                     }
+                cell.delegate = self
+                cell.indexPath = indexPath
+                debugPrint("## Passing Weather Status :- \(indexPath.row), value :- \(weatherVideoStatus[indexPath.row])")
+                cell.isVideoPlaying = weatherVideoStatus[indexPath.row] ?? false
+                weatherVideoStatus[indexPath.row] = true
+                debugPrint("## P Weather status - \(weatherVideoStatus)")
                 cell.weatherType = currentWeatherType
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
@@ -561,7 +574,7 @@ open class ChatMessageListVC:
                     VideoDownloadHelper.shared.loadFileAsync(url: URL(string: cell.url), completion: {_,_ in })
                 }
                 cell.chatChannel = dataSource?.channel(for: self)
-                cell.configureCell(isSender: isMessageFromCurrentUser, playerCurrentTime: weatherPlayerTime[safe: indexPath.row] ?? .zero)
+//                cell.configureCell(isSender: isMessageFromCurrentUser, playerCurrentTime: weatherPlayerTime[safe: indexPath.row] ?? .zero)
                 cell.transform = .mirrorY
                 return cell
             } else if isFallbackMessage(message) {
@@ -702,21 +715,22 @@ open class ChatMessageListVC:
     }
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let announcementCell = cell as? AnnouncementTableViewCell else { return }
-        announcementCell.getImageFromCache(announcementCell.message)
-        delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
+        if let announcementCell = cell as? AnnouncementTableViewCell {
+            announcementCell.getImageFromCache(announcementCell.message)
+            delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
+        } else {
+            guard let cell = cell as? WeatherCell else { return }
+            cell.configureCell(isSender: true, playerCurrentTime: weatherPlayerTime[safe: indexPath.row] ?? .zero)
+        }
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if let cell = cell as? ASVideoTableViewCell {
             ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
         } else {
+            debugPrint("## P didEndDisplaying \(indexPath)")
             guard let cell = cell as? WeatherCell else { return }
-            if weatherPlayerTime.count > indexPath.row {
-                weatherPlayerTime[indexPath.row] = cell.player?.currentTime()
-            } else {
-                weatherPlayerTime.append(cell.player?.currentTime())
-            }
+            weatherVideoStatus[indexPath.row] = false
             cell.finishPlaying()
             return
         }
@@ -939,5 +953,14 @@ extension ChatMessageListVC: AnnouncementAction {
         else { return }
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         cell.configureCell(message)
+    }
+}
+
+extension ChatMessageListVC: WeatherCellAction {
+
+    func didStartPlaying(indexPath: IndexPath?) {
+        debugPrint("### indexPath \(indexPath)")
+        weatherVideoStatus[indexPath?.row ?? 0] = true
+        debugPrint("### indexPath \(weatherVideoStatus[indexPath?.row ?? 0])")
     }
 }

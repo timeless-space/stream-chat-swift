@@ -37,7 +37,6 @@ class VideoDownloadHelper {
         let destinationUrl = cacheUrl.appendingPathComponent(url.lastPathComponent)
 
         if FileManager().fileExists(atPath: destinationUrl.path) {
-            debugPrint("### \(destinationUrl.path)")
             completion(destinationUrl.path, nil)
         } else {
             let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
