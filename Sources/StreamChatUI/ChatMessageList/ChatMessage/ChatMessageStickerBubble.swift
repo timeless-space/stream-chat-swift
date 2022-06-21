@@ -95,7 +95,7 @@ class ChatMessageStickerBubble: _TableViewCell {
             sentThumbGifView.setGifFromURL(gifUrl)
             stickerContainer.addArrangedSubview(sentThumbGifView)
         } else if content?.extraData.stickerUrl?.contains(".json") ?? false, let lottie = URL(string: content?.extraData.stickerUrl ?? "") {
-            self.sentThumbStickerView = AnimationView()
+            sentThumbStickerView = AnimationView()
             DotLottie.load(name: "1") { [weak self] (animation, file) in
                 guard let `self` = self else { return }
                 self.sentThumbStickerView?.animation = animation

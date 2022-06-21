@@ -756,6 +756,10 @@ open class ChatMessageListVC: _ViewController,
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let cell = cell as? ChatMessageStickerBubble {
+            cell.sentThumbStickerView?.removeFromSuperview()
+            cell.sentThumbStickerView?.animation = nil
+        }
         guard let cell = cell as? ASVideoTableViewCell else { return }
         ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
     }
