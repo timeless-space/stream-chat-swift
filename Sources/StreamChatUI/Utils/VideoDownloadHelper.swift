@@ -22,7 +22,6 @@ class VideoDownloadHelper {
             let filePath = pathComponent.path
             let fileManager = FileManager.default
             if fileManager.fileExists(atPath: filePath) {
-                debugPrint("### Filepath - \(filePath)")
                 return (true, filePath)
             } else {
                 return (false, filePath)
@@ -38,10 +37,9 @@ class VideoDownloadHelper {
         let destinationUrl = cacheUrl.appendingPathComponent(url.lastPathComponent)
 
         if FileManager().fileExists(atPath: destinationUrl.path) {
-            debugPrint("### File already exists [\(destinationUrl.path)]")
+            debugPrint("### \(destinationUrl.path)")
             completion(destinationUrl.path, nil)
         } else {
-            debugPrint("### File Download started [\(destinationUrl.path)]")
             let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
@@ -52,7 +50,6 @@ class VideoDownloadHelper {
                         if response.statusCode == 200 {
                             if let data = data {
                                 if let _ = try? data.write(to: destinationUrl, options: Data.WritingOptions.atomic) {
-                                    debugPrint("### File download complete [\(destinationUrl.path)]")
                                     completion(destinationUrl.path, error)
                                 } else {
                                     completion(destinationUrl.path, error)

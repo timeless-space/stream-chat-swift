@@ -138,6 +138,7 @@ class WeatherCell: UITableViewCell {
     var tapGesture: UITapGestureRecognizer? = nil
     var player: AVPlayer?
     private var playerLayer: AVPlayerLayer?
+    private var playerItem: AVPlayerItem?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -344,7 +345,11 @@ class WeatherCell: UITableViewCell {
     }
 
     func configureCell(isSender: Bool, playerCurrentTime: CMTime?) {
-
+        debugPrint("### Configure Cell")
+        player?.pause()
+        player = nil
+        playerLayer?.removeFromSuperlayer()
+        playerLayer = nil
         isCurrentMessageSend = !(content?.localState == .pendingSend || content?.localState == .sending || content?.type == .ephemeral)
 
         guard let content = content?.extraData,
@@ -378,9 +383,7 @@ class WeatherCell: UITableViewCell {
             condition: fetchRawData(raw: weatherCode) as? String ?? ""
         )
 
-        Nuke.loadImage(with: weatherDetail.getImageUrl(), into: weatherImageView)
         backgroundImageView.image = weatherDetail.backgroundImage ?? UIImage()
-
         setBubbleConstraints(isSender)
 
         authorAvatarView?.isHidden = isSender
@@ -437,21 +440,24 @@ class WeatherCell: UITableViewCell {
             let downloadStatus = VideoDownloadHelper.shared.checkIfFileExists(fileName: fileName ?? "")
             if (downloadStatus.0) {
                 var cacheUrl = VideoDownloadHelper.shared.getCacheDirectory()
-                debugPrint("### Download status - \(cacheUrl.appendingPathComponent(fileName))")
                 guard let url = cacheUrl.appendingPathComponent(fileName) as? URL else { return }
-                debugPrint("### URL - \(url)")
-                player = AVPlayer(url: url)
+                playerItem = AVPlayerItem(url: url)
             } else {
                 guard let videoUrl = URL(string: url) else { return }
-                player = AVPlayer(url: videoUrl)
+                playerItem = AVPlayerItem(url: videoUrl)
             }
-
+            player = AVPlayer()
+            player?.replaceCurrentItem(with: playerItem)
             playerLayer = AVPlayerLayer(player: player)
             guard let layer = playerLayer else { return }
             playerView.layer.addSublayer(layer)
             layer.frame = playerView.bounds
             player?.seek(to: playerCurrentTime ?? .zero)
             player?.play()
+        } else {
+            weatherImageView.isHidden = false
+            playerView.isHidden = true
+            Nuke.loadImage(with: weatherDetail.getImageUrl(), into: weatherImageView)
         }
     }
 
@@ -468,6 +474,7 @@ class WeatherCell: UITableViewCell {
     }
 
     func finishPlaying() {
+        playerLayer?.removeFromSuperlayer()
         player = nil
         playerLayer = nil
     }
