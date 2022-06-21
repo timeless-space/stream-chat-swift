@@ -384,6 +384,26 @@ public extension ChatMessage {
         }
     }
 
+    public var isMessagePinned: String? {
+        guard let pinning = extraData["kPinningMessageID"],
+              let messageID = fetchRawData(raw: pinning) as? String
+        else { return nil }
+        return messageID
+    }
+
+    public var pinnedAuthorID: String? {
+        guard let pinning = extraData["kPinningAuthorID"],
+              let authorID = fetchRawData(raw: pinning) as? String
+        else { return nil }
+        return authorID
+    }
+
+    public func isFallbackMessage() -> Bool {
+        guard let fallbackMessage = extraData["fallbackMessage"] else { return false }
+        let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
+        return !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     public func getExtraData(key: String) -> [String: RawJSON]? {
         if let extraData = extraData[key] {
             switch extraData {

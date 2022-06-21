@@ -61,6 +61,9 @@ open class ChatMessageLayoutOptionsResolver {
             if isCardMessage && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {
                 isLastInSequence = true
             }
+            if nextMessage.isMessagePinned != nil {
+                isLastInSequence = true
+            }
         }
 
         var options: ChatMessageLayoutOptions = []

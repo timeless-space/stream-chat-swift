@@ -69,6 +69,8 @@ open class ChatChannelVC: _ViewController,
         return view
     }()
 
+    open private(set) var messageListTopConstraint: NSLayoutConstraint?
+    open private(set) var pinnedMessageContainerView: PinMessageContainerView?
     open private(set) lazy var moreButton: UIButton = {
         let button = UIButton()
         button.setImage(Appearance.default.images.moreVertical, for: .normal)
@@ -184,6 +186,10 @@ open class ChatChannelVC: _ViewController,
         messageListVC?.listView.isLastCellFullyVisible ?? false
     }
 
+    private lazy var pinnedMessages = [ChatMessage]()
+    private var pinMessageWorkItem: DispatchWorkItem?
+
+    // MARK: - Setup
     override open func setUp() {
         super.setUp()
 
@@ -197,7 +203,9 @@ open class ChatChannelVC: _ViewController,
 
         channelController?.delegate = self
         channelController?.synchronize { [weak self] _ in
-            self?.messageComposerVC?.updateContent()
+            guard let weakSelf = self else { return }
+            weakSelf.messageComposerVC?.updateContent()
+            weakSelf.fetchPinnedMessage()
         }
     }
 
@@ -263,9 +271,12 @@ open class ChatChannelVC: _ViewController,
             addChildViewController(messageListVC, targetView: view)
             NSLayoutConstraint.activate([
                 messageListVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-                messageListVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-                messageListVC.view.topAnchor.constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0),
+                messageListVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0)
             ])
+            messageListTopConstraint = messageListVC.view.topAnchor
+                .constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0)
+            messageListTopConstraint?.isActive = true
+
             if let messageComposerVC = messageComposerVC {
                 addChildViewController(messageComposerVC, targetView: view)
                 messageComposerVC.view.pin(anchors: [.leading, .trailing], to: view)
@@ -344,6 +355,112 @@ open class ChatChannelVC: _ViewController,
         headerView.titleContainerView.subtitleLabel.setChatNavSubtitleColor()
         
         navigationHeaderView.backgroundColor = Appearance.default.colorPalette.chatNavBarBackgroundColor
+        // setting pinned message view
+        fetchPinnedMessage()
+    }
+
+    private func fetchPinnedMessage() {
+        guard channelController?.channel?.pinnedMessages.count ?? 0 > 0 else {
+            pinnedMessages = []
+            setupPinnedMessageView()
+            return
+        }
+        let pinData = messages.filter { $0.isPinned }
+        if pinData.count != pinnedMessages.count {
+            pinnedMessages = pinData
+            setupPinnedMessageView()
+        } else {
+            let result = zip(pinData, pinnedMessages).enumerated().filter() {
+                $1.0.text != $1.1.text
+            }.map{$0.0}
+            if !result.isEmpty {
+                pinnedMessages = pinData
+                setupPinnedMessageView()
+            }
+        }
+    }
+
+    private func setupPinnedMessageView() {
+        guard !pinnedMessages.isEmpty else {
+            removePinMessageContainerView()
+            return
+        }
+        if pinnedMessageContainerView == nil {
+            addPinMessageContainerView()
+        }
+        pinnedMessageContainerView?.setupUI(pinMessages: pinnedMessages)
+        // callback
+        pinnedMessageContainerView?.callbackMessageDidSelect = { [weak self] message in
+            guard let weakSelf = self else {
+                return
+            }
+            guard let pinIndex = weakSelf.messages
+                .firstIndex(where: { $0.id == message.id }) else { return }
+            let indexPath = IndexPath(item: pinIndex, section: 0)
+            weakSelf.messageListVC?.highlightedPinIndexPath = indexPath
+            weakSelf.messageListVC?.listView.scrollToIndexPath(indexPath: indexPath)
+            weakSelf.messageListVC?.highlightPinMessage(for: indexPath)
+        }
+        pinnedMessageContainerView?.callbackCloseButton = { [weak self] message in
+            guard let weakSelf = self else { return }
+            let cancelAction = UIAlertAction(title: "Cancel",
+                                             style: .cancel, handler: nil)
+            let unPinAllAction = UIAlertAction(title: "Unpin", style: .default) { action in
+                weakSelf.unPinMessage(message: message)
+            }
+            weakSelf.presentAlert(title: "Would you like to unpin this message?",
+                                  message: nil, actions: [cancelAction,unPinAllAction])
+        }
+    }
+
+    private func addPinMessageContainerView() {
+        let containerView = PinMessageContainerView(frame: .zero)
+            .withoutAutoresizingMaskConstraints
+        pinnedMessageContainerView = containerView
+        pinnedMessageContainerView?.backgroundColor = Appearance
+            .default
+            .colorPalette
+            .walletTabbarBackground
+        view.addSubview(containerView)
+        pinnedMessageContainerView?.alpha = 0
+        pinnedMessageContainerView?.isHidden = false
+        // Constraint
+        layoutPinMessageContainer()
+        // Animate Pinned Message view
+        animatePinnedMessageView()
+        // Adding long gesture on pinned message view
+        addPinnedMessageAction()
+        // Updating Message list top constraint
+        updateMessageListTopConstraint()
+    }
+
+    private func layoutPinMessageContainer() {
+        guard let containerView = pinnedMessageContainerView else { return }
+        NSLayoutConstraint.activate([
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            containerView.topAnchor.constraint(equalTo: navigationHeaderView.bottomAnchor, constant: 0),
+            containerView.heightAnchor.constraint(equalToConstant: 54)
+        ])
+    }
+
+    private func animatePinnedMessageView() {
+        UIView.animate(withDuration: 0.3,
+                       delay: 0,
+                       options: [.transitionCrossDissolve]) { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.pinnedMessageContainerView?.alpha = 1.0
+        }
+    }
+
+    private func addPinnedMessageAction() {
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handlePinnedMessageLongPress))
+        longPress.minimumPressDuration = 0.22
+        pinnedMessageContainerView?.addGestureRecognizer(longPress)
+    }
+
+    private func updateMessageListTopConstraint() {
+        messageListTopConstraint?.constant = 54
     }
 
     override open func viewDidLoad() {
@@ -385,6 +502,22 @@ open class ChatChannelVC: _ViewController,
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         resignFirstResponder()
+    }
+
+    private func removePinMessageContainerView() {
+        pinnedMessageContainerView?.removeFromSuperview()
+        pinnedMessageContainerView = nil
+        messageListTopConstraint?.constant = 0
+    }
+
+    private func unPinMessage(message: ChatMessage) {
+        messageListVC?.unPinMessage(message: message, completion: { [weak self] error in
+            if error != nil {
+                Snackbar.show(text: L10n.Message.Actions.unPinFailed)
+            } else {
+                Snackbar.show(text: "Message Unpinned.")
+            }
+        })
     }
 
     @objc func backAction(_ sender: Any) {
@@ -486,7 +619,37 @@ open class ChatChannelVC: _ViewController,
     @objc func closePinViewAction(_ sender: Any) {
         shareView.isHidden = true
     }
-    
+
+    @objc func unPinMessage(_ sender: Any) {
+        pinnedMessageContainerView?.removeFromSuperview()
+        pinnedMessageContainerView = nil
+    }
+
+    @objc open func handlePinnedMessageLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        UIView.animate(withDuration: 0.3,
+                       delay: 0,
+                       usingSpringWithDamping: 0.5,
+                       initialSpringVelocity: 3,
+                       options: [.curveEaseInOut],
+                       animations: { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.pinnedMessageContainerView?
+                .transform = CGAffineTransform.identity.scaledBy(x: 0.95, y: 0.95)
+            weakSelf.pinnedMessageContainerView?.alpha = 0.5
+            weakSelf.view.layoutIfNeeded()
+        }, completion: { [weak self] _ in
+            guard let weakSelf = self else { return }
+            weakSelf.pinnedMessageContainerView?.transform = .identity
+            weakSelf.pinnedMessageContainerView?.alpha = 1.0
+        })
+        let popup = ChatAllPinnedMessageVC()
+        popup.channelController = channelController
+        popup.pinnedMessages = pinnedMessages
+            .sorted(by: { $0.createdAt > $1.createdAt })
+        present(popup, animated: true)
+    }
+
     private func getGroupLink() -> String? {
         guard let extraData = channelController?.channel?.extraData["joinLink"] else {
             return nil
@@ -803,6 +966,14 @@ open class ChatChannelVC: _ViewController,
             UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
                 self?.messageListVC?.showThread(messageId: message.id)
             }
+        case is PinMessageActionItem:
+            UIApplication.shared.windows.last?.rootViewController?.dismiss(animated: true) { [weak self] in
+                if message.isPinned {
+                    self?.messageListVC?.unPinMessage(message: message)
+                } else {
+                    self?.messageListVC?.pinMessage(message: message)
+                }
+            }
         default:
             return
         }
@@ -837,6 +1008,13 @@ open class ChatChannelVC: _ViewController,
             self.groupCreateMessageView?.contentView.removeFromSuperview()
             self.groupCreateMessageView = nil
         }
+        pinMessageWorkItem?.cancel()
+        pinMessageWorkItem = DispatchWorkItem { [weak self] in
+            guard let weakSelf = self else { return }
+            weakSelf.fetchPinnedMessage()
+        }
+        DispatchQueue.main
+            .asyncAfter(deadline: .now() + 0.1, execute: pinMessageWorkItem!)
     }
 
     open func channelController(

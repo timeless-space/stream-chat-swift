@@ -141,6 +141,17 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             guard let fallbackMessage = extraData["fallbackMessage"] else { return "" }
             let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
             return fallbackMessageString
+        } else if let pinnedID = lastMessage.isMessagePinned {
+            let channelController = ChatClient.shared
+                .channelController(for: content.channel.cid)
+            let pinnedMessage = channelController.messages
+                .filter({ $0.id == pinnedID }).first
+            guard let message = pinnedMessage else { return L10n.Channel.Item.emptyMessages }
+            let pinAuthor: ChatChannelMember? = channelController.channel?.lastActiveMembers
+                .filter { $0.id == lastMessage.pinnedAuthorID }.first
+            let authorName = pinAuthor?.name ?? ""
+            let description = " pinned \"\(message.text)\""
+            return "\(authorName) \(description)"
         } else if !lastMessage.text.isEmpty {
             return content.channel.isDirectMessageChannel ? lastMessage.text : "\(authorName) \(lastMessage.text)"
         } else if let previewMessage = content.channel.previewMessage {

@@ -15,6 +15,7 @@
 "message.actions.copy" = "Copy";
 "message.actions.translate" = "Translate";
 "message.actions.pin" = "Pin";
+"message.actions.unpin" = "Unpin";
 "message.actions.forward" = "Forward";
 "message.actions.more" = "More...";
 "message.actions.delete" = "Delete Message";
@@ -61,6 +62,8 @@
 "message.title.online" = "Online";
 "message.title.offline" = "Offline";
 "message.title.group" = "%d members, %d online";
+"message.pin.failed" = "Error while pin message!";
+"message.unpin.failed" = "Error while unpin message!";
 
 "current-selection" = "%d of %d";
 
@@ -80,4 +83,5 @@
 "dates.time-ago-months-singular" = "last seen one month ago";
 "dates.time-ago-months-plural" = "last seen %d months ago";
 
+"alert.noInternet" = "Internet connection error";
 "you" = "You";

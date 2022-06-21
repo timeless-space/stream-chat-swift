@@ -263,15 +263,21 @@ public struct ResendActionItem: ChatMessageActionItem {
 
 /// Instance of `ChatMessageActionItem` for pin message action.
 public struct PinMessageActionItem: ChatMessageActionItem {
-    public var title: String { L10n.Message.Actions.pin }
+    public let title: String
     public let icon: UIImage
     public let action: (ChatMessageActionItem) -> Void
     public init(
+        message: ChatMessage,
         action: @escaping (ChatMessageActionItem) -> Void,
         appearance: Appearance = .default
     ) {
+        title = message.isPinned ?
+        L10n.Message.Actions.unPin :
+        L10n.Message.Actions.pin
         self.action = action
-        icon = appearance.images.messageActionPin ?? UIImage()
+        icon = message.isPinned ?
+        (appearance.images.messageActionUnpin ?? UIImage()) :
+        (appearance.images.messageActionPin ?? UIImage())
     }
 }
 

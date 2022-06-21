@@ -23,5 +23,10 @@ public extension Appearance {
         public enum Name {
             public static let sfProText = "SFProText-Regular"
         }
+
+        public func sfProTextRegular(size: CGFloat) -> UIFont {
+            return UIFont(name: Name.sfProText, size: size) ??
+            UIFont.systemFont(ofSize: 15, weight: .regular)
+        }
     }
 }

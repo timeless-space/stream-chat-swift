@@ -24,6 +24,7 @@ internal enum L10n {
       /// Ok
       internal static var ok: String { L10n.tr("Localizable", "alert.actions.ok") }
     }
+    internal static var NoInternet: String { L10n.tr("Localizable", "alert.noInternet") }
   }
 
   internal enum Attachment {
@@ -148,10 +149,14 @@ internal enum L10n {
       internal static var tranalate: String { L10n.tr("Localizable", "message.actions.translate")}
       /// More Action
       internal static var more: String { L10n.tr("Localizable", "message.actions.more") }
-        /// Pin Message Action
-        internal static var pin: String { L10n.tr("Localizable", "message.actions.pin") }
-        /// Forward Message Action
-        internal static var forward: String { L10n.tr("Localizable", "message.actions.forward") }
+      /// Pin Message Action
+      internal static var pin: String { L10n.tr("Localizable", "message.actions.pin") }
+      /// UnPin Message Action
+      internal static var unPin: String { L10n.tr("Localizable", "message.actions.unpin") }
+      internal static var pinFailed: String { L10n.tr("Localizable", "message.pin.failed") }
+      internal static var unPinFailed: String { L10n.tr("Localizable", "message.unpin.failed") }
+      /// Forward Message Action
+      internal static var forward: String { L10n.tr("Localizable", "message.actions.forward") }
       /// Delete Message
       internal static var delete: String { L10n.tr("Localizable", "message.actions.delete") }
       /// Edit Message

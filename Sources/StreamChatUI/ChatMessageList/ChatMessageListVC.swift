@@ -93,6 +93,8 @@ open class ChatMessageListVC: _ViewController,
     }
 
     var viewEmptyState: UIView = UIView()
+    open var isPinnedMessagePreview: Bool = false
+    open var highlightedPinIndexPath: IndexPath?
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,6 +114,7 @@ open class ChatMessageListVC: _ViewController,
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        listView.register(TableviewCellPinMessage.self, forCellReuseIdentifier: TableviewCellPinMessage.reuseID)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let `self` = self else { return }
             self.pausePlayVideos()
@@ -281,8 +284,7 @@ open class ChatMessageListVC: _ViewController,
 
         guard
             gesture.state == .began,
-            let indexPath = listView.indexPathForRow(at: location)
-        else { return }
+            let indexPath = listView.indexPathForRow(at: location) else { return }
         didSelectMessageCell(at: indexPath)
     }
 
@@ -303,12 +305,14 @@ open class ChatMessageListVC: _ViewController,
         )
 
         let actionsController = components.messageActionsVC.init()
+        actionsController.isPinnedMessagePreview = isPinnedMessagePreview
         actionsController.messageController = messageController
         actionsController.channelConfig = dataSource?.channel(for: self)?.config
         actionsController.delegate = self
 
         let reactionsController: ChatMessageReactionsPickerVC? = {
             guard message.localState == nil else { return nil }
+            guard !isPinnedMessagePreview else { return nil }
             guard dataSource?.channel(for: self)?.config.reactionsEnabled == true else {
                 return nil
             }
@@ -333,7 +337,88 @@ open class ChatMessageListVC: _ViewController,
             client: client
         )
     }
+    /// pin Message for given `MessageId`.
+    open func pinMessage(message: ChatMessage) {
+        guard ChatClient.shared.connectionStatus == .connected else {
+            Snackbar.show(text: L10n.Alert.NoInternet)
+            return
+        }
+        guard let channel = dataSource?.channel(for: self) else {
+            return
+        }
+        guard channel.pinnedMessages.count < 20 else {
+            Snackbar.show(text: "Max pinned. Pls unpin others first")
+            return
+        }
+        let messageController = client.messageController(
+            cid: channel.cid,
+            messageId: message.id
+        )
+        messageController.pin(MessagePinning.noExpiration, completion: { [weak self] error in
+            guard let weakSelf = self else { return }
+            if error != nil {
+                Snackbar.show(text: L10n.Message.Actions.pinFailed)
+            } else {
+                weakSelf.sendPinMessage(message: message)
+            }
+        })
+    }
 
+    /// unpin Message for given `MessageId`.
+    open func unPinMessage(message: ChatMessage, completion: ((Error?) -> Void)? = nil) {
+        guard ChatClient.shared.connectionStatus == .connected else {
+            Snackbar.show(text: L10n.Alert.NoInternet)
+            return
+        }
+        guard let cid = dataSource?.channel(for: self)?.cid else {
+            return
+        }
+        let messageController = client.messageController(
+            cid: cid,
+            messageId: message.id
+        )
+        messageController.unpin(completion: { [weak self] error in
+            if error != nil && completion == nil {
+                Snackbar.show(text: L10n.Message.Actions.pinFailed)
+            }
+            completion?(error)
+        })
+    }
+
+    open func sendPinMessage(message: ChatMessage) {
+        guard let cid = dataSource?.channel(for: self)?.cid else {
+            return
+        }
+        let channelController = client.channelController(for: cid)
+        let extraData: [String: RawJSON] = [
+            "kPinningMessageID": .string(message.id),
+            "kPinningAuthorID": .string(ChatClient.shared.currentUserId ?? "")]
+        let userName = ChatClient.shared.currentUserController().currentUser?.name
+        let text = "\(userName ?? "") pinned \(message.text)"
+        channelController.createNewMessage(text: text, extraData: extraData)
+    }
+
+    open func highlightPinMessage(for indexPath: IndexPath) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let weakSelf = self, let highlightedPinIndexPath = weakSelf
+                    .highlightedPinIndexPath else { return }
+            guard let cell = weakSelf.listView
+                    .cellForRow(at: highlightedPinIndexPath) as? ChatMessageCell else {
+                        return
+                    }
+            weakSelf.highlightedPinIndexPath = nil
+            let selectionColor = cell.messageContentView?
+                .bubbleView?.backgroundColor
+            UIView.animate(withDuration: 1, delay: 0, options: []) {
+                cell.messageContentView?.bubbleView?.backgroundColor =
+                selectionColor?.withAlphaComponent(0.3)
+                weakSelf.view.layoutIfNeeded()
+            } completion: { status in
+                cell.messageContentView?
+                    .bubbleView?.backgroundColor = selectionColor
+            }
+        }
+    }
     /// Check if the current message being displayed should show the date separator.
     /// - Parameters:
     ///   - message: The message being displayed.
@@ -620,6 +705,20 @@ open class ChatMessageListVC: _ViewController,
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
+            } else if let pinnedID = message?.isMessagePinned {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: TableviewCellPinMessage.reuseID,
+                    for: indexPath) as? TableviewCellPinMessage,
+                      let channel = dataSource?.channel(for: self)
+                else { return UITableViewCell() }
+                let channelController = client.channelController(for: channel.cid)
+                let pinAuthor: ChatChannelMember? = channelController.channel?.lastActiveMembers
+                    .filter { $0.id == message?.pinnedAuthorID }.first
+                let pinnedMessage = channelController.messages
+                    .filter { $0.id == pinnedID }
+                cell.configureData(message: pinnedMessage.first,
+                                   pinAuthor: pinAuthor)
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -756,6 +855,9 @@ open class ChatMessageListVC: _ViewController,
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let highlightedPinIndexPath = highlightedPinIndexPath {
+            highlightPinMessage(for: indexPath)
+        }
         guard let cell = cell as? ASVideoTableViewCell else { return }
         ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
     }
