@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import UIKit
@@ -16,7 +16,7 @@ open class NavigationRouter<Controller: UIViewController>: UIResponder {
     public unowned var rootViewController: Controller
 
     /// A convenience method to get the navigation controller of the root view controller.
-    public var rootNavigationController: UINavigationController? {
+    open var rootNavigationController: UINavigationController? {
         rootViewController.navigationController
     }
 

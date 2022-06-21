@@ -9,7 +9,6 @@
 import UIKit
 import StreamChat
 import StreamChatUI
-import Nuke
 
 class CryptoSentBubble: UITableViewCell {
 
@@ -22,7 +21,8 @@ class CryptoSentBubble: UITableViewCell {
     public private(set) var blockExplorerButton: UIButton!
     var options: ChatMessageLayoutOptions?
     var content: ChatMessage?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    let imageLoader = Components.default.imageLoader
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     public var blockExpAction: ((URL) -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -73,7 +73,7 @@ class CryptoSentBubble: UITableViewCell {
             sentThumbImageView.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 0),
             sentThumbImageView.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: 0),
             sentThumbImageView.bottomAnchor.constraint(equalTo: subContainer.bottomAnchor, constant: 0),
-            sentThumbImageView.heightAnchor.constraint(equalToConstant: 250)
+            sentThumbImageView.heightAnchor.constraint(equalToConstant: 200)
         ])
         sentThumbImageView.transform = .mirrorY
         descriptionLabel = createDescLabel()
@@ -104,14 +104,14 @@ class CryptoSentBubble: UITableViewCell {
         blockExplorerButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         blockExplorerButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
         blockExplorerButton.clipsToBounds = true
-        blockExplorerButton.layer.cornerRadius = 20
+        blockExplorerButton.layer.cornerRadius = 16
         subContainer.addSubview(blockExplorerButton)
         NSLayoutConstraint.activate([
             blockExplorerButton.leadingAnchor.constraint(equalTo: subContainer.leadingAnchor, constant: 12),
             blockExplorerButton.trailingAnchor.constraint(equalTo: subContainer.trailingAnchor, constant: -12),
-            blockExplorerButton.heightAnchor.constraint(equalToConstant: 40),
-            blockExplorerButton.bottomAnchor.constraint(equalTo: sentCryptoLabel.bottomAnchor, constant: -35),
-            blockExplorerButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 30)
+            blockExplorerButton.heightAnchor.constraint(equalToConstant: 32),
+            blockExplorerButton.bottomAnchor.constraint(equalTo: sentCryptoLabel.bottomAnchor, constant: -30),
+            blockExplorerButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 22)
         ])
         blockExplorerButton.transform = .mirrorY
 
@@ -174,7 +174,7 @@ class CryptoSentBubble: UITableViewCell {
                 .withoutAutoresizingMaskConstraints
             sentCryptoLabel.textAlignment = .center
             sentCryptoLabel.numberOfLines = 0
-            sentCryptoLabel.textColor = Appearance.default.colorPalette.subtitleText
+            sentCryptoLabel.textColor = .white.withAlphaComponent(0.6)
             sentCryptoLabel.font = Appearance.default.fonts.footnote.withSize(11)
         }
         return sentCryptoLabel
@@ -182,7 +182,7 @@ class CryptoSentBubble: UITableViewCell {
 
     func configData() {
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampLabel?.text = dateFormatter.format(createdAt)
         } else {
             timestampLabel?.text = nil
         }
@@ -205,10 +205,18 @@ class CryptoSentBubble: UITableViewCell {
             if imageUrl.pathExtension == "gif" {
                 sentThumbImageView.setGifFromURL(imageUrl)
             } else {
-                Nuke.loadImage(with: imageUrl, into: sentThumbImageView)
+                imageLoader.loadImage(
+                    into: sentThumbImageView,
+                    url: imageUrl,
+                    imageCDN: StreamImageCDN(),
+                    placeholder: nil)
             }
         } else {
-            Nuke.loadImage(with: defaultURL, into: sentThumbImageView)
+            imageLoader.loadImage(
+                into: sentThumbImageView,
+                url: URL(string: defaultURL),
+                imageCDN: StreamImageCDN(),
+                placeholder: nil)
         }
     }
 }

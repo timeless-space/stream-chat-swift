@@ -7,18 +7,19 @@
 //
 
 import UIKit
-import Nuke
 import StreamChat
 import StreamChatUI
 
 public class CollectionViewCellGroupUsers: UICollectionViewCell {
     static let reuseID: String = "CollectionViewCellGroupUsers"
+    let imageLoader = Components.default.imageLoader
+    
     @IBOutlet private var nameLabel: UILabel!
     @IBOutlet private var avatarView: AvatarView!
     @IBOutlet public var removeUserButton: UIImageView!
     public func configCell(user: ChatUser) {
         if let imageURL = user.imageURL {
-            Nuke.loadImage(with: imageURL, into: avatarView)
+            imageLoader.loadImage(into: avatarView, url: imageURL, imageCDN: StreamImageCDN(), placeholder: Appearance.default.images.userAvatarPlaceholder4)
         }
         nameLabel.text = (user.name ?? user.id).capitalizingFirstLetter()
         nameLabel.setChatSubtitleBigColor()

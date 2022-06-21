@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -27,33 +27,40 @@ open class ComposerView: _View, ThemeProvider {
     /// The main container of the composer that layouts all the other containers around the message input view.
     public private(set) lazy var container = UIStackView()//ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "container")
 
     /// The header view that displays components above the message input view.
     public private(set) lazy var headerView = UIView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "headerView")
 
     public private(set) lazy var toolKitView = UIView()
         .withoutAutoresizingMaskConstraints
 
     /// The container that displays the components below the message input view.
     public private(set) lazy var bottomContainer = UIStackView()
+        .withAccessibilityIdentifier(identifier: "bottomContainer")
 
     /// The container that layouts the message input view and the leading/trailing containers around it.
     public private(set) lazy var centerContainer = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "centerContainer")
 
     /// The container that displays the components in the leading side of the message input view.
     public private(set) lazy var leadingContainer = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "leadingContainer")
 
     /// The container that displays the components in the trailing side of the message input view.
     public private(set) lazy var trailingContainer = ContainerStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "trailingContainer")
 
     /// A view to to input content of the new message.
     public private(set) lazy var inputMessageView: InputChatMessageView = components
         .inputMessageView.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "inputMessageView")
 
     /// A button to send the message.
     /*public private(set) lazy var sendButton: UIButton = components
@@ -68,6 +75,7 @@ open class ComposerView: _View, ThemeProvider {
     public private(set) lazy var toolbarToggleButton: UIButton = components
         .toolTipToggleButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "sendButton")
 
     public private(set) lazy var toolbarBackButton: UIButton = components
         .toolTipToggleButton.init()
@@ -90,38 +98,45 @@ open class ComposerView: _View, ThemeProvider {
     public private(set) lazy var confirmButton: UIButton = components
         .confirmButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "confirmButton")
 
     /// A button to open the user attachments.
     public private(set) lazy var attachmentButton: UIButton = components
         .attachmentButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "attachmentButton")
 
     /// A button to open the available commands.
     public private(set) lazy var commandsButton: UIButton = components
         .commandsButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "commandsButton")
 
     /// A Button for shrinking the input view to allow more space for other actions.
     public private(set) lazy var shrinkInputButton: UIButton = components
         .shrinkInputButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "shrinkInputButton")
 
     /// A button to dismiss the current state (quoting, editing, etc..).
     public private(set) lazy var dismissButton: UIButton = components
         .closeButton.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "dismissButton")
 
     /// A label part of the header view to display the current state (quoting, editing, etc..).
     public private(set) lazy var titleLabel: UILabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
         .withAdjustingFontForContentSizeCategory
+        .withAccessibilityIdentifier(identifier: "titleLabel")
 
     /// A checkbox to check/uncheck if the message should also
     /// be sent to the channel while replying in a thread.
     public private(set) lazy var checkboxControl: CheckboxControl = components
         .checkmarkControl.init()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "checkboxControl")
 
     override open func setUpAppearance() {
         super.setUpAppearance()
@@ -146,6 +161,7 @@ open class ComposerView: _View, ThemeProvider {
         embed(container)
 
         container.isLayoutMarginsRelativeArrangement = true
+        container.layoutMargins = .init(top: 8, left: 4, bottom: 8, right: 4)
         container.axis = .vertical
         container.alignment = .fill
         container.distribution = .fill
@@ -155,7 +171,6 @@ open class ComposerView: _View, ThemeProvider {
         container.addArrangedSubview(bottomContainer)
         container.addArrangedSubview(toolKitView)
         bottomContainer.isHidden = false
-        headerView.isHidden = true
 
         toolKitView.addSubview(toolBarCollectionView)
         toolKitView.heightAnchor.constraint(equalToConstant: 38).isActive = true
@@ -176,10 +191,12 @@ open class ComposerView: _View, ThemeProvider {
         centerContainer.addArrangedSubview(inputMessageView)
         inputMessageView.layoutMargins = UIEdgeInsets(top: 2, left: -5, bottom: 3, right: 0)
         centerContainer.addArrangedSubview(trailingContainer)
+        
+        //centerContainer.layoutMargins = .zero
+        
         trailingContainer.alignment = .center
-        trailingContainer.spacing = .auto
+        trailingContainer.spacing = 0
         trailingContainer.distribution = .equal
-        trailingContainer.isLayoutMarginsRelativeArrangement = true
         trailingContainer.directionalLayoutMargins = .zero
         //trailingContainer.addArrangedSubview(sendButton)
         trailingContainer.addArrangedSubview(confirmButton)
@@ -187,7 +204,7 @@ open class ComposerView: _View, ThemeProvider {
 
         leadingContainer.axis = .horizontal
         leadingContainer.alignment = .center
-        leadingContainer.spacing = .init(0)
+        leadingContainer.spacing = 0
         leadingContainer.distribution = .equal
         let inputViewBottomLayout = inputMessageView.layoutMargins.bottom
         leadingContainer.layoutMargins = UIEdgeInsets(top: 0,
@@ -195,10 +212,6 @@ open class ComposerView: _View, ThemeProvider {
                                                       bottom: inputViewBottomLayout,
                                                       right: 0)
         leadingContainer.isLayoutMarginsRelativeArrangement = true
-        //leadingContainer.addArrangedSubview(attachmentButton)
-        //leadingContainer.addArrangedSubview(commandsButton)
-        //leadingContainer.addArrangedSubview(moneyTransferButton)
-        //leadingContainer.addArrangedSubview(shrinkInputButton)
         leadingContainer.addArrangedSubview(toolbarToggleButton)
         leadingContainer.addArrangedSubview(toolbarBackButton)
         toolbarBackButton.isHidden = true
@@ -211,11 +224,6 @@ open class ComposerView: _View, ThemeProvider {
         titleLabel.centerXAnchor.pin(equalTo: centerXAnchor).isActive = true
         titleLabel.pin(anchors: [.top, .bottom], to: headerView)
 
-        /*[shrinkInputButton, attachmentButton, commandsButton, moneyTransferButton, sendButton, confirmButton]
-            .forEach { button in
-                button.pin(anchors: [.width], to: 30)
-                button.pin(anchors: [.height], to: 38)
-            }*/
         toolbarToggleButton.pin(anchors: [.width], to: 40)
         toolbarToggleButton.pin(anchors: [.height], to: 38) //44
         toolbarBackButton.pin(anchors: [.width], to: 40)

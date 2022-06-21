@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -59,6 +59,7 @@ open class SwipeableView: _View, ComponentsProvider, UIGestureRecognizerDelegate
     /// The `UIStackView` that arranges buttons revealed by swipe gesture.
     open private(set) lazy var actionItemsStackView: UIStackView = UIStackView()
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "actionItemsStackView")
 
     override open func setUp() {
         super.setUp()

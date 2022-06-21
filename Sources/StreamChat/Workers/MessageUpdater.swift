@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -7,18 +7,27 @@ import Foundation
 
 /// The type provides the API for getting/editing/deleting a message
 class MessageUpdater: Worker {
+    private let repository: MessageRepository
+    private let isLocalStorageEnabled: Bool
+
+    init(isLocalStorageEnabled: Bool, messageRepository: MessageRepository, database: DatabaseContainer, apiClient: APIClient) {
+        self.isLocalStorageEnabled = isLocalStorageEnabled
+        repository = messageRepository
+        super.init(database: database, apiClient: apiClient)
+    }
+
     /// Fetches the message from the backend and saves it into the database
     /// - Parameters:
     ///   - cid: The channel identifier the message relates to.
     ///   - messageId: The message identifier.
-    ///   - completion: The completion. Will be called with an error if smth goes wrong, otherwise - will be called with `nil`.
+    ///   - completion: The completion. Will be called with an error if something goes wrong, otherwise - will be called with `nil`.
     func getMessage(cid: ChannelId, messageId: MessageId, completion: ((Error?) -> Void)? = nil) {
         let endpoint: Endpoint<MessagePayload.Boxed> = .getMessage(messageId: messageId)
         apiClient.request(endpoint: endpoint) {
             switch $0 {
             case let .success(boxed):
                 self.database.write({ session in
-                    try session.saveMessage(payload: boxed.message, for: cid)
+                    try session.saveMessage(payload: boxed.message, for: cid, syncOwnReactions: true)
                 }, completion: { error in
                     completion?(error)
                 })
@@ -39,43 +48,46 @@ class MessageUpdater: Worker {
     ///
     /// - Parameters:
     ///   - messageId: The message identifier.
+    ///   - hard: A Boolean value to determine if the message will be delete permanently on the backend.
     ///   - completion: The completion. Will be called with an error if smth goes wrong, otherwise - will be called with `nil`.
-    func deleteMessage(messageId: MessageId, completion: ((Error?) -> Void)? = nil) {
+    func deleteMessage(messageId: MessageId, hard: Bool, completion: ((Error?) -> Void)? = nil) {
         var shouldDeleteOnBackend = true
         
-        database.write({ session in
+        database.write({ [isLocalStorageEnabled] session in
             guard let messageDTO = session.message(id: messageId) else {
                 // Even though the message does not exist locally
                 // we don't throw any error because we still want
                 // to try to delete the message on the backend.
                 return
             }
+
+            messageDTO.isHardDeleted = hard
             
-            if messageDTO.existsOnlyLocally {
+            if messageDTO.existsOnlyLocally && !isLocalStorageEnabled {
                 messageDTO.type = MessageType.deleted.rawValue
                 messageDTO.deletedAt = Date()
                 shouldDeleteOnBackend = false
             } else {
                 messageDTO.localMessageState = .deleting
             }
-        }, completion: { error in
+        }, completion: { [weak database, weak apiClient, weak repository] error in
             guard shouldDeleteOnBackend, error == nil else {
                 completion?(error)
                 return
             }
             
-            self.apiClient.request(endpoint: .deleteMessage(messageId: messageId)) { result in
-                self.database.write({ session in
-                    let messageDTO = session.message(id: messageId)
-                    switch result {
-                    case .success:
-                        messageDTO?.localMessageState = nil
-                    case .failure:
+            apiClient?.request(endpoint: .deleteMessage(messageId: messageId, hard: hard)) { result in
+                switch result {
+                case let .success(response):
+                    repository?.saveSuccessfullyDeletedMessage(message: response.message, completion: completion)
+                case let .failure(error):
+                    database?.write { session in
+                        let messageDTO = session.message(id: messageId)
                         messageDTO?.localMessageState = .deletingFailed
+                        messageDTO?.isHardDeleted = false
+                        completion?(error)
                     }
-                }, completion: { error in
-                    completion?(result.error ?? error)
-                })
+                }
             }
         })
     }
@@ -85,18 +97,36 @@ class MessageUpdater: Worker {
     ///  - Parameters:
     ///   - messageId: The message identifier.
     ///   - text: The updated message text.
+    ///   - extraData: Extra Data for the message.
     ///   - completion: The completion. Will be called with an error if smth goes wrong, otherwise - will be called with `nil`.
-    func editMessage(messageId: MessageId, text: String, completion: ((Error?) -> Void)? = nil) {
+    func editMessage(
+        messageId: MessageId,
+        text: String,
+        extraData: [String: RawJSON]? = nil,
+        completion: ((Error?) -> Void)? = nil
+    ) {
         database.write({ session in
             let messageDTO = try session.messageEditableByCurrentUser(messageId)
+            
+            let encodedExtraData = extraData.map { try? JSONEncoder.default.encode($0) } ?? messageDTO.extraData
+
+            let updateQuotingMessages = {
+                messageDTO.quotedBy.forEach { message in
+                    message.updatedAt = messageDTO.updatedAt
+                }
+            }
 
             switch messageDTO.localMessageState {
             case nil, .pendingSync, .syncingFailed, .deletingFailed:
                 messageDTO.text = text
+                messageDTO.extraData = encodedExtraData
                 messageDTO.localMessageState = .pendingSync
+                updateQuotingMessages()
             case .pendingSend, .sendingFailed:
                 messageDTO.text = text
+                messageDTO.extraData = encodedExtraData
                 messageDTO.localMessageState = .pendingSend
+                updateQuotingMessages()
             case .sending, .syncing, .deleting:
                 throw ClientError.MessageEditing(
                     messageId: messageId,
@@ -185,12 +215,45 @@ class MessageUpdater: Worker {
             switch $0 {
             case let .success(payload):
                 self.database.write({ session in
-                    try payload.messages.forEach { try session.saveMessage(payload: $0, for: cid) }
+                    try payload.messages.forEach { try session.saveMessage(payload: $0, for: cid, syncOwnReactions: true) }
                 }, completion: { error in
                     if let error = error {
                         completion?(.failure(error))
                     } else {
                         completion?(.success(payload))
+                    }
+                })
+            case let .failure(error):
+                completion?(.failure(error))
+            }
+        }
+    }
+
+    func loadReactions(
+        cid: ChannelId,
+        messageId: MessageId,
+        pagination: Pagination,
+        completion: ((Result<[ChatMessageReaction], Error>) -> Void)? = nil
+    ) {
+        let endpoint: Endpoint<MessageReactionsPayload> = .loadReactions(
+            messageId: messageId,
+            pagination: pagination
+        )
+
+        apiClient.request(endpoint: endpoint) { result in
+            switch result {
+            case let .success(payload):
+                var reactions: [ChatMessageReaction] = []
+                self.database.write({ session in
+                    try payload.reactions.forEach {
+                        let reaction = try session.saveReaction(payload: $0).asModel()
+                        reactions.append(reaction)
+                    }
+                }, completion: { error in
+                    if let error = error {
+                        completion?(.failure(error))
+                    } else {
+                        completion?(.success(reactions))
                     }
                 })
             case let .failure(error):
@@ -255,6 +318,8 @@ class MessageUpdater: Worker {
         messageId: MessageId,
         completion: ((Error?) -> Void)? = nil
     ) {
+        let version = UUID().uuidString
+
         let endpoint: Endpoint<EmptyResponse> = .addReaction(
             type,
             score: score,
@@ -262,8 +327,29 @@ class MessageUpdater: Worker {
             extraData: extraData,
             messageId: messageId
         )
-        apiClient.request(endpoint: endpoint) {
-            completion?($0.error)
+
+        database.write { session in
+            do {
+                let reaction = try session.addReaction(
+                    to: messageId,
+                    type: type,
+                    score: score,
+                    extraData: extraData,
+                    localState: .sending
+                )
+                reaction.version = version
+            } catch {
+                log.warning("Failed to optimistically add the reaction to the database: \(error)")
+            }
+        } completion: { [weak self, weak repository] error in
+            self?.apiClient.request(endpoint: endpoint) { result in
+                guard let error = result.error else { return }
+
+                if self?.canKeepReactionState(for: error) == true { return }
+
+                repository?.undoReactionAddition(on: messageId, type: type)
+            }
+            completion?(error)
         }
     }
     
@@ -277,9 +363,29 @@ class MessageUpdater: Worker {
         messageId: MessageId,
         completion: ((Error?) -> Void)? = nil
     ) {
-        apiClient.request(endpoint: .deleteReaction(type, messageId: messageId)) {
-            completion?($0.error)
+        var reactionScore: Int?
+        database.write { session in
+            do {
+                guard let reaction = try session.removeReaction(from: messageId, type: type, on: nil) else { return }
+                reaction.localState = .pendingDelete
+                reactionScore = Int(reaction.score)
+            } catch {
+                log.warning("Failed to remove the reaction from to the database: \(error)")
+            }
+        } completion: { [weak self, weak repository] error in
+            self?.apiClient.request(endpoint: .deleteReaction(type, messageId: messageId)) { result in
+                guard let error = result.error else { return }
+
+                if self?.canKeepReactionState(for: error) == true { return }
+
+                repository?.undoReactionDeletion(on: messageId, type: type, score: reactionScore ?? 1)
+            }
+            completion?(error)
         }
+    }
+
+    private func canKeepReactionState(for error: Error) -> Bool {
+        isLocalStorageEnabled && ClientError.isEphemeral(error: error)
     }
 
     /// Pin the message with the provided message id.
@@ -392,6 +498,7 @@ class MessageUpdater: Worker {
         cid: ChannelId,
         messageId: MessageId,
         action: AttachmentAction,
+        poll: [String : RawJSON],
         completion: ((Error?) -> Void)? = nil
     ) {
         database.write({ session in
@@ -407,20 +514,22 @@ class MessageUpdater: Worker {
             guard action.isCancel == false else {
                 // For ephemeral messages we don't change `state` to `.deleted`
                 messageDTO.deletedAt = Date()
+                messageDTO.previewOfChannel?.previewMessage = session.preview(for: cid)
                 return
             }
 
             let endpoint: Endpoint<MessagePayload.Boxed> = .dispatchEphemeralMessageAction(
                 cid: cid,
                 messageId: messageId,
-                action: action
+                action: action,
+                poll: poll
             )
 
             self.apiClient.request(endpoint: endpoint) {
                 switch $0 {
                 case let .success(payload):
                     self.database.write({ session in
-                        try session.saveMessage(payload: payload.message, for: cid)
+                        try session.saveMessage(payload: payload.message, for: cid, syncOwnReactions: true)
                     }, completion: { error in
                         completion?(error)
                     })
@@ -433,11 +542,16 @@ class MessageUpdater: Worker {
         })
     }
     
-    func search(query: MessageSearchQuery, completion: ((Error?) -> Void)? = nil) {
+    func search(query: MessageSearchQuery, policy: UpdatePolicy = .merge, completion: ((Error?) -> Void)? = nil) {
         apiClient.request(endpoint: .search(query: query)) { result in
             switch result {
             case let .success(payload):
                 self.database.write { session in
+                    if case .replace = policy {
+                        let dto = session.saveQuery(query: query)
+                        dto.messages.removeAll()
+                    }
+                    
                     for boxedMessage in payload.results {
                         try session.saveMessage(payload: boxedMessage.message, for: query)
                     }
@@ -448,6 +562,32 @@ class MessageUpdater: Worker {
                 completion?(error)
             }
         }
+    }
+    
+    func clearSearchResults(for query: MessageSearchQuery, completion: ((Error?) -> Void)? = nil) {
+        database.write { session in
+            let dto = session.saveQuery(query: query)
+            dto.messages.removeAll()
+        } completion: { error in
+            completion?(error)
+        }
+    }
+    
+    func translate(messageId: MessageId, to language: TranslationLanguage, completion: ((Error?) -> Void)? = nil) {
+        apiClient.request(endpoint: .translate(messageId: messageId, to: language), completion: { result in
+            switch result {
+            case let .success(boxedMessage):
+                self.database.write { session in
+                    try session.saveMessage(
+                        payload: boxedMessage.message,
+                        for: boxedMessage.message.cid,
+                        syncOwnReactions: false
+                    )
+                } completion: { completion?($0) }
+            case let .failure(error):
+                completion?(error)
+            }
+        })
     }
 }
 

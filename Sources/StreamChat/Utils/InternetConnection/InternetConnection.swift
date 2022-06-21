@@ -1,12 +1,16 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
 import Network
 
 extension Notification.Name {
-    static let internetConnectionStatusDidChange = Notification.Name("io.getstream.StreamChat.internetConnectionStatus")
+    /// Posted when any the Internet connection update is detected (including quality updates).
+    static let internetConnectionStatusDidChange = Self("io.getstream.StreamChat.internetConnectionStatus")
+    
+    /// Posted only when the Internet connection availability is changed (excluding quality updates).
+    static let internetConnectionAvailabilityDidChange = Self("io.getstream.StreamChat.internetConnectionAvailability")
 }
 
 extension Notification {
@@ -23,9 +27,22 @@ extension Notification {
 /// and default monitor based on `Network`.`NWPathMonitor` (iOS 12+).
 class InternetConnection {
     /// The current Internet connection status.
-    var status: InternetConnection.Status { monitor.status }
+    private(set) var status: InternetConnection.Status {
+        didSet {
+            guard oldValue != status else { return }
+            
+            log.info("Internet Connection: \(status)")
+            
+            postNotification(.internetConnectionStatusDidChange, with: status)
+            
+            guard oldValue.isAvailable != status.isAvailable else { return }
+            
+            postNotification(.internetConnectionAvailabilityDidChange, with: status)
+        }
+    }
     
-    private var notificationCenter: NotificationCenter
+    /// The notification center that posts notifications when connection state changes..
+    let notificationCenter: NotificationCenter
     
     /// A specific Internet connection monitor.
     private var monitor: InternetConnectionMonitor
@@ -34,20 +51,14 @@ class InternetConnection {
     /// - Parameter monitor: an Internet connection monitor. Use nil for a default `InternetConnectionMonitor`.
     init(
         notificationCenter: NotificationCenter = .default,
-        monitor: InternetConnectionMonitor? = nil
+        monitor: InternetConnectionMonitor
     ) {
         self.notificationCenter = notificationCenter
-        
-        if let monitor = monitor {
-            self.monitor = monitor
-        } else if #available(iOS 12, *) {
-            self.monitor = Monitor()
-        } else {
-            self.monitor = LegacyMonitor()
-        }
-        
-        self.monitor.delegate = self
-        self.monitor.start()
+        self.monitor = monitor
+
+        status = monitor.status
+        monitor.delegate = self
+        monitor.start()
     }
     
     deinit {
@@ -57,32 +68,16 @@ class InternetConnection {
 
 extension InternetConnection: InternetConnectionDelegate {
     func internetConnectionStatusDidChange(status: Status) {
-        log.info("Internet Connection: \(status)")
-        
-        notificationCenter.post(
-            name: .internetConnectionStatusDidChange,
-            object: self,
-            userInfo: [Notification.internetConnectionStatusUserInfoKey: status]
-        )
+        self.status = status
     }
 }
 
-extension InternetConnection {
-    /// Sets up a one-time observer which is called when the status chnages to the desired status.
-    func notifyOnce(when: @escaping (Status) -> Bool, callback: @escaping () -> Void) {
-        var token: NSObjectProtocol?
-        token = notificationCenter.addObserver(
-            forName: .internetConnectionStatusDidChange,
+private extension InternetConnection {
+    func postNotification(_ name: Notification.Name, with status: Status) {
+        notificationCenter.post(
+            name: name,
             object: self,
-            queue: nil,
-            using: { [weak notificationCenter] in
-                if let status = $0.internetConnectionStatus, when(status) {
-                    callback()
-                    if let token = token {
-                        notificationCenter?.removeObserver(token)
-                    }
-                }
-            }
+            userInfo: [Notification.internetConnectionStatusUserInfoKey: status]
         )
     }
 }
@@ -97,7 +92,7 @@ protocol InternetConnectionDelegate: AnyObject {
 }
 
 /// A protocol for Internet connection monitors.
-protocol InternetConnectionMonitor {
+protocol InternetConnectionMonitor: AnyObject {
     /// A delegate for receiving Internet connection events.
     var delegate: InternetConnectionDelegate? { get set }
     
@@ -153,7 +148,7 @@ extension InternetConnection.Status {
 
 // MARK: - Internet Connection Monitor
 
-private extension InternetConnection {
+extension InternetConnection {
     /// The default Internet connection monitor for iOS 12+.
     /// It uses Apple Network API.
     @available(iOS 12, *)
@@ -222,7 +217,7 @@ private extension InternetConnection {
 
 // MARK: Legacy Internet Connection Monitor for iOS 11 only
 
-private extension InternetConnection {
+extension InternetConnection {
     class LegacyMonitor: InternetConnectionMonitor {
         /// A Reachability instance for Internet connection monitoring.
         private lazy var reachability = createReachability()

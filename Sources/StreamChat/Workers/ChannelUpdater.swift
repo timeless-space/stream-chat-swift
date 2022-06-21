@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -10,20 +10,33 @@ class ChannelUpdater: Worker {
     ///
     /// - Parameters:
     ///   - channelQuery: The channel query used in the request
+    ///   - isInRecoveryMode: Determines whether the SDK is in offline recovery mode
     ///   - channelCreatedCallback: For some type of channels we need to obtain id from backend.
     ///   This callback is called with the obtained `cid` before the channel payload is saved to the DB.
     ///   - completion: Called when the API call is finished. Called with `Error` if the remote update fails.
     ///
+    /// **Note**: If query messages pagination parameter is `nil` AKA updater is asked to fetch the first page of messages,
+    /// the local channel's message history will be cleared before the channel payload is saved to the local storage.
+    ///
     func update(
         channelQuery: ChannelQuery,
+        isInRecoveryMode: Bool,
         channelCreatedCallback: ((ChannelId) -> Void)? = nil,
         completion: ((Result<ChannelPayload, Error>) -> Void)? = nil
     ) {
-        apiClient.request(endpoint: .channel(query: channelQuery)) { (result) in
+        let clearMessageHistory = channelQuery.pagination?.parameter == nil
+        let isChannelCreate = channelCreatedCallback != nil
+
+        let completion: (Result<ChannelPayload, Error>) -> Void = { [weak database] result in
             do {
                 let payload = try result.get()
                 channelCreatedCallback?(payload.channel.cid)
-                self.database.write { session in
+                database?.write { session in
+                    if clearMessageHistory {
+                        let channelDTO = session.channel(cid: payload.channel.cid)
+                        channelDTO?.messages.removeAll()
+                    }
+
                     try session.saveChannel(payload: payload)
                 } completion: { error in
                     if let error = error {
@@ -35,6 +48,15 @@ class ChannelUpdater: Worker {
             } catch {
                 completion?(.failure(error))
             }
+        }
+
+        let endpoint: Endpoint<ChannelPayload> = isChannelCreate ? .createChannel(query: channelQuery) :
+            .updateChannel(query: channelQuery)
+
+        if isInRecoveryMode {
+            apiClient.recoveryRequest(endpoint: endpoint, completion: completion)
+        } else {
+            apiClient.request(endpoint: endpoint, completion: completion)
         }
     }
     
@@ -65,7 +87,7 @@ class ChannelUpdater: Worker {
     ///   - completion: Called when the API call is finished. Called with `Error` if the remote update fails.
     func deleteChannel(cid: ChannelId, completion: ((Error?) -> Void)? = nil) {
         apiClient.request(endpoint: .deleteChannel(cid: cid)) { [weak self] result in
-            switch (result) {
+            switch result {
             case .success:
                 self?.database.write {
                     if let channel = $0.channel(cid: cid) {
@@ -74,7 +96,6 @@ class ChannelUpdater: Worker {
                 } completion: { error in
                     completion?(error)
                 }
-
             case let .failure(error):
                 log.error("Delete Channel on request fail \(error)")
                 // Note: not removing local channel if not removed on backend
@@ -83,12 +104,68 @@ class ChannelUpdater: Worker {
         }
     }
 
-    /// Truncates the specific channel.
+    /// Truncates messages of the channel, but doesn't affect the channel data or members.
     /// - Parameters:
     ///   - cid: The channel identifier.
+    ///   - skipPush: If true, skips sending push notification to channel members.
+    ///   - hardDelete: If true, messages are deleted instead of hiding.
+    ///   - systemMessage: A system message to be added via truncation.
     ///   - completion: Called when the API call is finished. Called with `Error` if the remote update fails.
-    func truncateChannel(cid: ChannelId, completion: ((Error?) -> Void)? = nil) {
-        apiClient.request(endpoint: .truncateChannel(cid: cid)) {
+    func truncateChannel(
+        cid: ChannelId,
+        skipPush: Bool = false,
+        hardDelete: Bool = true,
+        systemMessage: String? = nil,
+        completion: ((Error?) -> Void)? = nil
+    ) {
+        guard let message = systemMessage else {
+            truncate(cid: cid, skipPush: skipPush, hardDelete: hardDelete, completion: completion)
+            return
+        }
+        
+        let context = database.backgroundReadOnlyContext
+        context.perform { [weak self] in
+            guard let user = context.currentUser?.user.asRequestBody() else {
+                completion?(ClientError.Unknown("Couldn't fetch current user from local cache."))
+                return
+            }
+            let requestBody = MessageRequestBody(
+                id: .newUniqueId,
+                user: user,
+                text: message,
+                command: nil,
+                args: nil,
+                parentId: nil,
+                showReplyInChannel: false,
+                isSilent: false,
+                quotedMessageId: nil,
+                attachments: [],
+                mentionedUserIds: [],
+                pinned: false,
+                pinExpires: nil,
+                extraData: [:]
+            )
+            self?.truncate(
+                cid: cid,
+                skipPush: skipPush,
+                hardDelete: hardDelete,
+                requestBody: requestBody,
+                completion: completion
+            )
+        }
+    }
+    
+    private func truncate(
+        cid: ChannelId,
+        skipPush: Bool = false,
+        hardDelete: Bool = true,
+        requestBody: MessageRequestBody? = nil,
+        completion: ((Error?) -> Void)? = nil
+    ) {
+        apiClient.request(endpoint: .truncateChannel(cid: cid, skipPush: skipPush, hardDelete: hardDelete, message: requestBody)) {
+            if let error = $0.error {
+                log.error(error)
+            }
             completion?($0.error)
         }
     }
@@ -289,12 +366,17 @@ class ChannelUpdater: Worker {
     /// Please check [documentation](https://getstream.io/chat/docs/android/watch_channel/?language=swift) for more information.
     ///
     /// - Parameter cid: Channel id of the channel to be watched
+    /// - Parameter isInRecoveryMode: Determines whether the SDK is in offline recovery mode
     /// - Parameter completion: Called when the API call is finished. Called with `Error` if the remote update fails.
-    func startWatching(cid: ChannelId, completion: ((Error?) -> Void)? = nil) {
+    func startWatching(cid: ChannelId, isInRecoveryMode: Bool, completion: ((Error?) -> Void)? = nil) {
         var query = ChannelQuery(cid: cid)
         query.options = .all
-        apiClient.request(endpoint: .channel(query: query)) {
-            completion?($0.error)
+        let endpoint = Endpoint<ChannelPayload>.updateChannel(query: query)
+        let completion: (Result<ChannelPayload, Error>) -> Void = { completion?($0.error) }
+        if isInRecoveryMode {
+            apiClient.recoveryRequest(endpoint: endpoint, completion: completion)
+        } else {
+            apiClient.request(endpoint: endpoint, completion: completion)
         }
     }
     
@@ -379,6 +461,38 @@ class ChannelUpdater: Worker {
             apiClient.uploadAttachment(attachment, progress: progress, completion: completion)
         } catch {
             completion(.failure(ClientError.InvalidAttachmentFileURL(localFileURL)))
+        }
+    }
+    
+    /// Loads messages pinned in the given channel based on the provided query.
+    ///
+    /// - Parameters:
+    ///   - cid: The channel identifier messages are pinned at.
+    ///   - query: The query describing page size and pagination option.
+    ///   - completion: The completion that will be called with API request results.
+    func loadPinnedMessages(
+        in cid: ChannelId,
+        query: PinnedMessagesQuery,
+        completion: @escaping (Result<[ChatMessage], Error>) -> Void
+    ) {
+        apiClient.request(
+            endpoint: .pinnedMessages(cid: cid, query: query)
+        ) { [weak self] result in
+            switch result {
+            case let .success(payload):
+                var pinnedMessages: [ChatMessage] = []
+                self?.database.write { (session) in
+                    payload.messages.forEach {
+                        if let model = try? session.saveMessage(payload: $0, for: cid, syncOwnReactions: false)?.asModel() {
+                            pinnedMessages.append(model)
+                        }
+                    }
+                } completion: { _ in
+                    completion(.success(pinnedMessages.compactMap { $0 }))
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
         }
     }
 }

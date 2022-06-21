@@ -1,10 +1,35 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
 import StreamChat
 import UIKit
+
+extension NSObject {
+    var classIdentifier: String {
+        "\(type(of: self))"
+    }
+}
+
+// Protocol that provides accessibility features
+protocol AccessibilityView {
+    // Identifier for view
+    var accessibilityViewIdentifier: String { get }
+
+    // This function is called once the view is being added to the view hiearchy
+    func setAccessibilityIdentifier()
+}
+
+extension AccessibilityView where Self: UIView {
+    var accessibilityViewIdentifier: String {
+        classIdentifier
+    }
+
+    func setAccessibilityIdentifier() {
+        accessibilityIdentifier = accessibilityViewIdentifier
+    }
+}
 
 // Just a protocol to formalize the methods required
 public protocol Customizable {
@@ -82,7 +107,7 @@ extension AppearanceProvider where Self: _View {
 
 /// Base class for overridable views StreamChatUI provides.
 /// All conformers will have StreamChatUI appearance settings by default.
-open class _View: UIView, Customizable {
+open class _View: UIView, Customizable, AccessibilityView {
     // Flag for preventing multiple lifecycle methods calls.
     fileprivate var isInitialized: Bool = false
     
@@ -91,7 +116,8 @@ open class _View: UIView, Customizable {
         guard !isInitialized, superview != nil else { return }
         
         isInitialized = true
-        
+
+        setAccessibilityIdentifier()
         setUp()
         setUpLayout()
         setUpAppearance()
@@ -123,7 +149,7 @@ open class _View: UIView, Customizable {
 
 /// Base class for overridable views StreamChatUI provides.
 /// All conformers will have StreamChatUI appearance settings by default.
-open class _CollectionViewCell: UICollectionViewCell, Customizable {
+open class _CollectionViewCell: UICollectionViewCell, Customizable, AccessibilityView {
     // Flag for preventing multiple lifecycle methods calls.
     private var isInitialized: Bool = false
     
@@ -132,7 +158,8 @@ open class _CollectionViewCell: UICollectionViewCell, Customizable {
         guard !isInitialized, superview != nil else { return }
         
         isInitialized = true
-        
+
+        setAccessibilityIdentifier()
         setUp()
         setUpLayout()
         setUpAppearance()
@@ -164,7 +191,7 @@ open class _CollectionViewCell: UICollectionViewCell, Customizable {
 
 /// Base class for overridable views StreamChatUI provides.
 /// All conformers will have StreamChatUI appearance settings by default.
-open class _CollectionReusableView: UICollectionReusableView, Customizable {
+open class _CollectionReusableView: UICollectionReusableView, Customizable, AccessibilityView {
     // Flag for preventing multiple lifecycle methods calls.
     private var isInitialized: Bool = false
 
@@ -174,6 +201,7 @@ open class _CollectionReusableView: UICollectionReusableView, Customizable {
 
         isInitialized = true
 
+        setAccessibilityIdentifier()
         setUp()
         setUpLayout()
         setUpAppearance()
@@ -205,7 +233,7 @@ open class _CollectionReusableView: UICollectionReusableView, Customizable {
 
 /// Base class for overridable views StreamChatUI provides.
 /// All conformers will have StreamChatUI appearance settings by default.
-open class _Control: UIControl, Customizable {
+open class _Control: UIControl, Customizable, AccessibilityView {
     // Flag for preventing multiple lifecycle methods calls.
     private var isInitialized: Bool = false
     
@@ -214,7 +242,8 @@ open class _Control: UIControl, Customizable {
         guard !isInitialized, superview != nil else { return }
         
         isInitialized = true
-        
+
+        setAccessibilityIdentifier()
         setUp()
         setUpLayout()
         setUpAppearance()
@@ -246,7 +275,7 @@ open class _Control: UIControl, Customizable {
 
 /// Base class for overridable views StreamChatUI provides.
 /// All conformers will have StreamChatUI appearance settings by default.
-open class _Button: UIButton, Customizable {
+open class _Button: UIButton, Customizable, AccessibilityView {
     // Flag for preventing multiple lifecycle methods calls.
     private var isInitialized: Bool = false
     
@@ -255,7 +284,8 @@ open class _Button: UIButton, Customizable {
         guard !isInitialized, superview != nil else { return }
         
         isInitialized = true
-        
+
+        setAccessibilityIdentifier()
         setUp()
         setUpLayout()
         setUpAppearance()
@@ -287,7 +317,7 @@ open class _Button: UIButton, Customizable {
 
 /// Base class for overridable views StreamChatUI provides.
 /// All conformers will have StreamChatUI appearance settings by default.
-open class _NavigationBar: UINavigationBar, Customizable {
+open class _NavigationBar: UINavigationBar, Customizable, AccessibilityView {
     // Flag for preventing multiple lifecycle methods calls.
     private var isInitialized: Bool = false
     
@@ -296,7 +326,8 @@ open class _NavigationBar: UINavigationBar, Customizable {
         guard !isInitialized, superview != nil else { return }
         
         isInitialized = true
-        
+
+        setAccessibilityIdentifier()
         setUp()
         setUpLayout()
         setUpAppearance()
@@ -331,7 +362,7 @@ open class _ViewController: UIViewController, Customizable {
         // When `self` is being added to the parent controller, the default `next` implementation returns nil
         // unless the `self.view` is added as a subview to `parent.view`. But `self.viewDidLoad` is
         // called before the transition finishes so the subviews are created from `Components.default`.
-        // To prevent responder chain from being cutoff during `_ViewController` lifecycle we fallback to parent.
+        // To prevent responder chain from being cutoff during `ViewController` lifecycle we fallback to parent.
         super.next ?? parent
     }
     
@@ -344,6 +375,17 @@ open class _ViewController: UIViewController, Customizable {
         updateContent()
     }
     
+    /**
+     A function that will be called on first launch of the `View` it's a function that can be used
+     for any initial setup work required by the `View` such as setting delegates or data sources
+     
+     `setUp()` is an important function within the ViewController lifecycle
+     Its responsibility is to set the delegates and also call `synchronize()`
+     this will make sure your local & remote data is in sync.
+     
+     - Important: If you override this method without calling `super.setUp()`, it's essential
+     to make sure `synchronize()` is called.
+     */
     open func setUp() { /* default empty implementation */ }
     open func setUpAppearance() { view.setNeedsLayout() }
     open func setUpLayout() { view.setNeedsLayout() }
@@ -385,7 +427,7 @@ private enum TraitCollectionReloadStack {
 
 /// Base class for overridable views StreamChatUI provides.
 /// All conformers will have StreamChatUI appearance settings by default.
-open class _TableViewCell: UITableViewCell, Customizable {
+open class _TableViewCell: UITableViewCell, Customizable, AccessibilityView {
     // Flag for preventing multiple lifecycle methods calls.
     private var isInitialized: Bool = false
 
@@ -395,6 +437,7 @@ open class _TableViewCell: UITableViewCell, Customizable {
 
         isInitialized = true
 
+        setAccessibilityIdentifier()
         setUp()
         setUpLayout()
         setUpAppearance()

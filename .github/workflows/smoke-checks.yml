@@ -4,41 +4,30 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
-      - main
+      - '**'
   release:
     types:
       - created
+  workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-      
+
 env:
-  HOMEBREW_NO_INSTALL_CLEANUP=1: 1 # Disable cleanup for homebrew, we don't need it on CI
+  HOMEBREW_NO_INSTALL_CLEANUP: 1 # Disable cleanup for homebrew, we don't need it on CI
+  XCODE_VERSION: 13.3.1
+  IOS_SIMULATOR_DEVICE: "iPhone 12 Pro"
 
 jobs:
   automated-code-review:
     name: Automated Code Review
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-      - uses: actions/checkout@v1
-      - uses: ./.github/actions/set-build-image-var
-      - name: Cache RubyGems
-        uses: actions/cache@v2
-        id: rubygem-cache
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-${{ env.ImageVersion }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: ${{ runner.os }}-${{ env.ImageVersion }}-gem-
-      - name: Cache Mint
-        uses: actions/cache@v2
-        id: mint-cache
-        with:
-          path: /usr/local/lib/mint
-          key: ${{ runner.os }}-mint-${{ hashFiles('./Mintfile') }}
-          restore-keys: ${{ runner.os }}-mint-
+      - uses: actions/checkout@v2
       - uses: ./.github/actions/bootstrap
       - name: Run Danger
         run: bundle exec danger
@@ -49,34 +38,30 @@ jobs:
 
   build-and-test-debug:
     name: Test LLC (Debug)
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-    - uses: actions/checkout@v1
-    - name: Set build image var
-      run: echo "ImageVersion=$ImageVersion"  >> $GITHUB_ENV
-    - name: Cache RubyGems
-      uses: actions/cache@v2
-      id: rubygem-cache
+    - uses: actions/checkout@v2
       with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-${{ env.ImageVersion }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: ${{ runner.os }}-${{ env.ImageVersion }}-gem-
-    - name: Cache Mint
-      uses: actions/cache@v2
-      id: mint-cache
+        fetch-depth: 100
+    - uses: actions/setup-python@v3.0.0
       with:
-        path: /usr/local/lib/mint
-        key: ${{ runner.os }}-mint-${{ hashFiles('./Mintfile') }}
-        restore-keys: ${{ runner.os }}-mint-
+        python-version: 3.8
+        cache: 'pip'
     - uses: ./.github/actions/bootstrap
+      env:
+        INSTALL_SONAR: true
     - name: Run LLC Tests (Debug)
-      run: bundle exec fastlane test device:"iPhone 12"
-    - uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        flags: llc-tests
-        fail_ci_if_error: true # if codecov upload fails, should fail ci
-        verbose: true
+      run: bundle exec fastlane test device:"${{ env.IOS_SIMULATOR_DEVICE }}"
+    - name: Get branch name
+      id: get_branch_name
+      run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+    - name: Run Sonar analysis
+      run: bundle exec fastlane sonar_upload
+      env:
+        BRANCH_NAME: ${{ steps.get_branch_name.outputs.branch }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        PR_NUMBER: ${{ github.event.number }}
     - uses: 8398a7/action-slack@v3
       with:
         status: ${{ job.status }}
@@ -90,34 +75,18 @@ jobs:
 
   build-and-test-ui-debug:
     name: Test UI (Debug)
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-    - uses: actions/checkout@v1
-    - name: Set build image var
-      run: echo "ImageVersion=$ImageVersion"  >> $GITHUB_ENV
-    - name: Cache RubyGems
-      uses: actions/cache@v2
-      id: rubygem-cache
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-${{ env.ImageVersion }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: ${{ runner.os }}-${{ env.ImageVersion }}-gem-
-    - name: Cache Mint
-      uses: actions/cache@v2
-      id: mint-cache
-      with:
-        path: /usr/local/lib/mint
-        key: ${{ runner.os }}-mint-${{ hashFiles('./Mintfile') }}
-        restore-keys: ${{ runner.os }}-mint-
+    - uses: actions/checkout@v2
     - uses: ./.github/actions/bootstrap
-    - name: Prepare iPhone 12 with iOS 15.0
+    - name: Prepare iPhone 12 Pro with iOS 15.4
       uses: ./.github/actions/prepare-ios-simulator
       with:
-        device: "iPhone 12"
-        ios: "15.0"
-        xcode: "13.0"
+        device: "iPhone 12 Pro"
+        ios: "15.4"
+        xcode: "13.3.1"
     - name: Run UI Tests (Debug)
-      run: bundle exec fastlane test_ui device:"iPhone 12 (15.0)"
+      run: bundle exec fastlane test_ui device:"iPhone 12 Pro (15.4)"
     - uses: 8398a7/action-slack@v3
       with:
         status: ${{ job.status }}
@@ -129,27 +98,64 @@ jobs:
         MATRIX_CONTEXT: ${{ toJson(matrix) }}
       if: ${{ github.event_name == 'push' && failure() }}
 
-  build-apps:
-    name: Build Sample + Demo Apps
+  build-and-test-e2e-debug:
+    name: Test E2E UI (Debug)
+    runs-on: macos-12
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/bootstrap
+      env:
+        INSTALL_ALLURE: true
+    - name: Run UI Tests (Debug)
+      run: bundle exec fastlane test_e2e_mock device:"${{ env.IOS_SIMULATOR_DEVICE }}"
+    - name: Upload test results to Allure TestOps
+      if: success() || failure()
+      run: bundle exec fastlane allure_upload
+      env:
+        ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+        ALLURE_GITHUB_TOKEN: ${{ secrets.ALLURE_GITHUB_TOKEN }}
+        GITHUB_EVENT: ${{ toJson(github.event) }}
+    - uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: "You shall not pass!"
+        job_name: "Test UI (Debug)"
+        fields: message,commit,author,action,workflow,job,took
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        MATRIX_CONTEXT: ${{ toJson(matrix) }}
+      if: ${{ github.event_name == 'push' && failure() }}
+
+  build-xcode12:
+    name: Build LLC + UI (Xcode 12)
     runs-on: macos-11
     steps:
-    - uses: actions/checkout@v1
-    - name: Set build image var
-      run: echo "ImageVersion=$ImageVersion"  >> $GITHUB_ENV
-    - name: Cache RubyGems
-      uses: actions/cache@v2
-      id: rubygem-cache
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/bootstrap
+    - name: Build LLC (Xcode 12)
+      env:
+        XCODE_VERSION: "12.5.1"
+      run: bundle exec fastlane test device:"iPhone 12" build_for_testing:true
+    - name: Build UI (Xcode 12)
+      env:
+        XCODE_VERSION: "12.5.1"
+      run: bundle exec fastlane test_ui device:"iPhone 12" build_for_testing:true
+    - uses: 8398a7/action-slack@v3
       with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-${{ env.ImageVersion }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: ${{ runner.os }}-${{ env.ImageVersion }}-gem-
-    - name: Cache Mint
-      uses: actions/cache@v2
-      id: mint-cache
-      with:
-        path: /usr/local/lib/mint
-        key: ${{ runner.os }}-mint-${{ hashFiles('./Mintfile') }}
-        restore-keys: ${{ runner.os }}-mint-
+        status: ${{ job.status }}
+        text: "You shall not pass!"
+        job_name: "Build LLC + UI (Xcode 12)"
+        fields: message,commit,author,action,workflow,job,took
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        MATRIX_CONTEXT: ${{ toJson(matrix) }}
+      if: ${{ github.event_name == 'push' && failure() }}
+
+  build-apps:
+    name: Build Sample + Demo Apps
+    runs-on: macos-12
+    steps:
+    - uses: actions/checkout@v2
     - uses: ./.github/actions/bootstrap
     - name: Build Sample App
       run: bundle exec fastlane build_sample
@@ -176,18 +182,10 @@ jobs:
 
   # build-docs-snippets:
   #   name: Build Docs Snippets
-  #   runs-on: macos-11
+  #   runs-on: macos-12
   #   steps:
   #   - uses: actions/checkout@v1
-  #   - name: Set build image var
-  #     run: echo "ImageVersion=$ImageVersion"  >> $GITHUB_ENV
-  #   - name: Cache RubyGems
-  #     uses: actions/cache@v2
-  #     id: rubygem-cache
-  #     with:
-  #       path: vendor/bundle
-  #       key: ${{ runner.os }}-${{ env.ImageVersion }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-  #       restore-keys: ${{ runner.os }}-${{ env.ImageVersion }}-gem-
+  #   - uses: ./.github/actions/bootstrap
   #   - name: Build Docs Snippets
   #     run: bundle exec fastlane build_docs_snippets
   #   - uses: 8398a7/action-slack@v3
@@ -203,25 +201,9 @@ jobs:
 
   spm-integration:
     name: Test Integration (SPM)
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-    - uses: actions/checkout@v1
-    - name: Set build image var
-      run: echo "ImageVersion=$ImageVersion"  >> $GITHUB_ENV
-    - name: Cache RubyGems
-      uses: actions/cache@v2
-      id: rubygem-cache
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-${{ env.ImageVersion }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: ${{ runner.os }}-${{ env.ImageVersion }}-gem-
-    - name: Cache Mint
-      uses: actions/cache@v2
-      id: mint-cache
-      with:
-        path: /usr/local/lib/mint
-        key: ${{ runner.os }}-mint-${{ hashFiles('./Mintfile') }}
-        restore-keys: ${{ runner.os }}-mint-
+    - uses: actions/checkout@v2
     - uses: ./.github/actions/bootstrap
     - name: Build Test Project
       run: bundle exec fastlane spm_integration
@@ -238,25 +220,9 @@ jobs:
 
   cocoapods-integration:
     name: Test Integration (CocoaPods)
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-    - uses: actions/checkout@v1
-    - name: Set build image var
-      run: echo "ImageVersion=$ImageVersion"  >> $GITHUB_ENV
-    - name: Cache RubyGems
-      uses: actions/cache@v2
-      id: rubygem-cache
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-${{ env.ImageVersion }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: ${{ runner.os }}-${{ env.ImageVersion }}-gem-
-    - name: Cache Mint
-      uses: actions/cache@v2
-      id: mint-cache
-      with:
-        path: /usr/local/lib/mint
-        key: ${{ runner.os }}-mint-${{ hashFiles('./Mintfile') }}
-        restore-keys: ${{ runner.os }}-mint-
+    - uses: actions/checkout@v2
     - uses: ./.github/actions/bootstrap
     - name: Build Test Project
       run: bundle exec fastlane cocoapods_integration

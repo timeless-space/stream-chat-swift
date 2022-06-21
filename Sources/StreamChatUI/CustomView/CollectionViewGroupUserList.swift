@@ -10,7 +10,7 @@ import UIKit
 import StreamChat
 import StreamChatUI
 
-public class CollectionViewGroupUserList: UIView {
+public class CollectionViewGroupUserList: UIView, ThemeProvider {
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()

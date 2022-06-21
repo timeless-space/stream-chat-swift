@@ -8,7 +8,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 
 public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
     public static let nib: UINib = UINib.init(nibName: identifier, bundle: nil)
@@ -41,6 +40,7 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
     var channel: ChatChannel?
     var client: ChatClient?
     var walletPaymentType: WalletAttachmentPayload.PaymentType = .pay
+    let imageLoader = Components.default.imageLoader
     
     // MARK: -  View Cycle
     public override func awakeFromNib() {
@@ -114,17 +114,22 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
                     sentThumbImageView.isHidden = false
                     sentThumbImageView.setGifFromURL(imageUrl)
                 } else {
+                    imageLoader.loadImage(
+                        into: sentThumbImageView,
+                        url: imageUrl,
+                        imageCDN: StreamImageCDN())
                     sentThumbImageView.isHidden = true
-                    Nuke.loadImage(with: themeURL, into: payRequestImageView)
                 }
             }
             lblDetails.text = "REQUEST: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
             if payload?.extraData?.requestedIsPaid ?? false {
-                pickUpButton.alpha = 0.5
+                pickUpButton.alpha = 0.2
                 pickUpButton.isEnabled = false
+                pickUpButton.setTitle("Paid", for: .normal)
             } else {
                 pickUpButton.alpha = 1.0
                 pickUpButton.isEnabled = true
+                pickUpButton.setTitle("Pay", for: .normal)
             }
         } else {
             pickUpButton.alpha = 1.0
@@ -132,13 +137,12 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
         }
         payRequestImageView.isHidden = !sentThumbImageView.isHidden
         // pickUpButton
-        pickUpButton.setTitle("Pay", for: .normal)
         pickUpButton.addTarget(self, action: #selector(btnSendPacketAction), for: .touchUpInside)
         pickUpButton.setTitleColor(.white, for: .normal)
         pickUpButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         pickUpButton.backgroundColor = Appearance.default.colorPalette.redPacketButton
         pickUpButton.clipsToBounds = true
-        pickUpButton.layer.cornerRadius = 20
+        pickUpButton.layer.cornerRadius = 16
         // Avatar
         let placeholder = Appearance.default.images.userAvatarPlaceholder1
         if let imageURL = content?.author.imageURL {
@@ -182,8 +186,8 @@ public class TableViewCellWallePayBubbleIncoming: UITableViewCell {
             userInfo["recipientName"] = payload.extraData?.recipientName
             userInfo["recipientUserId"] = payload.extraData?.recipientUserId
             userInfo["requestedImageUrl"] = payload.extraData?.requestedImageUrl
-            userInfo["requestId"] = payload.requestId
             userInfo["channelId"] = channel?.cid
+            userInfo["messageId"] = content?.id
             NotificationCenter.default.post(name: .payRequestTapAction, object: nil, userInfo: userInfo)
         } else {
             guard let channelId = channel?.cid else { return }

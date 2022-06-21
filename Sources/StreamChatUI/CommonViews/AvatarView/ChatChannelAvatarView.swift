@@ -1,11 +1,10 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 import SkeletonView
-import Nuke
 
 /// A view that shows a channel avatar including an online indicator if any user is online.
 open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
@@ -164,8 +163,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         loadAvatarsFrom(urls: urls, channelId: channel.cid) { [weak self] avatars, channelId in
             guard let weakSelf = self, channelId == weakSelf.content.channel?.cid
             else { return }
-            DispatchQueue.global(qos: .userInitiated).async {
-                let combinedImage = weakSelf.createMergedAvatar(from: avatars)
+            weakSelf.createMergeAvatarInBackground(avatars: avatars) { combinedImage in
                 DispatchQueue.main.async {
                     weakSelf.loadIntoAvatarImageView(from: nil, placeholder: combinedImage)
                     weakSelf.shimmerView.hideSkeleton()
@@ -182,6 +180,12 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 }
             }
         }
+    }
+
+    private func createMergeAvatarInBackground(
+        avatars: [UIImage],
+        completion: @escaping ((UIImage?) -> Void)) {
+        completion(createMergedAvatar(from: avatars))
     }
     
     /// Loads avatars for the given URLs
@@ -226,14 +230,14 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         }
         // The half of the width of the avatar
         let halfContainerSize = CGSize(width: CGSize.avatarThumbnailSize.width / 2, height: CGSize.avatarThumbnailSize.height)
-        
+
         if images.count == 1 {
             combinedImage = images[0]
         } else if images.count == 2 {
             let leftImage = imageProcessor.crop(image: images[0], to: halfContainerSize)
-                ?? images[0]
+            ?? images[0]
             let rightImage = imageProcessor.crop(image: images[1], to: halfContainerSize)
-                ?? images[1]
+            ?? images[1]
             combinedImage = imageMerger.merge(
                 images: [
                     leftImage,
@@ -251,19 +255,19 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 ],
                 orientation: .vertical
             )
-            
+
             let rightImage = imageProcessor.crop(
                 image: imageProcessor
                     .scale(image: rightCollage ?? images[2], to: .avatarThumbnailSize),
                 to: halfContainerSize
             )
-            
+
             combinedImage = imageMerger.merge(
                 images:
-                [
-                    leftImage ?? images[0],
-                    rightImage ?? images[1]
-                ],
+                    [
+                        leftImage ?? images[0],
+                        rightImage ?? images[1]
+                    ],
                 orientation: .horizontal
             )
         } else if images.count == 4 {
@@ -274,13 +278,13 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 ],
                 orientation: .vertical
             )
-            
+
             let leftImage = imageProcessor.crop(
                 image: imageProcessor
                     .scale(image: leftCollage ?? images[0], to: .avatarThumbnailSize),
                 to: halfContainerSize
             )
-            
+
             let rightCollage = imageMerger.merge(
                 images: [
                     images[1],
@@ -288,13 +292,13 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 ],
                 orientation: .vertical
             )
-            
+
             let rightImage = imageProcessor.crop(
                 image: imageProcessor
                     .scale(image: rightCollage ?? images[1], to: .avatarThumbnailSize),
                 to: halfContainerSize
             )
-         
+
             combinedImage = imageMerger.merge(
                 images: [
                     leftImage ?? images[1],
@@ -303,7 +307,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 orientation: .horizontal
             )
         }
-        
+
         return combinedImage
     }
 

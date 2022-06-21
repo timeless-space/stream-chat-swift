@@ -8,7 +8,6 @@
 import UIKit
 import StreamChat
 import Combine
-import Nuke
 import GiphyUISDK
 import Lottie
 
@@ -177,8 +176,24 @@ class EmojiContainerViewController: UIViewController {
     }
 
     private func configureDownloadOption() {
-        Nuke.loadImage(with: menu?.image ?? "", into: imgSticker)
+        //Nuke.loadImage(with: menu?.image ?? "", into: imgSticker)
         lblStickerName.text = menu?.name ?? ""
+        guard let imgUrl = URL(string: menu?.image ?? "") else {
+            return
+        }
+        Components.default.imageLoader.loadImage(
+            using: .init(url: imgUrl),
+            cachingKey: menu?.image) { [weak self] result in
+                guard let self = self else {
+                    return
+                }
+                switch result {
+                case .success(let imageResult):
+                    self.imgSticker.image = imageResult
+                case .failure:
+                    self.imgSticker.image = nil
+                }
+        }
     }
 
     @objc private func downloadSticker() {

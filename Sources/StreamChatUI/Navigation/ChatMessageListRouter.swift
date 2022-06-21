@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -31,11 +31,10 @@ open class ChatMessageListRouter:
     ///   about the source frame for the zoom-like transition.
     ///   - messageActionsController: The `ChatMessageActionsVC` object which will presented as a part of the pop up.
     ///   - messageReactionsController: The `ChatMessageReactionsVC` object which will presented as a part of the pop up.
-    ///
     open func showMessageActionsPopUp(
         messageContentView: ChatMessageContentView,
         messageActionsController: ChatMessageActionsVC,
-        messageReactionsController: ChatMessageReactionsVC?
+        messageReactionsController: ChatMessageReactionsPickerVC?
     ) {
         let popup = components.messagePopupVC.init()
         popup.messageContentView = messageContentView
@@ -53,8 +52,53 @@ open class ChatMessageListRouter:
         popup.transitioningDelegate = messagePopUpTransitionController
 
         messagePopUpTransitionController.selectedMessageId = messageContentView.content?.id
+        UIApplication.shared.windows.last?.rootViewController?.present(popup, animated: true)
+    }
 
-        rootViewController.present(popup, animated: true)
+    /// Shows the detail pop-up for the selected message with all the message reactions presented.
+    ///
+    /// - Parameters:
+    ///   - messageContentView: The selected message content view.
+    ///   - client: The current `ChatClient` instance.
+    open func showReactionsPopUp(
+        messageContentView: ChatMessageContentView,
+        client: ChatClient
+    ) {
+        guard let message = messageContentView.content,
+              let cid = message.cid
+        else {
+            return
+        }
+        
+        let messageController = client.messageController(
+            cid: cid,
+            messageId: message.id
+        )
+
+        let reactionsController = components.reactionPickerVC.init()
+        reactionsController.messageController = messageController
+
+        let reactionAuthorsController = components.reactionAuthorsVC.init()
+        reactionAuthorsController.messageController = messageController
+
+        let popup = components.messagePopupVC.init()
+        popup.messageContentView = messageContentView
+        popup.reactionsController = reactionsController
+        popup.reactionAuthorsController = reactionAuthorsController
+        let bubbleView = messageContentView.bubbleView ?? messageContentView.bubbleContentContainer
+        let bubbleViewFrame = bubbleView.superview!.convert(bubbleView.frame, to: nil)
+        popup.messageBubbleViewInsets = UIEdgeInsets(
+            top: bubbleViewFrame.origin.y,
+            left: bubbleViewFrame.origin.x,
+            bottom: messageContentView.frame.height - bubbleViewFrame.height,
+            right: messageContentView.frame.width - bubbleViewFrame.origin.x - bubbleViewFrame.width
+        )
+        popup.modalPresentationStyle = .overFullScreen
+        popup.transitioningDelegate = messagePopUpTransitionController
+
+        messagePopUpTransitionController.selectedMessageId = messageContentView.content?.id
+
+        UIApplication.shared.windows.last?.rootViewController?.present(popup, animated: true)
     }
 
     /// Handles opening of a link URL.
@@ -130,8 +174,12 @@ open class ChatMessageListRouter:
         zoomTransitionController.presentedVCImageView = { [weak galleryVC] in
             galleryVC?.imageViewToAnimateWhenDismissing
         }
-        zoomTransitionController.presentingImageView = {
-            let id = galleryVC.items[galleryVC.content.currentPage].id
+        zoomTransitionController.presentingImageView = { [weak galleryVC] in
+            guard let galleryVC = galleryVC else { return nil }
+            guard let id = galleryVC.items[safe: galleryVC.content.currentPage]?.id else {
+                indexNotFoundAssertion()
+                return nil
+            }
             
             return previews.first(where: { $0.attachmentId == id })?.imageView ?? previews.last?.imageView
         }

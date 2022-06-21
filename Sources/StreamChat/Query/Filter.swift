@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -82,6 +82,7 @@ extension ChannelId: FilterValue {}
 extension ChannelType: FilterValue {}
 extension UserRole: FilterValue {}
 extension AttachmentType: FilterValue {}
+extension Optional: FilterValue where Wrapped == TeamId {}
 
 /// Filter is used to specify the details about which elements should be returned from a specific query.
 ///
@@ -98,11 +99,6 @@ public struct Filter<Scope: FilterScope> {
     /// The "right-hand" side of the filter. Specifies the value the filter should match.
     public let value: FilterValue
     
-    /// Set this value if you want to alter the hash of the filter. This is handy when you want to change the filter
-    /// but you want the changed filter to have the same hash as the original filter (for example, when you use the
-    /// hash to identify queries).
-    var explicitHash: String?
-    
     /// Creates a new instance of `Filter`.
     ///
     /// Learn more about how to create simple, advanced, and custom filters in our [cheat sheet](https://github.com/GetStream/stream-chat-swift/wiki/StreamChat-SDK-Cheat-Sheet#query-filters).
@@ -116,7 +112,7 @@ public struct Filter<Scope: FilterScope> {
     ///   - value: The "right-hand" side of the filter. Specifies the value the filter should match.
     ///
     public init(operator: String, key: String?, value: FilterValue) {
-        assert(`operator`.hasPrefix("$"), "A filter operator must have `$` prefix.")
+        log.assert(`operator`.hasPrefix("$"), "A filter operator must have `$` prefix.")
         self.operator = `operator`
         self.key = key
         self.value = value
@@ -240,7 +236,7 @@ public extension Filter {
 extension Filter {
     /// Filter hash that can be used to uniquely identify a filter.
     var filterHash: String {
-        explicitHash ?? String(describing: self)
+        String(describing: self)
     }
 }
 

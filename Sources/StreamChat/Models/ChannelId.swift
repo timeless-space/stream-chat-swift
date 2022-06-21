@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -11,7 +11,7 @@ import Foundation
 public struct ChannelId: Hashable, CustomStringConvertible {
     private static let separator: Character = ":"
     
-    let rawValue: String
+    public let rawValue: String
     
     /// Creates a new `ChannelId` value.
     ///

@@ -40,7 +40,6 @@ open class PrivateGroupOTPVC: UIViewController {
     // MARK: - Functions
     private func setupUI() {
         heightSafeAreaView.constant = UIView.safeAreaTop
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
         checkLocationPermission()
         viewOTP.dpOTPViewDelegate = self
         viewOTP.textColorTextField = .white

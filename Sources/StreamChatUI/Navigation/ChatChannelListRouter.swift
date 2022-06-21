@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -34,7 +34,7 @@ open class ChatChannelListRouter: NavigationRouter<ChatChannelListVC>, Component
             log.error("Can't push chat detail, no navigation controller available")
             return
         }
-        self.rootViewController.pushWithAnimation(controller: vc)
+        self.rootViewController.pushWithAnimation(controller: vc, with: rootNavigationController)
     }
 
     /// Called when a user tapped `More` swipe action on a channel

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -7,7 +7,7 @@ import Foundation
 extension Endpoint {
     static func getMessage(messageId: MessageId) -> Endpoint<MessagePayload.Boxed> {
         .init(
-            path: messageId.path,
+            path: .message(messageId),
             method: .get,
             queryItems: nil,
             requiresConnectionId: false,
@@ -15,20 +15,20 @@ extension Endpoint {
         )
     }
     
-    static func deleteMessage(messageId: MessageId) -> Endpoint<EmptyResponse> {
+    static func deleteMessage(messageId: MessageId, hard: Bool) -> Endpoint<MessagePayload.Boxed> {
         .init(
-            path: messageId.path,
+            path: .deleteMessage(messageId),
             method: .delete,
             queryItems: nil,
             requiresConnectionId: false,
-            body: nil
+            body: ["hard": hard]
         )
     }
     
     static func editMessage(payload: MessageRequestBody)
         -> Endpoint<EmptyResponse> {
         .init(
-            path: payload.id.path,
+            path: .editMessage(payload.id),
             method: .post,
             queryItems: nil,
             requiresConnectionId: false,
@@ -39,7 +39,17 @@ extension Endpoint {
     static func loadReplies(messageId: MessageId, pagination: MessagesPagination)
         -> Endpoint<MessageRepliesPayload> {
         .init(
-            path: messageId.repliesPath,
+            path: .replies(messageId),
+            method: .get,
+            queryItems: nil,
+            requiresConnectionId: false,
+            body: pagination
+        )
+    }
+
+    static func loadReactions(messageId: MessageId, pagination: Pagination) -> Endpoint<MessageReactionsPayload> {
+        .init(
+            path: .reactions(messageId),
             method: .get,
             queryItems: nil,
             requiresConnectionId: false,
@@ -54,25 +64,26 @@ extension Endpoint {
         extraData: [String: RawJSON],
         messageId: MessageId
     ) -> Endpoint<EmptyResponse> {
-        .init(
-            path: messageId.reactionsPath,
+        let body = MessageReactionRequestPayload(
+            enforceUnique: enforceUnique,
+            reaction: ReactionRequestPayload(
+                type: type,
+                score: score,
+                extraData: extraData
+            )
+        )
+        return .init(
+            path: .addReaction(messageId),
             method: .post,
             queryItems: nil,
             requiresConnectionId: false,
-            body: [
-                "reaction": MessageReactionRequestPayload(
-                    type: type,
-                    score: score,
-                    enforceUnique: enforceUnique,
-                    extraData: extraData
-                )
-            ]
+            body: body
         )
     }
     
     static func deleteReaction(_ type: MessageReactionType, messageId: MessageId) -> Endpoint<EmptyResponse> {
         .init(
-            path: messageId.reactionsPath.appending("/\(type.rawValue)"),
+            path: .deleteReaction(messageId, type),
             method: .delete,
             queryItems: nil,
             requiresConnectionId: false,
@@ -83,40 +94,34 @@ extension Endpoint {
     static func dispatchEphemeralMessageAction(
         cid: ChannelId,
         messageId: MessageId,
-        action: AttachmentAction
+        action: AttachmentAction,
+        poll: [String: RawJSON]
     ) -> Endpoint<MessagePayload.Boxed> {
         .init(
-            path: messageId.actionPath,
+            path: .messageAction(messageId),
             method: .post,
             queryItems: nil,
             requiresConnectionId: false,
             body: AttachmentActionRequestBody(
                 cid: cid,
                 messageId: messageId,
-                action: action
+                action: action,
+                poll: poll
             )
         )
     }
     
     static func search(query: MessageSearchQuery) -> Endpoint<MessageSearchResultsPayload> {
-        .init(path: "search", method: .get, queryItems: nil, requiresConnectionId: false, body: ["payload": query])
-    }
-}
-
-private extension MessageId {
-    var path: String {
-        "messages/\(self)"
+        .init(path: .search, method: .get, queryItems: nil, requiresConnectionId: false, body: ["payload": query])
     }
     
-    var repliesPath: String {
-        "messages/\(self)/replies"
-    }
-    
-    var reactionsPath: String {
-        path.appending("/reaction")
-    }
-
-    var actionPath: String {
-        path.appending("/action")
+    static func translate(messageId: MessageId, to language: TranslationLanguage) -> Endpoint<MessagePayload.Boxed> {
+        .init(
+            path: .translateMessage(messageId),
+            method: .post,
+            queryItems: nil,
+            requiresConnectionId: false,
+            body: ["language": language.languageCode]
+        )
     }
 }

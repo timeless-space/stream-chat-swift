@@ -5,22 +5,31 @@
 <p align="center">
   <a href="https://cocoapods.org/pods/StreamChatUI"><img src="https://img.shields.io/cocoapods/v/StreamChatUI.svg" /></a>
   <a href="https://github.com/Carthage/Carthage"><img src="https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat" /></a>
+  <a href="https://www.swift.org/package-manager/"><img src="https://img.shields.io/badge/SPM-compatible-green" /></a>
+</p>
+<p align="center">
+  <a href="https://getstream.io/chat/docs/sdk/ios/"><img src="https://img.shields.io/badge/iOS-11%2B-lightblue" /></a>
   <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-5.2-orange.svg" /></a>
-  <a href="https://github.com/GetStream/stream-chat-swift/actions"><img src="https://github.com/GetStream/stream-chat-swift/workflows/CI/badge.svg" /></a>
-  <a href="https://codecov.io/gh/GetStream/stream-chat-swift"><img src="https://codecov.io/gh/GetStream/stream-chat-swift/branch/main/graph/badge.svg" /></a>
+  <a href="https://github.com/GetStream/stream-chat-swift/actions"><img src="https://github.com/GetStream/stream-chat-swift/actions/workflows/smoke-checks.yml/badge.svg" /></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=GetStream_stream-chat-swift"><img src="https://sonarcloud.io/api/project_badges/measure?project=GetStream_stream-chat-swift&metric=coverage" /></a>
+</p>
+<p align="center">
+  <img alt="StreamChat" src="https://img.shields.io/endpoint?url=https://stream-sdks-size-badges.herokuapp.com/ios/stream-chat&cacheSeconds=86400"/>
+  <img alt="StreamChatUI" src="https://img.shields.io/endpoint?url=https://stream-sdks-size-badges.herokuapp.com/ios/stream-chat-ui&cacheSeconds=86400"/>
 </p>
 
-# The official iOS SDK for [Stream Chat](https://getstream.io/chat/sdk/ios/)
+This is the official iOS SDK for [Stream Chat](https://getstream.io/chat/sdk/ios/), a service for building chat and messaging applications. This library includes both a low-level SDK and a set of reusable UI components.
 
-The **StreamChatUI SDK**  is the official iOS SDK for [Stream Chat](https://getstream.io/chat/sdk/ios/), a service for building chat and messaging applications.
+## Low Level Client (LLC)
+The **StreamChat SDK** is a low level client for Stream chat service that doesn't contain any UI components. It is meant to be used when you want to build a fully custom UI. For the majority of use cases though, we recommend using our highly customizable UI SDK's.
+
+## UIKit SDK
+The **StreamChatUI SDK** is our UI SDK for UIKit components. If your application needs to support iOS 13 and below, this is the right UI SDK for you.
+
+## SwiftUI SDK
+The **StreamChatSwiftUI SDK** is our UI SDK for SwiftUI components. If your application only needs to support iOS 14 and above, this is the right UI SDK for you. This SDK is available in another repository **[stream-chat-swiftui](https://github.com/GetStream/stream-chat-swiftui)**.
 
 ---
-
-## Which Version Should I Choose?
-
-- **4.x** is the current production version. (Recommended)
-- **3.x** is the previous production version and in maintenance mode.
-- **2.x** is in maintenance mode.
 
 ## Main Features
 
@@ -28,6 +37,7 @@ The **StreamChatUI SDK**  is the official iOS SDK for [Stream Chat](https://gets
 - **Familiar behavior**: The UI elements are good platform citizens and behave like native elements; they respect `tintColor`, `layoutMargins`, light/dark mode, dynamic font sizes, etc.
 - **Swift native API:** Uses Swift's powerful language features to make the SDK usage easy and type-safe.
 - **Uses `UIKit` patterns and paradigms:** The API follows the design of native system SDKs. It makes integration with your existing code easy and familiar.
+- **`SwiftUI` support:** We have developed a brand new SDK to help you have smoother Stream Chat integration in your SwiftUI apps.
 - **First-class support for `Combine`**: The StreamChat SDK (Low Level Client) has Combine wrappers to make it really easy use in an app that uses `Combine`.
 - **Fully open-source implementation:** You have access to the complete source code of the SDK here on GitHub.
 - **Supports iOS 11+:** We proudly support older versions of iOS, so your app can stay available to almost everyone.
@@ -36,8 +46,10 @@ The **StreamChatUI SDK**  is the official iOS SDK for [Stream Chat](https://gets
 
 * [iOS/Swift Chat Tutorial](https://getstream.io/tutorials/ios-chat/): Learn how to use the SDK by following our simple tutorial.
 * [Register](https://getstream.io/chat/trial/): Register to get an API key for Stream Chat.
-* [Installation](https://getstream.io/chat/docs/sdk/ios/#installation): Learn more about how to install the SDK using CocoaPods, SPM or Carthage.
+* [Installation](https://getstream.io/chat/docs/sdk/ios/basics/integration): Learn more about how to install the SDK using CocoaPods, SPM or Carthage.
+  * Do you want to use Module Stable XCFrameworks? [Check this out](https://getstream.io/chat/docs/sdk/ios/basics/integration#xcframeworks)
 * [Documentation](https://getstream.io/chat/docs/sdk/ios/): An extensive documentation is available to help with you integration.
+* [SwiftUI](https://github.com/GetStream/stream-chat-swiftui): Check our SwiftUI SDK if you are developing with SwiftUI.
 * [Demo app](https://github.com/GetStream/stream-chat-swift/tree/main/DemoApp): This repo includes a fully functional demo app with example usage of the SDK.
 * [Example apps](https://github.com/GetStream/stream-chat-swift/tree/main/Examples): This section of the repo includes fully functional sample apps that you can use as reference.
 
@@ -54,6 +66,14 @@ Stream is free for most side and hobby projects. You can use Stream Chat for fre
 * **`open` by default:** Everything is `open` unless there's a strong reason for it to not be. This means you can easily modify almost every behavior of the SDK such that it fits your needs.
 
 * **Good platform citizen:** The UI elements behave like good platform citizens. They use existing iOS patterns; their behavior is predictable and matches system UI components; they respect `tintColor`, `layourMargins`, dynamic font sizes, and other system-defined UI constants.
+
+## Dependencies
+
+This SDK tries to keep the list of external dependencies to a minimum.
+Starting **4.6.0**, and in order to improve the developer experience, dependencies are hidden inside our libraries.
+(Does not apply to StreamChatSwiftUI's dependencies yet).
+
+Learn more about our dependencies [here](https://getstream.io/chat/docs/sdk/ios/#dependencies)
 
 ---
 

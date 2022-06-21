@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -29,6 +29,7 @@ open class InputTextView: UITextView, AppearanceProvider {
     open private(set) lazy var placeholderLabel: UILabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
+        .withAdjustingFontForContentSizeCategory
     
     override open var text: String! {
         didSet {
@@ -84,9 +85,10 @@ open class InputTextView: UITextView, AppearanceProvider {
         textAlignment = .natural
         spellCheckingType = .default
         autocorrectionType = .default
+        adjustsFontForContentSizeCategory = true
         placeholderLabel.font = font
-        placeholderLabel.textAlignment = .center
         placeholderLabel.textColor = appearance.colorPalette.subtitleText
+        placeholderLabel.adjustsFontSizeToFitWidth = true
     }
     
     open func setUpLayout() {
@@ -100,10 +102,10 @@ open class InputTextView: UITextView, AppearanceProvider {
             )
         )
         placeholderLabel.pin(anchors: [.centerY], to: self)
-        
+        placeholderLabel.widthAnchor.pin(equalTo: widthAnchor, multiplier: 0.95).isActive = true
+
         heightConstraint = heightAnchor.constraint(equalToConstant: minimumHeight)
-        heightConstraint?.isActive = true
-        isScrollEnabled = true
+        isScrollEnabled = false
     }
 
     /// Sets the given text in the current caret position.
@@ -127,31 +129,18 @@ open class InputTextView: UITextView, AppearanceProvider {
     @objc open func handleTextChange() {
         placeholderLabel.isHidden = !text.isEmpty
         setTextViewHeight()
-        //NSObject.cancelPreviousPerformRequests(withTarget: self)
-        //perform(#selector(handleKeyboardDisplay), with: nil, afterDelay: 0.3)
     }
 
-//    @objc func handleKeyboardDisplay() {
-//        if text.isEmpty && spellCheckingType == .default {
-//            resignFirstResponder()
-//            spellCheckingType = .no
-//            autocorrectionType = .no
-//            becomeFirstResponder()
-//            setNeedsDisplay()
-//            handleToolkitToggle?(false)
-//        } else if !text.isEmpty && spellCheckingType == .no {
-//            resignFirstResponder()
-//            spellCheckingType = .default
-//            autocorrectionType = .default
-//            becomeFirstResponder()
-//            setNeedsDisplay()
-//            handleToolkitToggle?(true)
-//        }
-//    }
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        let contentHeight = heightToSet()
+        if let oldHeight = heightConstraint?.constant, oldHeight != contentHeight {
+            heightConstraint?.constant = contentHeight
+        }
+    }
 
-    open func setTextViewHeight() {
+    private func heightToSet() -> CGFloat {
         var heightToSet = minimumHeight
-
         if contentSize.height <= minimumHeight {
             heightToSet = minimumHeight
         } else if contentSize.height >= maximumHeight {
@@ -159,8 +148,12 @@ open class InputTextView: UITextView, AppearanceProvider {
         } else {
             heightToSet = contentSize.height
         }
+        return heightToSet
+    }
 
-        heightConstraint?.constant = heightToSet
+    open func setTextViewHeight() {
+        let contentHeight = heightToSet()
+        heightConstraint?.constant = contentHeight
         layoutIfNeeded()
 
         // This is due to bug in UITextView where the scroll sometimes disables
@@ -187,6 +180,9 @@ open class InputTextView: UITextView, AppearanceProvider {
             clipboardAttachmentDelegate?.inputTextView(self, didPasteImage: pasteboardImage)
         } else {
             super.paste(sender)
+            // On text paste, textView height will not change automatically
+            // so we must call this function
+            setTextViewHeight()
         }
     }
 }
