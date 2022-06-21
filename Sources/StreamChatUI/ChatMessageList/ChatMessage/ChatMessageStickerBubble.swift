@@ -10,6 +10,7 @@ import AVKit
 import Stipop
 import GiphyUISDK
 import Lottie
+import dotLottie
 
 class ChatMessageStickerBubble: _TableViewCell {
 
@@ -32,8 +33,8 @@ class ChatMessageStickerBubble: _TableViewCell {
     var chatChannel: ChatChannel?
     var isSender = false
     private var cellWidth: CGFloat = 100.0
-    var sentThumbStickerView: AnimationView? = nil
-    var tapGesture: UITapGestureRecognizer? = nil
+    var sentThumbStickerView: AnimationView?
+    var tapGesture: UITapGestureRecognizer?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -94,13 +95,17 @@ class ChatMessageStickerBubble: _TableViewCell {
             sentThumbGifView.setGifFromURL(gifUrl)
             stickerContainer.addArrangedSubview(sentThumbGifView)
         } else if content?.extraData.stickerUrl?.contains(".json") ?? false, let lottie = URL(string: content?.extraData.stickerUrl ?? "") {
-            sentThumbStickerView = .init(url: lottie, closure: { [weak self] _ in
+            self.sentThumbStickerView = AnimationView()
+            DotLottie.load(name: "1") { [weak self] (animation, file) in
                 guard let `self` = self else { return }
+                self.sentThumbStickerView?.animation = animation
+                self.sentThumbStickerView?.respectAnimationFrameRate = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     self.sentThumbStickerView?.play()
                     self.sentThumbStickerView?.loopMode = .playOnce
                 }
-            })
+            }
+            stickerContainer.addArrangedSubview(self.sentThumbStickerView!)
             if let stickerView = sentThumbStickerView {
                 stickerView.backgroundColor = Appearance.default.colorPalette.background6
                 stickerView.transform = .mirrorY

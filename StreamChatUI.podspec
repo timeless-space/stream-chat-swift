@@ -25,6 +25,7 @@ Pod::Spec.new do |spec|
     spec.dependency "SkeletonView", "1.29.2"
     spec.dependency "Stipop", "0.3.1"
     spec.dependency "Giphy", "2.1.21"
-    spec.dependency "lottie-ios", "3.3.0"
+    spec.dependency "lottie-ios"
+    spec.dependency "dotLottie"
     spec.dependency "BigInt", "5.2.0"
   end
