@@ -149,7 +149,8 @@ public class PinMessageContainerView: UIView {
         let msgNo = currentMessageIndex > 0 ? "#\(currentMessageIndex)" : ""
         labelTitle.text = "Pinned Message \(msgNo)"
         labelTitle.textColor = Appearance.default.colorPalette.themeBlue
-        labelTitle.font = UIFont.systemFont(ofSize: 17)
+        labelTitle.font = Appearance.default.fonts.sfProTextRegular(size: 17)
+        labelMessage.font = Appearance.default.fonts.sfProTextRegular(size: 15)
     }
 
     private func setupCloseButton() {
@@ -188,6 +189,8 @@ public class PinMessageContainerView: UIView {
             labelMessage.text = "Video"
         } else if let attachment = message.fileAttachments.first {
             labelMessage.text = "File"
+        } else if let attachment = message.giphyAttachments.first {
+            labelMessage.text = "GIF"
         } else {
             layoutAttachmentView(isVisible: false)
         }

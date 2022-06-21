@@ -40,14 +40,14 @@ open class TableviewCellPinMessage: _TableViewCell {
         messageLabel.numberOfLines = 1
         messageLabel.textAlignment = .center
         messageLabel.textColor = .white
-        messageLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        messageLabel.font = Appearance.default.fonts.sfProTextRegular(size: 15)
         contentView.addSubview(messageLabel)
 
         lastSymbol.translatesAutoresizingMaskIntoConstraints = false
         lastSymbol.numberOfLines = 1
         lastSymbol.textAlignment = .center
         lastSymbol.textColor = .white
-        lastSymbol.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        lastSymbol.font = Appearance.default.fonts.sfProTextRegular(size: 15)
         lastSymbol.text = "\""
         contentView.addSubview(lastSymbol)
         lastSymbol.leadingAnchor
@@ -103,6 +103,8 @@ open class TableviewCellPinMessage: _TableViewCell {
             return "Video"
         } else if let attachment = message.fileAttachments.first {
             return "File"
+        } else if let attachment = message.giphyAttachments.first {
+            return "GIF"
         } else {
             return message.text
         }
