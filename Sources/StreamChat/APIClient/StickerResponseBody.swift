@@ -22,7 +22,7 @@ public struct PackageList: Codable, Hashable {
     public let language, isNew, isView: String?
     public var isDownload: String?
     public let packageKeywords, packageAnimated, artistName: String?
-    public var isHidden: Bool = false
+    public var isHidden = false
     enum CodingKeys: String, CodingKey {
         case packageID = "packageId"
         case packageImg, packageName, packageCategory, isWish, order, language, isNew, isDownload, isView, packageKeywords, packageAnimated, artistName, price

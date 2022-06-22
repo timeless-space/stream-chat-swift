@@ -43,7 +43,6 @@ class PickerTableViewCell: UITableViewCell {
                 }
             }
         selectionStyle = .none
-        btnDownload.isHidden = screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue
         btnDownload.isEnabled = screenType != EmojiPickerViewController.ScreenType.MySticker.rawValue
         btnDownload.addTarget(self, action: #selector(btnDownloadAction), for: .touchUpInside)
         if screenType == EmojiPickerViewController.ScreenType.MySticker.rawValue {

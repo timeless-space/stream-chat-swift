@@ -19,8 +19,6 @@ extension StickerApi {
         case stickerSend(stickerId: Int)
         case recentSticker
         case hideStickers(packageId: Int)
-        case sendGiftSticker(packageId: Int, sendUserId: String, receiveUserId: String)
-        case confirmGiftSticker(packageId: Int, sendUserId: String, receiveUserId: String)
         case downloadGiftPackage(packageId: Int, receiverUserId: String)
 
         // MARK: Vars & Lets
@@ -44,10 +42,6 @@ extension StickerApi {
                 return "package/send/\(userId)"
             case .hideStickers(packageId: let packageId):
                 return "mysticker/hide/\(userId)/\(packageId)"
-            case .sendGiftSticker(packageId: let packageId, sendUserId: let sendUserId, receiveUserId: let receiveUserId):
-                return "gift/\(packageId)/\(sendUserId)/\(receiveUserId)"
-            case .confirmGiftSticker(packageId: let packageId, sendUserId: let sendUserId, receiveUserId: let receiveUserId):
-                return "gift/\(packageId)/\(sendUserId)/\(receiveUserId)"
             case .downloadGiftPackage(packageId: let packageId, receiverUserId: let receiverUserId):
                 return "download/\(packageId)?userId=\(receiverUserId)&isPurchase=N"
             case .getHiddenStickers:
@@ -59,9 +53,9 @@ extension StickerApi {
             switch self {
             case .mySticker, .stickerInfo, .trendingStickers, .recentSticker, .getHiddenStickers:
                 return .get
-            case .downloadStickers, .stickerSend, .sendGiftSticker, .downloadGiftPackage:
+            case .downloadStickers, .stickerSend, .downloadGiftPackage:
                 return .post
-            case .hideStickers, .confirmGiftSticker:
+            case .hideStickers:
                 return .put
             }
         }

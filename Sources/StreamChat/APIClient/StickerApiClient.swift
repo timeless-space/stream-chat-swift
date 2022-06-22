@@ -132,27 +132,6 @@ public class StickerApiClient {
             .store(in: &stickerCalls)
     }
 
-    public static func sendGiftSticker(
-        packageId: Int,
-        sendUserId: String,
-        receiveUserId: String,
-        _ completion: @escaping ((ResponseBody<EmptyStipopResponse>) -> Void)
-    ) {
-        StickerApi.call(type: .sendGiftSticker(packageId: packageId, sendUserId: sendUserId, receiveUserId: receiveUserId))
-            .sink { _  in } receiveValue: { result in completion(result) }
-            .store(in: &stickerCalls)
-    }
-
-    public static func confirmGiftSticker(
-        packageId: Int,
-        sendUserId: String,
-        receiveUserId: String, _ completion: @escaping ((ResponseBody<EmptyStipopResponse>) -> Void)
-    ) {
-        StickerApi.call(type: .confirmGiftSticker(packageId: packageId, sendUserId: sendUserId, receiveUserId: receiveUserId))
-            .sink { _  in } receiveValue: { result in completion(result) }
-            .store(in: &stickerCalls)
-    }
-
     public static func getHiddenStickers(
         _ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)) {
         StickerApi.call(type: .getHiddenStickers)
