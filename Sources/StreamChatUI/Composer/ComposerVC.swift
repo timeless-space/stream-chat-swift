@@ -31,6 +31,7 @@ extension Notification.Name {
     public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
     public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
     public static let getPollData = Notification.Name("kStreamChatGetPollData")
+    public static let showMediaPicker = Notification.Name("kShowMediaPicker")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -626,7 +627,9 @@ open class ComposerVC: _ViewController,
             switch action {
             case .media:
                 self.composerView.inputMessageView.textView.resignFirstResponder()
-                self.showAttachmentsPicker()
+                //self.showAttachmentsPicker()
+                NotificationCenter.default
+                    .post(name: .showMediaPicker, object: nil, userInfo: nil)
                 self.animateToolkitView(isHide: true)
             case .disburseFund:
                 guard let channel = self.channelController?.channel else {
