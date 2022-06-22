@@ -38,14 +38,12 @@ open class PrivateGroupOTPVC: UIViewController {
 
     // MARK: - IBAction
     @IBAction func btnBackAction(_ sender: UIButton) {
-        NotificationCenter.default.post(name: .showTabbar, object: nil)
         popWithAnimation()
     }
 
     // MARK: - Functions
     private func setupUI() {
         heightSafeAreaView.constant = UIView.safeAreaTop
-        NotificationCenter.default.post(name: .hideTabbar, object: nil)
         viewOTP.dpOTPViewDelegate = self
         viewOTP.textColorTextField = .white
         viewSafeAreaHeader.backgroundColor = Appearance.default.colorPalette.walletTabbarBackground
