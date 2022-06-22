@@ -22,7 +22,7 @@ class RedPacketAmountBubble: UITableViewCell {
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     var client: ChatClient?
-    public lazy var dateFormatter: DateFormatter = .makeDefault()
+    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
     public var blockExpAction: ((URL) -> Void)?
     private(set) lazy var btnExplore: UIButton = {
         let exploreButton = UIButton()
@@ -178,7 +178,7 @@ class RedPacketAmountBubble: UITableViewCell {
                 nameAndTimeString?.append("\(name)   ")
             }
             if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
+                nameAndTimeString?.append("\(dateFormatter.format(createdAt))")
             }
         }
         timestampLabel?.text = nameAndTimeString

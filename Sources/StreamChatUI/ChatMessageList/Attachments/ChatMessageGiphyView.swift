@@ -1,9 +1,8 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
-import SwiftyGif
 import UIKit
 
 open class ChatMessageGiphyView: _View, ComponentsProvider {
@@ -21,7 +20,9 @@ open class ChatMessageGiphyView: _View, ComponentsProvider {
 
     private var gifLoadingHandler = SwiftyGifLoadingHandler()
 
-    public private(set) lazy var imageView = UIImageView().withoutAutoresizingMaskConstraints
+    public private(set) lazy var imageView = UIImageView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "imageView")
 
     public private(set) lazy var badge = components
         .giphyBadgeView

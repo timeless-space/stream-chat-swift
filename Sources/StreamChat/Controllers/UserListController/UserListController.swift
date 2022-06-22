@@ -1,23 +1,23 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
 import Foundation
 
 extension ChatClient {
-    /// Creates a new `_ChatUserListController` with the provided user query.
+    /// Creates a new `ChatUserListController` with the provided user query.
     ///
     /// - Parameter query: The query specify the filter and sorting of the users the controller should fetch.
     ///
-    /// - Returns: A new instance of `_ChatUserListController`.
+    /// - Returns: A new instance of `ChatUserListController`.
     ///
     public func userListController(query: UserListQuery = .init()) -> ChatUserListController {
         .init(query: query, client: self)
     }
 }
 
-/// `_ChatUserListController` is a controller class which allows observing a list of chat users based on the provided query.
+/// `ChatUserListController` is a controller class which allows observing a list of chat users based on the provided query.
 public class ChatUserListController: DataController, DelegateCallable, DataStoreProvider {
     /// The query specifying and filtering the list of users.
     public var query: UserListQuery
@@ -62,7 +62,7 @@ public class ChatUserListController: DataController, DelegateCallable, DataStore
         let observer = self.environment.createUserListDabaseObserver(
             client.databaseContainer.viewContext,
             request,
-            { $0.asModel() }
+            { try $0.asModel() }
         )
         
         observer.onChange = { [weak self] changes in
@@ -183,7 +183,7 @@ extension ChatUserListController {
         var createUserListDabaseObserver: (
             _ context: NSManagedObjectContext,
             _ fetchRequest: NSFetchRequest<UserDTO>,
-            _ itemCreator: @escaping (UserDTO) -> ChatUser
+            _ itemCreator: @escaping (UserDTO) throws -> ChatUser
         )
             -> ListDatabaseObserver<ChatUser, UserDTO> = {
                 ListDatabaseObserver(context: $0, fetchRequest: $1, itemCreator: $2)

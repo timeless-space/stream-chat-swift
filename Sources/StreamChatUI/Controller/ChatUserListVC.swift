@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Nuke
 import StreamChat
 import StreamChatUI
 import SkeletonView
@@ -19,7 +18,7 @@ public struct ChatUserListData {
 public protocol ChatUserListDelegate: AnyObject {
     func chatUserDidSelect()
 }
-public class ChatUserListVC: UIViewController {
+public class ChatUserListVC: _ViewController, ThemeProvider {
     public enum ChatUserSelectionType {
         case singleUser, group, privateGroup, addFriend
     }
@@ -461,7 +460,6 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
                     let chatChannelVC = ChatChannelVC()
                     chatChannelVC.channelController = controller
                     if let firstVC = weakSelf.navigationController?.viewControllers.first {
-                        NotificationCenter.default.post(name: .hideTabbar, object: nil)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                             guard let self = self else {
                                 return

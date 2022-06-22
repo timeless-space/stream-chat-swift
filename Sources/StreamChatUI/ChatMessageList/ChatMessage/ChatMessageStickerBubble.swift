@@ -6,7 +6,6 @@
 //
 
 import StreamChat
-import Nuke
 import AVKit
 import Stipop
 import GiphyUISDK
@@ -27,6 +26,7 @@ class ChatMessageStickerBubble: _TableViewCell {
     private var trailingMainContainer: NSLayoutConstraint?
     private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
+    private var imageLoader = Components.default.imageLoader
     var content: ChatMessage?
     var chatChannel: ChatChannel?
     var isSender = false
@@ -40,8 +40,6 @@ class ChatMessageStickerBubble: _TableViewCell {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
-
-
 
     private func setLayout() {
         selectionStyle = .none
@@ -122,7 +120,13 @@ class ChatMessageStickerBubble: _TableViewCell {
                 if !options.contains(.authorName) {
                     authorAvatarView?.imageView.image = nil
                 } else {
-                    Nuke.loadImage(with: content?.author.imageURL, into: authorAvatarView?.imageView ?? .init())
+                    imageLoader.loadImage(
+                        into: authorAvatarView?.imageView ?? .init(),
+                        url: content?.author.imageURL,
+                        imageCDN: Components.default.imageCDN,
+                        placeholder: nil,
+                        preferredSize: nil
+                    )
                 }
             }
             timestampLabel?.isHidden = !options.contains(.timestamp)

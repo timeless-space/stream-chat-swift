@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import CoreData
@@ -28,6 +28,9 @@ public struct ChatChannel {
     
     /// If the channel was deleted, this field contains the date of the deletion.
     public let deletedAt: Date?
+    
+    /// If the channel was truncated, this field contains the date of the truncation.
+    public let truncatedAt: Date?
     
     /// Flag for representing hidden state for the channel.
     public let isHidden: Bool
@@ -83,7 +86,7 @@ public struct ChatChannel {
     
     /// The team the channel belongs to.
     ///
-    /// You need to enable multi-tenancy if you want to use this, else it'll be nil.
+    /// You need to enable multi-tenancy if you want to use this otherwise it is always nil
     /// Refer to [docs](https://getstream.io/chat/docs/multi_tenant_chat/?language=swift) for more info.
     ///
     public let team: TeamId?
@@ -95,10 +98,12 @@ public struct ChatChannel {
     /// An option to enable ban users.
 //    public let banEnabling: BanEnabling
     
-    /// Latest messages present on the channel.
+    /// Latest messages present on the channel. The first item of the array, is the most recent message.
     ///
     /// This field contains only the latest messages of the channel. You can get all existing messages in the channel by creating
     /// and using a `ChatChannelController` for this channel id.
+    ///
+    /// The amount of latest messages is controlled by the `ChatClientConfig.LocalCaching.latestMessagesLimit`.
     ///
     /// - Important: The `latestMessages` property is loaded and evaluated lazily to maintain high performance.
     public var latestMessages: [ChatMessage] { _latestMessages }
@@ -139,7 +144,14 @@ public struct ChatChannel {
     
     /// Additional data associated with the channel.
     public let extraData: [String: RawJSON]
-
+    
+    /// The channel message is supposed to be shown in channel preview.
+    ///
+    /// - Important: The `previewMessage` can differ from `latestMessages.first` (or even not be included into `latestMessages`)
+    /// because the preview message is the last `non-deleted` message sent to the channel.
+    public var previewMessage: ChatMessage? { _previewMessage }
+    @CoreDataLazy private var _previewMessage: ChatMessage?
+    
     // MARK: - Internal
     
     /// A helper variable to cache the result of the filter for only banned members.
@@ -156,6 +168,7 @@ public struct ChatChannel {
         createdAt: Date = .init(),
         updatedAt: Date = .init(),
         deletedAt: Date? = nil,
+        truncatedAt: Date? = nil,
         isHidden: Bool,
         createdBy: ChatUser? = nil,
         config: ChannelConfig = .init(),
@@ -174,6 +187,7 @@ public struct ChatChannel {
         latestMessages: @escaping (() -> [ChatMessage]) = { [] },
         pinnedMessages: @escaping (() -> [ChatMessage]) = { [] },
         muteDetails: @escaping () -> MuteDetails?,
+        previewMessage: @escaping () -> ChatMessage?,
         underlyingContext: NSManagedObjectContext?
     ) {
         self.cid = cid
@@ -194,6 +208,7 @@ public struct ChatChannel {
         self.reads = reads
         self.cooldownDuration = cooldownDuration
         self.extraData = extraData
+        self.truncatedAt = truncatedAt
         
         $_unreadCount = (unreadCount, underlyingContext)
         $_latestMessages = (latestMessages, underlyingContext)
@@ -202,6 +217,7 @@ public struct ChatChannel {
         $_lastActiveWatchers = (lastActiveWatchers, underlyingContext)
         $_pinnedMessages = (pinnedMessages, underlyingContext)
         $_muteDetails = (muteDetails, underlyingContext)
+        $_previewMessage = (previewMessage, underlyingContext)
     }
 }
 
@@ -220,8 +236,8 @@ extension ChatChannel {
     /// so backend creates a `cid` based on member's `id`s
     public var isDirectMessageChannel: Bool { cid.id.hasPrefix("!members") }
     
-    /// returns `true` if the channel has one or more unread messages for the current user.
-    public var isUnread: Bool { unreadCount.messages > 0 }
+    /// Returns `true` if the channel has one or more unread messages for the current user.
+    public var isUnread: Bool { unreadCount != .noUnread }
 }
 
 /// A type-erased version of `ChannelModel<CustomData>`. Not intended to be used directly.
@@ -241,11 +257,16 @@ extension ChatChannel: Hashable {
 /// A struct describing unread counts for a channel.
 public struct ChannelUnreadCount: Decodable, Equatable {
     /// The default value representing no unread messages.
-    public static let noUnread = ChannelUnreadCount(messages: 0, mentionedMessages: 0)
+    public static let noUnread = ChannelUnreadCount(messages: 0, mentions: 0)
     
     /// The total number of unread messages in the channel.
-    public internal(set) var messages: Int
+    public let messages: Int
     
     /// The number of unread messages that mention the current user.
-    public internal(set) var mentionedMessages: Int
+    public let mentions: Int
+}
+
+public extension ChannelUnreadCount {
+    @available(*, deprecated, renamed: "mentions")
+    var mentionedMessages: Int { mentions }
 }

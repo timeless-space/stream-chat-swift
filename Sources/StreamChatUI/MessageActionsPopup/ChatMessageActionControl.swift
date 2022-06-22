@@ -1,11 +1,11 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
 import UIKit
 
-/// Button for action displayed in `_ChatMessageActionsView`.
+/// Button for action displayed in `ChatMessageActionsView`.
 open class ChatMessageActionControl: _Control, AppearanceProvider {
     /// The data this view component shows.
     public var content: ChatMessageActionItem? {
@@ -21,12 +21,15 @@ open class ChatMessageActionControl: _Control, AppearanceProvider {
     /// `ContainerStackView` that encapsulates `titleLabel` and `imageView`.
     public lazy var containerStackView: ContainerStackView = ContainerStackView(alignment: .center)
         .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "containerStackView")
 
     /// `UILabel` to show `title`.
     public lazy var titleLabel: UILabel = UILabel()
+        .withAccessibilityIdentifier(identifier: "titleLabel")
 
     /// `UIImageView` to show `image`.
     public lazy var imageView: UIImageView = UIImageView()
+        .withAccessibilityIdentifier(identifier: "imageView")
 
     override open func setUpAppearance() {
         super.setUpAppearance()
@@ -36,7 +39,9 @@ open class ChatMessageActionControl: _Control, AppearanceProvider {
 
     override open func setUp() {
         super.setUp()
+
         containerStackView.isUserInteractionEnabled = false
+        containerStackView.insetsLayoutMarginsFromSafeArea = false
         addTarget(self, action: #selector(touchUpInsideHandler(_:)), for: .touchUpInside)
     }
     
@@ -81,7 +86,7 @@ open class ChatMessageActionControl: _Control, AppearanceProvider {
         }
     }
     
-    /// Triggered when `_ChatMessageActionControl` is tapped.
+    /// Triggered when `ChatMessageActionControl` is tapped.
     @objc open func touchUpInsideHandler(_ sender: Any) {
         guard let content = content else { return log.assertionFailure("Content is unexpectedly nil") }
         content.action(content)

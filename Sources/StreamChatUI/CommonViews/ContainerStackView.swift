@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -120,6 +120,7 @@ public class ContainerStackView: UIView {
     
     override public init(frame: CGRect) {
         super.init(frame: frame)
+
         addLayoutGuide(sizeLayoutGuide)
     }
     

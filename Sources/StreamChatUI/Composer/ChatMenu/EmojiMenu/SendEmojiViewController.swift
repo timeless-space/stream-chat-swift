@@ -7,7 +7,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 
 @available(iOS 13.0, *)
 class SendEmojiViewController: UIViewController {
@@ -21,10 +20,15 @@ class SendEmojiViewController: UIViewController {
     private var stickers = [Sticker]()
     var packageInfo: PackageList?
     var chatChannelController: ChatChannelController?
+    private let imageLoader = Components.default.imageLoader
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        Nuke.loadImage(with: packageInfo?.packageImg ?? "", into: imgSticker)
+        imageLoader.loadImage(
+            into: imgSticker,
+            url: URL(string: packageInfo?.packageImg ?? ""),
+            imageCDN: StreamImageCDN(),
+            placeholder: nil)
         lblStickerName.text = packageInfo?.packageName ?? ""
         lblCreatedBy.text = "Created by :- \(packageInfo?.artistName ?? "Unknown")"
         guard let stickerId = packageInfo?.packageID else {

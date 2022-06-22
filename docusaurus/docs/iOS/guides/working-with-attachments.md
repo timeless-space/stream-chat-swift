@@ -16,7 +16,7 @@ URL previews can have type image, video or audio depending on the resource that 
 
 All Chat SDKs allow you to customize how built-in types are handled as well as use your own custom attachment types.
 
-## How to customize built-in attachments
+## How to Customize Built-In Attachments
 
 Built-in attachments are mapped to specific `AttachmentViewInjector` classes, the mapping is defined on the `Components` class.
 
@@ -80,7 +80,7 @@ class MyCustomAttachmentView: _View {
 
 ```
 
-### Register the custom class to be used for file attachments
+### Register the cUstom Class to be Used for File Attachments
 
 The last step is to inform the SDK to use `MyCustomAttachmentViewInjector` for file attachments instead of the default one. This is something that you want to do as early as possible in your application life-cycle.
 
@@ -88,16 +88,17 @@ The last step is to inform the SDK to use `MyCustomAttachmentViewInjector` for f
 Components.default.filesAttachmentInjector = MyCustomAttachmentViewInjector.self
 ```
 
-## How to build a custom attachment
+## How to Build a Custom Attachment
 
 Stream chat allows you to create your own types of attachments as well. The steps to follow to add support for a custom attachment type are the following:
 
 1. Extend `AttachmentType` to include the custom type
-1. Create a new AttachmentPayload struct to handle your custom attachment data
-1. Create a new AttachmentViewInjector 
+1. Create a new `AttachmentPayload` struct to handle your custom attachment data
+1. Create a typealias for `ChatMessageAttachment<AttachmentPayload>` which will be used for the content of the view
+1. Create a new `AttachmentViewInjector`
 1. Configure the SDK to use your view injector class to render custom attachments
 
-Let's assume we want to attach a workout session to a message, the payload of the attachment will looks like this:
+Let's assume we want to attach a workout session to a message, the payload of the attachment will look like this:
 
 
 ```json
@@ -111,12 +112,14 @@ Let's assume we want to attach a workout session to a message, the payload of th
 }
 ```
 
-Here's how we get around the first two steps:
+Here's how we get around the first three steps:
 
 ```swift
 public extension AttachmentType {
     static let workout = Self(rawValue: "workout")
 }
+
+public typealias ChatMessageWorkoutAttachment = ChatMessageAttachment<WorkoutAttachmentPayload>
 
 public struct WorkoutAttachmentPayload: AttachmentPayload {
     public static var type: AttachmentType = .workout

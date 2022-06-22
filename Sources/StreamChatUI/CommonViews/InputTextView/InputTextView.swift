@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -29,6 +29,7 @@ open class InputTextView: UITextView, AppearanceProvider {
     open private(set) lazy var placeholderLabel: UILabel = UILabel()
         .withoutAutoresizingMaskConstraints
         .withBidirectionalLanguagesSupport
+        .withAdjustingFontForContentSizeCategory
     
     override open var text: String! {
         didSet {
@@ -84,9 +85,10 @@ open class InputTextView: UITextView, AppearanceProvider {
         textAlignment = .natural
         spellCheckingType = .default
         autocorrectionType = .default
+        adjustsFontForContentSizeCategory = true
         placeholderLabel.font = font
-        placeholderLabel.textAlignment = .center
         placeholderLabel.textColor = appearance.colorPalette.subtitleText
+        placeholderLabel.adjustsFontSizeToFitWidth = true
     }
     
     open func setUpLayout() {
@@ -100,10 +102,10 @@ open class InputTextView: UITextView, AppearanceProvider {
             )
         )
         placeholderLabel.pin(anchors: [.centerY], to: self)
-        
+        placeholderLabel.widthAnchor.pin(equalTo: widthAnchor, multiplier: 0.95).isActive = true
+
         heightConstraint = heightAnchor.constraint(equalToConstant: minimumHeight)
-        heightConstraint?.isActive = true
-        isScrollEnabled = true
+        isScrollEnabled = false
     }
 
     /// Sets the given text in the current caret position.
@@ -178,6 +180,9 @@ open class InputTextView: UITextView, AppearanceProvider {
             clipboardAttachmentDelegate?.inputTextView(self, didPasteImage: pasteboardImage)
         } else {
             super.paste(sender)
+            // On text paste, textView height will not change automatically
+            // so we must call this function
+            setTextViewHeight()
         }
     }
 }

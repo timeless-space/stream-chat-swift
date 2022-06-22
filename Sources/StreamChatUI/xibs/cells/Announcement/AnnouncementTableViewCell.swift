@@ -7,10 +7,8 @@
 //
 
 import UIKit
-import Nuke
 import StreamChat
 import AVKit
-import SwiftyGif
 
 class AnnouncementTableViewCell: ASVideoTableViewCell {
 
@@ -34,6 +32,8 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     var cacheVideoThumbnail: Cache<URL, UIImage>?
     private let containerPadding = 65
     weak var delegate: AnnouncementAction?
+    /// Object which is responsible for loading images
+    let imageLoader = Components.default.imageLoader
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -87,11 +87,12 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             btnShowMore.setTitle(getActionTitle(), for: .normal)
             imageUrl = imageAttachments.imageURL.absoluteString
             lblTitle.text = imageAttachments.title
-            let options = ImageLoadingOptions(
-                placeholder: Appearance.default.images.videoAttachmentPlaceholder,
-                transition: .fadeIn(duration: 0.1)
+            imageLoader.loadImage(
+                into: imageView,
+                url: imageAttachments.imageURL,
+                imageCDN: StreamImageCDN(),
+                placeholder: Appearance.default.images.videoAttachmentPlaceholder
             )
-            Nuke.loadImage(with: imageAttachments.imageURL, options: options, into: imageView)
             playerView.isHidden = true
             videoURL = nil
         } else if let videoAttachment = message?.videoAttachments.first {
@@ -128,6 +129,16 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
             lblTitle.text = nil
         }
         layoutIfNeeded()
+    }
+
+    func getImageFromCache(_ message: ChatMessage?) {
+        if let videoAttachment = message?.videoAttachments.first {
+            if let img = cacheVideoThumbnail?[videoAttachment.videoURL] {
+                imageView.image = img
+                imgPlay.isHidden = true
+                imgView.isHidden = false
+            }
+        }
     }
 
     private func setupUI() {

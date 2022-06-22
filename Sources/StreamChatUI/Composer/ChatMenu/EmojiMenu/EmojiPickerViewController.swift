@@ -8,7 +8,6 @@
 import UIKit
 import StreamChat
 import Combine
-import Nuke
 
 @available(iOS 13.0, *)
 class EmojiPickerViewController: UIViewController {

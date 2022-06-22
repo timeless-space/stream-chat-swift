@@ -7,7 +7,6 @@
 
 import UIKit
 import StreamChat
-import Nuke
 import Stipop
 
 class StickerGiftBubble: UITableViewCell {
@@ -31,6 +30,7 @@ class StickerGiftBubble: UITableViewCell {
     private var trailingAnchorForSender: NSLayoutConstraint?
     private var trailingAnchorForReceiver: NSLayoutConstraint?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
+    private let imageLoader = Components.default.imageLoader
 
     // MARK: - Overrides
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -146,7 +146,11 @@ class StickerGiftBubble: UITableViewCell {
     // MARK: - Custom functions
     func configureCell(isSender: Bool) {
         updateBubbleConstraints(isSender: isSender)
-        Nuke.loadImage(with: content?.extraData.giftPackageImage, into: imgStickerPreview)
+        imageLoader.loadImage(
+            into: imgStickerPreview,
+            url: URL(string: content?.extraData.giftPackageImage ?? ""),
+            imageCDN: StreamImageCDN(),
+            placeholder: nil)
         if content?.extraData.giftSenderId == ChatClient.shared.currentUserId?.string {
             pickUpButton.alpha = 0.5
             pickUpButton.isEnabled = false

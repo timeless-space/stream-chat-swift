@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -17,19 +17,16 @@ class LogsViewController: UIViewController {
         textView.text = LogStore.shared.logs
     }
     
-    @IBAction
-    func clearButtonPressed(_ sender: UIBarButtonItem) {
+    @IBAction func clearButtonPressed(_ sender: UIBarButtonItem) {
         LogStore.shared.logs = ""
         updateText()
     }
     
-    @IBAction
-    func downButtonPressed(_ sender: Any) {
+    @IBAction func downButtonPressed(_ sender: Any) {
         textView.scrollRangeToVisible(NSRange(..<textView.text.endIndex, in: textView.text))
     }
     
-    @IBAction
-    func refreshButtonPressend(_ sender: Any) {
+    @IBAction func refreshButtonPressend(_ sender: Any) {
         updateText()
     }
 }

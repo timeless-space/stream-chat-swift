@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import Foundation
@@ -43,7 +43,7 @@ class ChannelUpdatedEventDTO: EventDTO {
         let userDTO = user.flatMap { session.user(id: $0.id) }
         let messageDTO = message.flatMap { session.message(id: $0.id) }
         
-        return ChannelUpdatedEvent(
+        return try? ChannelUpdatedEvent(
             channel: channelDTO.asModel(),
             user: userDTO?.asModel(),
             message: messageDTO?.asModel(),
@@ -85,7 +85,7 @@ class ChannelDeletedEventDTO: EventDTO {
                     
         let userDTO = user.flatMap { session.user(id: $0.id) }
         
-        return ChannelDeletedEvent(
+        return try? ChannelDeletedEvent(
             channel: channelDTO.asModel(),
             user: userDTO?.asModel(),
             createdAt: createdAt
@@ -104,6 +104,9 @@ public struct ChannelTruncatedEvent: ChannelSpecificEvent {
     /// The user who truncated a channel.
     public let user: ChatUser?
     
+    /// The system message accompanied with the truncated event.
+    public let message: ChatMessage?
+    
     /// The event timestamp.
     public let createdAt: Date
 }
@@ -113,11 +116,13 @@ class ChannelTruncatedEventDTO: EventDTO {
     let user: UserPayload?
     let createdAt: Date
     let payload: EventPayload
+    let message: MessagePayload?
     
     init(from response: EventPayload) throws {
         channel = try response.value(at: \.channel)
         user = try? response.value(at: \.user)
         createdAt = try response.value(at: \.createdAt)
+        message = try? response.value(at: \.message)
         payload = response
     }
     
@@ -125,10 +130,12 @@ class ChannelTruncatedEventDTO: EventDTO {
         guard let channelDTO = session.channel(cid: channel.cid) else { return nil }
                     
         let userDTO = user.flatMap { session.user(id: $0.id) }
+        let messageDTO = message.flatMap { session.message(id: $0.id) }
         
-        return ChannelTruncatedEvent(
+        return try? ChannelTruncatedEvent(
             channel: channelDTO.asModel(),
             user: userDTO?.asModel(),
+            message: messageDTO?.asModel(),
             createdAt: createdAt
         )
     }
@@ -162,7 +169,7 @@ class ChannelVisibleEventDTO: EventDTO {
     func toDomainEvent(session: DatabaseSession) -> Event? {
         guard let userDTO = session.user(id: user.id) else { return nil }
         
-        return ChannelVisibleEvent(
+        return try? ChannelVisibleEvent(
             cid: cid,
             user: userDTO.asModel(),
             createdAt: createdAt
@@ -203,7 +210,7 @@ class ChannelHiddenEventDTO: EventDTO {
     func toDomainEvent(session: DatabaseSession) -> Event? {
         guard let userDTO = session.user(id: user.id) else { return nil }
         
-        return ChannelHiddenEvent(
+        return try? ChannelHiddenEvent(
             cid: cid,
             user: userDTO.asModel(),
             isHistoryCleared: isHistoryCleared,

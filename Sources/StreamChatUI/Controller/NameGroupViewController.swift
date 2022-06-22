@@ -3,7 +3,6 @@
 //
 
 import Foundation
-import Nuke
 import StreamChat
 import StreamChatUI
 import UIKit
@@ -35,11 +34,11 @@ public class NameGroupViewController: ChatBaseVC {
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        addKeyboardObservers()
     }
     // MARK: - METHODS
     public func setupUI() {
         heightSafeAreaView.constant = UIView.safeAreaTop
-        nextButtonBottomConstraint.constant = (-20) + (-UIView.safeAreaBottom)
         navigationController?.navigationBar.isHidden = true
         self.btnNext?.isHidden = true
         self.view.backgroundColor = Appearance.default.colorPalette.chatViewBackground
@@ -70,6 +69,22 @@ public class NameGroupViewController: ChatBaseVC {
         tableView.separatorStyle = .none
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: UIView.safeAreaBottom, right: 0)
     }
+
+    private func addKeyboardObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+
     // MARK: - ACTIONS
     @objc private func textDidChange(_ sender: UITextField) {
         if sender == nameField {
@@ -135,6 +150,20 @@ public class NameGroupViewController: ChatBaseVC {
             Snackbar.show(text: "Error while creating the channel")
         }
     }
+
+    @objc func keyboardWillShow() {
+        nextButtonBottomConstraint.constant = -(KeyboardService.keyboardSize() + 10)
+        UIView.animate(withDuration: 0.5) {
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc func keyboardWillHide() {
+        nextButtonBottomConstraint.constant = -20
+        UIView.animate(withDuration: 0.5) {
+            self.view.layoutIfNeeded()
+        }
+    }
 }
 // MARK: - UITextFieldDelegate
 extension NameGroupViewController: UITextFieldDelegate {
@@ -184,7 +213,7 @@ extension NameGroupViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         let user: ChatUser = selectedUsers[indexPath.row]
-        cell.config(user: user, selectedImage: nil)
+        cell.config(user: user,selectedImage: nil)
         return cell
     }
     

@@ -1,5 +1,5 @@
 //
-// Copyright © 2021 Stream.io Inc. All rights reserved.
+// Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
 import StreamChat
@@ -10,11 +10,7 @@ open class SendButton: _Button, AppearanceProvider {
     /// Override this variable to enable custom behavior upon button enabled.
     /*override open var isEnabled: Bool {
         didSet {
-            Animate {
-                self.transform = self.isEnabled
-                    ? CGAffineTransform(rotationAngle: -CGFloat.pi / 2.0)
-                    : .identity
-            }
+            isEnabledChangeAnimation(isEnabled)
         }
     }*/
 
@@ -36,5 +32,14 @@ open class SendButton: _Button, AppearanceProvider {
     }
     override open func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         return bounds.insetBy(dx: -15, dy: -15).contains(point)
+    }
+
+    /// The animation when the `isEnabled` state changes.
+    open func isEnabledChangeAnimation(_ isEnabled: Bool) {
+        Animate {
+            self.transform = isEnabled
+                ? CGAffineTransform(rotationAngle: -CGFloat.pi / 2.0)
+                : .identity
+        }
     }
 }

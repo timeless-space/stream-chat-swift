@@ -9,7 +9,6 @@
 import UIKit
 import StreamChat
 import StreamChatUI
-import Nuke
 
 public class ShareInviteLinkVC: UIViewController {
     // MARK: - OUTLEST
