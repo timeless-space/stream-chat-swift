@@ -40,7 +40,6 @@ public class PollBubble: UITableViewCell {
     // MARK: - Methods
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        debugPrint("## Poll Bubble set layout")
         setLayout()
     }
 
@@ -132,7 +131,6 @@ public class PollBubble: UITableViewCell {
     }
 
     func configData(isSender: Bool) {
-        debugPrint("## Poll details :- \(content?.localState)")
         setBubbleConstraints(isSender)
         guard let cid = channel?.cid else {
             return

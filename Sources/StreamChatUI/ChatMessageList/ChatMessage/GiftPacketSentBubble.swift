@@ -144,7 +144,6 @@ class GiftBubble: UITableViewCell {
     }
 
     func configureCell(isSender: Bool) {
-        debugPrint("## Gif packet Configure cell")
         self.isSender = isSender
         setBubbleConstraints(isSender)
         setFlair()

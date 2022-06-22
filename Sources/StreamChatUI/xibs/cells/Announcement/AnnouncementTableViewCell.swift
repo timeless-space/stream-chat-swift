@@ -37,6 +37,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        debugPrint("*** Setup layout")
         setupUI()
     }
 
@@ -47,6 +48,7 @@ class AnnouncementTableViewCell: ASVideoTableViewCell {
     }
 
     func configureCell(_ message: ChatMessage?) {
+        debugPrint("*** Configure cell")
         selectionStyle = .none
         containerView.layer.cornerRadius = 12
         /*

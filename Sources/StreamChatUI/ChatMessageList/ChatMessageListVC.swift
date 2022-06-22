@@ -75,9 +75,9 @@ open class ChatMessageListVC:
 
     var viewEmptyState: UIView = UIView()
     var currentWeatherType: String = "Fahrenheit"
-    var weatherPlayerTime = [CMTime?]()
+    var weatherPlayerTime = [String: CMTime]()
     var weatherUrls = [String]()
-    var weatherVideoStatus = [Int: Bool]()
+    var weatherVideoStatus = [String: Bool]()
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -319,9 +319,9 @@ open class ChatMessageListVC:
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         let currentUserId = ChatClient.shared.currentUserId
 
-        if weatherVideoStatus[indexPath.row] == nil {
+        if weatherVideoStatus[message?.id ?? ""] == nil {
             debugPrint("### Updating value to false")
-            weatherVideoStatus[indexPath.row] = false
+            weatherVideoStatus[message?.id ?? ""] = false
         }
 
         let isMessageFromCurrentUser = message?.author.id == currentUserId
@@ -561,10 +561,7 @@ open class ChatMessageListVC:
                     }
                 cell.delegate = self
                 cell.indexPath = indexPath
-                debugPrint("## Passing Weather Status :- \(indexPath.row), value :- \(weatherVideoStatus[indexPath.row])")
-                cell.isVideoPlaying = weatherVideoStatus[indexPath.row] ?? false
-                weatherVideoStatus[indexPath.row] = true
-                debugPrint("## P Weather status - \(weatherVideoStatus)")
+                cell.isVideoPlaying = weatherVideoStatus[message?.id ?? ""] ?? false
                 cell.weatherType = currentWeatherType
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
@@ -574,7 +571,6 @@ open class ChatMessageListVC:
                     VideoDownloadHelper.shared.loadFileAsync(url: URL(string: cell.url), completion: {_,_ in })
                 }
                 cell.chatChannel = dataSource?.channel(for: self)
-//                cell.configureCell(isSender: isMessageFromCurrentUser, playerCurrentTime: weatherPlayerTime[safe: indexPath.row] ?? .zero)
                 cell.transform = .mirrorY
                 return cell
             } else if isFallbackMessage(message) {
@@ -719,8 +715,13 @@ open class ChatMessageListVC:
             announcementCell.getImageFromCache(announcementCell.message)
             delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
         } else {
+
             guard let cell = cell as? WeatherCell else { return }
-            cell.configureCell(isSender: true, playerCurrentTime: weatherPlayerTime[safe: indexPath.row] ?? .zero)
+            weatherPlayerTime[cell.content?.id ?? ""] = cell.player?.currentTime() ?? .zero
+            debugPrint("### Passing for- \(indexPath.row)")
+            debugPrint("### Passing weatherVideoStatus- \(weatherVideoStatus[cell.content?.id ?? ""])")
+            cell.isVideoPlaying = weatherVideoStatus[cell.content?.id ?? ""] ?? false
+            cell.configureCell(isSender: true, playerCurrentTime: weatherPlayerTime[cell.content?.id ?? ""] ?? .zero)
         }
     }
 
@@ -728,9 +729,11 @@ open class ChatMessageListVC:
         if let cell = cell as? ASVideoTableViewCell {
             ASVideoPlayerController.sharedVideoPlayer.removeLayerFor(cell: cell)
         } else {
-            debugPrint("## P didEndDisplaying \(indexPath)")
+            if tableView.indexPathsForVisibleRows?.contains(indexPath) ?? false {
+                return;
+            }
             guard let cell = cell as? WeatherCell else { return }
-            weatherVideoStatus[indexPath.row] = false
+            weatherVideoStatus[cell.content?.id ?? ""] = true
             cell.finishPlaying()
             return
         }
@@ -958,9 +961,7 @@ extension ChatMessageListVC: AnnouncementAction {
 
 extension ChatMessageListVC: WeatherCellAction {
 
-    func didStartPlaying(indexPath: IndexPath?) {
-        debugPrint("### indexPath \(indexPath)")
-        weatherVideoStatus[indexPath?.row ?? 0] = true
-        debugPrint("### indexPath \(weatherVideoStatus[indexPath?.row ?? 0])")
+    func didStartPlaying(messageId: String) {
+        weatherVideoStatus[messageId] = true
     }
 }

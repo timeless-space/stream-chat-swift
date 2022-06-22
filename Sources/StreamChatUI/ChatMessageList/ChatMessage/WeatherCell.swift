@@ -16,7 +16,7 @@ enum AttachmentActionType: Int {
 }
 
 protocol WeatherCellAction: NSObject {
-    func didStartPlaying(indexPath: IndexPath?)
+    func didStartPlaying(messageId: String)
 }
 
 class WeatherCell: UITableViewCell {
@@ -131,6 +131,13 @@ class WeatherCell: UITableViewCell {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    private var imgPreview: UIImageView = {
+        let view = UIImageView()
+        view.transform = .mirrorY
+        view.cornerRadius = 18
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     var url = ""
 
     // Message details
@@ -196,6 +203,7 @@ class WeatherCell: UITableViewCell {
         backgroundImageView.transform = .mirrorY
         weatherImageView.transform = .mirrorY
         mainContentView.addSubview(backgroundImageView)
+        mainContentView.addSubview(imgPreview)
         mainContentView.addSubview(playerView)
         mainContentView.addSubview(weatherImageView)
         mainContentView.addSubview(imageDetailsStackView)
@@ -218,6 +226,13 @@ class WeatherCell: UITableViewCell {
             playerView.trailingAnchor.constraint(equalTo: weatherImageView.trailingAnchor, constant: -8),
             playerView.widthAnchor.constraint(equalToConstant: 135),
             playerView.heightAnchor.constraint(equalToConstant: 135)
+        ])
+
+        NSLayoutConstraint.activate([
+            imgPreview.bottomAnchor.constraint(equalTo: weatherImageView.bottomAnchor, constant: -3),
+            imgPreview.trailingAnchor.constraint(equalTo: weatherImageView.trailingAnchor, constant: -8),
+            imgPreview.widthAnchor.constraint(equalToConstant: 135),
+            imgPreview.heightAnchor.constraint(equalToConstant: 135)
         ])
 
         NSLayoutConstraint.activate([
@@ -350,8 +365,6 @@ class WeatherCell: UITableViewCell {
 
     func configureCell(isSender: Bool, playerCurrentTime: CMTime?) {
 
-        debugPrint("### Configure cell")
-
         isCurrentMessageSend = !(content?.localState == .pendingSend || content?.localState == .sending || content?.type == .ephemeral)
 
         guard let content = content?.extraData,
@@ -433,41 +446,67 @@ class WeatherCell: UITableViewCell {
         }
 
         if !url.isEmpty {
-            debugPrint("### Video playing - \(isVideoPlaying)")
-            if player != nil {
-                debugPrint("### Returning from here - \(isVideoPlaying)")
-                return;
-            }
 
-            delegate?.didStartPlaying(indexPath: indexPath)
             weatherImageView.isHidden = true
             playerView.isHidden = false
+            imgPreview.isHidden = false
             if let tapGesture = tapGesture {
                 playerView.addGestureRecognizer(tapGesture)
             }
             var fileName = URL(string: url)?.lastPathComponent ?? ""
             let downloadStatus = VideoDownloadHelper.shared.checkIfFileExists(fileName: fileName ?? "")
+
+            var videoPlayerUrl: URL? = nil
+
             if downloadStatus.0 {
                 var cacheUrl = VideoDownloadHelper.shared.getCacheDirectory()
-                guard let url = cacheUrl.appendingPathComponent(fileName) as? URL else { return }
-                let string = url.absoluteString.replacingOccurrences(of: ".mp4", with: ".mov")
-                player = AVPlayer(url: URL(string: string)!)
+                videoPlayerUrl = cacheUrl.appendingPathComponent(fileName)
+                guard let url = videoPlayerUrl else { return }
+                player = AVPlayer(url: url)
             } else {
-                guard let videoUrl = URL(string: url) else { return }
+                videoPlayerUrl = URL(string: url)
+                guard let videoUrl = videoPlayerUrl else { return }
                 player = AVPlayer(url: videoUrl)
             }
+
             playerLayer = AVPlayerLayer(player: player)
             guard let layer = playerLayer else { return }
             playerLayer?.removeFromSuperlayer()
+            player?.seek(to: playerCurrentTime ?? .zero)
             playerView.layer.addSublayer(layer)
+            playerView.backgroundColor = .clear
+            playerView.layer.backgroundColor = UIColor.clear.cgColor
             layer.frame = playerView.bounds
-//            player?.seek(to: playerCurrentTime ?? .zero)
-            player?.play()
+            NotificationCenter.default.removeObserver(self)
+            NotificationCenter.default
+                .addObserver(self,
+                selector: #selector(playerDidFinishPlaying),
+                name: .AVPlayerItemDidPlayToEndTime,
+                object: player?.currentItem
+            )
+            Components.default.videoLoader.loadPreviewForVideo(with: videoPlayerUrl!, completion: { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let image, let url):
+                    Components.default.cacheVideoThumbnail[url] = image
+                    self.imgPreview.image = image
+                    if !self.isVideoPlaying {
+                        self.player?.play()
+                    }
+                case .failure(_):
+                    break
+                }
+            })
         } else {
+            imgPreview.isHidden = true
             weatherImageView.isHidden = false
             playerView.isHidden = true
             Nuke.loadImage(with: weatherDetail.getImageUrl(), into: weatherImageView)
         }
+    }
+
+    @objc private func playerDidFinishPlaying() {
+        delegate?.didStartPlaying(messageId: content?.id ?? "")
     }
 
     private func createAvatarView() -> ChatAvatarView {
@@ -483,7 +522,8 @@ class WeatherCell: UITableViewCell {
     }
 
     func finishPlaying() {
-        isVideoPlaying = false
+//        isVideoPlaying = false
+        player?.pause()
         playerLayer?.removeFromSuperlayer()
         player = nil
         playerLayer = nil
