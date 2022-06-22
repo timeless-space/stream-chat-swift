@@ -1456,6 +1456,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="btnSendSticker" destination="egn-K7-Wgx" id="w59-lK-uBg"/>
                         <outlet property="imgSticker" destination="tMv-A2-56Q" id="Sgu-dS-WLb"/>
                         <outlet property="lblCreatedBy" destination="1wi-AP-Egz" id="K2l-ZM-dhN"/>
                         <outlet property="lblStickerName" destination="25D-0S-oCU" id="Jhe-Zj-ECu"/>

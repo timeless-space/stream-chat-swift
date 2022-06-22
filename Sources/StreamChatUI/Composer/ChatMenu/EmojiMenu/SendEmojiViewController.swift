@@ -16,6 +16,7 @@ class SendEmojiViewController: UIViewController {
     @IBOutlet private weak var lblStickerName: UILabel!
     @IBOutlet private weak var stickerCollectionView: UICollectionView!
     @IBOutlet private weak var lblCreatedBy: UILabel!
+    @IBOutlet private weak var btnSendSticker: UIButton!
     // MARK: Variables
     private var stickers = [Sticker]()
     var packageInfo: PackageList?
@@ -36,6 +37,16 @@ class SendEmojiViewController: UIViewController {
         }
         loadSticker(stickerId: "\(stickerId)")
         setUpCollectionViewFlowLayout()
+        btnSendSticker.addTarget(self, action: #selector(sendBtnPressed), for: [.touchDown])
+        btnSendSticker.addTarget(self, action: #selector(sendBtnReleased), for: [.touchDragExit, .touchUpInside, .touchUpOutside, .touchCancel])
+    }
+
+    @objc private func sendBtnPressed() {
+        btnSendSticker.alpha = 0.5
+    }
+
+    @objc private func sendBtnReleased() {
+        btnSendSticker.alpha = 1.0
     }
 
     private func setUpCollectionViewFlowLayout() {
