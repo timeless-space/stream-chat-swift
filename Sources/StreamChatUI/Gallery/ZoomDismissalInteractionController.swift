@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Stream.io Inc. All rights reserved.
+// Copyright © 2021 Stream.io Inc. All rights reserved.
 //
 
 import UIKit
@@ -7,7 +7,7 @@ import UIKit
 /// Controller for interactive dismissal.
 open class ZoomDismissalInteractionController: NSObject, UIViewControllerInteractiveTransitioning {
     /// Context of the current transition.
-    public weak var transitionContext: UIViewControllerContextTransitioning?
+    public var transitionContext: UIViewControllerContextTransitioning?
     /// Current transition's animator.
     public var animator: UIViewControllerAnimatedTransitioning?
     
@@ -17,9 +17,13 @@ open class ZoomDismissalInteractionController: NSObject, UIViewControllerInterac
             let transitionContext = transitionContext,
             let animator = animator as? ZoomAnimator,
             let fromVC = transitionContext.viewController(forKey: .from),
+            let toVC = transitionContext.viewController(forKey: .to),
+            let fromVCSnapshot = animator.fromVCSnapshot,
+            let toVCSnapshot = animator.toVCSnapshot,
             let fromImageView = animator.fromImageView,
             let toImageView = animator.toImageView,
-            let transitionImageView = animator.transitionImageView
+            let transitionImageView = animator.transitionImageView,
+            let containerTransitionImageView = animator.containerTransitionImageView
         else { return }
 
         fromImageView.isHidden = true
@@ -29,18 +33,20 @@ open class ZoomDismissalInteractionController: NSObject, UIViewControllerInterac
 
         let verticalDelta: CGFloat = max(translatedPoint.y, 0.0)
         
-        let fromVCAlpha = backgroundAlpha(for: fromVC.view, delta: verticalDelta)
+        let fromVCAlpha = backgroundAlpha(for: fromVCSnapshot, delta: verticalDelta)
         let scale = self.scale(in: fromVC.view, delta: verticalDelta)
         
-        fromVC.view.alpha = fromVCAlpha
+        fromVCSnapshot.alpha = fromVCAlpha
+        toVCSnapshot.alpha = 1 - fromVCAlpha
         
+        animator.containerTransitionImageView?.transform = CGAffineTransform(scaleX: scale, y: scale)
         transitionImageView.transform = CGAffineTransform(scaleX: scale, y: scale)
 
         let newCenterX = fromImageView.center.x + translatedPoint.x
         let newCenterY = fromImageView.center.y + translatedPoint.y - transitionImageView.frame
             .height * (1 - scale) / 2.0
         let newCenter = CGPoint(x: newCenterX, y: newCenterY)
-        transitionImageView.center = newCenter
+        animator.containerTransitionImageView?.center = newCenter
         
         transitionContext.updateInteractiveTransition(1 - scale)
 
@@ -53,15 +59,22 @@ open class ZoomDismissalInteractionController: NSObject, UIViewControllerInterac
             UIView.animate(
                 withDuration: duration,
                 animations: {
+                    containerTransitionImageView.transform = .identity
                     transitionImageView.transform = .identity
-                    transitionImageView.center = fromImageView.center
-                    fromVC.view.alpha = 1
+                    containerTransitionImageView.frame = toVC.view.frame
+                    transitionImageView.frame = containerTransitionImageView.frame
+                    fromVCSnapshot.alpha = 1
+                    toVCSnapshot.alpha = 1
                 },
                 completion: { _ in
+                    toVC.view.isHidden = false
+                    fromVC.view.isHidden = false
                     fromImageView.isHidden = false
                     toImageView.isHidden = false
                     transitionImageView.removeFromSuperview()
-                    animator.transitionImageView = nil
+                    fromVCSnapshot.removeFromSuperview()
+                    toVCSnapshot.removeFromSuperview()
+                    containerTransitionImageView.removeFromSuperview()
                     
                     transitionContext.cancelInteractiveTransition()
                     transitionContext.completeTransition(!transitionContext.transitionWasCancelled)

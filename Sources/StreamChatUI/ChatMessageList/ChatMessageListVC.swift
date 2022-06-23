@@ -112,9 +112,9 @@ open class ChatMessageListVC: _ViewController,
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now()) { [weak self] in
             guard let `self` = self else { return }
-            self.pausePlayVideos()
+            self.pausePlayVideos(isScrolled: false)
         }
         NotificationCenter.default.addObserver(
             self,
@@ -370,7 +370,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        pausePlayVideos()
+        pausePlayVideos(isScrolled: true)
     }
 
     open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -1077,26 +1077,26 @@ internal extension ChatMessageListVC {
         }
     }
     
-    func pausePlayVideos() {
+    func pausePlayVideos(isScrolled: Bool) {
         guard channelType == .announcement else { return }
-        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView)
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, isScrolled: isScrolled)
     }
 
     @objc private func handleAppDidBecomeActive() {
         guard channelType == .announcement else { return }
-        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true)
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true, isScrolled: false)
     }
 }
 
 extension ChatMessageListVC: UIScrollViewDelegate {
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
-            pausePlayVideos()
+            pausePlayVideos(isScrolled: false)
         }
     }
 
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        pausePlayVideos()
+        pausePlayVideos(isScrolled: true)
     }
 }
 
