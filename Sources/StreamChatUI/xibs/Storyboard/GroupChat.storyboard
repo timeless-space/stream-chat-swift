@@ -635,34 +635,9 @@
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nWI-Zn-q66">
                                         <rect key="frame" x="0.0" y="0.0" width="380" height="25"/>
-                                        <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="rDs-Ms-tX0">
-                                                <rect key="frame" x="213.5" y="0.5" width="150.5" height="24"/>
-                                                <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" preservesSuperviewLayoutMargins="YES" text="Discoverable" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="06p-Ym-9tq">
-                                                        <rect key="frame" x="0.0" y="0.0" width="91.5" height="24"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="24" id="Bs0-iN-fXD"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" name="SFProText-Regular" family="SF Pro Text" pointSize="15"/>
-                                                        <color key="textColor" white="1" alpha="0.2988739013671875" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
-                                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="ZzE-gT-n96">
-                                                        <rect key="frame" x="101.5" y="0.0" width="51" height="24"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="24" id="yUD-Xo-jES"/>
-                                                        </constraints>
-                                                        <color key="onTintColor" red="0.54901963470000004" green="0.69803923369999998" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    </switch>
-                                                </subviews>
-                                            </stackView>
-                                        </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstItem="rDs-Ms-tX0" firstAttribute="centerY" secondItem="nWI-Zn-q66" secondAttribute="centerY" id="BZa-Zg-1HW"/>
                                             <constraint firstAttribute="height" constant="25" id="IH6-lK-PA9"/>
-                                            <constraint firstAttribute="trailing" secondItem="rDs-Ms-tX0" secondAttribute="trailing" constant="16" id="vEP-yJ-lRQ"/>
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rjv-J6-uMx">
@@ -952,7 +927,6 @@
                         <outlet property="descriptionContainerView" destination="OjL-Eu-jPg" id="guy-uS-nni"/>
                         <outlet property="groupDescriptionField" destination="d9i-Sw-F4z" id="gje-2e-bvA"/>
                         <outlet property="heightSafeAreaView" destination="Glx-Iz-s0k" id="tG3-1x-BGR"/>
-                        <outlet property="isDiscoverable" destination="ZzE-gT-n96" id="mc1-GZ-0Bm"/>
                         <outlet property="lblFriendCount" destination="0fQ-Bb-8Nq" id="LBk-Im-aMf"/>
                         <outlet property="lblGroupNameCount" destination="ZX6-EO-Rux" id="c3H-oy-n1U"/>
                         <outlet property="lblHashtagCount" destination="VMj-eX-SlU" id="55T-6D-w7S"/>
