@@ -316,42 +316,36 @@ class WeatherCell: UITableViewCell {
 
         isCurrentMessageSend = !(content?.localState == .pendingSend || content?.localState == .sending || content?.type == .ephemeral)
 
-        guard let content = content?.extraData,
-              let weather = getExtraData(key: "weather"),
-              let currentLocation = weather["currentLocation"],
-              let currentTemp = weather["currentWeather"],
-              let displayMessage = weather["displayMessage"],
-              let weatherCode = weather["iconCode"] else {
+        guard let currentLocation = self.content?.extraData.currentLocation,
+              let currentTemp = self.content?.extraData.currentWeather,
+              let displayMessage = self.content?.extraData.displayMessage,
+              let weatherCode = self.content?.extraData.iconCode else {
                   return
               }
 
         var temp = Measurement(
-            value: Double((fetchRawData(raw: currentTemp) as? String ?? "0.0")) ?? 0,
+            value: Double(currentTemp) ?? 0,
             unit: UnitTemperature.kelvin)
 
         if weatherType == "Fahrenheit" {
-            temperatueLabel.text = WeatherHelper.shared.temperatureValueFormatter.string(
+            temperatueLabel.text = WeatherHelper.temperatureValueFormatter.string(
                 from: temp.converted(to: .fahrenheit)
             )
         } else {
-            temperatueLabel.text = WeatherHelper.shared.temperatureValueFormatter.string(
+            temperatueLabel.text = WeatherHelper.temperatureValueFormatter.string(
                 from: temp.converted(to: .celsius)
             )
         }
-
-        locationNameLabel.text = fetchRawData(raw: currentLocation) as? String ?? ""
-        messageLabel.text = fetchRawData(raw: displayMessage) as? String ?? ""
+        locationNameLabel.text = currentLocation
+        messageLabel.text = displayMessage
         weatherForOneWalletLabel.text = "WEATHER FOR 1WALLET"
-
-        let weatherDetail = WeatherHelper.shared.getWeatherDetail(
-            condition: fetchRawData(raw: weatherCode) as? String ?? ""
+        let weatherDetail = WeatherHelper.getWeatherDetail(
+            condition: weatherCode
         )
-
         loadImage(url: URL(string: weatherDetail.getImageUrl()), view: weatherImageView ?? .init())
         backgroundImageView.image = weatherDetail.backgroundImage ?? UIImage()
-
+        // Set constraints
         setBubbleConstraints(isSender)
-
         authorAvatarView?.isHidden = isSender
 
         if !isCurrentMessageSend {

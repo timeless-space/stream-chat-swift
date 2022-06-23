@@ -7,13 +7,11 @@
 //
 
 public struct WeatherDetailModel {
-    public var baseUrl = "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/Weather/"
-
     public var imageName: String?
     public var backgroundImage: UIImage?
     public var message: String?
 
     public func getImageUrl() -> String {
-        return "\(baseUrl)\(imageName ?? "")"
+        return "\(Constants.weatherImageBaseUrl)\(imageName ?? "")"
     }
 }

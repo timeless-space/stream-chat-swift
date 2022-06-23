@@ -346,10 +346,6 @@ open class ComposerVC: _ViewController,
         }
     }
     var shouldToggleEmojiButton = true
-    private var locationManager: CLLocationManager = {
-        let locationManager = CLLocationManager()
-        return locationManager
-    }()
     private var isWeatherButtonTapped = false
 
     @objc func didTapView() {
@@ -440,6 +436,7 @@ open class ComposerVC: _ViewController,
 
     override open func viewDidLoad() {
         super.viewDidLoad()
+        bindData()
         GPHCache.shared.cache.diskCapacity = 300 * 1000 * 1000
         GPHCache.shared.cache.memoryCapacity = 300 * 1000 * 1000
         NotificationCenter.default.removeObserver(self)
@@ -653,23 +650,7 @@ open class ComposerVC: _ViewController,
                     Snackbar.show(text: "Only admins are allowed to disburse the fund.")
                 }
             case .weather:
-                self.isWeatherButtonTapped = true
-                self.locationManager.delegate = self
-                self.composerView.inputMessageView.textView.text = nil
-                self.composerView.inputMessageView.textView.resignFirstResponder()
-                switch CLLocationManager.authorizationStatus() {
-                case .notDetermined:
-                    self.locationManager.requestWhenInUseAuthorization()
-                    self.locationManager.requestAlwaysAuthorization()
-                    self.locationManager.startUpdatingLocation()
-                    break
-                case .restricted, .denied:
-                    self.showSettingsAlert()
-                    break
-                case .authorizedWhenInUse, .authorizedAlways:
-                    self.showWeather()
-                    break
-                }
+                self.showWeather()
             case .crypto:
                 self.showPayment()
             case .oneN:
@@ -1025,7 +1006,7 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.post(name: .createNewPoll, object: nil, userInfo: userInfo)
     }
 
-    @objc func sendWeatherMessage(_ notification: Notification ) {
+    @objc private func sendWeatherMessage(_ notification: Notification) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
             guard let `self` = self else { return }
             self.channelController?
@@ -1037,7 +1018,7 @@ open class ComposerVC: _ViewController,
         }
     }
 
-    @objc func editWeatherMessage(_ notification: Notification ) {
+    @objc private func editWeatherMessage(_ notification: Notification) {
         let messageId = notification.userInfo?["messageId"] as? String ?? ""
         guard let cid = channelController?.cid else { return }
         let action = AttachmentAction(name: "action", value: "edit", style: .default, type: .button, text: "Edit")
@@ -1048,11 +1029,14 @@ open class ComposerVC: _ViewController,
     func getWeatherRequest(_ notification: Notification) -> [String: RawJSON] {
         var weatherData = [String: RawJSON]()
         // Get data from notification
-        let temp = notification.userInfo?["tempreature"] as? String ?? ""
-        let location = notification.userInfo?["location"] as? String ?? ""
-        let iconCode = notification.userInfo?["iconCode"] as? String ?? ""
-        let displayMessage = notification.userInfo?["displayMessage"] as? String ?? ""
-        let description = notification.userInfo?["description"] as? String ?? ""
+        guard let userInfo = notification.userInfo else {
+            return weatherData
+        }
+        let temp = userInfo["tempreature"] as? String ?? ""
+        let location = userInfo["location"] as? String ?? ""
+        let iconCode = userInfo["iconCode"] as? String ?? ""
+        let displayMessage = userInfo["displayMessage"] as? String ?? ""
+        let description = userInfo["description"] as? String ?? ""
         // Set data
         weatherData["currentWeather"] = .string(temp)
         weatherData["currentLocation"] = .string(location)
@@ -1062,10 +1046,26 @@ open class ComposerVC: _ViewController,
         return weatherData
     }
 
-    private func showWeather() {
+    private func bindData() {
+        LocationManager.shared.location.bind { [weak self] location in
+            guard let self = self else {
+                return
+            }
+            if !LocationManager.shared.isEmptyCurrentLoc() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    if self.isWeatherButtonTapped {
+                        self.sendFetchWeatherRequest()
+                    }
+                }
+            }
+        }
+        LocationManager.shared.delegate = self
+    }
+
+    private func sendFetchWeatherRequest() {
         isWeatherButtonTapped = false
-        guard let currentLocation = locationManager.location else { return }
-        LocationHelper.shared.getLocationInfo(currentLocation: currentLocation) { [weak self] placemark, error in
+        guard let currentLocation = LocationManager.shared.location.value as? CLLocation else { return }
+        LocationHelper.getLocationInfo(currentLocation: currentLocation) { [weak self] placemark, error in
             guard let self = self else { return }
             var weatherData: [String: Any] = [
                 "latitude": currentLocation.coordinate.latitude,
@@ -1075,15 +1075,22 @@ open class ComposerVC: _ViewController,
         }
     }
 
-    private func showSettingsAlert() {
-        let alert = UIAlertController(title: "Permission missing", message: "Please allow location permission from settings to access this feature.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { _ in
-            if let url = URL(string: UIApplication.openSettingsURLString) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    private func showWeather() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        isWeatherButtonTapped = true
+        if LocationManager.isAuthorized() {
+            LocationManager.shared.requestLocationAuthorization()
+            LocationManager.shared.requestGPS()
+            if !LocationManager.shared.isEmptyCurrentLoc() {
+                sendFetchWeatherRequest()
             }
-        }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
-        present(alert, animated: true, completion: nil)
+        } else if LocationManager.hasLocationPermissionDenied() {
+            isWeatherButtonTapped = false
+            LocationManager.showLocationPermissionAlert()
+        } else {
+            LocationManager.shared.requestLocationAuthorization()
+        }
     }
 
     private func animateMenuButton() {
@@ -1613,20 +1620,11 @@ func searchUsers(_ users: [ChatUser], by searchInput: String, excludingId: Strin
 }
 
 // MARK: CLLocationManager Delegate Methods
-extension ComposerVC: CLLocationManagerDelegate {
+extension ComposerVC: onLocationPermissionChangedCallback {
 
-    public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        switch CLLocationManager.authorizationStatus() {
-        case .restricted, .denied:
-            if isWeatherButtonTapped {
-                showSettingsAlert()
-            }
-        case .authorizedAlways, .authorizedWhenInUse :
-            if isWeatherButtonTapped {
-                showWeather()
-            }
-        default:
-            break
+    func onPermissionChanged() {
+        if isWeatherButtonTapped {
+            showWeather()
         }
     }
 }

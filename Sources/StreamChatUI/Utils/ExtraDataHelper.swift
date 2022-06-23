@@ -784,6 +784,51 @@ public extension Dictionary where Key == String, Value == RawJSON {
             return nil
         }
     }
+
+    private var weatherExtraData: [String: RawJSON] {
+        if let extraData = self["weather"] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
+    var currentLocation: String? {
+        if let currentLocation = weatherExtraData["currentLocation"] {
+            return fetchRawData(raw: currentLocation) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var currentWeather: String? {
+        if let currentWeather = weatherExtraData["currentWeather"] {
+            return fetchRawData(raw: currentWeather) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var displayMessage: String? {
+        if let displayMessage = weatherExtraData["displayMessage"] {
+            return fetchRawData(raw: displayMessage) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var iconCode: String? {
+        if let iconCode = weatherExtraData["iconCode"] {
+            return fetchRawData(raw: iconCode) as? String
+        } else {
+            return nil
+        }
+    }
 }
 
 public func fetchRawData(raw: RawJSON) -> Any? {
