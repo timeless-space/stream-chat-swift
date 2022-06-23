@@ -598,7 +598,7 @@ open class ChatChannelVC: _ViewController,
             }
             qrCodeVc.channelController = weakSelf.channelController
             qrCodeVc.modalPresentationStyle = .fullScreen
-            UIApplication.shared.keyWindow?.rootViewController?.present(qrCodeVc, animated: true, completion: nil)
+            UIApplication.shared.getTopViewController()?.present(qrCodeVc, animated: true)
         }
     }
     
