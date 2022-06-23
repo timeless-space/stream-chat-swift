@@ -32,6 +32,7 @@ extension Notification.Name {
     public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
     public static let getPollData = Notification.Name("kStreamChatGetPollData")
     public static let showMediaPicker = Notification.Name("kShowMediaPicker")
+    public static let mediaPickerDidFinish = Notification.Name("kMediaPickerDidFinish")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -277,13 +278,13 @@ open class ComposerVC: _ViewController,
         .init()
 
     /// The view controller for selecting image attachments.
-    open private(set) lazy var mediaPickerVC: UIViewController = {
-        let picker = UIImagePickerController()
-        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .savedPhotosAlbum) ?? ["public.image"]
-        picker.sourceType = .savedPhotosAlbum
-        picker.delegate = self
-        return picker
-    }()
+//    open private(set) lazy var mediaPickerVC: UIViewController = {
+//        let picker = UIImagePickerController()
+//        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .savedPhotosAlbum) ?? ["public.image"]
+//        picker.sourceType = .savedPhotosAlbum
+//        picker.delegate = self
+//        return picker
+//    }()
     
     /// The View Controller for taking a picture.
     open private(set) lazy var cameraVC: UIViewController = {
@@ -627,9 +628,7 @@ open class ComposerVC: _ViewController,
             switch action {
             case .media:
                 self.composerView.inputMessageView.textView.resignFirstResponder()
-                //self.showAttachmentsPicker()
-                NotificationCenter.default
-                    .post(name: .showMediaPicker, object: nil, userInfo: nil)
+                self.showAttachmentsPicker()
                 self.animateToolkitView(isHide: true)
             case .disburseFund:
                 guard let channel = self.channelController?.channel else {
@@ -740,7 +739,10 @@ open class ComposerVC: _ViewController,
     open func showMediaPicker() {
         DispatchQueue.main.async { [weak self] in
             guard let `self` = self else { return }
-            self.present(self.mediaPickerVC, animated: true)
+            self.observeMediaPicker(observe: true)
+            NotificationCenter.default.post(name: .showMediaPicker,
+                                            object: nil, userInfo: nil)
+            //self.present(self.mediaPickerVC, animated: true)
         }
     }
 
@@ -767,11 +769,6 @@ open class ComposerVC: _ViewController,
             handler: { [weak self] _ in self?.showMediaPicker() }
         )
 
-        let showCameraAction = UIAlertAction(
-            title: L10n.Composer.Picker.camera,
-            style: .default,
-            handler: { [weak self] _ in self?.showCamera() }
-        )
 
         let cancelAction = UIAlertAction(
             title: L10n.Composer.Picker.cancel,
@@ -781,7 +778,7 @@ open class ComposerVC: _ViewController,
         let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
         
         if isCameraAvailable {
-            return [showCameraAction, showMediaPickerAction, showFilePickerAction, cancelAction]
+            return [showMediaPickerAction, showFilePickerAction, cancelAction]
         }
 
         return [showMediaPickerAction, showFilePickerAction, cancelAction]
@@ -813,6 +810,27 @@ open class ComposerVC: _ViewController,
             actions: attachmentsPickerActions,
             sourceView: sender
         )
+    }
+
+    @objc open func observeMediaPicker(observe: Bool) {
+        if observe {
+            NotificationCenter.default
+                .addObserver(self, selector: #selector(mediaPickerDidFinish(_:)),
+                name: .mediaPickerDidFinish, object: nil)
+        } else {
+            NotificationCenter.default.removeObserver(self, name: .mediaPickerDidFinish, object: nil)
+        }
+    }
+
+    @objc open func mediaPickerDidFinish(_ notification: Notification) {
+        guard let attachments = notification.object as? [CustomMediaModel] else {
+            return
+        }
+        for attachment in attachments {
+            guard let url = attachment.url else { continue }
+            try? addAttachmentToContent(from: url, type: attachment.type)
+        }
+        observeMediaPicker(observe: false)
     }
 
     @objc open func shrinkInput(sender: UIButton) {

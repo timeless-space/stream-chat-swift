@@ -457,6 +457,16 @@ public extension Appearance {
                 return nil
             }
         }()
+        public var sfCamera: UIImage? = {
+            if #available(iOS 13.0, *) {
+                let largeConfig = UIImage.SymbolConfiguration(pointSize: 54,
+                                                              weight: .regular,
+                                                              scale: .large)
+                return UIImage(systemName: "camera.circle", withConfiguration: largeConfig)
+            } else {
+                return nil
+            }
+        }()
         public var messageActionTranslate: UIImage = loadImageSafely(with: "icn_translate")
         public var moreAction: UIImage = loadImageSafely(with: "icn_more")
         public var messageActionBlockUser: UIImage = loadImageSafely(with: "icn_block_user")
