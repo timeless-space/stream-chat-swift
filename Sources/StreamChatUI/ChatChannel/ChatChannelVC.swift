@@ -385,6 +385,12 @@ open class ChatChannelVC: _ViewController,
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         resignFirstResponder()
+        // Added work around until we fix navigation deinit issue
+        if isMovingFromParent {
+            messageListVC?.delegate = nil
+            messageListVC?.dataSource = nil
+            channelController?.delegate = nil
+        }
     }
 
     @objc func backAction(_ sender: Any) {
@@ -511,7 +517,13 @@ open class ChatChannelVC: _ViewController,
                 showPinViewButton()
             }
         }
-        channelController?.markRead()
+        // workaround: add delay coz markRead api not called when redirect from the notification when app killed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else {
+                return
+            }
+            self.channelController?.markRead()
+        }
     }
 
     private func showPinViewButton() {

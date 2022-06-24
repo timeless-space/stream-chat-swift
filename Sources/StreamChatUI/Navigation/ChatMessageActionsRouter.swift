@@ -85,4 +85,13 @@ extension UIAlertController {
         }
         return controller
     }
+
+    static public func dismissPresentedAlertViewController(completion: (() -> Void)?) {
+        let viewController = UIApplication.shared.getTopViewController()
+        guard let isKindOf = viewController?.isKind(of: UIAlertController.classForCoder()), isKindOf else {
+            completion?()
+            return
+        }
+        viewController?.dismiss(animated: false, completion: completion)
+    }
 }
