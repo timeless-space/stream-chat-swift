@@ -16,7 +16,8 @@ struct AttachmentActionRequestBody: Encodable {
     let cid: ChannelId
     let messageId: MessageId
     let action: AttachmentAction
-    let poll: [String: RawJSON]
+    let formData: [String: RawJSON]
+    let key: String
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -26,12 +27,12 @@ struct AttachmentActionRequestBody: Encodable {
         try container.encode(messageId, forKey: .messageId)
         let encoder = JSONEncoder()
         var string = ""
-        if let jsonData = try? encoder.encode(poll) {
+        if let jsonData = try? encoder.encode(formData) {
             if let jsonString = String(data: jsonData, encoding: .utf8) {
                 string = jsonString
             }
         }
 
-        try container.encode([action.name: action.value, "poll": string], forKey: .data)
+        try container.encode([action.name: action.value, key: string], forKey: .data)
     }
 }

@@ -96,7 +96,7 @@ open class PrivateGroupOTPVC: UIViewController {
     }
 
     private func checkLocationPermission() {
-        if LocationManager.shared.hasLocationPermissionDenied() {
+        if LocationManager.hasLocationPermissionDenied() {
             LocationManager.showLocationPermissionAlert()
             viewOTP.resignFirstResponder()
         } else {
@@ -118,7 +118,7 @@ open class PrivateGroupOTPVC: UIViewController {
     private func handleLocationPermissionAndPush() {
         viewOTP.resignFirstResponder()
         indicator.startAnimating()
-        if LocationManager.shared.hasLocationPermissionDenied() {
+        if LocationManager.hasLocationPermissionDenied() {
             LocationManager.showLocationPermissionAlert()
         } else if !LocationManager.shared.isEmptyCurrentLoc() {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in

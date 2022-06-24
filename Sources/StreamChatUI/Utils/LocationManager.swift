@@ -11,18 +11,27 @@ import Foundation
 import UIKit
 import CoreLocation
 
+protocol onLocationPermissionChangedCallback: NSObject {
+    func onPermissionChanged()
+}
+
 class LocationManager: NSObject, CLLocationManagerDelegate {
 
     // MARK: Variables
     static let shared = LocationManager()
     var locationManager: CLLocationManager?
     var location: Dynamic<CLLocation> = Dynamic(CLLocation())
+    weak var delegate: onLocationPermissionChangedCallback? = nil
 
     private override init() {
         super.init()
     }
 
-    func hasLocationPermissionDenied() -> Bool {
+    class func isAuthorized() -> Bool {
+        return CLLocationManager.authorizationStatus() == .authorizedAlways || CLLocationManager.authorizationStatus() == .authorizedWhenInUse
+    }
+
+    class func hasLocationPermissionDenied() -> Bool {
         if CLLocationManager.locationServicesEnabled() {
             switch CLLocationManager.authorizationStatus() {
             case .restricted, .denied:
@@ -31,27 +40,15 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
                 return false
             }
         } else {
-            print("Location services are not enabled")
             return true
         }
-        /*if CLLocationManager.locationServicesEnabled() {
-            switch CLLocationManager.authorizationStatus() {
-            case .notDetermined, .restricted, .denied:
-                return false
-            case .authorizedAlways, .authorizedWhenInUse:
-                return true
-            default:
-                return false
-            }
-        } else {
-            print("Location services are not enabled")
-            return false
-        }*/
     }
 
     func requestLocationAuthorization() {
-        locationManager = CLLocationManager()
-        locationManager?.delegate = self
+        if locationManager == nil {
+            locationManager = CLLocationManager()
+            locationManager?.delegate = self
+        }
         locationManager?.requestWhenInUseAuthorization()
     }
 
@@ -89,6 +86,7 @@ extension LocationManager {
     }
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         // check the authorization status changes here
+        delegate?.onPermissionChanged()
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(#function)
