@@ -744,9 +744,9 @@ open class ChatMessageListVC: _ViewController,
     }
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
         guard let announcementCell = cell as? AnnouncementTableViewCell else { return }
         announcementCell.getImageFromCache(announcementCell.message)
-        delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
