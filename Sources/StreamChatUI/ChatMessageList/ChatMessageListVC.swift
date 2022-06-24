@@ -444,6 +444,7 @@ open class ChatMessageListVC: _ViewController,
                     }
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
+                cell.delegate = self
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
             } else if isGiftCell(message) {
@@ -578,6 +579,7 @@ open class ChatMessageListVC: _ViewController,
                 let messagesCont = dataSource?.numberOfMessages(in: self) ?? 0
                 cell.content = message
                 cell.chatChannel = dataSource?.channel(for: self)
+                cell.delegate = self
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
@@ -824,6 +826,10 @@ open class ChatMessageListVC: _ViewController,
         showThread(messageId: message.parentMessageId ?? message.id)
     }
 
+    public func messageContentViewDidTapOnAvatarView(_ content: ChatMessage?) {
+        avatarUserAction(content)
+    }
+
     open func messageContentViewDidTapOnQuotedMessage(_ indexPath: IndexPath?) {
         guard let indexPath = indexPath else { return log.error("IndexPath is not available") }
         log
@@ -831,13 +837,10 @@ open class ChatMessageListVC: _ViewController,
                 "Tapped a quoted message. To customize the behavior, override messageContentViewDidTapOnQuotedMessage. Path: \(indexPath)"
             )
     }
-	
+
     open func messageContentViewDidTapOnAvatarView(_ indexPath: IndexPath?) {
         guard let indexPath = indexPath else { return log.error("IndexPath is not available") }
-        log
-            .info(
-                "Tapped an avatarView. To customize the behavior, override messageContentViewDidTapOnAvatarView. Path: \(indexPath)"
-            )
+        avatarUserAction(dataSource?.chatMessageListVC(self, messageAt: indexPath))
     }
     
     /// This method is triggered when delivery status indicator on the message at the given index path is tapped.
@@ -948,6 +951,23 @@ open class ChatMessageListVC: _ViewController,
     ) -> Bool {
         // To prevent the gesture recognizer consuming up the events from UIControls, we receive touch only when the view isn't a UIControl.
         !(touch.view is UIControl)
+    }
+
+    private func avatarUserAction(_ message: ChatMessage?) {
+        guard let message = message,
+              let channelId = message.cid,
+              let controller: ChatGroupDetailsVC = ChatGroupDetailsVC.instantiateController(storyboard: .GroupChat)
+        else { return }
+        let channelController = ChatClient.shared.channelController(for: channelId)
+        let memberController = ChatClient.shared.memberController(userId: message.author.id ?? .init(), in: channelId)
+        if let user = memberController.member {
+            if user.id == ChatClient.shared.currentUserId {
+                return
+            }
+            controller.viewModel = .init(controller: channelController,
+                                         channelMember: user)
+            navigationController?.pushViewController(controller, animated: true)
+        }
     }
 }
 

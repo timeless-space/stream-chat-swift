@@ -33,6 +33,7 @@ class TableViewCellRedPacketDrop: UITableViewCell {
     
     // MARK: -  Variables
     var layoutOptions: ChatMessageLayoutOptions?
+    public weak var delegate: ChatMessageContentViewDelegate?
     var content: ChatMessage?
     var isSender = false
     public lazy var dateFormatter: DateFormatter = .makeDefault()
@@ -201,6 +202,10 @@ class TableViewCellRedPacketDrop: UITableViewCell {
                 return false
             }
         }
+    }
+
+    @IBAction func btnAvatarAction(_ sender: Any) {
+        delegate?.messageContentViewDidTapOnAvatarView(content)
     }
 
     @objc private func btnPickButtonAction() {

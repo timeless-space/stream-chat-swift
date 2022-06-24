@@ -2,7 +2,6 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -27,13 +26,25 @@
                                     <constraint firstAttribute="width" secondItem="Yn0-jD-ZTY" secondAttribute="height" multiplier="1:1" id="l0H-Ca-Yrm"/>
                                 </constraints>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ngb-Kw-USz">
+                                <rect key="frame" x="0.0" y="444" width="32" height="32"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain"/>
+                                <connections>
+                                    <action selector="btnAvatarAction:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="qdv-Gx-VTB"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="Yn0-jD-ZTY" secondAttribute="bottom" id="5Rg-VP-UYA"/>
                             <constraint firstItem="Yn0-jD-ZTY" firstAttribute="leading" secondItem="1zB-aY-wUt" secondAttribute="leading" id="88O-gK-OF0"/>
+                            <constraint firstItem="ngb-Kw-USz" firstAttribute="bottom" secondItem="Yn0-jD-ZTY" secondAttribute="bottom" id="DzE-wT-Pmw"/>
+                            <constraint firstItem="ngb-Kw-USz" firstAttribute="leading" secondItem="Yn0-jD-ZTY" secondAttribute="leading" id="d0a-mo-Tfd"/>
                             <constraint firstAttribute="trailing" secondItem="Yn0-jD-ZTY" secondAttribute="trailing" constant="8" id="faL-xa-XJb"/>
                             <constraint firstAttribute="width" constant="40" id="jIE-yM-Sxv"/>
+                            <constraint firstItem="ngb-Kw-USz" firstAttribute="top" secondItem="Yn0-jD-ZTY" secondAttribute="top" id="rHc-wr-jcE"/>
+                            <constraint firstItem="ngb-Kw-USz" firstAttribute="trailing" secondItem="Yn0-jD-ZTY" secondAttribute="trailing" id="tga-Rs-MQX"/>
                         </constraints>
                     </view>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6pN-ea-y6A">

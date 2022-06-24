@@ -10,7 +10,7 @@ import AVKit
 import Stipop
 import GiphyUISDK
 
-class ChatMessageStickerBubble: _TableViewCell {
+class ChatMessageStickerBubble: BaseBubble {
 
     public private(set) var timestampLabel: UILabel?
     public var layoutOptions: ChatMessageLayoutOptions?
@@ -21,13 +21,11 @@ class ChatMessageStickerBubble: _TableViewCell {
         .withoutAutoresizingMaskConstraints
     public lazy var stickerContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-    public private(set) var authorAvatarView: ChatAvatarView?
     private var leadingMainContainer: NSLayoutConstraint?
     private var trailingMainContainer: NSLayoutConstraint?
     private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     private var imageLoader = Components.default.imageLoader
-    var content: ChatMessage?
     var chatChannel: ChatChannel?
     var isSender = false
     private var cellWidth: CGFloat = 100.0
@@ -146,18 +144,6 @@ class ChatMessageStickerBubble: _TableViewCell {
         } else {
             timestampLabel?.text = nil
         }
-    }
-
-    private func createAvatarView() -> ChatAvatarView {
-        if authorAvatarView == nil {
-            authorAvatarView = Components.default
-                .avatarView
-                .init()
-                .withoutAutoresizingMaskConstraints
-        }
-        authorAvatarView?.widthAnchor.pin(equalToConstant: messageAuthorAvatarSize.width).isActive = true
-        authorAvatarView?.heightAnchor.pin(equalToConstant: messageAuthorAvatarSize.height).isActive = true
-        return authorAvatarView!
     }
 
     private func createTimestampLabel() -> UILabel {

@@ -39,6 +39,8 @@ public protocol ChatMessageContentViewDelegate: AnyObject {
     /// - Parameter indexPath: The index path of the cell displaying the content view. Equals to `nil` when
     /// the content view is displayed outside the collection/table view.
     func messageContentViewDidTapOnDeliveryStatusIndicator(_ indexPath: IndexPath?)
+
+    func messageContentViewDidTapOnAvatarView(_ content: ChatMessage?)
 }
 
 public extension ChatMessageContentViewDelegate {
