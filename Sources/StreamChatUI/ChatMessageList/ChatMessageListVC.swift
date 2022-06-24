@@ -686,10 +686,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     private func isPollCell(_ message: ChatMessage?) -> Bool {
-        guard let extraData = message?.extraData,
-              let messageType = extraData["messageType"] else { return false }
-        let type = fetchRawData(raw: messageType) as? String ?? ""
-        return type == MessageType.newPoll
+        return message?.extraData.keys.contains("poll") ?? false
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
