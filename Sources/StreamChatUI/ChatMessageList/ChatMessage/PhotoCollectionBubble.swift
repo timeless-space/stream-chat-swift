@@ -145,7 +145,11 @@ class PhotoCollectionBubble: _TableViewCell {
             var authorName = (memberCount <= 2) ? "     " : authorName
             // Add extra white space in leading
             if !isSender {
-                timestampLabel?.text = " " + authorName + "  " + dateFormatter.string(from: createdAt)
+                if memberCount <= 2 {
+                    timestampLabel?.text = dateFormatter.string(from: createdAt)
+                } else {
+                    timestampLabel?.text = " " + authorName + "  " + dateFormatter.string(from: createdAt)
+                }
                 timestampLabel?.textAlignment = .left
                 authorAvatarView?.isHidden = false
             } else {
