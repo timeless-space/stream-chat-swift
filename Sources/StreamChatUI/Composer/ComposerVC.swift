@@ -828,7 +828,14 @@ open class ComposerVC: _ViewController,
         }
         for attachment in attachments {
             guard let url = attachment.url else { continue }
-            try? addAttachmentToContent(from: url, type: attachment.type)
+            do {
+                try addAttachmentToContent(from: url, type: attachment.type)
+            } catch let error {
+                handleAddAttachmentError(attachmentURL: url,
+                                         attachmentType: attachment.type,
+                                         error: error)
+                break
+            }
         }
         observeMediaPicker(observe: false)
     }
@@ -1462,12 +1469,12 @@ open class ComposerVC: _ViewController,
 
     /// Shows an alert saying that attachment's size exceeds the limit.
     open func showAttachmentExceedsMaxSizeAlert() {
-        presentAlert(message: L10n.Attachment.maxSizeExceeded)
+        Snackbar.show(text: L10n.Attachment.maxSizeExceeded)
     }
 
     /// Shows an alert saying that the max # of attachments per message is exceeded.
     open func showAttachmentsCountExceedingLimitAlert(_ limit: Int) {
-        presentAlert(message: L10n.Attachment.maxCountExceeded(limit))
+        Snackbar.show(text: L10n.Attachment.maxCountExceeded(limit))
     }
 
     // MARK: - InputTextViewClipboardAttachmentDelegate

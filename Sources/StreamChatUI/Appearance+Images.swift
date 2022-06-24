@@ -467,6 +467,26 @@ public extension Appearance {
                 return nil
             }
         }()
+        public var sfRecordVideo: UIImage? = {
+            if #available(iOS 13.0, *) {
+                let largeConfig = UIImage.SymbolConfiguration(pointSize: 54,
+                                                              weight: .regular,
+                                                              scale: .large)
+                return UIImage(systemName: "record.circle", withConfiguration: largeConfig)
+            } else {
+                return nil
+            }
+        }()
+        public var sfStopVideo: UIImage? = {
+            if #available(iOS 13.0, *) {
+                let largeConfig = UIImage.SymbolConfiguration(pointSize: 54,
+                                                              weight: .regular,
+                                                              scale: .large)
+                return UIImage(systemName: "stop.circle", withConfiguration: largeConfig)
+            } else {
+                return nil
+            }
+        }()
         public var messageActionTranslate: UIImage = loadImageSafely(with: "icn_translate")
         public var moreAction: UIImage = loadImageSafely(with: "icn_more")
         public var messageActionBlockUser: UIImage = loadImageSafely(with: "icn_block_user")
