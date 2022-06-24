@@ -585,6 +585,7 @@ open class ChatChannelVC: _ViewController,
             guard let self = self else {
                 return
             }
+            controller.existingUsers = memberListController?.members.shuffled() ?? []
             controller.bCallbackInviteFriend = { [weak self] users in
                 guard let weakSelf = self else { return }
                 let ids = users.map{ $0.id}
