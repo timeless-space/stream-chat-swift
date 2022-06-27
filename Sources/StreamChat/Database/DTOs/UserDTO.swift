@@ -15,7 +15,8 @@ class UserDTO: NSManagedObject {
     @NSManaged var isOnline: Bool
     @NSManaged var lastActivityAt: Date?
 
-    // FIX: https://stackoverflow.com/questions/44031789/date-unconditionallybridgefromobjectivecnsdate-crash-in-swift-3
+    /// Make `userCreatedAt` optional
+    /// https://stackoverflow.com/questions/44031789/date-unconditionallybridgefromobjectivecnsdate-crash-in-swift-3
     @NSManaged var userCreatedAt: Date?
     @NSManaged var userRoleRaw: String
     @NSManaged var userUpdatedAt: Date
