@@ -1064,15 +1064,7 @@ open class ComposerVC: _ViewController,
 
     private func sendFetchWeatherRequest() {
         isWeatherButtonTapped = false
-        guard let currentLocation = LocationManager.shared.location.value as? CLLocation else { return }
-        LocationHelper.getLocationInfo(currentLocation: currentLocation) { [weak self] placemark, error in
-            guard let self = self else { return }
-            var weatherData: [String: Any] = [
-                "latitude": currentLocation.coordinate.latitude,
-                "longitude": currentLocation.coordinate.longitude,
-                "locationName": placemark?.first?.locality]
-            NotificationCenter.default.post(name: .fetchWeather, object: nil, userInfo: weatherData)
-        }
+        NotificationCenter.default.post(name: .fetchWeather, object: nil, userInfo: nil)
     }
 
     private func showWeather() {
@@ -1622,7 +1614,7 @@ func searchUsers(_ users: [ChatUser], by searchInput: String, excludingId: Strin
 // MARK: CLLocationManager Delegate Methods
 extension ComposerVC: onLocationPermissionChangedCallback {
 
-    func onPermissionChanged() {
+    public func onPermissionChanged() {
         if isWeatherButtonTapped {
             showWeather()
         }

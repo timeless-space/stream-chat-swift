@@ -11,27 +11,27 @@ import Foundation
 import UIKit
 import CoreLocation
 
-protocol onLocationPermissionChangedCallback: NSObject {
+public protocol onLocationPermissionChangedCallback: NSObject {
     func onPermissionChanged()
 }
 
-class LocationManager: NSObject, CLLocationManagerDelegate {
+public class LocationManager: NSObject, CLLocationManagerDelegate {
 
     // MARK: Variables
-    static let shared = LocationManager()
-    var locationManager: CLLocationManager?
-    var location: Dynamic<CLLocation> = Dynamic(CLLocation())
-    weak var delegate: onLocationPermissionChangedCallback? = nil
+    public static let shared = LocationManager()
+    public var locationManager: CLLocationManager?
+    public var location: Dynamic<CLLocation> = Dynamic(CLLocation())
+    public weak var delegate: onLocationPermissionChangedCallback? = nil
 
     private override init() {
         super.init()
     }
 
-    class func isAuthorized() -> Bool {
+    public class func isAuthorized() -> Bool {
         return CLLocationManager.authorizationStatus() == .authorizedAlways || CLLocationManager.authorizationStatus() == .authorizedWhenInUse
     }
 
-    class func hasLocationPermissionDenied() -> Bool {
+    public class func hasLocationPermissionDenied() -> Bool {
         if CLLocationManager.locationServicesEnabled() {
             switch CLLocationManager.authorizationStatus() {
             case .restricted, .denied:
@@ -44,7 +44,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
         }
     }
 
-    func requestLocationAuthorization() {
+    public func requestLocationAuthorization() {
         if locationManager == nil {
             locationManager = CLLocationManager()
             locationManager?.delegate = self
@@ -52,15 +52,15 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
         locationManager?.requestWhenInUseAuthorization()
     }
 
-    func requestGPS() {
+    public func requestGPS() {
         self.locationManager?.requestLocation()
     }
 
-    func isEmptyCurrentLoc() -> Bool {
+    public func isEmptyCurrentLoc() -> Bool {
         return location.value.coordinate.latitude == 0 && location.value.coordinate.longitude == 0
     }
 
-    class func getDistanceInKm(from: CLLocation, to: CLLocation) -> Double {
+    public class func getDistanceInKm(from: CLLocation, to: CLLocation) -> Double {
         return from.distance(from: to) / 1000
     }
 
@@ -78,17 +78,17 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
 }
 
 extension LocationManager {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let lastLocation = locations.last else {
             return
         }
         self.location.value = lastLocation
     }
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         // check the authorization status changes here
         delegate?.onPermissionChanged()
     }
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(#function)
         if (error as? CLError)?.code == .denied {
             manager.stopUpdatingLocation()
