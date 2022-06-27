@@ -446,7 +446,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
             } else {
                 qrCodeVc.strContent = channelController.channel?.extraData.joinLink
             }
-            UIApplication.shared.keyWindow?.rootViewController?.present(qrCodeVc, animated: true, completion: nil)
+            UIApplication.shared.getTopViewController()?.present(qrCodeVc, animated: true)
         }
     }
 
