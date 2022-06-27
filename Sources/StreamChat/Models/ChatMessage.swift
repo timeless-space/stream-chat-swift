@@ -384,6 +384,10 @@ public extension ChatMessage {
         }
     }
 
+    public func isAdminMessage() -> Bool {
+        extraData.keys.contains("adminMessage") ?? false
+    }
+
     public func getExtraData(key: String) -> [String: RawJSON]? {
         if let extraData = extraData[key] {
             switch extraData {

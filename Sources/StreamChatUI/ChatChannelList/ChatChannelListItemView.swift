@@ -141,6 +141,17 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             guard let fallbackMessage = extraData["fallbackMessage"] else { return "" }
             let fallbackMessageString = fetchRawData(raw: fallbackMessage) as? String ?? ""
             return fallbackMessageString
+        } else if lastMessage.isAdminMessage() {
+            switch lastMessage.extraData.adminMessageType {
+            case .daoAddInitialSigners:
+                return "Dao group created"
+            case .simpleGroupChat:
+                return "Group created"
+            case .privateChat:
+                return "Private group created"
+            default:
+                return ""
+            }
         } else if !lastMessage.text.isEmpty {
             return content.channel.isDirectMessageChannel ? lastMessage.text : "\(authorName) \(lastMessage.text)"
         } else if let previewMessage = content.channel.previewMessage {
@@ -150,9 +161,9 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             let authorName = previewMessage.isSentByCurrentUser
                 ? L10n.you
                 : previewMessage.author.name ?? previewMessage.author.id
-            
+
             let text = previewMessage.textContent ?? previewMessage.text
-            
+
             return "\(authorName): \(text)"
         } else {
             return L10n.Channel.Item.emptyMessages
