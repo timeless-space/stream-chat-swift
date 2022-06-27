@@ -354,9 +354,6 @@ open class ChatChannelVC: _ViewController,
             selector: #selector(updateTextFieldLayout),
             name: .updateTextfield, object: nil
         )
-        if enableKeyboardObserver {
-            keyboardHandler.start()
-        }
     }
 
     @objc func updateTextFieldLayout() {
@@ -371,15 +368,19 @@ open class ChatChannelVC: _ViewController,
         }
     }
 
-    deinit {
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         if enableKeyboardObserver {
-            keyboardHandler.stop()
+            keyboardHandler.start()
         }
     }
 
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.navigationController?.isToolbarHidden = true
+        if enableKeyboardObserver {
+            keyboardHandler.stop()
+        }
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
