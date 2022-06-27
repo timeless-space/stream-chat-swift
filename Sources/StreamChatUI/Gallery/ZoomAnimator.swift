@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Stream.io Inc. All rights reserved.
+// Copyright © 2021 Stream.io Inc. All rights reserved.
 //
 
 import UIKit
@@ -10,6 +10,12 @@ open class ZoomAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     public weak var fromImageView: UIImageView?
     /// `UIImageView` for view controller being transitioned to.
     public weak var toImageView: UIImageView?
+    /// Snapshot for view controller being transitioned to.
+    public weak var toVCSnapshot: UIView?
+    /// Snapshot for view controller initiating the transition.
+    public weak var fromVCSnapshot: UIView?
+    /// Container view for `transitionImageView`
+    public weak var containerTransitionImageView: UIView?
     /// `UIImageView` to be animated between the view controllers.
     public weak var transitionImageView: UIImageView?
     /// Indicates whether the current animation is for presenting or dismissing.
@@ -29,113 +35,98 @@ open class ZoomAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     
     /// Animate transition for presenting.
     open func animateZoomInTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        let containerView = transitionContext.containerView
-        
         guard
             let toVC = transitionContext.viewController(forKey: .to),
             let fromVC = transitionContext.viewController(forKey: .from),
             let fromImageView = self.fromImageView
         else { return }
+
+        transitionContext.containerView.addSubview(toVC.view)
         
-        toVC.view.alpha = 0
-        containerView.addSubview(toVC.view)
+        let fromVCSnapshot = fromVC.view.snapshotView(afterScreenUpdates: true)
+        if let fromVCSnapshot = fromVCSnapshot {
+            transitionContext.containerView.addSubview(fromVCSnapshot)
+            fromVCSnapshot.frame = fromVC.view.frame
+            fromVC.view.isHidden = true
+        }
+        self.fromVCSnapshot = fromVCSnapshot
+        
+        let toVCSnapshot = toVC.view.snapshotView(afterScreenUpdates: true)
+        if let toVCSnapshot = toVCSnapshot {
+            transitionContext.containerView.addSubview(toVCSnapshot)
+            toVCSnapshot.frame = toVC.view.frame
+            toVCSnapshot.alpha = 0
+            toVC.view.isHidden = true
+        }
+        self.toVCSnapshot = toVCSnapshot
         
         let backgroundColorView = UIView().withoutAutoresizingMaskConstraints
-        containerView.addSubview(backgroundColorView)
-        backgroundColorView.pin(to: containerView)
+        transitionContext.containerView.addSubview(backgroundColorView)
+        backgroundColorView.pin(to: transitionContext.containerView)
         backgroundColorView.backgroundColor = toVC.view.backgroundColor
         backgroundColorView.alpha = 0
-
-        if transitionImageView == nil {
-            let transitionImageView = UIImageView(image: fromImageView.image)
-            transitionImageView.frame = fromImageView.convert(fromImageView.frame, to: fromVC.view)
-            transitionImageView.contentMode = .scaleAspectFill
-            transitionImageView.clipsToBounds = true
-            self.transitionImageView = transitionImageView
-            containerView.addSubview(transitionImageView)
-        }
+        
+        let transitionImageView = UIImageView(image: fromImageView.image)
+        transitionImageView.frame = fromImageView.convert(fromImageView.frame, to: fromVC.view)
+        transitionImageView.contentMode = .scaleAspectFill
+        transitionImageView.clipsToBounds = true
+        transitionContext.containerView.addSubview(transitionImageView)
+        self.transitionImageView = transitionImageView
 
         fromImageView.isHidden = true
-
+        
         let duration = transitionDuration(using: transitionContext)
-        
-        UIView.animateKeyframes(withDuration: duration, delay: 0, animations: {
-            UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 1.0, animations: { [weak self] in
-                if let image = fromImageView.image {
-                    self?.transitionImageView?.frame = self?.calculateZoomInImageFrame(image: image, forView: toVC.view) ?? .zero
-                    backgroundColorView.alpha = 1
-                }
-            })
-            
-            UIView.addKeyframe(withRelativeStartTime: 0.95, relativeDuration: 0.05, animations: {
-                toVC.view.alpha = 1
-            })
-        }, completion: { _ in
-            fromImageView.isHidden = false
-            self.transitionImageView?.removeFromSuperview()
-            self.transitionImageView = nil
-            backgroundColorView.removeFromSuperview()
-
-            transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
-        })
-    }
-    
-    /// Animate dismissal transition.
-    open func animateZoomOutTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        prepareZoomOutTransition(using: transitionContext)
-        animateDismiss(using: transitionContext)
-    }
-    
-    /// Prepare properties for dismissal transition.
-    /// This is shared between interactive and non-interactive dismissal.
-    open func prepareZoomOutTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        let containerView = transitionContext.containerView
-        
-        guard
-            let fromVC = transitionContext.viewController(forKey: .from),
-            let fromImageView = self.fromImageView,
-            let toImageView = self.toImageView
-        else { return }
-        
-        toImageView.isHidden = true
-        
-        if transitionImageView == nil {
-            if let image = fromImageView.image {
-                let transitionImageView = UIImageView(image: image)
-                transitionImageView.contentMode = .scaleAspectFill
-                transitionImageView.clipsToBounds = true
-                transitionImageView.frame = fromImageView.convert(
-                    frame(for: image, inImageViewAspectFit: fromImageView),
-                    to: fromVC.view
-                )
-                self.transitionImageView = transitionImageView
-                containerView.addSubview(transitionImageView)
+        UIView.animate(
+            withDuration: duration,
+            animations: {
+                transitionImageView.frame = toVC.view.frame
+                transitionImageView.animateAspectFit()
+                backgroundColorView.alpha = 1
+            },
+            completion: { _ in
+                toVC.view.isHidden = false
+                fromVC.view.isHidden = false
+                fromImageView.isHidden = false
+                transitionImageView.removeFromSuperview()
+                fromVCSnapshot?.removeFromSuperview()
+                toVCSnapshot?.removeFromSuperview()
+                backgroundColorView.removeFromSuperview()
+                
+                transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
             }
-        }
-        
-        fromImageView.isHidden = true
+        )
     }
     
     /// Animate transition for dismissal.
     open func animateDismiss(using transitionContext: UIViewControllerContextTransitioning) {
         guard
             let toVC = transitionContext.viewController(forKey: .to),
-            let fromVC = transitionContext.viewController(forKey: .from),
-            let fromImageView = self.fromImageView,
-            let toImageView = self.toImageView
+            let fromVC = transitionContext.viewController(forKey: .from)
         else { return }
         let duration = transitionDuration(using: transitionContext)
-
         UIView.animate(
             withDuration: duration,
             animations: { [self] in
-                fromVC.view.alpha = 0
-                self.transitionImageView?.frame = toImageView.convert(toImageView.frame, to: toVC.view)
+                containerTransitionImageView?.transform = .identity
+                transitionImageView?.transform = .identity
+                if let toImageView = toImageView {
+                    containerTransitionImageView?.frame = toImageView.convert(toImageView.frame, to: toVC.view)
+                }
+                if let containerTransitionImageView = containerTransitionImageView {
+                    transitionImageView?.frame.size = containerTransitionImageView.frame.size
+                }
+                transitionImageView?.animateAspectFill()
+                fromVCSnapshot?.alpha = 0
+                toVCSnapshot?.alpha = 1
             },
             completion: { [self] _ in
-                self.transitionImageView?.removeFromSuperview()
-                toImageView.isHidden = false
-                fromImageView.isHidden = false
+                toImageView?.isHidden = false
+                toVC.view.isHidden = false
+                fromVC.view.isHidden = false
+                transitionImageView?.removeFromSuperview()
+                containerTransitionImageView?.removeFromSuperview()
+                fromVCSnapshot?.removeFromSuperview()
+                toVCSnapshot?.removeFromSuperview()
 
                 transitionContext.finishInteractiveTransition()
                 transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
@@ -143,35 +134,88 @@ open class ZoomAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         )
     }
     
-    private func calculateZoomInImageFrame(image: UIImage, forView view: UIView) -> CGRect {
-        let viewRatio = view.frame.size.width / view.frame.size.height
-        let imageRatio = image.size.width / image.size.height
-        let touchesSides = (imageRatio > viewRatio)
+    /// Prepare properties for dismissal transition.
+    /// This is shared between interactive and non-interactive dismissal.
+    open func prepareZoomOutTransition(using transitionContext: UIViewControllerContextTransitioning) {
+        guard
+            let toVC = transitionContext.viewController(forKey: .to),
+            let fromVC = transitionContext.viewController(forKey: .from),
+            let fromImageView = self.fromImageView
+        else { return }
         
-        if touchesSides {
-            let height = view.frame.width / imageRatio
-            let yPoint = view.frame.minY + (view.frame.height - height) / 2
-            return CGRect(x: 0, y: yPoint, width: view.frame.width, height: height)
-        } else {
-            let width = view.frame.height * imageRatio
-            let xPoint = view.frame.minX + (view.frame.width - width) / 2
-            return CGRect(x: xPoint, y: 0, width: width, height: view.frame.height)
+        let containerTransitionImageView = UIView()
+        containerTransitionImageView.frame = fromImageView.convert(fromImageView.frame, to: fromVC.view)
+        containerTransitionImageView.clipsToBounds = true
+        self.containerTransitionImageView = containerTransitionImageView
+        
+        let transitionImageView = UIImageView(image: fromImageView.image)
+        transitionImageView.frame.size = containerTransitionImageView.frame.size
+        transitionImageView.contentMode = .scaleAspectFit
+        transitionImageView.clipsToBounds = true
+        self.transitionImageView = transitionImageView
+
+        fromImageView.isHidden = true
+        
+        let toVCSnapshot = toVC.view.snapshotView(afterScreenUpdates: true)
+        if let toVCSnapshot = toVCSnapshot {
+            transitionContext.containerView.addSubview(toVCSnapshot)
+            toVCSnapshot.frame = toVC.view.frame
+            toVCSnapshot.alpha = 0
+            toVC.view.isHidden = true
         }
+        self.toVCSnapshot = toVCSnapshot
+
+        let fromVCSnapshot = fromVC.view.snapshotView(afterScreenUpdates: true)
+        if let fromVCSnapshot = fromVCSnapshot {
+            transitionContext.containerView.addSubview(fromVCSnapshot)
+            fromVCSnapshot.frame = fromVC.view.frame
+            fromVC.view.isHidden = true
+        }
+        self.fromVCSnapshot = fromVCSnapshot
+        
+        transitionContext.containerView.addSubview(containerTransitionImageView)
+        containerTransitionImageView.addSubview(transitionImageView)
     }
     
-    private func frame(for image: UIImage, inImageViewAspectFit imageView: UIImageView) -> CGRect {
-        let imageRatio = (image.size.width / image.size.height)
-        let viewRatio = imageView.frame.size.width / imageView.frame.size.height
-        if imageRatio < viewRatio {
-            let scale = imageView.frame.size.height / image.size.height
-            let width = scale * image.size.width
-            let topLeftX = (imageView.frame.size.width - width) * 0.5
-            return CGRect(x: topLeftX, y: 0, width: width, height: imageView.frame.size.height)
+    /// Animate dismissal transition.
+    open func animateZoomOutTransition(using transitionContext: UIViewControllerContextTransitioning) {
+        prepareZoomOutTransition(using: transitionContext)
+        animateDismiss(using: transitionContext)
+    }
+}
+
+extension UIImageView {
+    func animateAspectFit() {
+        animateContentMode(.scaleAspectFit)
+    }
+    
+    func animateAspectFill() {
+        animateContentMode(.scaleToFill)
+    }
+    
+    private func animateContentMode(_ contentMode: UIImageView.ContentMode) {
+        guard let image = image else { return }
+        let initialBounds = bounds
+        let imageToBoundsWidthRatio: CGFloat
+        let imageToBoundsHeightRatio: CGFloat
+        let newRatio: CGFloat
+        if contentMode == .scaleAspectFit {
+            imageToBoundsWidthRatio = image.size.width / bounds.size.width
+            imageToBoundsHeightRatio = image.size.height / bounds.size.height
+            newRatio = max(imageToBoundsWidthRatio, imageToBoundsHeightRatio)
         } else {
-            let scale = imageView.frame.size.width / image.size.width
-            let height = scale * image.size.height
-            let topLeftY = (imageView.frame.size.height - height) * 0.5
-            return CGRect(x: 0.0, y: topLeftY, width: imageView.frame.size.width, height: height)
+            imageToBoundsWidthRatio = image.size.width
+            imageToBoundsHeightRatio = image.size.height
+            newRatio = min(imageToBoundsWidthRatio, imageToBoundsHeightRatio)
         }
+        let newImageSize = CGSize(
+            width: image.size.width / newRatio,
+            height: image.size.height / newRatio
+        )
+        frame.size = newImageSize
+        frame.origin = CGPoint(
+            x: frame.origin.x + (initialBounds.width - frame.size.width) / 2,
+            y: frame.origin.y + (initialBounds.height - frame.size.height) / 2
+        )
     }
 }
