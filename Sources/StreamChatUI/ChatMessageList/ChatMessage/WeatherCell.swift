@@ -313,20 +313,18 @@ class WeatherCell: UITableViewCell {
     }
 
     func configureCell(isSender: Bool) {
-
         isCurrentMessageSend = !(content?.localState == .pendingSend || content?.localState == .sending || content?.type == .ephemeral)
 
-        guard let currentLocation = self.content?.extraData.currentLocation,
-              let currentTemp = self.content?.extraData.currentWeather,
-              let displayMessage = self.content?.extraData.displayMessage,
-              let weatherCode = self.content?.extraData.iconCode else {
-                  return
-              }
+        guard let currentLocation = content?.extraData.currentLocation,
+              let currentTemp = content?.extraData.currentWeather,
+              let displayMessage = content?.extraData.displayMessage,
+              let weatherCode = content?.extraData.iconCode else {
+            return
+        }
 
         var temp = Measurement(
             value: Double(currentTemp) ?? 0,
             unit: UnitTemperature.kelvin)
-
         if weatherType == "Fahrenheit" {
             temperatueLabel.text = WeatherHelper.temperatureValueFormatter.string(
                 from: temp.converted(to: .fahrenheit)
