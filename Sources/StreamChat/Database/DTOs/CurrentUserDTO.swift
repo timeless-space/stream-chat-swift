@@ -199,7 +199,7 @@ extension CurrentChatUser {
             isOnline: user.isOnline,
             isBanned: user.isBanned,
             userRole: UserRole(rawValue: user.userRoleRaw),
-            createdAt: user.userCreatedAt,
+            createdAt: user.userCreatedAt ?? .init(),
             updatedAt: user.userUpdatedAt,
             lastActiveAt: user.lastActivityAt,
             teams: Set(user.teams),

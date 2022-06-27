@@ -160,7 +160,7 @@ extension ChatChannelMember {
             isBanned: dto.user.isBanned,
             isFlaggedByCurrentUser: dto.user.flaggedBy != nil,
             userRole: UserRole(rawValue: dto.user.userRoleRaw),
-            userCreatedAt: dto.user.userCreatedAt,
+            userCreatedAt: dto.user.userCreatedAt ?? .init(),
             userUpdatedAt: dto.user.userUpdatedAt,
             lastActiveAt: dto.user.lastActivityAt,
             teams: Set(dto.user.teams),

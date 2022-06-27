@@ -15,7 +15,8 @@ class UserDTO: NSManagedObject {
     @NSManaged var isOnline: Bool
     @NSManaged var lastActivityAt: Date?
 
-    @NSManaged var userCreatedAt: Date
+    // FIX: https://stackoverflow.com/questions/44031789/date-unconditionallybridgefromobjectivecnsdate-crash-in-swift-3
+    @NSManaged var userCreatedAt: Date?
     @NSManaged var userRoleRaw: String
     @NSManaged var userUpdatedAt: Date
     
@@ -216,7 +217,7 @@ extension ChatUser {
             isBanned: dto.isBanned,
             isFlaggedByCurrentUser: dto.flaggedBy != nil,
             userRole: UserRole(rawValue: dto.userRoleRaw),
-            createdAt: dto.userCreatedAt,
+            createdAt: dto.userCreatedAt ?? .init(),
             updatedAt: dto.userUpdatedAt,
             lastActiveAt: dto.lastActivityAt,
             teams: Set(dto.teams),

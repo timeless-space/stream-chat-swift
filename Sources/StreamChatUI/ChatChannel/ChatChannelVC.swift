@@ -368,13 +368,6 @@ open class ChatChannelVC: _ViewController,
         }
     }
 
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        if enableKeyboardObserver {
-            keyboardHandler.start()
-        }
-    }
-
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.navigationController?.isToolbarHidden = true
