@@ -507,6 +507,9 @@ open class ChatChannelVC: _ViewController,
     }
 
     private func setupUI() {
+        if enableKeyboardObserver {
+            keyboardHandler.start()
+        }
         isChannelMuted = channelController?.channel?.isMuted ?? false
         reloadMenu()
         KeyboardService.shared.observeKeyboard(self.view)
@@ -524,6 +527,11 @@ open class ChatChannelVC: _ViewController,
                 return
             }
             self.channelController?.markRead()
+        }
+        // open keyboard if user is not started chat yet
+        let filteredMessages = messages.filter { !$0.isAdminMessage() }
+        if filteredMessages.count == 0 {
+            messageComposerVC?.composerView.inputMessageView.textView.becomeFirstResponder()
         }
     }
 
