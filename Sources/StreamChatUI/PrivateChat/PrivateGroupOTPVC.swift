@@ -34,6 +34,7 @@ open class PrivateGroupOTPVC: UIViewController {
     open override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         checkLocationPermission()
+        isPushed = false
     }
 
     // MARK: - IBAction
