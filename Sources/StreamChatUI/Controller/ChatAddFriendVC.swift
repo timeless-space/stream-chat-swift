@@ -116,7 +116,7 @@ public class ChatAddFriendVC: ChatBaseVC {
         })
         alert.addAction(noAction)
         alert.addAction(yesAction)
-        present(alert, animated: true, completion: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
     }
     
     // MARK: - Actions

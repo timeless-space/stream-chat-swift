@@ -737,13 +737,13 @@ open class ComposerVC: _ViewController,
     open func showMediaPicker() {
         DispatchQueue.main.async { [weak self] in
             guard let `self` = self else { return }
-            self.present(self.mediaPickerVC, animated: true)
+            UIApplication.shared.windows.first?.rootViewController?.present(self.mediaPickerVC, animated: true)
         }
     }
 
     /// Shows a document picker.
     open func showFilePicker() {
-        present(filePickerVC, animated: true)
+        UIApplication.shared.windows.first?.rootViewController?.present(filePickerVC, animated: true)
     }
     
     open func showCamera() {
@@ -1483,8 +1483,7 @@ open class ComposerVC: _ViewController,
         let alert = UIAlertController(title: title, message: message, preferredStyle: preferredStyle)
         alert.popoverPresentationController?.sourceView = sourceView
         actions.forEach(alert.addAction)
-
-        present(alert, animated: true)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
     }
 }
 
