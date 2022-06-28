@@ -131,16 +131,9 @@ open class InputTextView: UITextView, AppearanceProvider {
         setTextViewHeight()
     }
 
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-        let contentHeight = heightToSet()
-        if let oldHeight = heightConstraint?.constant, oldHeight != contentHeight {
-            heightConstraint?.constant = contentHeight
-        }
-    }
-
-    private func heightToSet() -> CGFloat {
+    open func setTextViewHeight() {
         var heightToSet = minimumHeight
+
         if contentSize.height <= minimumHeight {
             heightToSet = minimumHeight
         } else if contentSize.height >= maximumHeight {
@@ -148,12 +141,9 @@ open class InputTextView: UITextView, AppearanceProvider {
         } else {
             heightToSet = contentSize.height
         }
-        return heightToSet
-    }
 
-    open func setTextViewHeight() {
-        let contentHeight = heightToSet()
-        heightConstraint?.constant = contentHeight
+        heightConstraint?.constant = heightToSet
+        heightConstraint?.isActive = true
         layoutIfNeeded()
 
         // This is due to bug in UITextView where the scroll sometimes disables

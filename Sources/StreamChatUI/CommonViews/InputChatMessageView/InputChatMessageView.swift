@@ -79,6 +79,14 @@ open class InputChatMessageView: _View, ComponentsProvider, AppearanceProvider {
         .withoutAutoresizingMaskConstraints
         .withAccessibilityIdentifier(identifier: "clearButton")
 
+    public private(set) lazy var clearButtonContainerView = UIView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "clearButtonContainerView")
+
+    public private(set) lazy var commandLabelContainerView = UIView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "commandLabelContainerView")
+
     override open func setUpAppearance() {
         super.setUpAppearance()
 
@@ -112,28 +120,49 @@ open class InputChatMessageView: _View, ComponentsProvider, AppearanceProvider {
         inputTextContainer.alignment = .bottom
         inputTextContainer.spacing = 6
         inputTextContainer.directionalLayoutMargins = .init(top: 0, leading: 6, bottom: 0, trailing: 6)
-        inputTextContainer.addArrangedSubview(commandLabelView)
+        inputTextContainer.addArrangedSubview(commandLabelContainerView)
         inputTextContainer.addArrangedSubview(textView)
-        inputTextContainer.addArrangedSubview(clearButton)
+        inputTextContainer.addArrangedSubview(clearButtonContainerView)
         inputTextContainer.addArrangedSubview(emojiButton)
         inputTextContainer.addArrangedSubview(sendButton)
         inputTextContainer.addArrangedSubview(emptyView)
-
-        commandLabelView.setContentCompressionResistancePriority(.streamRequire, for: .horizontal)
+        // setupCommandContainerView
+        setupCommandContainerView()
+        // setup clear button view
+        setupClearButton()
+        // textView
         textView.setContentCompressionResistancePriority(.streamLow, for: .horizontal)
         textView.preservesSuperviewLayoutMargins = false
         textView.tintColor = .white
         textView.textColor = .white
-        NSLayoutConstraint.activate([
-            clearButton.heightAnchor.pin(equalToConstant: 24),
-            clearButton.widthAnchor.pin(equalTo: clearButton.heightAnchor, multiplier: 1),
-            emptyView.heightAnchor.pin(equalToConstant: 24),
-            emptyView.widthAnchor.pin(equalToConstant: 2),
-        ])
+
         sendButton.pin(anchors: [.width], to: 35)
         sendButton.pin(anchors: [.height], to: 40)
         emojiButton.pin(anchors: [.width], to: 30)
         emojiButton.pin(anchors: [.height], to: 40)
+        emptyView.pin(anchors: [.width], to: 2)
+        emptyView.pin(anchors: [.height], to: 24)
+    }
+
+    private func setupCommandContainerView() {
+        commandLabelContainerView.pin(anchors: [.height], to: 38)
+        commandLabelContainerView.addSubview(commandLabelView)
+        commandLabelView.leadingAnchor.constraint(equalTo: commandLabelContainerView.leadingAnchor).isActive = true
+        commandLabelView.trailingAnchor.constraint(equalTo: commandLabelContainerView.trailingAnchor).isActive = true
+        commandLabelView.centerYAnchor.constraint(equalTo: commandLabelContainerView.centerYAnchor).isActive = true
+        commandLabelView.setContentCompressionResistancePriority(.streamRequire, for: .horizontal)
+    }
+
+    private func setupClearButton() {
+        clearButtonContainerView.pin(anchors: [.width], to: 35)
+        clearButtonContainerView.pin(anchors: [.height], to: 40)
+        clearButtonContainerView.addSubview(clearButton)
+        NSLayoutConstraint.activate([
+            clearButton.heightAnchor.pin(equalToConstant: 24),
+            clearButton.widthAnchor.pin(equalTo: clearButton.heightAnchor, multiplier: 1),
+            clearButton.centerYAnchor.pin(equalTo: clearButtonContainerView.centerYAnchor),
+            clearButton.centerXAnchor.pin(equalTo: clearButtonContainerView.centerXAnchor)
+        ])
     }
 
     override open func updateContent() {
@@ -154,8 +183,8 @@ open class InputChatMessageView: _View, ComponentsProvider, AppearanceProvider {
 
         Animate {
             self.quotedMessageView.isHidden = content.quotingMessage == nil
-            self.commandLabelView.isHidden = content.command == nil
-            self.clearButton.isHidden = content.command == nil
+            self.commandLabelContainerView.isHidden = content.command == nil
+            self.clearButtonContainerView.isHidden = content.command == nil
         }
     }
 }
