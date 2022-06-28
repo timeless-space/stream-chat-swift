@@ -864,7 +864,8 @@ open class ComposerVC: _ViewController,
                 guard let `self` = self else { return }
                 self.walletInputView?.walletStepper.updateAmount(amount: amount)
             }
-            UIApplication.shared.windows.first?.rootViewController?.present(walletView, animated: true, completion: nil)
+            UIApplication.shared.getTopViewController()?.present(walletView, animated: true)
+
         }
     }
 

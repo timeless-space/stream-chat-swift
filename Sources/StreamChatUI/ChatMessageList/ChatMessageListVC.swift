@@ -404,7 +404,7 @@ open class ChatMessageListVC: _ViewController,
                         let svc = SFSafariViewController(url: blockExpUrl)
                         let nav = UINavigationController(rootViewController: svc)
                         nav.isNavigationBarHidden = true
-                        UIApplication.shared.keyWindow?.rootViewController?.present(nav, animated: true, completion: nil)
+                        UIApplication.shared.getTopViewController()?.present(nav, animated: true)
                     }
                     return cell
                 } else {
@@ -421,7 +421,7 @@ open class ChatMessageListVC: _ViewController,
                         let svc = SFSafariViewController(url: blockExpUrl)
                         let nav = UINavigationController(rootViewController: svc)
                         nav.isNavigationBarHidden = true
-                        UIApplication.shared.keyWindow?.rootViewController?.present(nav, animated: true, completion: nil)
+                        UIApplication.shared.getTopViewController()?.present(nav, animated: true)
                     }
                     return cell
                 }
