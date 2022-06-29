@@ -89,6 +89,7 @@ open class InputTextView: UITextView, AppearanceProvider {
         placeholderLabel.font = font
         placeholderLabel.textColor = appearance.colorPalette.subtitleText
         placeholderLabel.adjustsFontSizeToFitWidth = true
+        placeholderLabel.minimumScaleFactor = 0.9
     }
     
     open func setUpLayout() {
