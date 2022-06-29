@@ -506,7 +506,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
             message: nil,
             actions: [deleteAction, cancelAction],
             preferredStyle: .actionSheet)
-        present(alert, animated: true, completion: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
     }
 
     func showWalletQRCode() {

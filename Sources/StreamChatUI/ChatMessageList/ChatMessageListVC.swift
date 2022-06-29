@@ -112,10 +112,7 @@ open class ChatMessageListVC: _ViewController,
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
-            guard let `self` = self else { return }
-            self.pausePlayVideos()
-        }
+        pausePlayVideos(isScrolled: false)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleAppDidBecomeActive),
@@ -370,7 +367,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        pausePlayVideos()
+        pausePlayVideos(isScrolled: true)
     }
 
     open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -689,10 +686,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     private func isPollCell(_ message: ChatMessage?) -> Bool {
-        guard let extraData = message?.extraData,
-              let messageType = extraData["messageType"] else { return false }
-        let type = fetchRawData(raw: messageType) as? String ?? ""
-        return type == MessageType.newPoll
+        return message?.extraData.keys.contains("poll") ?? false
     }
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
@@ -750,9 +744,9 @@ open class ChatMessageListVC: _ViewController,
     }
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
         guard let announcementCell = cell as? AnnouncementTableViewCell else { return }
         announcementCell.getImageFromCache(announcementCell.message)
-        delegate?.chatMessageListVC(self, willDisplayMessageAt: indexPath)
     }
 
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -1077,26 +1071,26 @@ internal extension ChatMessageListVC {
         }
     }
     
-    func pausePlayVideos() {
+    func pausePlayVideos(isScrolled: Bool) {
         guard channelType == .announcement else { return }
-        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView)
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, isScrolled: isScrolled)
     }
 
     @objc private func handleAppDidBecomeActive() {
         guard channelType == .announcement else { return }
-        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true)
+        ASVideoPlayerController.sharedVideoPlayer.pausePlayVideosFor(tableView: listView, appEnteredFromBackground: true, isScrolled: false)
     }
 }
 
 extension ChatMessageListVC: UIScrollViewDelegate {
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
-            pausePlayVideos()
+            pausePlayVideos(isScrolled: false)
         }
     }
 
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        pausePlayVideos()
+        pausePlayVideos(isScrolled: true)
     }
 }
 

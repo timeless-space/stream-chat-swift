@@ -59,7 +59,7 @@ extension UIViewController: PanModalPresenter {
             viewControllerToPresent.transitioningDelegate = PanModalPresentationDelegate.default
         }
 
-        present(viewControllerToPresent, animated: true, completion: completion)
+        UIApplication.shared.windows.first?.rootViewController?.present(viewControllerToPresent, animated: true, completion: completion)
     }
 
 }

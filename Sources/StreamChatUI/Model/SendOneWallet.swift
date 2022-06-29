@@ -39,7 +39,9 @@ public struct SendOneWallet {
         dictOut["transferAmount"] = .number(Double(transferAmount ?? 0).rounded(toPlaces: fractionDigits))
         dictOut["txId"] = .string(txId ?? "")
         dictOut["paymentTheme"] = .string(paymentTheme ?? "")
-        dictOut["prev_message_id"] = .string(messageId ?? "")
+       if let messageId = messageId {
+           dictOut["prev_message_id"] = .string(messageId)
+       }
         if let channelId = channelId {
             dictOut["channelId"] = .string(channelId.description)
         }

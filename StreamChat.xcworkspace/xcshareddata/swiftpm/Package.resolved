@@ -1,115 +1,111 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Atlantis",
-        "repositoryURL": "https://github.com/ProxymanApp/atlantis",
-        "state": {
-          "branch": null,
-          "revision": "b60ef22babc5cc8997841b378bb2993229fac9eb",
-          "version": "1.16.0"
-        }
-      },
-      {
-        "package": "AutomaticSettings",
-        "repositoryURL": "https://github.com/krzysztofzablocki/AutomaticSettings.git",
-        "state": {
-          "branch": null,
-          "revision": "1e9fbd197e5343a25187c6c22ba69be4ffbb6360",
-          "version": "1.1.0"
-        }
-      },
-      {
-        "package": "Difference",
-        "repositoryURL": "https://github.com/krzysztofzablocki/Difference.git",
-        "state": {
-          "branch": null,
-          "revision": "02fe1111edc8318c4f8a0da96336fcbcc201f38b",
-          "version": "1.0.1"
-        }
-      },
-      {
-        "package": "EFQRCode",
-        "repositoryURL": "https://github.com/EFPrefix/EFQRCode.git",
-        "state": {
-          "branch": null,
-          "revision": "56278ea800d7fdc20f42cd77bdbf0fecc8c1c0c8",
-          "version": "6.2.0"
-        }
-      },
-      {
-        "package": "GDPerformanceView-Swift",
-        "repositoryURL": "https://github.com/dani-gavrilov/GDPerformanceView-Swift",
-        "state": {
-          "branch": null,
-          "revision": "171a656040135d667f4228c3ec82f2384770d87d",
-          "version": "2.1.1"
-        }
-      },
-      {
-        "package": "Nuke",
-        "repositoryURL": "https://github.com/kean/Nuke",
-        "state": {
-          "branch": null,
-          "revision": "c0b32b0d7154afceb3fc08b199492f125ff4267e",
-          "version": "10.3.3"
-        }
-      },
-      {
-        "package": "OHHTTPStubs",
-        "repositoryURL": "https://github.com/AliSoftware/OHHTTPStubs.git",
-        "state": {
-          "branch": null,
-          "revision": "12f19662426d0434d6c330c6974d53e2eb10ecd9",
-          "version": "9.1.0"
-        }
-      },
-      {
-        "package": "Sentry",
-        "repositoryURL": "https://github.com/getsentry/sentry-cocoa.git",
-        "state": {
-          "branch": null,
-          "revision": "b34ce9048e6b8b082ea6b15e6b50583d46c936ea",
-          "version": "7.16.0"
-        }
-      },
-      {
-        "package": "StreamChatTestHelpers",
-        "repositoryURL": "https://github.com/GetStream/stream-chat-swift-test-helpers.git",
-        "state": {
-          "branch": null,
-          "revision": "246845edb41de52325b249165f68e045fd30d955",
-          "version": null
-        }
-      },
-      {
-        "package": "SnapshotTesting",
-        "repositoryURL": "https://github.com/pointfreeco/swift-snapshot-testing.git",
-        "state": {
-          "branch": null,
-          "revision": "c466812aa2e22898f27557e2e780d3aad7a27203",
-          "version": "1.8.2"
-        }
-      },
-      {
-        "package": "swift_qrcodejs",
-        "repositoryURL": "https://github.com/ApolloZhu/swift_qrcodejs.git",
-        "state": {
-          "branch": null,
-          "revision": "374dc7f7b9e76c6aeb393f6a84590c6d387e1ecb",
-          "version": "2.2.2"
-        }
-      },
-      {
-        "package": "Swifter",
-        "repositoryURL": "https://github.com/httpswift/swifter.git",
-        "state": {
-          "branch": null,
-          "revision": "1e4f51c92d7ca486242d8bf0722b99de2c3531aa",
-          "version": null
-        }
+  "pins" : [
+    {
+      "identity" : "atlantis",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ProxymanApp/atlantis",
+      "state" : {
+        "revision" : "b60ef22babc5cc8997841b378bb2993229fac9eb",
+        "version" : "1.16.0"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "automaticsettings",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzysztofzablocki/AutomaticSettings.git",
+      "state" : {
+        "revision" : "1e9fbd197e5343a25187c6c22ba69be4ffbb6360",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "difference",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzysztofzablocki/Difference.git",
+      "state" : {
+        "revision" : "02fe1111edc8318c4f8a0da96336fcbcc201f38b",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "efqrcode",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/EFPrefix/EFQRCode.git",
+      "state" : {
+        "revision" : "56278ea800d7fdc20f42cd77bdbf0fecc8c1c0c8",
+        "version" : "6.2.0"
+      }
+    },
+    {
+      "identity" : "gdperformanceview-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dani-gavrilov/GDPerformanceView-Swift",
+      "state" : {
+        "revision" : "171a656040135d667f4228c3ec82f2384770d87d",
+        "version" : "2.1.1"
+      }
+    },
+    {
+      "identity" : "nuke",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kean/Nuke",
+      "state" : {
+        "revision" : "c0b32b0d7154afceb3fc08b199492f125ff4267e",
+        "version" : "10.3.3"
+      }
+    },
+    {
+      "identity" : "ohhttpstubs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AliSoftware/OHHTTPStubs.git",
+      "state" : {
+        "revision" : "12f19662426d0434d6c330c6974d53e2eb10ecd9",
+        "version" : "9.1.0"
+      }
+    },
+    {
+      "identity" : "sentry-cocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/getsentry/sentry-cocoa.git",
+      "state" : {
+        "revision" : "b34ce9048e6b8b082ea6b15e6b50583d46c936ea",
+        "version" : "7.16.0"
+      }
+    },
+    {
+      "identity" : "stream-chat-swift-test-helpers",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/GetStream/stream-chat-swift-test-helpers.git",
+      "state" : {
+        "revision" : "246845edb41de52325b249165f68e045fd30d955"
+      }
+    },
+    {
+      "identity" : "swift-snapshot-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-snapshot-testing.git",
+      "state" : {
+        "revision" : "c466812aa2e22898f27557e2e780d3aad7a27203",
+        "version" : "1.8.2"
+      }
+    },
+    {
+      "identity" : "swift_qrcodejs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ApolloZhu/swift_qrcodejs.git",
+      "state" : {
+        "revision" : "374dc7f7b9e76c6aeb393f6a84590c6d387e1ecb",
+        "version" : "2.2.2"
+      }
+    },
+    {
+      "identity" : "swifter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/httpswift/swifter.git",
+      "state" : {
+        "revision" : "1e4f51c92d7ca486242d8bf0722b99de2c3531aa"
+      }
+    }
+  ],
+  "version" : 2
 }
