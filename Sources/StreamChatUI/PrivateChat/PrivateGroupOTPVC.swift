@@ -126,6 +126,8 @@ open class PrivateGroupOTPVC: UIViewController {
                 guard let self = self else { return }
                 self.pushToJoinPrivateGroup()
             }
+        } else {
+            LocationManager.shared.requestGPS()
         }
     }
 }
