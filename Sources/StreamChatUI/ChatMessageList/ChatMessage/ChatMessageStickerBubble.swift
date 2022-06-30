@@ -12,8 +12,6 @@ import GiphyUISDK
 
 class ChatMessageStickerBubble: _TableViewCell {
 
-    public private(set) var timestampLabel: UILabel?
-    public private(set) var authorNameLabel: UILabel?
     public var layoutOptions: ChatMessageLayoutOptions?
     public lazy var dateFormatter: DateFormatter = .makeDefault()
     public lazy var mainContainer = ContainerStackView(axis: .horizontal)
@@ -28,8 +26,8 @@ class ChatMessageStickerBubble: _TableViewCell {
     private var timestampContainerWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     private var imageLoader = Components.default.imageLoader
-    private lazy var timestampContainerView: UIView = {
-        return UIView().withoutAutoresizingMaskConstraints
+    private lazy var timestampContainerView: TimestampContainerView = {
+        return TimestampContainerView().withoutAutoresizingMaskConstraints
     }()
     var content: ChatMessage?
     var chatChannel: ChatChannel?
@@ -69,29 +67,12 @@ class ChatMessageStickerBubble: _TableViewCell {
     private func layoutTimestampContainerView(_ isSender: Bool) {
         timestampContainerWidthConstraint = timestampContainerView.widthAnchor.constraint(equalToConstant: cellWidth)
         timestampContainerWidthConstraint?.isActive = true
-        timestampContainerView.transform = .mirrorY
-        if !isSender {
-            let authorName = createAuthorLabel()
-            timestampContainerView.addSubview(authorName)
-            NSLayoutConstraint.activate([
-                authorName.leadingAnchor.constraint(equalTo: timestampContainerView.leadingAnchor),
-                authorName.topAnchor.constraint(equalTo: timestampContainerView.topAnchor),
-                authorName.bottomAnchor.constraint(equalTo: timestampContainerView.bottomAnchor),
-            ])
+        if isSender {
+            timestampContainerView.createTimestampLabel()
+        } else{
+            timestampContainerView.createAuthorLabel()
+            timestampContainerView.createTimestampLabel()
         }
-        let timestamp = createTimestampLabel()
-        timestampContainerView.addSubview(timestamp)
-        let timestampLeading = authorNameLabel?.trailingAnchor ?? timestampContainerView.leadingAnchor
-        NSLayoutConstraint.activate([
-            timestamp.leadingAnchor.constraint(equalTo: timestampLeading, constant: 8),
-            timestamp.topAnchor.constraint(equalTo: timestampContainerView.topAnchor),
-            timestamp.bottomAnchor.constraint(equalTo: timestampContainerView.bottomAnchor),
-            timestamp.trailingAnchor.constraint(equalTo: timestampContainerView.trailingAnchor),
-        ])
-        timestampLabel?.setContentCompressionResistancePriority(.streamRequire, for: .horizontal)
-        authorNameLabel?.setContentCompressionResistancePriority(.streamLow, for: .horizontal)
-        let authorTrailing = timestampLabel?.leadingAnchor ?? timestampContainerView.trailingAnchor
-        authorNameLabel?.trailingAnchor.constraint(equalTo: authorTrailing)
     }
 
     private func setBubbleConstraints(_ isSender: Bool) {
@@ -161,19 +142,20 @@ class ChatMessageStickerBubble: _TableViewCell {
                     )
                 }
             }
-            timestampLabel?.isHidden = !options.contains(.timestamp)
-            authorNameLabel?.isHidden = !options.contains(.timestamp)
+            timestampContainerView.timestampLabel?.isHidden = !options.contains(.timestamp)
+            timestampContainerView.authorNameLabel?.isHidden = !options.contains(.authorName)
+            timestampContainerView.isHidden = !options.contains(.timestamp) && !options.contains(.authorName)
         }
-        timestampLabel?.text = nil
+        timestampContainerView.timestampLabel?.text = nil
         if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.string(from: createdAt)
-            timestampLabel?.textAlignment = isSender ? .right : .left
+            timestampContainerView.timestampLabel?.text = dateFormatter.string(from: createdAt)
+            timestampContainerView.timestampLabel?.textAlignment = isSender ? .right : .left
         }
-        authorNameLabel?.text = nil
+        timestampContainerView.authorNameLabel?.text = nil
         if let authorName = content?.author.name?.trimStringBy(count: 15),
            let memberCount = chatChannel?.memberCount,
             !isSender {
-            authorNameLabel?.text = (memberCount <= 2) ? "" : authorName
+            timestampContainerView.authorNameLabel?.text = (memberCount <= 2) ? "" : authorName
         }
     }
 
@@ -187,31 +169,5 @@ class ChatMessageStickerBubble: _TableViewCell {
         authorAvatarView?.widthAnchor.pin(equalToConstant: messageAuthorAvatarSize.width).isActive = true
         authorAvatarView?.heightAnchor.pin(equalToConstant: messageAuthorAvatarSize.height).isActive = true
         return authorAvatarView!
-    }
-
-    private func createTimestampLabel() -> UILabel {
-        if timestampLabel == nil {
-            timestampLabel = UILabel()
-                .withAdjustingFontForContentSizeCategory
-                .withBidirectionalLanguagesSupport
-                .withoutAutoresizingMaskConstraints
-
-            timestampLabel?.textColor = Appearance.default.colorPalette.subtitleText
-            timestampLabel?.font = Appearance.default.fonts.footnote
-        }
-        return timestampLabel!
-    }
-
-    private func createAuthorLabel() -> UILabel {
-        if authorNameLabel == nil {
-            authorNameLabel = UILabel()
-                .withAdjustingFontForContentSizeCategory
-                .withBidirectionalLanguagesSupport
-                .withoutAutoresizingMaskConstraints
-
-            authorNameLabel?.textColor = Appearance.default.colorPalette.subtitleText
-            authorNameLabel?.font = Appearance.default.fonts.footnote
-        }
-        return authorNameLabel!
     }
 }
