@@ -15,7 +15,7 @@ class RedPacketExpired: UITableViewCell {
     public private(set) var viewContainer: UIView!
     public private(set) var subContainer: UIView!
     public private(set) var sentThumbImageView: UIImageView!
-    public private(set) var timestampLabel: UILabel!
+    //public private(set) var timestampLabel: UILabel!
     public private(set) var descriptionLabel: UILabel!
     public private(set) var sentCryptoLabel: UILabel!
     public private(set) var pickUpButton: UIButton!
@@ -25,6 +25,9 @@ class RedPacketExpired: UITableViewCell {
     private var leadingAnchorForReceiver: NSLayoutConstraint?
     private var trailingAnchorForSender: NSLayoutConstraint?
     private var trailingAnchorForReceiver: NSLayoutConstraint?
+    private lazy var timestampContainerView: TimestampContainerView = {
+        return TimestampContainerView().withoutAutoresizingMaskConstraints
+    }()
     var layoutOptions: ChatMessageLayoutOptions?
     var content: ChatMessage?
     public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
@@ -136,39 +139,45 @@ class RedPacketExpired: UITableViewCell {
         ])
         pickUpButton.transform = .mirrorY
 
-        timestampLabel = createTimestampLabel()
-        timestampLabel.translatesAutoresizingMaskIntoConstraints = false
-        viewContainer.addSubview(timestampLabel)
-
+        viewContainer.addSubview(timestampContainerView)
         NSLayoutConstraint.activate([
-            timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
-            timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
-            timestampLabel.bottomAnchor.constraint(equalTo: subContainer.topAnchor, constant: -8),
-            timestampLabel.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0),
-            timestampLabel.heightAnchor.constraint(equalToConstant: 15)
+            timestampContainerView.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
+            timestampContainerView.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
+            timestampContainerView.bottomAnchor.constraint(equalTo: subContainer.topAnchor, constant: -8),
+            timestampContainerView.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0)
         ])
-        timestampLabel.transform = .mirrorY
 
         leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
         trailingAnchorForSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
         leadingAnchorForReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
         trailingAnchorForReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
+
+        layoutTimestampContainerView(isSender)
     }
 
+    private func layoutTimestampContainerView(_ isSender: Bool) {
+        if isSender {
+            timestampContainerView.createTimestampLabel()
+        } else{
+            timestampContainerView.createAuthorLabel()
+            timestampContainerView.createTimestampLabel()
+        }
+    }
+    
     func configData(isSender: Bool) {
         setBubbleConstraints(isSender)
-        timestampLabel.textAlignment = isSender ? .right : .left
-        var nameAndTimeString: String? = ""
         if let options = layoutOptions {
             if options.contains(.authorName), let name = content?.author.name {
-                nameAndTimeString?.append("\(name)   ")
+                timestampContainerView.authorNameLabel?.text = name
             }
             if options.contains(.timestamp) , let createdAt = content?.createdAt {
-                //nameAndTimeString?.append("\(dateFormatter.string(from: createdAt))")
-                nameAndTimeString?.append("\(dateFormatter.format(createdAt))")
+                timestampContainerView.timestampLabel?.text = dateFormatter.format(createdAt)
             }
+            timestampContainerView.timestampLabel?.isHidden = !options.contains(.timestamp)
+            timestampContainerView.authorNameLabel?.isHidden = !options.contains(.authorName)
+            timestampContainerView.isHidden = !options.contains(.timestamp) && !options.contains(.authorName)
         }
-        timestampLabel?.text = nameAndTimeString
+        timestampContainerView.timestampLabel?.textAlignment = isSender ? .right : .left
     }
 
     private func setBubbleConstraints(_ isSender: Bool) {
@@ -180,19 +189,6 @@ class RedPacketExpired: UITableViewCell {
         leadingAnchorForReceiver?.constant = 8
         trailingAnchorForReceiver?.isActive = !isSender
         trailingAnchorForReceiver?.constant = -cellWidth
-    }
-
-    private func createTimestampLabel() -> UILabel {
-        if timestampLabel == nil {
-            timestampLabel = UILabel()
-                .withAdjustingFontForContentSizeCategory
-                .withBidirectionalLanguagesSupport
-                .withoutAutoresizingMaskConstraints
-            timestampLabel.textAlignment = .left
-            timestampLabel!.textColor = Appearance.default.colorPalette.subtitleText
-            timestampLabel!.font = Appearance.default.fonts.footnote
-        }
-        return timestampLabel!
     }
 
     private func createDescLabel() -> UILabel {
