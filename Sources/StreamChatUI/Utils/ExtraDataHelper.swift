@@ -784,6 +784,14 @@ public extension Dictionary where Key == String, Value == RawJSON {
             return nil
         }
     }
+
+    var userProfileHash: String? {
+        if let userProfileHash = self["userProfileHash"] {
+            return fetchRawData(raw: userProfileHash) as? String
+        } else {
+            return nil
+        }
+    }
 }
 
 public func fetchRawData(raw: RawJSON) -> Any? {

@@ -130,9 +130,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
     open func loadMergedAvatars(channel: ChatChannel) {
         // The channel is a non-DM channel, hide the online indicator
         presenceAvatarView.isOnlineIndicatorVisible = false
-        
         let lastActiveMembers = self.lastActiveMembers()
-        
         // If there are no members other than the current user in the channel, load a placeholder
         guard !lastActiveMembers.isEmpty else {
             loadIntoAvatarImageView(from: nil, placeholder: nil)
@@ -140,7 +138,8 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         }
         
         var urls = lastActiveMembers.map(\.imageURL)
-        
+        var profileHash = lastActiveMembers.map(\.extraData.userProfileHash)
+
         if urls.isEmpty {
             loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
@@ -148,7 +147,8 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         
         // We show a combination of at max 4 images combined
         urls = Array(urls.prefix(maxNumberOfImagesInCombinedAvatar))
-        let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
+        var activeUsers = Array(lastActiveMembers.prefix(maxNumberOfImagesInCombinedAvatar))
+        let customKeyForCache = activeUsers.compactMap({ $0.extraData.userProfileHash ?? $0.imageURL?.lastPathComponent }).joined()
         // Checked if avatar already cached
         if let imageContainer = ImagePipeline.shared.cache.cachedImage(for: customKeyForCache),
            let cachedUrlCount = imageContainer.userInfo["count"] as? Int,
@@ -160,6 +160,9 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         // showing shimmer effect while loading avatar
         shimmerView.showAnimatedGradientSkeleton()
         shimmerView.isHidden = false
+        lastActiveMembers.forEach {
+            ImageCache.shared[$0.imageURL] = nil
+        }
         loadAvatarsFrom(urls: urls, channelId: channel.cid) { [weak self] avatars, channelId in
             guard let weakSelf = self, channelId == weakSelf.content.channel?.cid
             else { return }
@@ -168,7 +171,6 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                     weakSelf.loadIntoAvatarImageView(from: nil, placeholder: combinedImage)
                     weakSelf.shimmerView.hideSkeleton()
                     if let image = combinedImage {
-                        let customKeyForCache = urls.compactMap({ $0?.lastPathComponent}).joined()
                         let imageContainer = ImageContainer.init(
                             image: image,
                             type: nil,
@@ -207,7 +209,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
                 avatarUrls.append(avatarUrl)
             }
         }
-        
+
         components.imageLoader.loadImages(
             from: avatarUrls,
             placeholders: [],
