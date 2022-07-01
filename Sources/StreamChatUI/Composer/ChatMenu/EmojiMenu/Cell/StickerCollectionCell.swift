@@ -8,6 +8,8 @@
 import Stipop
 import StreamChat
 import Lottie
+import dotLottieLoader
+import dotLottie
 
 class StickerCollectionCell: UICollectionViewCell {
 
@@ -29,27 +31,31 @@ class StickerCollectionCell: UICollectionViewCell {
     func setUpLayout() {
         imgSticker = SPUIStickerView()
         imgSticker.translatesAutoresizingMaskIntoConstraints = false
+        indicatorView.translatesAutoresizingMaskIntoConstraints = false
         embed(imgSticker,insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
+        embed(indicatorView, insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
+        indicatorView.startAnimating()
     }
 
     func configureSticker(sticker: Sticker) {
         let stickerImgUrl = (sticker.stickerImg ?? "").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
         if let url = URL(string: stickerImgUrl ?? "") {
-            if url.path.contains(".json") {
+            if url.path.contains(".lottie") {
                 removeAnimationView()
                 embed(indicatorView, insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
                 indicatorView.isHidden = false
-                indicatorView.startAnimating()
-                animatedView = .init(url: url, imageProvider: nil, closure: { [weak self] error in
+                animatedView = AnimationView()
+                DotLottie.load(from: url, cache: DotLottieCache.cache, completion: { [weak self] (animation, file) in
                     guard let `self` = self else { return }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
-                        self.embed(self.animatedView ?? UIView(), insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
-                        self.animatedView?.play()
-                        self.animatedView?.backgroundBehavior = .pauseAndRestore
-                        self.animatedView?.translatesAutoresizingMaskIntoConstraints = false
-                        self.indicatorView.isHidden = true
-                    })
-                }, animationCache: LRUAnimationCache.sharedCache)
+                    self.embed(self.animatedView ?? UIView(), insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
+                    self.animatedView?.animation = animation
+                    self.animatedView?.respectAnimationFrameRate = true
+                    self.animatedView?.play()
+                    self.animatedView?.loopMode = .loop
+                    self.animatedView?.backgroundBehavior = .pauseAndRestore
+                    self.animatedView?.translatesAutoresizingMaskIntoConstraints = false
+                    self.indicatorView.isHidden = true
+                })
             } else {
                 indicatorView.isHidden = true
                 imgSticker.setSticker(stickerImgUrl ?? "", sizeOptimized: true)
@@ -61,6 +67,7 @@ class StickerCollectionCell: UICollectionViewCell {
     private func removeAnimationView() {
         animatedView?.stop()
         indicatorView.removeFromSuperview()
+        animatedView?.removeFromSuperview()
         animatedView = nil
     }
 }

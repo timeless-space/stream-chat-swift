@@ -11,6 +11,7 @@ import Stipop
 import GiphyUISDK
 import Lottie
 import dotLottie
+import dotLottieLoader
 
 class ChatMessageStickerBubble: _TableViewCell {
 
@@ -94,18 +95,18 @@ class ChatMessageStickerBubble: _TableViewCell {
             sentThumbGifView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
             sentThumbGifView.setGifFromURL(gifUrl)
             stickerContainer.addArrangedSubview(sentThumbGifView)
-        } else if content?.extraData.stickerUrl?.contains(".json") ?? false, let lottie = URL(string: content?.extraData.stickerUrl ?? "") {
+        } else if content?.extraData.stickerUrl?.contains(".lottie") ?? false, let lottie = URL(string: content?.extraData.stickerUrl ?? "") {
             sentThumbStickerView = AnimationView()
-            DotLottie.load(name: "1") { [weak self] (animation, file) in
+            DotLottie.load(from: lottie, cache: DotLottieCache.cache, completion: { [weak self] (animation, file) in
                 guard let `self` = self else { return }
                 self.sentThumbStickerView?.animation = animation
                 self.sentThumbStickerView?.respectAnimationFrameRate = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     self.sentThumbStickerView?.play()
-                    self.sentThumbStickerView?.loopMode = .playOnce
+                    self.sentThumbStickerView?.loopMode = .loop
+                    self.sentThumbStickerView?.backgroundBehavior = .pauseAndRestore
                 }
-            }
-            stickerContainer.addArrangedSubview(self.sentThumbStickerView!)
+            })
             if let stickerView = sentThumbStickerView {
                 stickerView.backgroundColor = Appearance.default.colorPalette.background6
                 stickerView.transform = .mirrorY
@@ -210,5 +211,11 @@ class ChatMessageStickerBubble: _TableViewCell {
             timestampLabel?.transform = .mirrorY
         }
         return timestampLabel!
+    }
+
+    func clearAll() {
+        sentThumbStickerView?.animation = nil
+        sentThumbStickerView?.removeFromSuperview()
+        sentThumbStickerView = nil
     }
 }

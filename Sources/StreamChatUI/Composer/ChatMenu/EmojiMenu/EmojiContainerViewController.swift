@@ -75,7 +75,8 @@ class EmojiContainerViewController: UIViewController {
                 for index in 0..<11 {
                     stickers.append(Sticker(
                         stickerId: index,
-                        stickerImg: "https://res.cloudinary.com/timeless/raw/upload/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-\(index).json",
+                        stickerImg:
+                            "https://res.cloudinary.com/timeless/raw/upload/v1/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-\(index).lottie",
                         packageID: index))
                 }
             }
