@@ -36,6 +36,10 @@ public class NameGroupViewController: ChatBaseVC {
         setupUI()
         addKeyboardObservers()
     }
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        nameField.becomeFirstResponder()
+    }
     // MARK: - METHODS
     public func setupUI() {
         heightSafeAreaView.constant = UIView.safeAreaTop
@@ -51,7 +55,6 @@ public class NameGroupViewController: ChatBaseVC {
         groupDescriptionField.delegate = self
         nameField.tintColor = Appearance.default.colorPalette.statusColorBlue
         groupDescriptionField.tintColor = Appearance.default.colorPalette.statusColorBlue
-        nameField.becomeFirstResponder()
         nameContainerView.layer.cornerRadius = 6.0
         descriptionContainerView.layer.cornerRadius = 6.0
         let str = self.selectedUsers.count > 1 ? "Friends" : "Friend"
