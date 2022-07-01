@@ -9,13 +9,12 @@ import UIKit
 import StreamChat
 import AVKit
 
-class WalletRequestPayBubble: UITableViewCell {
+class WalletRequestPayBubble: BaseCustomBubble {
 
     public private(set) var viewContainer: UIView!
     public private(set) var subContainer: UIView!
     public private(set) var sentThumbImageView: UIImageView!
     public private(set) var playerView: UIView!
-    public private(set) var timestampLabel: UILabel!
     public private(set) var descriptionLabel: UILabel!
     public private(set) var requestMessageLabel: UILabel!
     public private(set) var sentCryptoLabel: UILabel!
@@ -27,13 +26,11 @@ class WalletRequestPayBubble: UITableViewCell {
     private var trailingAnchorSender: NSLayoutConstraint?
     private var leadingAnchorReceiver: NSLayoutConstraint?
     private var trailingAnchorReceiver: NSLayoutConstraint?
-    public var layoutOptions: ChatMessageLayoutOptions?
-    var content: ChatMessage?
-    public lazy var dateFormatter = Appearance.default.formatters.messageTimestamp
+
+
+
     var isSender = false
     var channelId: ChannelId?
-    var chatClient: ChatClient?
-    var client: ChatClient?
     var walletPaymentType: WalletAttachmentPayload.PaymentType = .pay
         
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -45,7 +42,7 @@ class WalletRequestPayBubble: UITableViewCell {
         super.init(coder: coder)
     }
 
-    private var cellWidth: CGFloat {
+    override var cellWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.3
     }
 
@@ -55,12 +52,14 @@ class WalletRequestPayBubble: UITableViewCell {
         viewContainer = UIView()
         viewContainer.translatesAutoresizingMaskIntoConstraints = false
         viewContainer.backgroundColor = .clear
-        viewContainer.clipsToBounds = true
-        contentView.addSubview(viewContainer)
-        NSLayoutConstraint.activate([
-            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
-            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
-        ])
+
+
+        addContainerView(viewContainer)
+//        viewContainer.clipsToBounds = true
+//        NSLayoutConstraint.activate([
+//            viewContainer.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 0),
+//            viewContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -Constants.MessageTopPadding)
+//        ])
 
         subContainer = UIView()
         subContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -132,29 +131,30 @@ class WalletRequestPayBubble: UITableViewCell {
             pickUpButton.topAnchor.constraint(equalTo: subContainer.topAnchor, constant: 20)
         ])
         pickUpButton.transform = .mirrorY
-
-        timestampLabel = createTimestampLabel()
-        timestampLabel.translatesAutoresizingMaskIntoConstraints = false
-        viewContainer.addSubview(timestampLabel)
-        NSLayoutConstraint.activate([
-            timestampLabel.leadingAnchor.constraint(equalTo: viewContainer.leadingAnchor, constant: 0),
-            timestampLabel.trailingAnchor.constraint(equalTo: viewContainer.trailingAnchor, constant: 0),
-            timestampLabel.bottomAnchor.constraint(equalTo: subContainer.topAnchor, constant: -8),
-            timestampLabel.topAnchor.constraint(equalTo: viewContainer.topAnchor, constant: 0),
-            timestampLabel.heightAnchor.constraint(equalToConstant: 15)
-        ])
-        timestampLabel.transform = .mirrorY
-
         leadingAnchorForSender = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: cellWidth)
         trailingAnchorSender = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: Constants.MessageRightPadding)
         leadingAnchorReceiver = viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Constants.MessageLeftPadding)
         trailingAnchorReceiver = viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -cellWidth)
     }
 
+    override func configureCell(
+        isSender: Bool,
+        content: ChatMessage?,
+        chatChannel: ChatChannel?,
+        layoutOptions: ChatMessageLayoutOptions?
+    ) {
+        super.configureCell(
+            isSender: isSender,
+            content: content,
+            chatChannel: chatChannel,
+            layoutOptions: layoutOptions
+        )
+        configData(isSender: isSender)
+    }
+
     func configData(isSender: Bool) {
         self.isSender = isSender
         handleBubbleConstraints(isSender)
-        timestampLabel.textAlignment = isSender ? .right : .left
         walletPaymentType = content?.attachments(payloadType: WalletAttachmentPayload.self).first?.paymentType ?? .pay
         if walletPaymentType == .request {
             let payload = content?.attachments(payloadType: WalletAttachmentPayload.self).first
@@ -173,11 +173,6 @@ class WalletRequestPayBubble: UITableViewCell {
             }
             lblDetails.text = "AMOUNT: \(payload?.extraData?.requestedAmount?.formattedOneBalance ?? "0") ONE"
         }
-        if let createdAt = content?.createdAt {
-            timestampLabel?.text = dateFormatter.format(createdAt)
-        } else {
-            timestampLabel?.text = nil
-        }
         if walletPaymentType == .request {
             pickUpButton.isEnabled = false
             pickUpButton.alpha = 0.2
@@ -192,19 +187,6 @@ class WalletRequestPayBubble: UITableViewCell {
         trailingAnchorSender?.isActive = isSender
         leadingAnchorReceiver?.isActive = !isSender
         trailingAnchorReceiver?.isActive = !isSender
-    }
-
-    private func createTimestampLabel() -> UILabel {
-        if timestampLabel == nil {
-            timestampLabel = UILabel()
-                .withAdjustingFontForContentSizeCategory
-                .withBidirectionalLanguagesSupport
-                .withoutAutoresizingMaskConstraints
-            timestampLabel.textAlignment = .left
-            timestampLabel!.textColor = Appearance.default.colorPalette.subtitleText
-            timestampLabel!.font = Appearance.default.fonts.footnote
-        }
-        return timestampLabel!
     }
 
     private func createDescLabel() -> UILabel {

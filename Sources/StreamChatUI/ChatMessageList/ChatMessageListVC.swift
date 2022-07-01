@@ -552,11 +552,12 @@ open class ChatMessageListVC: _ViewController,
                     if let channel = dataSource?.channel(for: self) {
                         cell.channelId = channel.cid
                     }
-                    cell.isSender = isMessageFromCurrentUser
-                    cell.client = client
-                    cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
-                    cell.content = message
-                    cell.configData(isSender: isMessageFromCurrentUser)
+                    cell.configureCell(
+                        isSender: isMessageFromCurrentUser,
+                        content: message,
+                        chatChannel: dataSource?.channel(for: self),
+                        layoutOptions: cellLayoutOptionsForMessage(at: indexPath)
+                    )
                     return cell
                 }
                 guard let cell = tableView.dequeueReusableCell(
@@ -588,12 +589,12 @@ open class ChatMessageListVC: _ViewController,
                     for: indexPath) as? ChatMessageStickerBubble else {
                         return UITableViewCell()
                     }
-                let messagesCont = dataSource?.numberOfMessages(in: self) ?? 0
-                cell.content = message
-                cell.chatChannel = dataSource?.channel(for: self)
-                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
-                cell.configureCell(isSender: isMessageFromCurrentUser)
-                cell.transform = .mirrorY
+                cell.configureCell(
+                    isSender: isMessageFromCurrentUser,
+                    content: message,
+                    chatChannel: dataSource?.channel(for: self),
+                    layoutOptions: cellLayoutOptionsForMessage(at: indexPath)
+                )
                 return cell
             } else if isStickerGiftCell(message) {
                 guard let cell = tableView.dequeueReusableCell(

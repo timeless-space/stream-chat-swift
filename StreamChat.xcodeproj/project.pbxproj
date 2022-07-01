@@ -2058,6 +2058,7 @@
 		ED7DD40627CCF61C007CE0BA /* ASVideoLayerObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7DD3FE27CCF36C007CE0BA /* ASVideoLayerObject.swift */; };
 		ED7DD40727CCF61E007CE0BA /* ASVideoContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7DD3FD27CCF36C007CE0BA /* ASVideoContainer.swift */; };
 		ED95B3F52769DF850049DD53 /* RedPacketExpired.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED95B3F42769DF850049DD53 /* RedPacketExpired.swift */; };
+		EDA447FA2850BDDF00E508CA /* BaseCustomBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDA447F92850BDDF00E508CA /* BaseCustomBubble.swift */; };
 		EDAB4B3F27A15D1D00F07D53 /* Snackbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */; };
 		EDAB4B4227A17A0300F07D53 /* EmojiButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDAB4B4027A179D600F07D53 /* EmojiButton.swift */; };
 		EDC2D275283FA0D10056B73D /* StackedItemsLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC2D273283FA0D00056B73D /* StackedItemsLayout.swift */; };
@@ -3960,6 +3961,7 @@
 		ED7DD3FE27CCF36C007CE0BA /* ASVideoLayerObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoLayerObject.swift; sourceTree = "<group>"; };
 		ED7DD3FF27CCF36C007CE0BA /* ASVideoPlayerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoPlayerController.swift; sourceTree = "<group>"; };
 		ED95B3F42769DF850049DD53 /* RedPacketExpired.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedPacketExpired.swift; sourceTree = "<group>"; };
+		EDA447F92850BDDF00E508CA /* BaseCustomBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseCustomBubble.swift; sourceTree = "<group>"; };
 		EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snackbar.swift; sourceTree = "<group>"; };
 		EDAB4B4027A179D600F07D53 /* EmojiButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiButton.swift; sourceTree = "<group>"; };
 		EDC2D273283FA0D00056B73D /* StackedItemsLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackedItemsLayout.swift; sourceTree = "<group>"; };
@@ -8376,6 +8378,7 @@
 				ED102B252844E58F00CE5D82 /* AttachmentPreviewBubble.swift */,
 				ED381A7C2848754900C4C0B8 /* MediaPreviewCollectionCell.swift */,
 				E3508C5C2848EA5900B7E895 /* WeatherCell.swift */,
+				EDA447F92850BDDF00E508CA /* BaseCustomBubble.swift */,
 			);
 			path = ChatMessage;
 			sourceTree = "<group>";
@@ -10266,6 +10269,7 @@
 				BDDD1EA62632C6D600BA007B /* AppearanceProvider.swift in Sources */,
 				ED1D14762786C21C005A0EAB /* Storyboard.swift in Sources */,
 				EDD84516279EB2F6004BF3CD /* SendPaymentViewController.swift in Sources */,
+				EDA447FA2850BDDF00E508CA /* BaseCustomBubble.swift in Sources */,
 				A35757C72613081B00DC914C /* ComposerKeyboardHandler.swift in Sources */,
 				6EEFB78C27BB83AD007224C2 /* PanModalPresentable.swift in Sources */,
 				79205857264C2D6C002B145B /* TitleContainerView.swift in Sources */,
