@@ -571,7 +571,7 @@ open class ChatMessageListVC: _ViewController,
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
                 return cell
-            } else if isAdminMessage(message) {
+            } else if let message = message, message.isAdminMessage() {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "AdminMessageTVCell",
                     for: indexPath) as? AdminMessageTVCell else {
@@ -811,10 +811,6 @@ open class ChatMessageListVC: _ViewController,
               let fallbackMessage = extraData["fallbackMessage"] else { return false }
         let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
         return !message.isBlank
-    }
-
-    private func isAdminMessage(_ message: ChatMessage?) -> Bool {
-        message?.extraData.keys.contains("adminMessage") ?? false
     }
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
