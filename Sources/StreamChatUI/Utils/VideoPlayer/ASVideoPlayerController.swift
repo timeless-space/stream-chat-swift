@@ -298,6 +298,13 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
         }
     }
 
+    open func playSelectedCell(cell: ASAutoPlayVideoLayerContainer) {
+        guard let videoURL = cell.videoURL else {
+            return
+        }
+        playVideo(withLayer: cell.videoLayer, url: videoURL)
+    }
+
     // Set observing urls false when objects are removed from cache
     public func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
         if let videoObject = obj as? ASVideoContainer {

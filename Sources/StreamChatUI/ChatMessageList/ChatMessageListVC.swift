@@ -114,6 +114,8 @@ open class ChatMessageListVC: _ViewController,
         listView.register(StickerGiftBubble.self, forCellReuseIdentifier: "StickerGiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        listView.register(PhotoCollectionBubble.self, forCellReuseIdentifier: "PhotoCollectionBubble")
+        listView.register(AttachmentPreviewBubble.self, forCellReuseIdentifier: "AttachmentPreviewBubble")
         listView.register(WeatherCell.self, forCellReuseIdentifier: "WeatherCell")
         pausePlayVideos(isScrolled: false)
         NotificationCenter.default.addObserver(
@@ -656,6 +658,31 @@ open class ChatMessageListVC: _ViewController,
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
                 return cell
+            } else if message?.isSinglePreview ?? false {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: AttachmentPreviewBubble.identifier,
+                    for: indexPath) as? AttachmentPreviewBubble else {
+                        return UITableViewCell()
+                    }
+                cell.content = message
+                cell.delegate = self
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                return cell
+            } else if message?.isPhotoCollectionCell ?? false {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PhotoCollectionBubble",
+                    for: indexPath) as? PhotoCollectionBubble else {
+                        return UITableViewCell()
+                    }
+                cell.content = message
+                cell.delegate = self
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
                     contentViewClass: cellContentClassForMessage(at: indexPath),
@@ -1161,5 +1188,18 @@ extension ChatMessageListVC: AnnouncementAction {
         else { return }
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         cell.configureCell(message)
+    }
+}
+
+extension ChatMessageListVC: PhotoCollectionAction {
+    func didSelectAttachment(_ message: ChatMessage?, view: GalleryItemPreview, _ id: AttachmentId) {
+        guard let chatMessage = message else {
+            return
+        }
+        router.showGallery(
+            message: chatMessage,
+            initialAttachmentId: id,
+            previews: [view]
+        )
     }
 }

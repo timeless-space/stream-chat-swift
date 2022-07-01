@@ -237,6 +237,26 @@ public extension Appearance {
         public var folder: UIImage = loadImageSafely(with: "folder")
         public var restart: UIImage = loadImageSafely(with: "restart")
         public var chatIcon: UIImage = loadImageSafely(with: "chatIcon")
+        public var expandStack: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "rectangle.portrait.arrowtriangle.2.outward")!
+                        .withRenderingMode(.alwaysTemplate)
+                        .tinted(with: UIColor.white.withAlphaComponent(0.6))
+            } else {
+                return nil
+            }
+        }()
+
+        public var collapseStack: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "square.stack")!
+                        .withRenderingMode(.alwaysTemplate)
+                        .tinted(with: UIColor.white.withAlphaComponent(0.6))
+            } else {
+                return nil
+            }
+        }()
+
         public var download: UIImage? = {
             if #available(iOS 13.0, *) {
                 return UIImage(systemName: "icloud.and.arrow.down")!
