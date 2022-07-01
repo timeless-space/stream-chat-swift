@@ -27,12 +27,13 @@ class PrivateGroupUsersCVCell: UICollectionViewCell {
             into: imgAvatar,
             url: URL(string: data.user?.image ?? ""),
             imageCDN: StreamImageCDN(),
-            placeholder: Appearance.default.images.userAvatarPlaceholder4,
+            placeholder: nil,
             resize: true
         )
         lblUserName.text = data.user?.name
         imgAvatar.cornerRadius = 35
         imgAvatar.layoutIfNeeded()
+        imgAvatar.backgroundColor = Appearance.default.colorPalette.placeHolderBalanceBG
     }
 
 }

@@ -114,6 +114,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             } else {
                 return "Received successful"
             }
+        } else if lastMessage.extraData.keys.contains("sendStickerGift") {
+            return "Sticker Pack"
         } else if !lastMessage.imageAttachments.isEmpty {
             return content.channel.isDirectMessageChannel ? "Photo" : "\(authorName) Photo"
         } else if !lastMessage.fileAttachments.isEmpty {
@@ -136,6 +138,8 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             return "Gift"
         } else if lastMessage.extraData.keys.contains("poll") {
             return "Poll"
+        } else if lastMessage.extraData.keys.contains("weather") {
+            return "Weather"
         } else if lastMessage.extraData.keys.contains("fallbackMessage") {
             let extraData = lastMessage.extraData
             guard let fallbackMessage = extraData["fallbackMessage"] else { return "" }

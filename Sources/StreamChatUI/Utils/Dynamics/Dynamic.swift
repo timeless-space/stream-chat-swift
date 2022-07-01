@@ -6,14 +6,14 @@
 //  Copyright © 2022 Stream.io Inc. All rights reserved.
 //
 
-class Dynamic<T> {
+public class Dynamic<T> {
     
     // MARK: Typealias
-    typealias Listener = (T) -> Void
+    public typealias Listener = (T) -> Void
     
     // MARK: Vars & Lets
-    var listener: Listener?
-    var value: T {
+    public var listener: Listener?
+    public var value: T {
         didSet {
             self.fire()
         }
@@ -25,11 +25,11 @@ class Dynamic<T> {
     }
     
     // MARK: Public func
-    func bind(_ listener: Listener?) {
+    public func bind(_ listener: Listener?) {
         self.listener = listener
     }
     
-    func bindAndFire(_ listener: Listener?) {
+    public func bindAndFire(_ listener: Listener?) {
         self.listener = listener
         listener?(value)
     }

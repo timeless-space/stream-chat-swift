@@ -7,6 +7,7 @@ import StreamChat
 import UIKit
 import SwiftUI
 import GiphyUISDK
+import CoreLocation
 
 extension Notification.Name {
     public static let sendOneWalletTapAction = Notification.Name("kStreamChatOneWalletTapAction")
@@ -23,6 +24,7 @@ extension Notification.Name {
     public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
+    public static let updateStickers = Notification.Name("kUpdateStickers")
     public static let updateTextfield = Notification.Name("kUpdateTextfield")
     public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
     public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
@@ -31,6 +33,12 @@ extension Notification.Name {
     public static let pollUpdate = Notification.Name("kStreamChatPollUpdate")
     public static let viewPollResult = Notification.Name("kStreamChatViewPollResultTapAction")
     public static let getPollData = Notification.Name("kStreamChatGetPollData")
+    public static let fetchWeather = Notification.Name("kFetchWeather")
+    public static let showLocationPicker = Notification.Name("kShowLocationPicker")
+    public static let fetchWeatherCompleted = Notification.Name("kFetchWeatherCompleted")
+    public static let locationUpdated = Notification.Name("kLocationUpdated")
+    public static let getWeatherType = Notification.Name("kGetWeatherType")
+    public static let setWeatherType = Notification.Name("kSetWeatherType")
 }
 
 /// The possible errors that can occur in attachment validation
@@ -339,6 +347,7 @@ open class ComposerVC: _ViewController,
         }
     }
     var shouldToggleEmojiButton = true
+    private var isWeatherButtonTapped = false
 
     @objc func didTapView() {
         hideInputView()
@@ -428,6 +437,7 @@ open class ComposerVC: _ViewController,
 
     override open func viewDidLoad() {
         super.viewDidLoad()
+        bindData()
         GPHCache.shared.cache.diskCapacity = 300 * 1000 * 1000
         GPHCache.shared.cache.memoryCapacity = 300 * 1000 * 1000
         NotificationCenter.default.removeObserver(self)
@@ -435,6 +445,8 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(clearTextField), name: .clearTextField, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(sendWeatherMessage(_:)), name: .fetchWeatherCompleted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(editWeatherMessage(_:)), name: .locationUpdated, object: nil)
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
@@ -640,7 +652,7 @@ open class ComposerVC: _ViewController,
                     Snackbar.show(text: "Only admins are allowed to disburse the fund.")
                 }
             case .weather:
-                break
+                self.showWeather()
             case .crypto:
                 self.showPayment()
             case .oneN:
@@ -717,6 +729,7 @@ open class ComposerVC: _ViewController,
                         self.emojiPickerView = EmojiPickerViewController.instantiateController(storyboard: .wallet)
                         if let emojiPickerView = self.emojiPickerView as? EmojiPickerViewController {
                             emojiPickerView.downloadedPackage = downloadedSticker
+                            emojiPickerView.chatChannelController = self.channelController
                         }
                         self.forceKeyboardClose = true
                         guard let emojiPickerView = self.emojiPickerView else {
@@ -743,13 +756,13 @@ open class ComposerVC: _ViewController,
     open func showMediaPicker() {
         DispatchQueue.main.async { [weak self] in
             guard let `self` = self else { return }
-            self.present(self.mediaPickerVC, animated: true)
+            UIApplication.shared.windows.first?.rootViewController?.present(self.mediaPickerVC, animated: true)
         }
     }
 
     /// Shows a document picker.
     open func showFilePicker() {
-        present(filePickerVC, animated: true)
+        UIApplication.shared.windows.first?.rootViewController?.present(filePickerVC, animated: true)
     }
     
     open func showCamera() {
@@ -1001,6 +1014,85 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.post(name: .createNewPoll, object: nil, userInfo: userInfo)
     }
 
+    @objc private func sendWeatherMessage(_ notification: Notification) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let `self` = self else { return }
+            self.channelController?
+                .createNewMessage(
+                    text: "/weather",
+                    extraData: ["weather": .dictionary(self.getWeatherRequest(notification))],
+                    completion: nil
+                )
+        }
+    }
+
+    @objc private func editWeatherMessage(_ notification: Notification) {
+        let messageId = notification.userInfo?["messageId"] as? String ?? ""
+        guard let cid = channelController?.cid else { return }
+        let action = AttachmentAction(name: "action", value: "edit", style: .default, type: .button, text: "Edit")
+        ChatClient.shared.messageController(cid: cid, messageId: messageId)
+            .dispatchEphemeralMessageAction(action, getWeatherRequest(notification), key: "weather")
+    }
+
+    func getWeatherRequest(_ notification: Notification) -> [String: RawJSON] {
+        var weatherData = [String: RawJSON]()
+        // Get data from notification
+        guard let userInfo = notification.userInfo else {
+            return weatherData
+        }
+        let temp = userInfo["tempreature"] as? String ?? ""
+        let location = userInfo["location"] as? String ?? ""
+        let iconCode = userInfo["iconCode"] as? String ?? ""
+        let displayMessage = userInfo["displayMessage"] as? String ?? ""
+        let description = userInfo["description"] as? String ?? ""
+        // Set data
+        weatherData["currentWeather"] = .string(temp)
+        weatherData["currentLocation"] = .string(location)
+        weatherData["iconCode"] = .string(iconCode)
+        weatherData["displayMessage"] = .string(displayMessage)
+        weatherData["description"] = .string(description)
+        return weatherData
+    }
+
+    private func bindData() {
+        LocationManager.shared.location.bind { [weak self] location in
+            guard let self = self else {
+                return
+            }
+            if !LocationManager.shared.isEmptyCurrentLoc() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    if self.isWeatherButtonTapped {
+                        self.sendFetchWeatherRequest()
+                    }
+                }
+            }
+        }
+        LocationManager.shared.delegate = self
+    }
+
+    private func sendFetchWeatherRequest() {
+        isWeatherButtonTapped = false
+        NotificationCenter.default.post(name: .fetchWeather, object: nil, userInfo: nil)
+    }
+
+    private func showWeather() {
+        composerView.inputMessageView.textView.text = nil
+        composerView.inputMessageView.textView.resignFirstResponder()
+        isWeatherButtonTapped = true
+        if LocationManager.isAuthorized() {
+            LocationManager.shared.requestLocationAuthorization()
+            LocationManager.shared.requestGPS()
+            if !LocationManager.shared.isEmptyCurrentLoc() {
+                sendFetchWeatherRequest()
+            }
+        } else if LocationManager.hasLocationPermissionDenied() {
+            isWeatherButtonTapped = false
+            LocationManager.showLocationPermissionAlert()
+        } else {
+            LocationManager.shared.requestLocationAuthorization()
+        }
+    }
+
     private func animateMenuButton() {
         if !isMenuShowing {
             UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 5, options: .curveEaseInOut, animations: { [weak self] in
@@ -1172,6 +1264,8 @@ open class ComposerVC: _ViewController,
                 sendONEAction()
             } else if commandName == "redpacket" {
                 sendRedPacketAction()
+            } else if commandName == "weather" {
+                showWeather()
             } else {
                 content.addCommand(foundCommand)
                 dismissSuggestions()
@@ -1192,6 +1286,8 @@ open class ComposerVC: _ViewController,
                 self?.sendONEAction()
             } else if commandName == "redpacket" {
                 self?.sendRedPacketAction()
+            } else if commandName == "weather" {
+                self?.showWeather()
             } else {
                 guard let hintCommand = commandHints[safe: commandIndex] else {
                     indexNotFoundAssertion()
@@ -1488,8 +1584,7 @@ open class ComposerVC: _ViewController,
         let alert = UIAlertController(title: title, message: message, preferredStyle: preferredStyle)
         alert.popoverPresentationController?.sourceView = sourceView
         actions.forEach(alert.addAction)
-
-        present(alert, animated: true)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
     }
 }
 
@@ -1518,5 +1613,16 @@ func searchUsers(_ users: [ChatUser], by searchInput: String, excludingId: Strin
             return $0.id < $1.id
         }
         return dist < 0
+    }
+
+}
+
+// MARK: CLLocationManager Delegate Methods
+extension ComposerVC: onLocationPermissionChangedCallback {
+
+    public func onPermissionChanged() {
+        if isWeatherButtonTapped {
+            showWeather()
+        }
     }
 }

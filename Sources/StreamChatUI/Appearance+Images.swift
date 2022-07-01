@@ -65,7 +65,13 @@ public extension Appearance {
         public let closeCircle: UIImage = loadImageSafely(with: "close_circle")
         public var discardAttachment: UIImage = loadImageSafely(with: "close_circle_filled")
         public var back: UIImage = loadImageSafely(with: "icn_back")
-        public var onlyVisibleToCurrentUser = loadImageSafely(with: "eye")
+        public var onlyVisibleToCurrentUser: UIImage? = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "eye.fill")
+            } else {
+                return nil
+            }
+        }()
         public var more = loadImageSafely(with: "icn_more")
         public var moregreyCircle = loadImageSafely(with: "more-grey-circle")
         public var share: UIImage? = {
@@ -593,5 +599,7 @@ public extension Appearance {
         // MARK: QR Code Option
         public var shareImageIcon: UIImage = loadImageSafely(with: "share_image_icon")
         public var gif: UIImage = loadImageSafely(with: "gif")
+        public var weatherDay_bg = loadImageSafely(with: "weatherDay_bg")
+        public var weatherNight_bg = loadImageSafely(with: "weatherNight_bg")
     }
 }

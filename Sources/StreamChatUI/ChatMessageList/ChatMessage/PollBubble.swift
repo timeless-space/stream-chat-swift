@@ -192,7 +192,7 @@ public class PollBubble: UITableViewCell {
                             createdAt: fetchRawData(raw: createdAt) as? String ?? ""
                         ))
                     } else if let content = item["content"] {
-                        isPreview = self.content?.type == .ephemeral
+                        isPreview = self.content?.localState == .pendingSend || self.content?.localState == .sending || self.content?.type == .ephemeral
                         answers.append(PollBubbleView.AnswerRes(
                             id: "",
                             content: fetchRawData(raw: content) as? String ?? "",
