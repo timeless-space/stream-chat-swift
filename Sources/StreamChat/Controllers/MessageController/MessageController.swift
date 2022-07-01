@@ -529,11 +529,12 @@ public extension ChatMessageController {
     ///   - action: The action to take.
     ///   - completion: The completion. Will be called on a **callbackQueue** when the operation is finished.
     ///                 If operation fails, the completion is called with the error.
-    func dispatchEphemeralMessageAction(_ action: AttachmentAction, _ poll: [String : RawJSON] = [:], completion: ((Error?) -> Void)? = nil) {
+    func dispatchEphemeralMessageAction(_ action: AttachmentAction, _ formData: [String : RawJSON] = [:], key: String = "", completion: ((Error?) -> Void)? = nil) {
         messageUpdater.dispatchEphemeralMessageAction(cid: cid,
                                                       messageId: messageId,
                                                       action: action,
-                                                      poll: poll) { error in
+                                                      formData: formData,
+                                                      key: key) { error in
             self.callback {
                 completion?(error)
             }

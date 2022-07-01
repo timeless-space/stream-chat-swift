@@ -24,8 +24,8 @@ open class VideoAttachmentGalleryPreview: _View, ThemeProvider {
         .withoutAutoresizingMaskConstraints
 
     /// A loading indicator that is shown when preview is being loaded
-    open private(set) lazy var loadingIndicator = components
-        .loadingIndicator.init()
+    open private(set) lazy var loadingIndicator = UIActivityIndicatorView
+        .init()
         .withoutAutoresizingMaskConstraints
 
     /// An uploading overlay that shows video uploading progress
@@ -44,7 +44,7 @@ open class VideoAttachmentGalleryPreview: _View, ThemeProvider {
         imageView.contentMode = .scaleAspectFill
         imageView.layer.masksToBounds = true
         
-        playButton.setImage(appearance.images.bigPlay, for: .normal)
+        playButton.setImage(appearance.images.play, for: .normal)
     }
 
     override open func setUp() {
@@ -69,6 +69,7 @@ open class VideoAttachmentGalleryPreview: _View, ThemeProvider {
         imageView.pin(to: self)
         
         addSubview(loadingIndicator)
+        loadingIndicator.startAnimating()
         loadingIndicator.pin(anchors: [.centerX, .centerY], to: self)
         
         addSubview(uploadingOverlay)

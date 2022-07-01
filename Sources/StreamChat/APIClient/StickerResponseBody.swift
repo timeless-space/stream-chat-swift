@@ -19,8 +19,10 @@ public struct PackageList: Codable, Hashable {
     public let packageImg: String?
     public let packageName, packageCategory, price, isWish: String?
     public let order: Int?
-    public let language, isNew, isDownload, isView: String?
+    public let language, isNew, isView: String?
+    public var isDownload: String?
     public let packageKeywords, packageAnimated, artistName: String?
+    public var isHidden = false
     enum CodingKeys: String, CodingKey {
         case packageID = "packageId"
         case packageImg, packageName, packageCategory, isWish, order, language, isNew, isDownload, isView, packageKeywords, packageAnimated, artistName, price

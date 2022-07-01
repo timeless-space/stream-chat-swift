@@ -40,6 +40,15 @@ class EmojiMenuViewController: UIViewController {
         let menus = UserDefaults.standard.retrieve(object: [StickerMenu].self, fromKey: UserdefaultKey.downloadedSticker) ?? []
         loadMenu(result: menus)
         LRUAnimationCache.sharedCache.cacheSize = cacheMemorySize
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateStickers),
+            name: .updateStickers,
+            object: nil)
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -49,6 +58,10 @@ class EmojiMenuViewController: UIViewController {
 
     @IBAction func btnShowPackage(_ sender: Any) {
         didSelectMarketPlace?(menus.compactMap { $0.menuId })
+    }
+
+    @objc private func updateStickers() {
+        fetchSticker()
     }
 
     private func fetchSticker() {

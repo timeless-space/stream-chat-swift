@@ -395,7 +395,7 @@ open class GalleryVC: _ViewController,
             applicationActivities: nil
         )
         activityViewController.popoverPresentationController?.sourceView = shareButton
-        present(activityViewController, animated: true)
+        UIApplication.shared.windows.first?.rootViewController?.present(activityViewController, animated: true)
     }
     
     /// Updates `currentPage`.

@@ -55,7 +55,6 @@ open class ChatMessageLayoutOptionsResolver {
             nextMessage.isOneWalletCell ||
             nextMessage.isRedPacketAmountCell ||
             nextMessage.isRedPacketCell ||
-            nextMessage.isRedPacketExpiredCell ||
             nextMessage.isRedPacketReceivedCell ||
             nextMessage.isRedPacketNoPickUpCell
             if isCardMessage && !message.isSentByCurrentUser && !channel.isDirectMessageChannel {

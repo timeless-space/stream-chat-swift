@@ -18,15 +18,18 @@ class StickerCollectionCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        imgSticker = SPUIStickerView()
-        imgSticker.translatesAutoresizingMaskIntoConstraints = false
-        indicatorView.translatesAutoresizingMaskIntoConstraints = false
-        indicatorView.isHidden = true
-        embed(imgSticker,insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
+        setUpLayout()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setUpLayout()
+    }
+
+    func setUpLayout() {
+        imgSticker = SPUIStickerView()
+        imgSticker.translatesAutoresizingMaskIntoConstraints = false
+        embed(imgSticker,insets: .init(top: 15, leading: 15, bottom: 15, trailing: 15))
     }
 
     func configureSticker(sticker: Sticker) {
