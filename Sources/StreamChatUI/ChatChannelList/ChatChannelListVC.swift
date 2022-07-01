@@ -304,7 +304,61 @@ open class ChatChannelListVC: _ViewController,
             cell.contentView.backgroundColor = nil
         }
     }
-        
+
+    public func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        let index = indexPath.row
+        let channel = controller.channels[indexPath.row]
+        let identifier = "\(index)" as NSString
+        let channelPreview = makeChannelPreview(cid: channel.cid)
+        return UIContextMenuConfiguration(
+            identifier: identifier,
+            previewProvider: {channelPreview}) { [weak self] _ in
+                guard let weakSelf = self else {
+                    return UIMenu(title: "", image: nil, children: [])
+                }
+                let markAsReadAction = UIAction(
+                    title: "Mark as Read",
+                    image: UIImage(systemName: "rectangle.3.group.bubble.left")) { _ in
+
+                    }
+                let muteAction = UIAction(
+                    title: "Mute",
+                    image: weakSelf.appearance.images.mute) { _ in
+
+                    }
+                let deleteAction = UIAction(
+                    title: "Delete",
+                    image: UIImage(systemName: "trash.fill"),
+                    attributes: .destructive) { _ in
+                    }
+                return UIMenu(title: "", image: nil, children: [markAsReadAction,
+                                                                muteAction,
+                                                                deleteAction])
+            }
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+        guard
+            let identifier = configuration.identifier as? String,
+            let index = Int(identifier)
+        else {
+            return
+        }
+        let channel = controller.channels[index]
+        animator.addCompletion {
+            self.router.showChannel(for: channel.cid)
+        }
+    }
+
+    public func makeChannelPreview(cid: ChannelId) -> ChatChannelVC {
+        let controller = components.channelVC.init()
+        controller.channelController = router.rootViewController.controller.client.channelController(
+            for: cid,
+            channelListQuery: router.rootViewController.controller.query
+        )
+        return controller
+    }
+
     @objc open func didTapOnCurrentUserAvatar(_ sender: Any) {
         router.showCurrentUserProfile()
     }
