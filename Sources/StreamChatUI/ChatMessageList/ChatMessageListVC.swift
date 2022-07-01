@@ -93,6 +93,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     var viewEmptyState: UIView = UIView()
+    var currentWeatherType: String = "Fahrenheit"
 
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -110,8 +111,12 @@ open class ChatMessageListVC: _ViewController,
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
+        listView.register(StickerGiftBubble.self, forCellReuseIdentifier: "StickerGiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
+        listView.register(PhotoCollectionBubble.self, forCellReuseIdentifier: "PhotoCollectionBubble")
+        listView.register(AttachmentPreviewBubble.self, forCellReuseIdentifier: "AttachmentPreviewBubble")
+        listView.register(WeatherCell.self, forCellReuseIdentifier: "WeatherCell")
         pausePlayVideos(isScrolled: false)
         NotificationCenter.default.addObserver(
             self,
@@ -119,6 +124,17 @@ open class ChatMessageListVC: _ViewController,
             name: UIApplication.didBecomeActiveNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(setWeatherType(_:)),
+            name: .setWeatherType,
+            object: nil
+        )
+        NotificationCenter.default.post(name: .getWeatherType, object: nil)
+    }
+
+    @objc private func setWeatherType(_ notification: NSNotification) {
+        currentWeatherType = notification.userInfo?["weatherType"] as? String ?? "Fahrenheit"
     }
 
     /// A formatter that converts the message date to textual representation.
@@ -555,7 +571,7 @@ open class ChatMessageListVC: _ViewController,
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.configData()
                 return cell
-            } else if isAdminMessage(message) {
+            } else if let message = message, message.isAdminMessage() {
                 guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: "AdminMessageTVCell",
                     for: indexPath) as? AdminMessageTVCell else {
@@ -578,6 +594,18 @@ open class ChatMessageListVC: _ViewController,
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
+                return cell
+            } else if isStickerGiftCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "StickerGiftBubble",
+                    for: indexPath) as? StickerGiftBubble else {
+                        return UITableViewCell()
+                    }
+                if let channel = dataSource?.channel(for: self) {
+                    cell.channel = channel
+                }
+                cell.content = message
+                cell.configureCell(isSender: isMessageFromCurrentUser)
                 return cell
             } else if isPollCell(message) {
                 if isMessageFromCurrentUser {
@@ -602,6 +630,19 @@ open class ChatMessageListVC: _ViewController,
                 cell.channel = dataSource?.channel(for: self)
                 cell.configData(isSender: isMessageFromCurrentUser)
                 return cell
+            } else if isWeatherCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "WeatherCell",
+                    for: indexPath) as? WeatherCell else {
+                        return UITableViewCell()
+                    }
+                cell.weatherType = currentWeatherType
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.content = message
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
             } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
                       let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
@@ -616,6 +657,31 @@ open class ChatMessageListVC: _ViewController,
                 message?.text = fallbackMessageString
                 cell.messageContentView?.delegate = self
                 cell.messageContentView?.content = message
+                return cell
+            } else if message?.isSinglePreview ?? false {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: AttachmentPreviewBubble.identifier,
+                    for: indexPath) as? AttachmentPreviewBubble else {
+                        return UITableViewCell()
+                    }
+                cell.content = message
+                cell.delegate = self
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                return cell
+            } else if message?.isPhotoCollectionCell ?? false {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "PhotoCollectionBubble",
+                    for: indexPath) as? PhotoCollectionBubble else {
+                        return UITableViewCell()
+                    }
+                cell.content = message
+                cell.delegate = self
+                cell.chatChannel = dataSource?.channel(for: self)
+                cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
                 return cell
             } else {
                 let cell: ChatMessageCell = listView.dequeueReusableCell(
@@ -641,7 +707,7 @@ open class ChatMessageListVC: _ViewController,
             }
         }
     }
-
+    
     private func setupEmptyState() {
         viewEmptyState = UIView()
         self.view.addSubview(viewEmptyState)
@@ -678,6 +744,10 @@ open class ChatMessageListVC: _ViewController,
         message?.extraData.keys.contains("redPacketPickup") ?? false
     }
 
+    private func isStickerGiftCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("sendStickerGift") ?? false
+    }
+
     private func isGiftCell(_ message: ChatMessage?) -> Bool {
         guard let extraData = message?.extraData,
               let messageType = extraData["messageType"] else { return false }
@@ -691,6 +761,10 @@ open class ChatMessageListVC: _ViewController,
 
     private func isStickerCell(_ message: ChatMessage?) -> Bool {
         return (message?.extraData.keys.contains("stickerUrl") ?? false) || (message?.extraData.keys.contains("giphyUrl") ?? false)
+    }
+
+    private func isWeatherCell(_ message: ChatMessage?) -> Bool {
+        return (message?.extraData.keys.contains("weather") ?? false)
     }
 
     private func isRedPacketExpiredCell(_ message: ChatMessage?) -> Bool {
@@ -737,10 +811,6 @@ open class ChatMessageListVC: _ViewController,
               let fallbackMessage = extraData["fallbackMessage"] else { return false }
         let message = fetchRawData(raw: fallbackMessage) as? String ?? ""
         return !message.isBlank
-    }
-
-    private func isAdminMessage(_ message: ChatMessage?) -> Bool {
-        message?.extraData.keys.contains("adminMessage") ?? false
     }
 
     open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -1114,5 +1184,18 @@ extension ChatMessageListVC: AnnouncementAction {
         else { return }
         let message = dataSource?.chatMessageListVC(self, messageAt: indexPath)
         cell.configureCell(message)
+    }
+}
+
+extension ChatMessageListVC: PhotoCollectionAction {
+    func didSelectAttachment(_ message: ChatMessage?, view: GalleryItemPreview, _ id: AttachmentId) {
+        guard let chatMessage = message else {
+            return
+        }
+        router.showGallery(
+            message: chatMessage,
+            initialAttachmentId: id,
+            previews: [view]
+        )
     }
 }

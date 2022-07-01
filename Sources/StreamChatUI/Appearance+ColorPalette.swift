@@ -88,6 +88,7 @@ public extension Appearance {
         public var messageActionMenuSeparator: UIColor = .init(rgb: 0x383638)
         public var stickerBg: UIColor = .init(rgb: 0x1E1F1F)
         public var emojiBg: UIColor = .init(rgb: 0x737373)
+        public var textColorBlue: UIColor = .init(rgb: 0x0278E0)
     }
 }
 
