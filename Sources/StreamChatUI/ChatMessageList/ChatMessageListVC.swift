@@ -111,6 +111,7 @@ open class ChatMessageListVC: _ViewController,
         listView.register(TableViewCellWallePayBubbleIncoming.nib, forCellReuseIdentifier: TableViewCellWallePayBubbleIncoming.identifier)
         listView.register(TableViewCellRedPacketDrop.nib, forCellReuseIdentifier: TableViewCellRedPacketDrop.identifier)
         listView.register(.init(nibName: "AnnouncementTableViewCell", bundle: nil), forCellReuseIdentifier: "AnnouncementTableViewCell")
+        listView.register(StickerGiftBubble.self, forCellReuseIdentifier: "StickerGiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftBubble")
         listView.register(GiftBubble.self, forCellReuseIdentifier: "GiftSentBubble")
         listView.register(WeatherCell.self, forCellReuseIdentifier: "WeatherCell")
@@ -592,6 +593,18 @@ open class ChatMessageListVC: _ViewController,
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
+            } else if isStickerGiftCell(message) {
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "StickerGiftBubble",
+                    for: indexPath) as? StickerGiftBubble else {
+                        return UITableViewCell()
+                    }
+                if let channel = dataSource?.channel(for: self) {
+                    cell.channel = channel
+                }
+                cell.content = message
+                cell.configureCell(isSender: isMessageFromCurrentUser)
+                return cell
             } else if isPollCell(message) {
                 if isMessageFromCurrentUser {
                     guard let cell = tableView.dequeueReusableCell(
@@ -702,6 +715,10 @@ open class ChatMessageListVC: _ViewController,
 
     private func isRedPacketCell(_ message: ChatMessage?) -> Bool {
         message?.extraData.keys.contains("redPacketPickup") ?? false
+    }
+
+    private func isStickerGiftCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("sendStickerGift") ?? false
     }
 
     private func isGiftCell(_ message: ChatMessage?) -> Bool {

@@ -590,6 +590,19 @@ public extension Dictionary where Key == String, Value == RawJSON {
 
 // MARK: Sticker
 public extension Dictionary where Key == String, Value == RawJSON {
+    var sendStickerGiftExtraData: [String: RawJSON] {
+        if let extraData = self["sendStickerGift"] {
+            switch extraData {
+            case .dictionary(let dictionary):
+                return dictionary
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
     var stickerUrl: String? {
         if let stickerUrl = self["stickerUrl"] {
             return fetchRawData(raw: stickerUrl) as? String
@@ -603,6 +616,78 @@ public extension Dictionary where Key == String, Value == RawJSON {
             return fetchRawData(raw: stickerUrl) as? String
         } else {
             return nil
+        }
+    }
+
+    var giftPackageId: String? {
+        if let giftPackageId = sendStickerGiftExtraData["giftPackageId"] {
+            return fetchRawData(raw: giftPackageId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftPackageName: String? {
+        if let giftPackageName = sendStickerGiftExtraData["giftPackageName"] {
+            return fetchRawData(raw: giftPackageName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftPackageImage: String? {
+        if let giftPackageImage = sendStickerGiftExtraData["giftPackageImage"] {
+            return fetchRawData(raw: giftPackageImage) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftSenderId: String? {
+        if let giftSenderId = sendStickerGiftExtraData["giftSenderId"] {
+            return fetchRawData(raw: giftSenderId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftSenderName: String? {
+        if let giftSenderName = sendStickerGiftExtraData["giftSenderName"] {
+            return fetchRawData(raw: giftSenderName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftReceiverId: String? {
+        if let giftReceiverId = sendStickerGiftExtraData["giftReceiverId"] {
+            return fetchRawData(raw: giftReceiverId) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var giftReceiverName: String? {
+        if let giftReceiverName = sendStickerGiftExtraData["giftReceiverName"] {
+            return fetchRawData(raw: giftReceiverName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var channelId: String? {
+        if let channelIdName = sendStickerGiftExtraData["channelId"] {
+            return fetchRawData(raw: channelIdName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var isDownloaded: Bool {
+        if let isDownloadedName = sendStickerGiftExtraData["isDownloaded"] {
+            return fetchRawData(raw: isDownloadedName) as? Bool ?? false
+        } else {
+            return false
         }
     }
 }

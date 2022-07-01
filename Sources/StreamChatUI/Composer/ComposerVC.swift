@@ -24,6 +24,7 @@ extension Notification.Name {
     public static let claimGiftCardPacketAction = Notification.Name("kStreamChatClaimGiftCardTapAction")
     public static let clearTextField = Notification.Name("kStreamChatClearTextField")
     public static let hideKeyboardMenu = Notification.Name("kHideKeyboardMenu")
+    public static let updateStickers = Notification.Name("kUpdateStickers")
     public static let updateTextfield = Notification.Name("kUpdateTextfield")
     public static let createNewPoll = Notification.Name("kStreamChatCreateNewPollTapAction")
     public static let editPoll = Notification.Name("kStreamChatEditPollTapAction")
@@ -727,6 +728,7 @@ open class ComposerVC: _ViewController,
                         self.emojiPickerView = EmojiPickerViewController.instantiateController(storyboard: .wallet)
                         if let emojiPickerView = self.emojiPickerView as? EmojiPickerViewController {
                             emojiPickerView.downloadedPackage = downloadedSticker
+                            emojiPickerView.chatChannelController = self.channelController
                         }
                         self.forceKeyboardClose = true
                         guard let emojiPickerView = self.emojiPickerView else {
