@@ -352,6 +352,16 @@ public extension ChatMessage {
         extraData.keys.contains("redPacketPickup") ?? false
     }
 
+    public var isPhotoCollectionCell: Bool {
+        return (self.attachmentCounts[.image] ?? 0) + (self.attachmentCounts[.video] ?? 0) > 1
+    }
+
+    public var isSinglePreview: Bool {
+        return ((self.attachmentCounts[.image] ?? 0 == 1)
+                || (self.attachmentCounts[.video] ?? 0 == 1))
+                && self.attachmentCounts.count == 1
+    }
+
     public var isRedPacketAmountCell: Bool {
         return extraData.keys.contains("RedPacketOtherAmountReceived") ?? false
     }
@@ -382,6 +392,10 @@ public extension ChatMessage {
         } else {
             return false
         }
+    }
+
+    public func isAdminMessage() -> Bool {
+        extraData.keys.contains("adminMessage") ?? false
     }
 
     public func getExtraData(key: String) -> [String: RawJSON]? {
