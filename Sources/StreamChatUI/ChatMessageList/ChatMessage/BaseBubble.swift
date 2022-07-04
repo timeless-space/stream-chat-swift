@@ -10,7 +10,7 @@ import StreamChat
 
 class BaseBubble: _TableViewCell {
     /// The delegate responsible for action handling.
-    public weak var delegate: ChatMessageContentViewDelegate?
+    public weak var contentActionDelegate: ChatMessageContentViewDelegate?
     public private(set) var authorAvatarView: ChatAvatarView?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     var content: ChatMessage?
@@ -30,6 +30,6 @@ class BaseBubble: _TableViewCell {
 
     /// Handles tap on `avatarView` and forwards the action to the delegate.
     @objc open func handleTapOnAvatarView() {
-        delegate?.messageContentViewDidTapOnAvatarView(content)
+        contentActionDelegate?.messageContentViewDidTapOnAvatarView(content)
     }
 }

@@ -10,10 +10,9 @@ import UIKit
 import StreamChat
 import AVKit
 
-class PhotoCollectionBubble: _TableViewCell {
+class PhotoCollectionBubble: BaseBubble {
 
     // MARK: Variables
-    var content: ChatMessage?
     var chatChannel: ChatChannel?
     let stackedItemsView = StackedItemsView<StackedItem, MediaPreviewCollectionCell>()
     weak var delegate: PhotoCollectionAction?
@@ -28,7 +27,6 @@ class PhotoCollectionBubble: _TableViewCell {
         .withoutAutoresizingMaskConstraints
     private lazy var subContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-    private var authorAvatarView: ChatAvatarView?
     private let imageLoader = Components.default.imageLoader
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -175,18 +173,6 @@ class PhotoCollectionBubble: _TableViewCell {
             stackedItemsView.leftPadding = 0
         }
         stackedItemsView.layoutSubviews()
-    }
-
-    private func createAvatarView() -> ChatAvatarView {
-        if authorAvatarView == nil {
-            authorAvatarView = Components.default
-                .avatarView
-                .init()
-                .withoutAutoresizingMaskConstraints
-        }
-        authorAvatarView?.widthAnchor.pin(equalToConstant: messageAuthorAvatarSize.width).isActive = true
-        authorAvatarView?.heightAnchor.pin(equalToConstant: messageAuthorAvatarSize.height).isActive = true
-        return authorAvatarView!
     }
 
     private func createTimestampLabel() -> UILabel {

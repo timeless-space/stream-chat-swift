@@ -592,7 +592,7 @@ open class ChatMessageListVC: _ViewController,
                 let messagesCont = dataSource?.numberOfMessages(in: self) ?? 0
                 cell.content = message
                 cell.chatChannel = dataSource?.channel(for: self)
-                cell.delegate = self
+                cell.contentActionDelegate = self
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
@@ -641,6 +641,7 @@ open class ChatMessageListVC: _ViewController,
                 cell.weatherType = currentWeatherType
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.content = message
+                cell.contentActionDelegate = self
                 cell.chatChannel = dataSource?.channel(for: self)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
@@ -668,6 +669,7 @@ open class ChatMessageListVC: _ViewController,
                     }
                 cell.content = message
                 cell.delegate = self
+                cell.contentActionDelegate = self
                 cell.chatChannel = dataSource?.channel(for: self)
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
@@ -680,6 +682,7 @@ open class ChatMessageListVC: _ViewController,
                     }
                 cell.content = message
                 cell.delegate = self
+                cell.contentActionDelegate = self
                 cell.chatChannel = dataSource?.channel(for: self)
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)

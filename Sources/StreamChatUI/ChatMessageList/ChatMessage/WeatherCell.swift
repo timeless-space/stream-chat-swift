@@ -13,7 +13,7 @@ enum AttachmentActionType: Int {
     case send, edit, cancel
 }
 
-class WeatherCell: UITableViewCell {
+class WeatherCell: BaseBubble {
     // MARK: - Variables
     private var timestampLabel: UILabel = {
         let timestampLabel = UILabel()
@@ -27,7 +27,6 @@ class WeatherCell: UITableViewCell {
         .withoutAutoresizingMaskConstraints
     private var subContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-    private var authorAvatarView: ChatAvatarView?
     // Constraints
     private var leadingMainContainer: NSLayoutConstraint?
     private var trailingMainContainer: NSLayoutConstraint?
@@ -36,8 +35,6 @@ class WeatherCell: UITableViewCell {
     private var trailingSubContainer: NSLayoutConstraint?
     private var topSubContainer: NSLayoutConstraint?
     private var bottomSubContainer: NSLayoutConstraint?
-    // Avatar
-    private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     // Cell width
     private var cellWidth: CGFloat = 200.0
     private var widthConstraintForMainContainer: NSLayoutConstraint?
@@ -121,7 +118,6 @@ class WeatherCell: UITableViewCell {
     }()
 
     // Message details
-    var content: ChatMessage?
     var chatChannel: ChatChannel?
     var weatherType: String = ""
     var layoutOptions: ChatMessageLayoutOptions?
@@ -397,17 +393,5 @@ class WeatherCell: UITableViewCell {
             placeholder: nil,
             preferredSize: nil
         )
-    }
-
-    private func createAvatarView() -> ChatAvatarView {
-        if authorAvatarView == nil {
-            authorAvatarView = Components.default
-                .avatarView
-                .init()
-                .withoutAutoresizingMaskConstraints
-        }
-        authorAvatarView?.widthAnchor.pin(equalToConstant: messageAuthorAvatarSize.width).isActive = true
-        authorAvatarView?.heightAnchor.pin(equalToConstant: messageAuthorAvatarSize.height).isActive = true
-        return authorAvatarView!
     }
 }

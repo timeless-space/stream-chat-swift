@@ -9,10 +9,9 @@
 import UIKit
 import StreamChat
 
-class AttachmentPreviewBubble: UITableViewCell {
+class AttachmentPreviewBubble: BaseBubble {
     var layoutOptions: ChatMessageLayoutOptions?
     weak var delegate: PhotoCollectionAction?
-    var content: ChatMessage?
     var chatChannel: ChatChannel?
     private lazy var mainContainer = ContainerStackView(axis: .horizontal)
         .withoutAutoresizingMaskConstraints
@@ -25,7 +24,6 @@ class AttachmentPreviewBubble: UITableViewCell {
     public private(set) var videoPreview: VideoAttachmentGalleryPreview!
     public private(set) var timestampLabel: UILabel!
     public lazy var dateFormatter: DateFormatter = .makeDefault()
-    public private(set) var authorAvatarView: ChatAvatarView?
     private var leadingMainContainer: NSLayoutConstraint?
     private var trailingMainContainer: NSLayoutConstraint?
     private var timestampLabelWidthConstraint: NSLayoutConstraint?
@@ -61,6 +59,7 @@ class AttachmentPreviewBubble: UITableViewCell {
         ])
 
         subContainer.alignment = .fill
+        subContainer.clipsToBounds = true
         subContainer.transform = .mirrorY
         leadingMainContainer = mainContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 8)
         trailingMainContainer = mainContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -8)
@@ -82,7 +81,7 @@ class AttachmentPreviewBubble: UITableViewCell {
         loadingIndicator.transform = .mirrorY
 
         let tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(btnTapAttachment))
-        mainContainer.addGestureRecognizer(tapGesture)
+        subContainer.addGestureRecognizer(tapGesture)
     }
 
     @objc private func btnTapAttachment() {
@@ -180,18 +179,6 @@ class AttachmentPreviewBubble: UITableViewCell {
         trailingMainContainer?.isActive = isSender
         timestampLabelWidthConstraint?.constant = cellWidth
         timestampLabel.textAlignment = !isSender ? .left : .right
-    }
-
-    private func createAvatarView() -> ChatAvatarView {
-        if authorAvatarView == nil {
-            authorAvatarView = Components.default
-                .avatarView
-                .init()
-                .withoutAutoresizingMaskConstraints
-        }
-        authorAvatarView?.widthAnchor.pin(equalToConstant: messageAuthorAvatarSize.width).isActive = true
-        authorAvatarView?.heightAnchor.pin(equalToConstant: messageAuthorAvatarSize.height).isActive = true
-        return authorAvatarView!
     }
 
     private func createTimestampLabel() -> UILabel {
