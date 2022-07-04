@@ -354,9 +354,6 @@ open class ChatChannelVC: _ViewController,
             selector: #selector(updateTextFieldLayout),
             name: .updateTextfield, object: nil
         )
-        if enableKeyboardObserver {
-            keyboardHandler.start()
-        }
     }
 
     @objc func updateTextFieldLayout() {
@@ -371,20 +368,30 @@ open class ChatChannelVC: _ViewController,
         }
     }
 
-    deinit {
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         if enableKeyboardObserver {
-            keyboardHandler.stop()
+            keyboardHandler.start()
         }
     }
 
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.navigationController?.isToolbarHidden = true
+        if enableKeyboardObserver {
+            keyboardHandler.stop()
+        }
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         resignFirstResponder()
+        // Added work around until we fix navigation deinit issue
+        if isMovingFromParent {
+            messageListVC?.delegate = nil
+            messageListVC?.dataSource = nil
+            channelController?.delegate = nil
+        }
     }
 
     @objc func backAction(_ sender: Any) {
@@ -511,7 +518,13 @@ open class ChatChannelVC: _ViewController,
                 showPinViewButton()
             }
         }
-        channelController?.markRead()
+        // workaround: add delay coz markRead api not called when redirect from the notification when app killed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else {
+                return
+            }
+            self.channelController?.markRead()
+        }
     }
 
     private func showPinViewButton() {
@@ -573,6 +586,7 @@ open class ChatChannelVC: _ViewController,
             guard let self = self else {
                 return
             }
+            controller.existingUsers = memberListController?.members.shuffled() ?? []
             controller.bCallbackInviteFriend = { [weak self] users in
                 guard let weakSelf = self else { return }
                 let ids = users.map{ $0.id}

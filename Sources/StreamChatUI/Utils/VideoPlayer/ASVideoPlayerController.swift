@@ -103,6 +103,9 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
     func playVideo(withLayer layer: AVPlayerLayer, url: String) {
         videoURL = url
         currentLayer = layer
+        if self.videoCache.object(forKey: url as NSString) == nil {
+            setupVideoFor(url: url)
+        }
         if let videoContainer = self.videoCache.object(forKey: url as NSString) {
             layer.player = videoContainer.player
             videoContainer.playOn = true
@@ -119,6 +122,8 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
     }
 
     private func pauseVideo(forLayer layer: AVPlayerLayer, url: String) {
+        layer.player?.seek(to: CMTime.zero)
+        currentLayer?.player?.seek(to: CMTime.zero)
         videoURL = nil
         currentLayer = nil
         if let videoContainer = self.videoCache.object(forKey: url as NSString) {
@@ -204,7 +209,7 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
      Play UITableViewCell's videoplayer that has max visible video layer height
      when the scroll stops.
      */
-    open func pausePlayVideosFor(tableView: UITableView, appEnteredFromBackground: Bool = false) {
+    open func pausePlayVideosFor(tableView: UITableView, appEnteredFromBackground: Bool = false, isScrolled: Bool = false) {
         let visibleCells = tableView.visibleCells
         var videoCellContainer: ASAutoPlayVideoLayerContainer?
         var maxHeight: CGFloat = 0.0
@@ -243,18 +248,31 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
                     videoCellContainer = containerCell
                 }
             }
-            containerCell.isVideoPlaying = false
+
             if let cell = containerCell as? ASVideoTableViewCell {
                 cell.videoLayer.isHidden = !cell.isVideoPlaying
                 currentCell = cell
                 // Disable gif support for now
                 //                cell.imgView.stopAnimatingGif()
             }
-            if let videoCellURL = videoURL {
-                pauseRemoveLayer(layer: containerCell.videoLayer, url: videoCellURL, layerHeight: height)
-            }
         }
         guard var videoCell = videoCellContainer else { return }
+        if isScrolled && videoCell.videoURL != videoURL {
+            videoCell.isVideoPlaying = false
+        }
+        if videoCell.isVideoPlaying && !appEnteredFromBackground {
+            return
+        } else {
+            for cellView in visibleCells {
+                guard var containerCell = cellView as? ASAutoPlayVideoLayerContainer else {
+                    continue
+                }
+                containerCell.isVideoPlaying = false
+                if let videoCellURL = containerCell.videoURL {
+                    pauseRemoveLayer(layer: containerCell.videoLayer, url: videoCellURL, layerHeight: cellView.bounds.height)
+                }
+            }
+        }
 
         let minCellLayerHeight = videoCell.videoLayer.bounds.size.height * 0.5
         /**
@@ -278,6 +296,13 @@ open class ASVideoPlayerController: NSObject, NSCacheDelegate {
                 // cell.imgView.startAnimatingGif()
             }
         }
+    }
+
+    open func playSelectedCell(cell: ASAutoPlayVideoLayerContainer) {
+        guard let videoURL = cell.videoURL else {
+            return
+        }
+        playVideo(withLayer: cell.videoLayer, url: videoURL)
     }
 
     // Set observing urls false when objects are removed from cache

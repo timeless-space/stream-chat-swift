@@ -135,7 +135,7 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
         
         // If there are no members other than the current user in the channel, load a placeholder
         guard !lastActiveMembers.isEmpty else {
-            loadIntoAvatarImageView(from: nil, placeholder: nil)
+            loadIntoAvatarImageView(from: channel.createdBy?.imageURL, placeholder: nil)
             return
         }
         

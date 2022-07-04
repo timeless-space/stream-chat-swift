@@ -30,6 +30,12 @@ enum HTTPMethod: String {
 }
 
 @available(iOS 13.0, *)
+public enum ResultType: String {
+    case success
+    case warning
+}
+
+@available(iOS 13.0, *)
 public struct Agent {
     struct Response<T> {
         let value: T
@@ -54,46 +60,82 @@ public struct Agent {
 public class StickerApiClient {
     private static var stickerCalls = Set<AnyCancellable>()
 
-    public static func downloadStickers(packageId: Int,_ completion: @escaping ((ResponseBody<EmptyStipopResponse>) -> Void)) {
+    public static func downloadStickers(
+        packageId: Int,
+        _ completion: @escaping ((ResponseBody<EmptyStipopResponse>) -> Void)
+    ) {
         StickerApi.call(type: .downloadStickers(packageId: packageId))
             .sink { _  in } receiveValue: { result in completion(result) }
             .store(in: &stickerCalls)
     }
 
-    public static func mySticker(_ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)) {
+    public static func downloadGiftPackage(
+        packageId: Int,
+        receiverUserId: String,
+        _ completion: @escaping ((ResponseBody<EmptyStipopResponse>) -> Void)
+    ) {
+        StickerApi.call(type: .downloadGiftPackage(packageId: packageId, receiverUserId: receiverUserId))
+            .sink { _  in } receiveValue: { result in completion(result) }
+            .store(in: &stickerCalls)
+    }
+
+    public static func mySticker(
+        _ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)
+    ) {
         StickerApi.call(type: .mySticker)
             .sink { _  in } receiveValue: { result in completion(result) }
             .store(in: &stickerCalls)
     }
 
-    public static func stickerInfo(stickerId: String,_ completion: @escaping ((ResponseBody<PackageInfoBody>) -> Void)) {
+    public static func stickerInfo(
+        stickerId: String,
+        _ completion: @escaping ((ResponseBody<PackageInfoBody>) -> Void)
+    ) {
         StickerApi.call(type: .stickerInfo(id: stickerId))
             .sink { _  in } receiveValue: { result in completion(result) }
             .store(in: &stickerCalls)
     }
 
-    public static func trendingStickers(pageNumber: Int, animated: Bool, _ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)) {
+    public static func trendingStickers(
+        pageNumber: Int,
+        animated: Bool,
+        _ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)
+    ) {
         StickerApi.call(type: .trendingStickers(pageNumber: pageNumber, animated: animated))
             .sink { _  in } receiveValue: { result in completion(result) }
             .store(in: &stickerCalls)
     }
 
-    public static func stickerSend(stickerId: Int,_ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?) {
+    public static func stickerSend(
+        stickerId: Int,
+        _ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?
+    ) {
         StickerApi.call(type: .stickerSend(stickerId: stickerId))
             .sink { _  in } receiveValue: { result in completion?(result) }
             .store(in: &stickerCalls)
     }
 
-    public static func recentSticker(_ completion: @escaping ((ResponseBody<RecentStickerBody>) -> Void)) {
+    public static func recentSticker(
+        _ completion: @escaping ((ResponseBody<RecentStickerBody>) -> Void)
+    ) {
         StickerApi.call(type: .recentSticker)
             .sink { _  in } receiveValue: { result in completion(result) }
             .store(in: &stickerCalls)
     }
 
-    public static func hideStickers(packageId: Int, _ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?) {
+    public static func hideStickers(
+        packageId: Int,
+        _ completion: ((ResponseBody<EmptyStipopResponse>) -> Void)?
+    ) {
         StickerApi.call(type: .hideStickers(packageId: packageId))
             .sink { _  in } receiveValue: { result in completion?(result) }
             .store(in: &stickerCalls)
     }
 
+    public static func getHiddenStickers(
+        _ completion: @escaping ((ResponseBody<MyStickerBody>) -> Void)) {
+        StickerApi.call(type: .getHiddenStickers)
+            .sink { _  in } receiveValue: { result in completion(result) }
+            .store(in: &stickerCalls)
+    }
 }

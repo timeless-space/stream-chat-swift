@@ -28,6 +28,7 @@ public struct Constants {
         return Locale.current.decimalSeparator ?? "."
     }
     public static let giphyBaseUrl = "https://api.giphy.com/"
+    public static let weatherImageBaseUrl = "https://res.cloudinary.com/timeless/image/upload/v1/app/Wallet/Weather/"
 }
 
 public struct UserdefaultKey {

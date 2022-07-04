@@ -31,16 +31,20 @@ open class PrivateGroupOTPVC: UIViewController {
         bindClosure()
     }
 
+    open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        checkLocationPermission()
+        isPushed = false
+    }
+
     // MARK: - IBAction
     @IBAction func btnBackAction(_ sender: UIButton) {
-        NotificationCenter.default.post(name: .showTabbar, object: nil)
         popWithAnimation()
     }
 
     // MARK: - Functions
     private func setupUI() {
         heightSafeAreaView.constant = UIView.safeAreaTop
-        checkLocationPermission()
         viewOTP.dpOTPViewDelegate = self
         viewOTP.textColorTextField = .white
         viewSafeAreaHeader.backgroundColor = Appearance.default.colorPalette.walletTabbarBackground
@@ -93,16 +97,13 @@ open class PrivateGroupOTPVC: UIViewController {
     }
 
     private func checkLocationPermission() {
-        if LocationManager.shared.hasLocationPermissionDenied() {
+        if LocationManager.hasLocationPermissionDenied() {
             LocationManager.showLocationPermissionAlert()
             viewOTP.resignFirstResponder()
         } else {
             LocationManager.shared.requestLocationAuthorization()
             LocationManager.shared.requestGPS()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                guard let `self` = self else { return }
-                self.viewOTP.becomeFirstResponder()
-            }
+            viewOTP.becomeFirstResponder()
         }
     }
 
@@ -118,13 +119,15 @@ open class PrivateGroupOTPVC: UIViewController {
     private func handleLocationPermissionAndPush() {
         viewOTP.resignFirstResponder()
         indicator.startAnimating()
-        if LocationManager.shared.hasLocationPermissionDenied() {
+        if LocationManager.hasLocationPermissionDenied() {
             LocationManager.showLocationPermissionAlert()
         } else if !LocationManager.shared.isEmptyCurrentLoc() {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
                 guard let self = self else { return }
                 self.pushToJoinPrivateGroup()
             }
+        } else {
+            LocationManager.shared.requestGPS()
         }
     }
 }
