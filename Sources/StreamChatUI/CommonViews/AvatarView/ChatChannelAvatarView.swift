@@ -115,14 +115,25 @@ open class ChatChannelAvatarView: _View, ThemeProvider, SwiftUIRepresentable {
             loadIntoAvatarImageView(from: nil, placeholder: nil)
             return
         }
+        var customKeyForCache = (otherMember.imageURL?.absoluteString ?? "") + (otherMember.extraData.userProfileHash ?? "")
         presenceAvatarView.isOnlineIndicatorVisible = otherMember.isOnline
-        if let imageContainer = ImagePipeline.shared.cachedImage(for: imageUrl) {
+        if let imageContainer = ImagePipeline.shared.cache.cachedImage(for: customKeyForCache) {
             loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
             return
         }
         shimmerView.showAnimatedGradientSkeleton()
         shimmerView.isHidden = false
-        loadIntoAvatarImageView(from: otherMember.imageURL, placeholder: nil)
+        loadAvatarsFrom(urls: [otherMember.imageURL], channelId: channel.cid) { [weak self] avatars, channelId in
+            guard let weakSelf = self else { return }
+            let imageContainer = ImageContainer.init(
+                image: avatars.first ?? .init(),
+                type: nil,
+                isPreview: false,
+                data: nil,
+                userInfo: ["count": 1])
+            ImagePipeline.shared.cache.storeCachedImage(imageContainer, for: customKeyForCache)
+            weakSelf.loadIntoAvatarImageView(from: nil, placeholder: imageContainer.image)
+        }
     }
     
     /// Loads an avatar which is merged (tiled) version of the first four active members of the channel
