@@ -30,8 +30,10 @@ class ChatMessageStickerBubble: _TableViewCell {
     private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     private var imageLoader = Components.default.imageLoader
+    private var lottieState = Components.default.lottieAnimation
     var content: ChatMessage?
     var chatChannel: ChatChannel?
+    var indexPath: IndexPath!
     var isSender = false
     private var cellWidth: CGFloat = 100.0
     var sentThumbStickerView: AnimationView?
@@ -102,8 +104,11 @@ class ChatMessageStickerBubble: _TableViewCell {
                 self.sentThumbStickerView?.animation = animation
                 self.sentThumbStickerView?.respectAnimationFrameRate = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    self.sentThumbStickerView?.play()
-                    self.sentThumbStickerView?.loopMode = .loop
+                    self.sentThumbStickerView?.loopMode = .playOnce
+                    if !(self.lottieState[self.indexPath] ?? false) {
+                        self.lottieState[self.indexPath] = true
+                        self.sentThumbStickerView?.play()
+                    }
                     self.sentThumbStickerView?.backgroundBehavior = .pauseAndRestore
                 }
             })
@@ -214,8 +219,6 @@ class ChatMessageStickerBubble: _TableViewCell {
     }
 
     func clearAll() {
-        sentThumbStickerView?.animation = nil
-        sentThumbStickerView?.removeFromSuperview()
         sentThumbStickerView = nil
     }
 }

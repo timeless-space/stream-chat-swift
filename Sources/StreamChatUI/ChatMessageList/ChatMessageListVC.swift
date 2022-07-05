@@ -590,6 +590,7 @@ open class ChatMessageListVC: _ViewController,
                     }
                 let messagesCont = dataSource?.numberOfMessages(in: self) ?? 0
                 cell.content = message
+                cell.indexPath = indexPath
                 cell.chatChannel = dataSource?.channel(for: self)
                 cell.layoutOptions = cellLayoutOptionsForMessage(at: indexPath)
                 cell.configureCell(isSender: isMessageFromCurrentUser)
