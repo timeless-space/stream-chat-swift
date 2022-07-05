@@ -105,9 +105,11 @@ class ChatMessageStickerBubble: _TableViewCell {
                 self.sentThumbStickerView?.respectAnimationFrameRate = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     self.sentThumbStickerView?.loopMode = .playOnce
-                    if !(self.lottieState[self.indexPath] ?? false) {
-                        self.lottieState[self.indexPath] = true
+                    if !(self.lottieState[self.content?.id ?? ""] ?? false) {
+                        self.lottieState[self.content?.id ?? ""] = true
                         self.sentThumbStickerView?.play()
+                    } else {
+                        self.sentThumbStickerView?.pause()
                     }
                     self.sentThumbStickerView?.backgroundBehavior = .pauseAndRestore
                 }
