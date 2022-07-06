@@ -227,6 +227,9 @@ open class ChatChannelListVC: _ViewController,
         ])
         collectionView.addSubview(loadingIndicator)
         loadingIndicator.pin(anchors: [.centerX, .centerY], to: view)
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+        longPress.minimumPressDuration = 0.33
+        collectionView.addGestureRecognizer(longPress)
     }
     
     override open func setUpAppearance() {
@@ -305,58 +308,22 @@ open class ChatChannelListVC: _ViewController,
         }
     }
 
-    public func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        let index = indexPath.row
-        let channel = controller.channels[indexPath.row]
-        let identifier = "\(index)" as NSString
-        let channelPreview = makeChannelPreview(cid: channel.cid)
-        return UIContextMenuConfiguration(
-            identifier: identifier,
-            previewProvider: {channelPreview}) { [weak self] _ in
-                guard let weakSelf = self else {
-                    return UIMenu(title: "", image: nil, children: [])
-                }
-                let markAsReadAction = UIAction(
-                    title: "Mark as Read",
-                    image: UIImage(systemName: "rectangle.3.group.bubble.left")) { _ in
-
-                    }
-                let muteAction = UIAction(
-                    title: "Mute",
-                    image: weakSelf.appearance.images.mute) { _ in
-
-                    }
-                let deleteAction = UIAction(
-                    title: "Delete",
-                    image: UIImage(systemName: "trash.fill"),
-                    attributes: .destructive) { _ in
-                    }
-                return UIMenu(title: "", image: nil, children: [markAsReadAction,
-                                                                muteAction,
-                                                                deleteAction])
-            }
-    }
-
-    public func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+    @objc open func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        let location = gesture.location(in: collectionView)
         guard
-            let identifier = configuration.identifier as? String,
-            let index = Int(identifier)
-        else {
-            return
-        }
-        let channel = controller.channels[index]
-        animator.addCompletion {
-            self.router.showChannel(for: channel.cid)
-        }
-    }
-
-    public func makeChannelPreview(cid: ChannelId) -> ChatChannelVC {
-        let controller = components.channelVC.init()
-        controller.channelController = router.rootViewController.controller.client.channelController(
-            for: cid,
+            gesture.state == .began,
+            let indexPath = collectionView.indexPathForItem(at: location)
+        else { return }
+        let channel = controller.channels[indexPath.row]
+        let popup = MessageListWithMenuVC()
+        popup.channelVC = components.channelVC.init()
+        popup.channelVC?.channelController = router.rootViewController.controller.client.channelController(
+            for: channel.cid,
             channelListQuery: router.rootViewController.controller.query
         )
-        return controller
+        popup.modalTransitionStyle = .crossDissolve
+        popup.modalPresentationStyle = .overCurrentContext
+        UIApplication.shared.getTopViewController()?.present(popup, animated: true)
     }
 
     @objc open func didTapOnCurrentUserAvatar(_ sender: Any) {

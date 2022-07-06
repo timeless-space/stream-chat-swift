@@ -175,6 +175,8 @@ open class ChatChannelVC: _ViewController,
 
     /// The message composer bottom constraint used for keyboard animation handling.
     public var messageComposerBottomConstraint: NSLayoutConstraint?
+    public var topSafeAreaHeightConstraint: NSLayoutConstraint?
+    public var bottomSafeAreaHeightConstraint: NSLayoutConstraint?
 
     private var isLoadingPreviousMessages: Bool = false
 
@@ -207,11 +209,13 @@ open class ChatChannelVC: _ViewController,
         view.backgroundColor = appearance.colorPalette.chatViewBackground
 
         view.addSubview(navigationSafeAreaView)
+        topSafeAreaHeightConstraint = navigationSafeAreaView.heightAnchor
+            .constraint(equalToConstant: UIView.safeAreaTop)
+        topSafeAreaHeightConstraint?.isActive = true
         NSLayoutConstraint.activate([
             navigationSafeAreaView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
             navigationSafeAreaView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             navigationSafeAreaView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
-            navigationSafeAreaView.heightAnchor.constraint(equalToConstant: UIView.safeAreaTop)
         ])
 
         view.addSubview(navigationHeaderView)
@@ -252,11 +256,13 @@ open class ChatChannelVC: _ViewController,
         
         view.addSubview(bottomSafeArea)
         bottomSafeArea.backgroundColor = appearance.colorPalette.tabbarBackground
+        bottomSafeAreaHeightConstraint = bottomSafeArea.heightAnchor
+            .constraint(equalToConstant: UIView.safeAreaTop)
+        bottomSafeAreaHeightConstraint?.isActive = true
         NSLayoutConstraint.activate([
             bottomSafeArea.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             bottomSafeArea.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             bottomSafeArea.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bottomSafeArea.heightAnchor.constraint(equalToConstant: UIView.safeAreaBottom)
         ])
         
         if let messageListVC = messageListVC {
