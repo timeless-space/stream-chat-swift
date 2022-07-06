@@ -12,12 +12,14 @@ import Combine
 extension StickerApi {
     public enum RequestType: EndPointType {
         case mySticker
+        case getHiddenStickers
         case stickerInfo(id: String)
         case trendingStickers(pageNumber: Int, animated: Bool)
         case downloadStickers(packageId: Int)
         case stickerSend(stickerId: Int)
         case recentSticker
         case hideStickers(packageId: Int)
+        case downloadGiftPackage(packageId: Int, receiverUserId: String)
 
         // MARK: Vars & Lets
         var baseURL: String {
@@ -27,7 +29,7 @@ extension StickerApi {
         var path: String {
             switch self {
             case .mySticker:
-                return "mysticker/\(StickerApi.userId)?userId=\(userId)&limit=1000"
+                return "mysticker/\(StickerApi.userId)?userId=\(userId)&limit=100"
             case .stickerInfo(id: let id):
                 return ("package/\(id)?" + "userId=\(userId)")
             case .trendingStickers(pageNumber: let pageNumber, animated: let animated):
@@ -40,14 +42,18 @@ extension StickerApi {
                 return "package/send/\(userId)"
             case .hideStickers(packageId: let packageId):
                 return "mysticker/hide/\(userId)/\(packageId)"
+            case .downloadGiftPackage(packageId: let packageId, receiverUserId: let receiverUserId):
+                return "download/\(packageId)?userId=\(receiverUserId)&isPurchase=N"
+            case .getHiddenStickers:
+                return "mysticker/hide/\(StickerApi.userId)?userId=\(userId)&limit=100"
             }
         }
 
         var httpMethod: HTTPMethod {
             switch self {
-            case .mySticker, .stickerInfo, .trendingStickers, .recentSticker:
+            case .mySticker, .stickerInfo, .trendingStickers, .recentSticker, .getHiddenStickers:
                 return .get
-            case .downloadStickers, .stickerSend:
+            case .downloadStickers, .stickerSend, .downloadGiftPackage:
                 return .post
             case .hideStickers:
                 return .put

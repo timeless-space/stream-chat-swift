@@ -70,10 +70,10 @@ extension TableViewCellChatUser {
                 into: avatarView,
                 url: imageURL,
                 imageCDN: StreamImageCDN(),
-                placeholder: Appearance.default.images.userAvatarPlaceholder4
+                placeholder: nil
             )
         }
-        avatarView.backgroundColor = .clear
+        avatarView.backgroundColor = Appearance.default.colorPalette.placeHolderBalanceBG
         nameLabel.setChatTitleColor()
         descriptionLabel.setChatSubtitleBigColor()
         let name = (user.name ?? user.id)

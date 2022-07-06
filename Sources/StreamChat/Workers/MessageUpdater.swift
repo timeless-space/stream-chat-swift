@@ -498,7 +498,8 @@ class MessageUpdater: Worker {
         cid: ChannelId,
         messageId: MessageId,
         action: AttachmentAction,
-        poll: [String : RawJSON],
+        formData: [String : RawJSON],
+        key: String,
         completion: ((Error?) -> Void)? = nil
     ) {
         database.write({ session in
@@ -522,7 +523,8 @@ class MessageUpdater: Worker {
                 cid: cid,
                 messageId: messageId,
                 action: action,
-                poll: poll
+                formData: formData,
+                key: key
             )
 
             self.apiClient.request(endpoint: endpoint) {
