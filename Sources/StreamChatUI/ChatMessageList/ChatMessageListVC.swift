@@ -117,6 +117,7 @@ open class ChatMessageListVC: _ViewController,
         listView.register(PhotoCollectionBubble.self, forCellReuseIdentifier: "PhotoCollectionBubble")
         listView.register(AttachmentPreviewBubble.self, forCellReuseIdentifier: "AttachmentPreviewBubble")
         listView.register(WeatherCell.self, forCellReuseIdentifier: "WeatherCell")
+        listView.register(MusicBubble.self, forCellReuseIdentifier: "MusicBubble")
         pausePlayVideos(isScrolled: false)
         NotificationCenter.default.addObserver(
             self,
@@ -391,17 +392,30 @@ open class ChatMessageListVC: _ViewController,
         let currentUserId = ChatClient.shared.currentUserId
         let isMessageFromCurrentUser = message?.author.id == currentUserId
         if channelType == .announcement {
-            guard let cell = listView.dequeueReusableCell(
-                withIdentifier: "AnnouncementTableViewCell",
-                for: indexPath) as? AnnouncementTableViewCell else {
-                    return UITableViewCell()
-                }
-            cell.delegate = self
-            cell.cacheVideoThumbnail = components.cacheVideoThumbnail
-            cell.message = message
-            cell.configureCell(message)
-            cell.transform = .mirrorY
-            return cell
+            if isMusicCell(message) {
+                guard let cell = listView.dequeueReusableCell(
+                    withIdentifier: "MusicBubble",
+                    for: indexPath) as? MusicBubble else {
+                        return UITableViewCell()
+                    }
+                cell.delegate = self
+                cell.content = message
+                cell.configData(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
+            } else {
+                guard let cell = listView.dequeueReusableCell(
+                    withIdentifier: "AnnouncementTableViewCell",
+                    for: indexPath) as? AnnouncementTableViewCell else {
+                        return UITableViewCell()
+                    }
+                cell.delegate = self
+                cell.cacheVideoThumbnail = components.cacheVideoThumbnail
+                cell.message = message
+                cell.configureCell(message)
+                cell.transform = .mirrorY
+                return cell
+            }
         } else {
             if isOneWalletCell(message) {
                 if isMessageFromCurrentUser {
@@ -806,6 +820,10 @@ open class ChatMessageListVC: _ViewController,
         return false
     }
 
+    private func isMusicCell(_ message: ChatMessage?) -> Bool {
+        message?.extraData.keys.contains("cta_data") ?? false
+    }
+
     private func isFallbackMessage(_ message: ChatMessage?) -> Bool {
         guard let extraData = message?.extraData,
               let fallbackMessage = extraData["fallbackMessage"] else { return false }
@@ -1197,5 +1215,39 @@ extension ChatMessageListVC: PhotoCollectionAction {
             initialAttachmentId: id,
             previews: [view]
         )
+    }
+}
+
+extension ChatMessageListVC: MusicCellTapEvent {
+
+    func onTapOfMusicCell(messageContent: ChatMessage) {
+        let alert = UIAlertController(title: "Play music", message: "Please Select an Option", preferredStyle: .actionSheet)
+
+        alert.addAction(UIAlertAction(title: "Spotify", style: .default , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            self.openMusicApp(messageContent: messageContent)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Apple Music", style: .default , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            self.openMusicApp(messageContent: messageContent)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Youtube Music", style: .default , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            self.openMusicApp(messageContent: messageContent)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .destructive , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            self.dismiss(animated: true)
+        }))
+
+        present(alert, animated: true)
+    }
+
+    private func openMusicApp(messageContent: ChatMessage) {
+        guard let url = URL(string: messageContent.extraData.ctaData ?? "") else { return }
+        UIApplication.shared.open(url)
     }
 }
