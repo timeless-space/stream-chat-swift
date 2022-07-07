@@ -18,6 +18,7 @@ class TableViewHeaderCreateChat: UITableViewCell {
     var bCallbackGroupSelect: (() -> Void)?
     var bCallbackGroupWeHere: (() -> Void)?
     var bCallbackGroupJoinViaQR: (() -> Void)?
+    var bCallBackCommunityGroupCreate: (() -> Void)?
     // MARK: - OUTLETS
     @IBOutlet weak var labelSortingType: UILabel!
     @IBOutlet weak var sortingContainerView: UIView!
@@ -42,5 +43,8 @@ class TableViewHeaderCreateChat: UITableViewCell {
     }
     @IBAction func joinViaQRGroupAction(_ sender: UIButton) {
         self.bCallbackGroupJoinViaQR?()
+    }
+    @IBAction func createCommunityGroupAction(_ sender: UIButton) {
+        self.bCallBackCommunityGroupCreate?()
     }
 }
