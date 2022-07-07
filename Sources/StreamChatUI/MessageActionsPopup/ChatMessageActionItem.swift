@@ -307,3 +307,41 @@ public struct FlagActionItem: ChatMessageActionItem {
         icon = appearance.images.messageActionFlag
     }
 }
+
+/// Instance of `MarkAsRead` for flagging a message action.
+public struct MarkAsReadActionItem: ChatMessageActionItem {
+    public var title: String { L10n.Message.Actions.markAsRead }
+    public let icon: UIImage
+    public let action: (ChatMessageActionItem) -> Void
+
+    /// Init of `FlagActionItem`.
+    /// - Parameters:
+    ///     - action: Action to be triggered when `FlagActionItem` is tapped.
+    ///     - appearance: `Appearance` that is used to configure UI properties.
+    public init(
+        action: @escaping (ChatMessageActionItem) -> Void,
+        appearance: Appearance = .default
+    ) {
+        self.action = action
+        icon = appearance.images.markAsReadAction ?? UIImage()
+    }
+}
+
+/// Instance of `MarkAsRead` for flagging a message action.
+public struct MuteUnmuteChannelActionItem: ChatMessageActionItem {
+    public var title: String { L10n.Message.Actions.mute }
+    public let icon: UIImage
+    public let action: (ChatMessageActionItem) -> Void
+
+    /// Init of `FlagActionItem`.
+    /// - Parameters:
+    ///     - action: Action to be triggered when `FlagActionItem` is tapped.
+    ///     - appearance: `Appearance` that is used to configure UI properties.
+    public init(
+        action: @escaping (ChatMessageActionItem) -> Void,
+        appearance: Appearance = .default
+    ) {
+        self.action = action
+        icon = appearance.images.messageActionMuteUser
+    }
+}

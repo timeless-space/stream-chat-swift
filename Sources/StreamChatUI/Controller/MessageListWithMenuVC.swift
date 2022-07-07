@@ -13,9 +13,12 @@ open class MessageListWithMenuVC: _ViewController,
                                    ComponentsProvider,
                                    ThemeProvider {
     // MARK: - Variable
-    open private(set) lazy var mainContainerView: UIView = {
+    open private(set) lazy var channelContainerView: UIView = {
         return UIView(frame: .zero).withoutAutoresizingMaskConstraints
     }()
+    open private(set) lazy var mainContainerStackView = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "mainContainerStackView")
     open private(set) lazy var blurView: UIView = {
         let blur: UIBlurEffect
         if #available(iOS 13.0, *) {
@@ -26,6 +29,11 @@ open class MessageListWithMenuVC: _ViewController,
         return UIVisualEffectView(effect: blur)
             .withoutAutoresizingMaskConstraints
     }()
+    open private(set) lazy var channelActionsContainerStackView = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+        .withAccessibilityIdentifier(identifier: "channelActionsContainerStackView")
+    /// Class used for buttons in `channelActionsContainerStackView`.
+    open var actionButtonClass: ChatMessageActionControl.Type { ChatMessageActionControl.self }
     private lazy var navigationBarColor: UIColor = {
         return Appearance.default.colorPalette.walletTabbarBackground
     }()
@@ -36,7 +44,9 @@ open class MessageListWithMenuVC: _ViewController,
     override open func setUp() {
         super.setUp()
         view.addSubview(blurView)
-        view.addSubview(mainContainerView)
+        view.addSubview(mainContainerStackView)
+        mainContainerStackView.addArrangedSubview(channelContainerView)
+        mainContainerStackView.addArrangedSubview(channelActionsContainerStackView)
         //
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTapOnView))
         tapRecognizer.cancelsTouchesInView = false
@@ -45,12 +55,19 @@ open class MessageListWithMenuVC: _ViewController,
 
     override open func setUpAppearance() {
         super.setUpAppearance()
-        mainContainerView.backgroundColor = Appearance
+        // mainContainerStackView
+        mainContainerStackView.axis = .vertical
+        mainContainerStackView.alignment = .fill
+        mainContainerStackView.spacing = 10
+        // ChannelActionView
+        setupChannelActionView()
+        // mainContainerView
+        channelContainerView.backgroundColor = Appearance
             .default
             .colorPalette
             .chatViewBackground
-        mainContainerView.layer.cornerRadius = 20.0
-        mainContainerView.clipsToBounds = true
+        channelContainerView.layer.cornerRadius = 20.0
+        channelContainerView.clipsToBounds = true
         // customizeChannelView
         customizeChannelView()
     }
@@ -58,10 +75,31 @@ open class MessageListWithMenuVC: _ViewController,
     override open func setUpLayout() {
         super.setUpLayout()
         layoutBlurView()
-        layoutMainContainerView()
+        layoutMainContainerStackView()
         layoutMessageList()
         // customizeChannelView
         customizeChannelView()
+    }
+
+    override open func updateContent() {
+        channelActionsContainerStackView.removeAllArrangedSubviews()
+        channelActions.forEach {
+            let actionView = actionButtonClass.init()
+            actionView.containerStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+            actionView.content = $0
+            actionView.containerStackView.backgroundColor = appearance.colorPalette.messageActionMenuBackground
+            channelActionsContainerStackView.addArrangedSubview(actionView)
+            actionView.accessibilityIdentifier = "\(type(of: $0))"
+        }
+        channelActionsContainerStackView.layoutMarginsDidChange()
+    }
+
+    open var channelActions: [ChatMessageActionItem] {
+        var actions: [ChatMessageActionItem] = []
+        actions.append(markAsReadActionItem())
+        actions.append(muteChannelActionItem())
+        actions.append(deleteActionItem())
+        return actions
     }
 
     // MARK: - SetupUI
@@ -69,16 +107,16 @@ open class MessageListWithMenuVC: _ViewController,
         view.pin(to: blurView)
     }
 
-    private func layoutMainContainerView() {
+    private func layoutMainContainerStackView() {
         NSLayoutConstraint.activate([
-            mainContainerView.leadingAnchor
+            mainContainerStackView.leadingAnchor
                 .constraint(equalTo: view.leadingAnchor, constant: 30),
-            mainContainerView.trailingAnchor
+            mainContainerStackView.trailingAnchor
                 .constraint(equalTo: view.trailingAnchor, constant: -30),
-            mainContainerView.topAnchor
+            mainContainerStackView.topAnchor
                 .constraint(equalTo: view.topAnchor, constant: 60),
-            mainContainerView.bottomAnchor
-                .constraint(equalTo: view.bottomAnchor, constant: -200),
+            mainContainerStackView.bottomAnchor
+                .constraint(greaterThanOrEqualTo: view.bottomAnchor, constant: -60),
         ])
     }
 
@@ -86,17 +124,30 @@ open class MessageListWithMenuVC: _ViewController,
         guard let channelVC = channelVC else {
             return
         }
-        addChildViewController(channelVC, targetView: mainContainerView)
+        addChildViewController(channelVC, targetView: channelContainerView)
         NSLayoutConstraint.activate([
             channelVC.view.leadingAnchor
-                .constraint(equalTo: mainContainerView.leadingAnchor, constant: 0),
+                .constraint(equalTo: channelContainerView.leadingAnchor, constant: 0),
             channelVC.view.trailingAnchor
-                .constraint(equalTo: mainContainerView.trailingAnchor, constant: 0),
+                .constraint(equalTo: channelContainerView.trailingAnchor, constant: 0),
             channelVC.view.topAnchor
-                .constraint(equalTo: mainContainerView.topAnchor, constant: 0),
+                .constraint(equalTo: channelContainerView.topAnchor, constant: 0),
             channelVC.view.bottomAnchor
-                .constraint(equalTo: mainContainerView.bottomAnchor, constant: -10)
+                .constraint(equalTo: channelContainerView.bottomAnchor, constant: -10)
         ])
+    }
+
+    private func setupChannelActionView() {
+        channelActionsContainerStackView.axis = .vertical
+        channelActionsContainerStackView.alignment = .fill
+        channelActionsContainerStackView.spacing = 1
+        // Fix safe area layout issue when message actions go below scroll view
+        channelActionsContainerStackView.insetsLayoutMarginsFromSafeArea = false
+        channelActionsContainerStackView.isLayoutMarginsRelativeArrangement = true
+        channelActionsContainerStackView.layoutMargins = .zero
+        channelActionsContainerStackView.layer.cornerRadius = 16
+        channelActionsContainerStackView.layer.masksToBounds = true
+        channelActionsContainerStackView.backgroundColor = appearance.colorPalette.messageActionMenuSeparator
     }
 
     private func customizeChannelView() {
@@ -119,5 +170,33 @@ open class MessageListWithMenuVC: _ViewController,
     /// Triggered when `view` is tapped.
     @objc open func didTapOnView(_ gesture: UITapGestureRecognizer) {
         dismiss(animated: true)
+    }
+
+    open func markAsReadActionItem() -> ChatMessageActionItem {
+        MarkAsReadActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
+    /// Returns `ChatMessageActionItem` for delete action
+    open func deleteActionItem() -> ChatMessageActionItem {
+        DeleteActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
+    /// Returns `ChatMessageActionItem` for delete action
+    open func muteChannelActionItem() -> ChatMessageActionItem {
+        MuteUnmuteChannelActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
+    /// Triggered for actions which should be handled by `delegate` and not in this view controller.
+    open func handleAction(_ actionItem: ChatMessageActionItem) {
+
     }
 }

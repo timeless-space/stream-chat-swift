@@ -279,6 +279,14 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
         )
     }
 
+    /// Returns `ChatMessageActionItem` for flag action.
+    open func markAsReadActionItem() -> ChatMessageActionItem {
+        MarkAsReadActionItem(
+            action: { [weak self] in self?.handleAction($0) },
+            appearance: appearance
+        )
+    }
+
     /// Triggered for actions which should be handled by `delegate` and not in this view controller.
     open func handleAction(_ actionItem: ChatMessageActionItem) {
         guard let message = message else { return }
