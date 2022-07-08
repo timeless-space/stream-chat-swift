@@ -149,7 +149,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
             switch lastMessage.extraData.adminMessageType {
             case .daoAddInitialSigners:
                 return "Dao group created"
-            case .simpleGroupChat:
+            case .simpleGroupChat, .communityGroup:
                 return "Group created"
             case .privateChat:
                 return "Private group created"
