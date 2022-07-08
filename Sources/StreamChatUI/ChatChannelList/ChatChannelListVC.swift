@@ -30,7 +30,9 @@ open class ChatChannelListVC: _ViewController,
             return UIActivityIndicatorView(style: .whiteLarge).withoutAutoresizingMaskConstraints
         }
     }()
-    
+
+    open private(set) lazy var messageListWithMenuTransitionController =  MessageListWithMenuTransitionController()
+
     /// A router object responsible for handling navigation actions of this view controller.
     open lazy var router: ChatChannelListRouter = components
         .channelListRouter
@@ -314,6 +316,19 @@ open class ChatChannelListVC: _ViewController,
             gesture.state == .began,
             let indexPath = collectionView.indexPathForItem(at: location)
         else { return }
+        if let cell = collectionView.cellForItem(at: indexPath) {
+            let selectedCell = cell.contentView
+            UIView.animate(withDuration: 0.2,
+                           delay: 0,
+                           usingSpringWithDamping: 0,
+                           initialSpringVelocity: 0,
+                           options: [.curveEaseInOut],
+                           animations: {
+                selectedCell.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+            }, completion: { _ in
+                selectedCell.transform = .identity
+            })
+        }
         let channel = controller.channels[indexPath.row]
         let popup = MessageListWithMenuVC()
         popup.channelVC = components.channelVC.init()
@@ -323,6 +338,7 @@ open class ChatChannelListVC: _ViewController,
         )
         popup.modalTransitionStyle = .crossDissolve
         popup.modalPresentationStyle = .overCurrentContext
+        popup.transitioningDelegate = messageListWithMenuTransitionController
         UIApplication.shared.getTopViewController()?.present(popup, animated: true)
     }
 

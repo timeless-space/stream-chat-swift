@@ -161,7 +161,7 @@ open class ChatMessageActionsVC: _ViewController, ThemeProvider {
                     }
                 }
             },
-            appearance: appearance
+            appearance: appearance, title: L10n.Message.Actions.deleteMessage
         )
     }
     

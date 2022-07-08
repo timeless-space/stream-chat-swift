@@ -153,6 +153,7 @@ internal enum L10n {
         /// Forward Message Action
         internal static var forward: String { L10n.tr("Localizable", "message.actions.forward") }
       /// Delete Message
+      internal static var deleteMessage: String { L10n.tr("Localizable", "message.actions.deleteMessage") }
       internal static var delete: String { L10n.tr("Localizable", "message.actions.delete") }
       /// Edit Message
       internal static var edit: String { L10n.tr("Localizable", "message.actions.edit") }

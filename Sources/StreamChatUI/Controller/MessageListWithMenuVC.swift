@@ -38,7 +38,10 @@ open class MessageListWithMenuVC: _ViewController,
         return Appearance.default.colorPalette.walletTabbarBackground
     }()
     open var channelVC: ChatChannelVC?
-    open var channelController: ChatChannelController?
+    private var channelController: ChatChannelController? {
+        return channelVC?.channelController
+    }
+    private var isChannelMuted = false
 
     // MARK: - View
     override open func setUp() {
@@ -82,6 +85,7 @@ open class MessageListWithMenuVC: _ViewController,
     }
 
     override open func updateContent() {
+        isChannelMuted = channelController?.channel?.isMuted ?? false
         channelActionsContainerStackView.removeAllArrangedSubviews()
         channelActions.forEach {
             let actionView = actionButtonClass.init()
@@ -95,6 +99,12 @@ open class MessageListWithMenuVC: _ViewController,
     }
 
     open var channelActions: [ChatMessageActionItem] {
+        guard let channelController = channelController else {
+            return []
+        }
+        if channelController.channel?.type == .announcement {
+            return [muteChannelActionItem()]
+        }
         var actions: [ChatMessageActionItem] = []
         actions.append(markAsReadActionItem())
         actions.append(muteChannelActionItem())
@@ -183,7 +193,7 @@ open class MessageListWithMenuVC: _ViewController,
     open func deleteActionItem() -> ChatMessageActionItem {
         DeleteActionItem(
             action: { [weak self] in self?.handleAction($0) },
-            appearance: appearance
+            appearance: appearance, title: L10n.Message.Actions.delete
         )
     }
 
@@ -191,12 +201,83 @@ open class MessageListWithMenuVC: _ViewController,
     open func muteChannelActionItem() -> ChatMessageActionItem {
         MuteUnmuteChannelActionItem(
             action: { [weak self] in self?.handleAction($0) },
-            appearance: appearance
+            appearance: appearance,
+            isMute: isChannelMuted
         )
     }
 
     /// Triggered for actions which should be handled by `delegate` and not in this view controller.
     open func handleAction(_ actionItem: ChatMessageActionItem) {
+        switch actionItem {
+        case is MarkAsReadActionItem:
+            break
+        case is MuteUnmuteChannelActionItem:
+            if isChannelMuted {
+                unMuteNotification()
+            } else {
+                muteNotification()
+            }
+            break
+        case is DeleteActionItem:
+            deleteChat()
+            break
+        default:
+            break
+        }
+    }
 
+
+    public func muteNotification() {
+        channelController?.muteChannel(completion: { [weak self] error in
+            guard let weakSelf = self else { return }
+            guard error == nil else {
+                Snackbar.show(text: "Error while mute channel notifications")
+                weakSelf.isChannelMuted = false
+                return
+            }
+            weakSelf.isChannelMuted = true
+            Snackbar.show(text: "Notifications muted", messageType: StreamChatMessageType.ChatGroupMute)
+            DispatchQueue.main.async {
+                weakSelf.dismiss(animated: true)
+            }
+        })
+    }
+
+    public func unMuteNotification() {
+        channelController?.unmuteChannel(completion: { [weak self] error in
+            guard let weakSelf = self else { return }
+            guard error == nil else {
+                Snackbar.show(text: "Error while unmute group notifications")
+                weakSelf.isChannelMuted = true
+                return
+            }
+            weakSelf.isChannelMuted = false
+            Snackbar.show(text: "Notifications unmuted", messageType: StreamChatMessageType.ChatGroupMute)
+            DispatchQueue.main.async {
+                weakSelf.dismiss(animated: true)
+            }
+        })
+    }
+
+    public func deleteChat() {
+        let yesAction = UIAlertAction(title: "Yes", style: .default) { [weak self] _ in
+            guard let self = self else {
+                return
+            }
+            self.channelController?.hideChannel(clearHistory: true) { [weak self] error in
+                guard let weakSelf = self else { return }
+                guard error == nil else {
+                    Snackbar.show(text: error?.localizedDescription ?? "")
+                    return
+                }
+                DispatchQueue.main.async {
+                    weakSelf.dismiss(animated: true)
+                }
+            }
+        }
+        let noAction = UIAlertAction(title: "No", style: .cancel, handler: nil)
+        presentAlert(
+            title: "Are you sure you want to delete chat?",
+            message: nil, actions: [yesAction, noAction])
     }
 }

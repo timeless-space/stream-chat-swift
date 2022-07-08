@@ -124,6 +124,8 @@
 		6E4D4FD927C8D03B007FFE83 /* UserListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */; };
 		6E4D4FDB27C8D927007FFE83 /* UserListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */; };
 		6E4D4FDC27C8D927007FFE83 /* UserListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */; };
+		6E567804287831D00008B4E9 /* MessageListWithMenuTransitionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E567803287831D00008B4E9 /* MessageListWithMenuTransitionController.swift */; };
+		6E567805287831D00008B4E9 /* MessageListWithMenuTransitionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E567803287831D00008B4E9 /* MessageListWithMenuTransitionController.swift */; };
 		6E6A40D627EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */; };
 		6E6A40D727EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */; };
 		6E6A40D827EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6E6A40D527EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib */; };
@@ -2613,6 +2615,7 @@
 		6E41867A27C3CD630061E03F /* SFProDisplay-Heavy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProDisplay-Heavy.ttf"; sourceTree = "<group>"; };
 		6E4D4FD727C8D03B007FFE83 /* UserListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListDataSource.swift; sourceTree = "<group>"; };
 		6E4D4FDA27C8D927007FFE83 /* UserListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListViewModel.swift; sourceTree = "<group>"; };
+		6E567803287831D00008B4E9 /* MessageListWithMenuTransitionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageListWithMenuTransitionController.swift; sourceTree = "<group>"; };
 		6E6A40D427EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellWallePayBubbleIncoming.swift; sourceTree = "<group>"; };
 		6E6A40D527EDCF04002213C3 /* TableViewCellWallePayBubbleIncoming.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TableViewCellWallePayBubbleIncoming.xib; sourceTree = "<group>"; };
 		6E92FD3927BCCBAF00DA89B6 /* ChatNavTitleLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatNavTitleLabel.swift; sourceTree = "<group>"; };
@@ -4315,6 +4318,7 @@
 				6E3DEF6927D3501C0095E0E3 /* JoinGroupRequestVC.swift */,
 				6EC85CD627D5EA3C00063EB8 /* ShareInviteLinkVC.swift */,
 				6EC3BF8B2875BCAF0047A408 /* MessageListWithMenuVC.swift */,
+				6E567803287831D00008B4E9 /* MessageListWithMenuTransitionController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -10112,6 +10116,7 @@
 				8800A28C258A1924006D64C4 /* ChatMessageFileAttachmentListView.swift in Sources */,
 				ACCA772E26C568D8007AE2ED /* NukeImageProcessor.swift in Sources */,
 				C1FC2F6B27416E150062530F /* ImagePublisher.swift in Sources */,
+				6E567805287831D00008B4E9 /* MessageListWithMenuTransitionController.swift in Sources */,
 				88A8CF16256E7BDA004EA4C7 /* ChatMessageContentView.swift in Sources */,
 				BDEB9417268211EC00928AF1 /* ChatMessageListUnreadCountView.swift in Sources */,
 				226C438D25802AAD008B3648 /* InputTextView.swift in Sources */,
@@ -10780,6 +10785,7 @@
 				792A4F472480107A00EAF71D /* Filter.swift in Sources */,
 				C1FC2F912742579D0062530F /* FoundationHTTPServerHandler.swift in Sources */,
 				22692C8F25D18097007C41D0 /* ChatMessageGiphyAttachment.swift in Sources */,
+				6E567804287831D00008B4E9 /* MessageListWithMenuTransitionController.swift in Sources */,
 				792A4F4B248010A600EAF71D /* QueryOptions.swift in Sources */,
 				792FCB4B24A3D52A000290C7 /* DatabaseSession.swift in Sources */,
 				792A4F1D247FEA2200EAF71D /* ChannelListController.swift in Sources */,

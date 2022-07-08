@@ -167,7 +167,7 @@ extension UIViewController {
             preferredStyle: .alert
         )
         actions.forEach { alert.addAction($0) }
-        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
+        UIApplication.shared.getTopViewController()?.present(alert, animated: true, completion: nil)
     }
 }
 

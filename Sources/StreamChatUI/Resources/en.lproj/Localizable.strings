@@ -17,7 +17,8 @@
 "message.actions.pin" = "Pin";
 "message.actions.forward" = "Forward";
 "message.actions.more" = "More...";
-"message.actions.delete" = "Delete Message";
+"message.actions.deleteMessage" = "Delete Message";
+"message.actions.delete" = "Delete";
 "message.actions.delete.confirmation-title" = "Delete Message";
 "message.actions.delete.confirmation-message" = "Are you sure you want to permanently delete this message?";
 "message.actions.user-unblock" = "Unblock User";

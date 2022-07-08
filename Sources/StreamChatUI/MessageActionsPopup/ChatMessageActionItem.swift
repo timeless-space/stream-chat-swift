@@ -222,7 +222,7 @@ public struct UnmuteUserActionItem: ChatMessageActionItem {
 
 /// Instance of `ChatMessageActionItem` for deleting message action.
 public struct DeleteActionItem: ChatMessageActionItem {
-    public var title: String { L10n.Message.Actions.delete }
+    public let title: String
     public var isDestructive: Bool { true }
     public let icon: UIImage
     public let action: (ChatMessageActionItem) -> Void
@@ -233,10 +233,13 @@ public struct DeleteActionItem: ChatMessageActionItem {
     ///     - appearance: `Appearance` that is used to configure UI properties.
     public init(
         action: @escaping (ChatMessageActionItem) -> Void,
-        appearance: Appearance = .default
+        appearance: Appearance = .default,
+        title: String
     ) {
         self.action = action
+        self.title = title
         icon = appearance.images.messageActionDelete
+        icon.withTintColor(appearance.colorPalette.alert)
     }
 }
 
@@ -329,7 +332,7 @@ public struct MarkAsReadActionItem: ChatMessageActionItem {
 
 /// Instance of `MarkAsRead` for flagging a message action.
 public struct MuteUnmuteChannelActionItem: ChatMessageActionItem {
-    public var title: String { L10n.Message.Actions.mute }
+    public var title: String
     public let icon: UIImage
     public let action: (ChatMessageActionItem) -> Void
 
@@ -339,9 +342,12 @@ public struct MuteUnmuteChannelActionItem: ChatMessageActionItem {
     ///     - appearance: `Appearance` that is used to configure UI properties.
     public init(
         action: @escaping (ChatMessageActionItem) -> Void,
-        appearance: Appearance = .default
+        appearance: Appearance = .default,
+        isMute: Bool
     ) {
         self.action = action
-        icon = appearance.images.messageActionMuteUser
+        icon = isMute ? (appearance.images.unMute ?? UIImage()) :
+        (appearance.images.mute ?? UIImage())
+        title = isMute ? L10n.Message.Actions.unmute : L10n.Message.Actions.mute
     }
 }
