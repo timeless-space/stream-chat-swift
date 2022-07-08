@@ -14,11 +14,14 @@ struct MusicBubbleView: View {
             mediaView()
                 .padding(.init(10))
             VStack(alignment: .leading) {
-                Text("Song Name here")
+                Text("Wolves")
+                    .font(.system(size: 18))
                     .foregroundColor(Color.white)
-                Text("Artist name here")
+                Text("Selena Gomez")
+                    .font(.system(size: 16))
                     .foregroundColor(Color.white)
                 Text("Album here")
+                    .font(.system(size: 14))
                     .foregroundColor(Color.gray)
                     .frame(alignment: .leading)
             }
@@ -30,17 +33,12 @@ struct MusicBubbleView: View {
 
     private func mediaView() -> some View {
         ZStack {
-            Rectangle()
-                .foregroundColor(Color.yellow)
-                .frame(width: 80, height: 80)
+            Image("test")
+                .resizable()
                 .cornerRadius(10)
+                .frame(width: 80, height: 80)
 
-//            Image(uiImage: UIImage(systemName: "pencil")!)
-//                .resizable()
-//                .cornerRadius(10)
-//                .frame(width: 50, height: 50)
-
-            Image(uiImage: UIImage(systemName: "play")!)
+            Image("playMusic")
                 .resizable()
                 .foregroundColor(Color.white)
                 .frame(width: 30, height: 30, alignment: .center)

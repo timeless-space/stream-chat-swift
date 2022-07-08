@@ -39,6 +39,7 @@ extension Notification.Name {
     public static let locationUpdated = Notification.Name("kLocationUpdated")
     public static let getWeatherType = Notification.Name("kGetWeatherType")
     public static let setWeatherType = Notification.Name("kSetWeatherType")
+    public static let showMusicPlayer = Notification.Name("showMusicPlayer")
 }
 
 /// The possible errors that can occur in attachment validation

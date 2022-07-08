@@ -1247,7 +1247,6 @@ extension ChatMessageListVC: MusicCellTapEvent {
     }
 
     private func openMusicApp(messageContent: ChatMessage) {
-        guard let url = URL(string: messageContent.extraData.ctaData ?? "") else { return }
-        UIApplication.shared.open(url)
+        NotificationCenter.default.post(name: .showMusicPlayer, object: nil)
     }
 }
