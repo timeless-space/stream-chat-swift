@@ -228,10 +228,9 @@ open class ChatChannelListVC: _ViewController,
         //
         headerView.addSubview(lblTitle)
         NSLayoutConstraint.activate([
-            lblTitle.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 60),
             lblTitle.centerYAnchor.constraint(equalTo: headerView.centerYAnchor, constant: 0),
             lblTitle.centerXAnchor.constraint(equalTo: headerView.centerXAnchor, constant: 0),
-            lblTitle.trailingAnchor.constraint(equalTo: createChannelButton.leadingAnchor, constant: -10),
+            lblTitle.trailingAnchor.constraint(equalTo: createChannelButton.leadingAnchor, constant: -47),
         ])
         //
         
