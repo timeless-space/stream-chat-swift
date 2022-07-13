@@ -27,6 +27,7 @@ class ChatMenuViewController: UIViewController {
     var extraData = [String: RawJSON]()
     var menus = [MenuType]()
     var isChatOnly = false
+    var isCurrentUserAdmin = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,7 +46,7 @@ class ChatMenuViewController: UIViewController {
                 if isChatOnly {
                     menus = MenuType.getNonDaoMenu()
                 } else {
-                    menus = MenuType.getNonDaoMenuWithoutGift()
+                    menus = isCurrentUserAdmin ? MenuType.getMenuWithMusic() : MenuType.getNonDaoMenuWithoutGift()
                 }
             }
             var chatMenuView = ChatMenuView(menus: menus)
@@ -109,6 +110,7 @@ enum MenuType: Int, CaseIterable {
     case contact = 11
     case gift = 12
     case poll = 13
+    case music = 14
 
     func getTitle() -> String {
         switch self {
@@ -138,6 +140,8 @@ enum MenuType: Int, CaseIterable {
             return "Gift"
         case .poll:
             return "Polls"
+        case .music:
+            return "Music"
         }
     }
 
@@ -169,6 +173,8 @@ enum MenuType: Int, CaseIterable {
             return Appearance.default.images.menuGiftPacket ?? .init()
         case .poll:
             return Appearance.default.images.pollChat
+        case .music:
+            return Appearance.default.images.menuContact
         }
     }
 
@@ -182,6 +188,10 @@ enum MenuType: Int, CaseIterable {
 
     static func getNonDaoMenuWithoutGift() -> [MenuType] {
         return [.media, .contact, .weather, .crypto, .oneN, .nft, .redPacket, .poll]
+    }
+
+    static func getMenuWithMusic() -> [MenuType] {
+        return [.media, .music, .weather, .crypto, .oneN, .nft, .redPacket, .poll]
     }
 }
 

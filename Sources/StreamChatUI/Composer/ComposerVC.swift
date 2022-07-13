@@ -631,13 +631,16 @@ open class ComposerVC: _ViewController,
 
     func bindMenuController() {
         menuController = ChatMenuViewController.instantiateController(storyboard: .wallet)
-        menuController?.extraData = self.channelController?.channel?.extraData ?? [:]
-        menuController?.isChatOnly = self.channelController?.channel?.isDirectMessageChannel ?? false
+        menuController?.extraData = channelController?.channel?.extraData ?? [:]
+        menuController?.isChatOnly = channelController?.channel?.isDirectMessageChannel ?? false
+        menuController?.isCurrentUserAdmin = channelController?.channel?.createdBy?.id == ChatClient.shared.currentUserId
         menuController?.didTapAction = { [weak self] action in
             guard let `self` = self else { return }
             self.lockInputViewObserver = true
             self.shouldClearContent(action)
             switch action {
+            case .music:
+                debugPrint("####:- Music is in progress")
             case .media:
                 self.composerView.inputMessageView.textView.resignFirstResponder()
                 self.showAttachmentsPicker()
