@@ -20,7 +20,7 @@ public class Dynamic<T> {
     }
     
     // MARK: Initialization
-    init(_ v: T) {
+    public init(_ v: T) {
         value = v
     }
     
