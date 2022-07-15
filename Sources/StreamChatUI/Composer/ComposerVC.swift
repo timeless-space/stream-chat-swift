@@ -40,6 +40,9 @@ extension Notification.Name {
     public static let getWeatherType = Notification.Name("kGetWeatherType")
     public static let setWeatherType = Notification.Name("kSetWeatherType")
     public static let showMusicPlayer = Notification.Name("showMusicPlayer")
+    public static let sendMusicMessage = Notification.Name("sendMusicMessage")
+    public static let showPlayListView = Notification.Name("showPlayListView")
+
 }
 
 /// The possible errors that can occur in attachment validation
@@ -448,6 +451,7 @@ open class ComposerVC: _ViewController,
         NotificationCenter.default.addObserver(self, selector: #selector(hideKeyboardMenuAction(_:)), name: .hideKeyboardMenu, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(sendWeatherMessage(_:)), name: .fetchWeatherCompleted, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(editWeatherMessage(_:)), name: .locationUpdated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(sendMusicMessage), name: .sendMusicMessage, object: nil)
     }
 
     override open func viewDidDisappear(_ animated: Bool) {
@@ -629,6 +633,32 @@ open class ComposerVC: _ViewController,
         }
     }
 
+    func onTapOfMusic() {
+        let alert = UIAlertController(title: "Play music", message: "Please Select an Option", preferredStyle: .actionSheet)
+
+        alert.addAction(UIAlertAction(title: "Spotify", style: .default , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            NotificationCenter.default.post(name: .showPlayListView, object: nil)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Apple Music", style: .default , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            NotificationCenter.default.post(name: .showPlayListView, object: nil)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Youtube Music", style: .default , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            NotificationCenter.default.post(name: .showPlayListView, object: nil)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .destructive , handler:{ [weak self] (UIAlertAction)in
+            guard let `self` = self else { return }
+            self.dismiss(animated: true)
+        }))
+
+        present(alert, animated: true)
+    }
+
     func bindMenuController() {
         menuController = ChatMenuViewController.instantiateController(storyboard: .wallet)
         menuController?.extraData = channelController?.channel?.extraData ?? [:]
@@ -640,7 +670,8 @@ open class ComposerVC: _ViewController,
             self.shouldClearContent(action)
             switch action {
             case .music:
-                debugPrint("####:- Music is in progress")
+                self.composerView.inputMessageView.textView.resignFirstResponder()
+                self.onTapOfMusic()
             case .media:
                 self.composerView.inputMessageView.textView.resignFirstResponder()
                 self.showAttachmentsPicker()
@@ -1028,6 +1059,17 @@ open class ComposerVC: _ViewController,
                     completion: nil
                 )
         }
+    }
+
+    @objc private func sendMusicMessage() {
+        var musicData = [String: RawJSON]()
+        musicData["cta_data"] = .string("")
+        self.channelController?
+            .createNewMessage(
+                text: "music",
+                extraData: musicData,
+                completion: nil
+            )
     }
 
     @objc private func editWeatherMessage(_ notification: Notification) {

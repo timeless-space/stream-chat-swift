@@ -91,9 +91,10 @@ public class MusicBubble: UITableViewCell {
 
         // MARK: - Set Anchor
         viewContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor,
-                                               constant: 8).isActive = true
+                                               constant: cellWidth).isActive = true
+
         viewContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor,
-                                                                            constant: -cellWidth).isActive = true
+                                                                            constant: -8).isActive = true
     }
 
     @objc private func onTapOfMusicCell() {

@@ -657,6 +657,17 @@ open class ChatMessageListVC: _ViewController,
                 cell.configureCell(isSender: isMessageFromCurrentUser)
                 cell.transform = .mirrorY
                 return cell
+            } else if isMusicCell(message) {
+                guard let cell = listView.dequeueReusableCell(
+                    withIdentifier: "MusicBubble",
+                    for: indexPath) as? MusicBubble else {
+                        return UITableViewCell()
+                    }
+                cell.delegate = self
+                cell.content = message
+                cell.configData(isSender: isMessageFromCurrentUser)
+                cell.transform = .mirrorY
+                return cell
             } else if isFallbackMessage(message) {
                 guard let extraData = message?.extraData,
                       let fallbackMessage = extraData["fallbackMessage"] else { return UITableViewCell() }
@@ -1221,32 +1232,6 @@ extension ChatMessageListVC: PhotoCollectionAction {
 extension ChatMessageListVC: MusicCellTapEvent {
 
     func onTapOfMusicCell(messageContent: ChatMessage) {
-        let alert = UIAlertController(title: "Play music", message: "Please Select an Option", preferredStyle: .actionSheet)
-
-        alert.addAction(UIAlertAction(title: "Spotify", style: .default , handler:{ [weak self] (UIAlertAction)in
-            guard let `self` = self else { return }
-            self.openMusicApp(messageContent: messageContent)
-        }))
-
-        alert.addAction(UIAlertAction(title: "Apple Music", style: .default , handler:{ [weak self] (UIAlertAction)in
-            guard let `self` = self else { return }
-            self.openMusicApp(messageContent: messageContent)
-        }))
-
-        alert.addAction(UIAlertAction(title: "Youtube Music", style: .default , handler:{ [weak self] (UIAlertAction)in
-            guard let `self` = self else { return }
-            self.openMusicApp(messageContent: messageContent)
-        }))
-
-        alert.addAction(UIAlertAction(title: "Cancel", style: .destructive , handler:{ [weak self] (UIAlertAction)in
-            guard let `self` = self else { return }
-            self.dismiss(animated: true)
-        }))
-
-        present(alert, animated: true)
-    }
-
-    private func openMusicApp(messageContent: ChatMessage) {
         NotificationCenter.default.post(name: .showMusicPlayer, object: nil)
     }
 }
