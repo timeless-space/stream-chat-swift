@@ -883,6 +883,19 @@ public extension Dictionary where Key == String, Value == RawJSON {
         }
     }
 
+    var musicExtraData: [String: RawJSON] {
+        if let extraData = self["music"] {
+            switch extraData {
+            case .dictionary(let musicData):
+                return musicData
+            default:
+                return [:]
+            }
+        } else {
+            return [:]
+        }
+    }
+
     var currentLocation: String? {
         if let currentLocation = weatherExtraData["currentLocation"] {
             return fetchRawData(raw: currentLocation) as? String
@@ -910,6 +923,38 @@ public extension Dictionary where Key == String, Value == RawJSON {
     var iconCode: String? {
         if let iconCode = weatherExtraData["iconCode"] {
             return fetchRawData(raw: iconCode) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var songName: String? {
+        if let songName = musicExtraData["songName"] {
+            return fetchRawData(raw: songName) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var artistName: String? {
+        if let artistName = musicExtraData["artistName"] {
+            return fetchRawData(raw: artistName) as? String
+        } else {
+            return nil
+        }
+    }
+    
+    var songImageUrl: String? {
+        if let songImageUrl = musicExtraData["songImageUrl"] {
+            return fetchRawData(raw: songImageUrl) as? String
+        } else {
+            return nil
+        }
+    }
+
+    var songUrl: String? {
+        if let songUri = musicExtraData["songUri"] {
+            return fetchRawData(raw: songUri) as? String
         } else {
             return nil
         }

@@ -8,7 +8,7 @@
 import StreamChat
 
 protocol MusicCellTapEvent: AnyObject {
-    func onTapOfMusicCell(messageContent: ChatMessage)
+    func onTapOfMusicCell(messageContent: [String: RawJSON])
 }
 
 public class MusicBubble: UITableViewCell {
@@ -99,7 +99,7 @@ public class MusicBubble: UITableViewCell {
 
     @objc private func onTapOfMusicCell() {
         if let content = content {
-            delegate?.onTapOfMusicCell(messageContent: content)
+            delegate?.onTapOfMusicCell(messageContent: content.extraData.musicExtraData)
         }
     }
 
@@ -119,7 +119,13 @@ public class MusicBubble: UITableViewCell {
     func configData(isSender: Bool) {
 
         subContainer.subviews.forEach { $0.removeFromSuperview() }
-        subContainer.fit(subview: MusicBubbleView())
+        debugPrint("### Content \(content)")
+        subContainer.fit(subview: MusicBubbleView(
+            title: content?.extraData.songName ?? "",
+            subTitle: content?.extraData.artistName ?? "",
+            imageUrl: content?.extraData.songImageUrl ?? "",
+            uri: content?.extraData.songUrl ?? ""
+        ))
         let controller = chatClient.currentUserController()
 
         timestampLabel.textAlignment = isSender ? .right : .left

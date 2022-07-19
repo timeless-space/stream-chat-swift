@@ -832,7 +832,7 @@ open class ChatMessageListVC: _ViewController,
     }
 
     private func isMusicCell(_ message: ChatMessage?) -> Bool {
-        message?.extraData.keys.contains("cta_data") ?? false
+        message?.extraData.keys.contains("music") ?? false
     }
 
     private func isFallbackMessage(_ message: ChatMessage?) -> Bool {
@@ -1231,7 +1231,7 @@ extension ChatMessageListVC: PhotoCollectionAction {
 
 extension ChatMessageListVC: MusicCellTapEvent {
 
-    func onTapOfMusicCell(messageContent: ChatMessage) {
-        NotificationCenter.default.post(name: .showMusicPlayer, object: nil)
+    func onTapOfMusicCell(messageContent: [String: RawJSON]) {
+        NotificationCenter.default.post(name: .showMusicPlayer, object: nil, userInfo: messageContent)
     }
 }

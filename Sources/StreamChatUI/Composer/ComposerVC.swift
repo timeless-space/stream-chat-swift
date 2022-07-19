@@ -1061,13 +1061,29 @@ open class ComposerVC: _ViewController,
         }
     }
 
-    @objc private func sendMusicMessage() {
+    func getMusicRequest(_ notification: Notification) -> [String: RawJSON] {
         var musicData = [String: RawJSON]()
-        musicData["cta_data"] = .string("")
+        // Get data from notification
+        guard let userInfo = notification.userInfo else {
+            return musicData
+        }
+        let songName = userInfo["songName"] as? String ?? ""
+        let artistName = userInfo["artistName"] as? String ?? ""
+        let songImageUrl = userInfo["songImageUrl"] as? String ?? ""
+        let songUri = userInfo["songUri"] as? String ?? ""
+        // Set data
+        musicData["songName"] = .string(songName)
+        musicData["artistName"] = .string(artistName)
+        musicData["songImageUrl"] = .string(songImageUrl)
+        musicData["songUri"] = .string(songUri)
+        return musicData
+    }
+
+    @objc private func sendMusicMessage(notification: Notification) {
         self.channelController?
             .createNewMessage(
                 text: "music",
-                extraData: musicData,
+                extraData: ["music": .dictionary(self.getMusicRequest(notification))],
                 completion: nil
             )
     }
