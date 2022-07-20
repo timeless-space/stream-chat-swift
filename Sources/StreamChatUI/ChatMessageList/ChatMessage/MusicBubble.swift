@@ -99,7 +99,7 @@ public class MusicBubble: UITableViewCell {
 
     @objc private func onTapOfMusicCell() {
         if let content = content {
-            delegate?.onTapOfMusicCell(messageContent: content.extraData.musicExtraData)
+            delegate?.onTapOfMusicCell(messageContent: content.extraData)
         }
     }
 
@@ -119,7 +119,6 @@ public class MusicBubble: UITableViewCell {
     func configData(isSender: Bool) {
 
         subContainer.subviews.forEach { $0.removeFromSuperview() }
-        debugPrint("### Content \(content)")
         subContainer.fit(subview: MusicBubbleView(
             title: content?.extraData.songName ?? "",
             subTitle: content?.extraData.artistName ?? "",
@@ -141,17 +140,5 @@ public class MusicBubble: UITableViewCell {
             }
         }
         timestampLabel?.text = nameAndTimeString
-    }
-
-    private func getExtraData(key: String) -> [String: RawJSON]? {
-        let extra = content?.extraData
-        if let extraData = content?.extraData[key] {
-            switch extraData {
-            case .dictionary(let dictionary): return dictionary
-            default: return nil
-            }
-        } else {
-            return nil
-        }
     }
 }

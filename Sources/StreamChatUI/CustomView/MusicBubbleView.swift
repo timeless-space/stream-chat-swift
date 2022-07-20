@@ -15,8 +15,6 @@ struct MusicBubbleView: View {
     var subTitle: String
     var imageUrl: String
     var uri: String
-    @State private var uploadedImage: UIImage?
-    let imageLoader = Components.default.imageLoader
 
     var body: some View {
         HStack(spacing: 0) {
