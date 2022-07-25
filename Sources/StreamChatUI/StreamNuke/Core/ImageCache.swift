@@ -62,7 +62,7 @@ extension ImageCaching {
 /// `ImageCache` automatically removes all stored elements when it receives a
 /// memory warning. It also automatically removes *most* stored elements
 /// when the app enters the background.
-final class ImageCache: ImageCaching {
+public class ImageCache: ImageCaching {
     private let impl: NukeCache<ImageCacheKey, ImageContainer>
 
     /// The maximum total cost that the cache can hold.
@@ -99,7 +99,7 @@ final class ImageCache: ImageCaching {
     }
 
     /// Shared `Cache` instance.
-    static let shared = ImageCache()
+    public static let shared = ImageCache()
 
     deinit {
         #if TRACK_ALLOCATIONS
@@ -148,9 +148,15 @@ final class ImageCache: ImageCaching {
     }
 
     /// Removes all cached images.
-    func removeAll() {
+    public func removeAll() {
         impl.removeAll()
     }
+
+    public func removeImage(imageUrl: String) {
+        guard let url = URL(string: imageUrl) else { return }
+        self[url] = nil
+    }
+
     /// Removes least recently used items from the cache until the total cost
     /// of the remaining items is less than the given cost limit.
     func trim(toCost limit: Int) {

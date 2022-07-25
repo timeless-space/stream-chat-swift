@@ -870,6 +870,14 @@ public extension Dictionary where Key == String, Value == RawJSON {
         }
     }
 
+    var userProfileHash: String? {
+        if let userProfileHash = self["userProfileHash"] {
+            return fetchRawData(raw: userProfileHash) as? String
+        } else {
+            return nil
+        }
+    }
+    
     private var weatherExtraData: [String: RawJSON] {
         if let extraData = self["weather"] {
             switch extraData {

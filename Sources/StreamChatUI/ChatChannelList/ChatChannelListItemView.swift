@@ -177,11 +177,7 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
 
     /// Text of `timestampLabel` which contains the time of the last sent message.
     open var timestampText: String? {
-        if let timestamp = content?.channel.previewMessage?.createdAt {
-            return timestampFormatter.format(timestamp)
-        } else {
-            return nil
-        }
+        return getTimestamp()
     }
     
     /// The delivery status to be shown for the channel's preview message.
@@ -263,8 +259,6 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
         titleLabel.text = titleText
         subtitleLabel.text = subtitleText
         timestampLabel.text = timestampText
-        avatarView.avatarCornerRadius = avatarSize/2
-        avatarView.layer.cornerRadius = avatarSize/2
         avatarView.content = (content?.channel, content?.currentUserId)
 
         unreadCountView.content = content?.channel.unreadCount ?? .noUnread
@@ -281,6 +275,21 @@ open class ChatChannelListItemView: _View, ThemeProvider, SwiftUIRepresentable {
                 previewMessageDeliveryStatusView,
                 at: status == .pending || status == .failed ? 0 : 1
             )
+        }
+    }
+
+    private func getTimestamp() -> String? {
+        guard let lastMessageAt = content?.channel.lastMessageAt else {
+            return nil
+        }
+        if Calendar.current.isDateInToday(lastMessageAt) {
+            return timestampFormatter.format(lastMessageAt)
+        } else if Date.getDayDiffOfDates(Date(), endDate: lastMessageAt) < 6 {
+            return DateFormatter.formatter(with: .shortWeekDateFormat).string(from: lastMessageAt)
+        } else if lastMessageAt.isInSameYear(as: Date()) {
+            return DateFormatter.formatter(with: .dayMonthDateFormatter).string(from: lastMessageAt)
+        } else {
+            return DateFormatter.formatter(with: .longDateFormatter).string(from: lastMessageAt)
         }
     }
 }

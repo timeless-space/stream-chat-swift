@@ -391,6 +391,7 @@ open class ChatChannelVC: _ViewController,
             messageListVC?.delegate = nil
             messageListVC?.dataSource = nil
             channelController?.delegate = nil
+            NotificationCenter.default.removeObserver(self)
         }
     }
 
