@@ -52,7 +52,7 @@ open class ChatMessageListRouter:
         popup.transitioningDelegate = messagePopUpTransitionController
 
         messagePopUpTransitionController.selectedMessageId = messageContentView.content?.id
-        UIApplication.shared.windows.last?.rootViewController?.present(popup, animated: true)
+        UIApplication.shared.getTopViewController()?.present(popup, animated: true)
     }
 
     /// Shows the detail pop-up for the selected message with all the message reactions presented.

@@ -530,6 +530,7 @@ public extension Appearance {
         public var play: UIImage = loadImageSafely(with: "play")
         public var pause: UIImage = loadImageSafely(with: "pause")
         public var editCircle: UIImage = loadImageSafely(with: "editIcon")
+        public var glassCircle: UIImage = loadImageSafely(with: "glass_icon")
 
         // MARK: - CommandIcons
 

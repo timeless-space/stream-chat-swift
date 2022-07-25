@@ -735,7 +735,7 @@ open class ComposerVC: _ViewController,
                         guard let emojiPickerView = self.emojiPickerView else {
                             return
                         }
-                        UIApplication.shared.keyWindow?.rootViewController?.present(emojiPickerView, animated: true, completion: nil)
+                        UIApplication.shared.getTopViewController()?.present(emojiPickerView, animated: true)
                     }
                 }
                 showInputViewController(emoji)
@@ -883,7 +883,8 @@ open class ComposerVC: _ViewController,
                 guard let `self` = self else { return }
                 self.walletInputView?.walletStepper.updateAmount(amount: amount)
             }
-            UIApplication.shared.windows.first?.rootViewController?.present(walletView, animated: true, completion: nil)
+            UIApplication.shared.getTopViewController()?.present(walletView, animated: true)
+
         }
     }
 
@@ -1584,7 +1585,7 @@ open class ComposerVC: _ViewController,
         let alert = UIAlertController(title: title, message: message, preferredStyle: preferredStyle)
         alert.popoverPresentationController?.sourceView = sourceView
         actions.forEach(alert.addAction)
-        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+        UIApplication.shared.getTopViewController()?.present(alert, animated: true)
     }
 }
 

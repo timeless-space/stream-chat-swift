@@ -44,6 +44,7 @@ public class ChatUserListVC: _ViewController, ThemeProvider {
     public var bCallbackGroupSelect: (() -> Void)?
     public var bCallbackGroupWeHere: (() -> Void)?
     public var bCallbackGroupJoinViaQR: (() -> Void)?
+    public var bCallBackCommunityGroupCreate: (() -> Void)?
     public var bCallbackAddFriend: ((ChatUser?) -> Void)?
     public var bCallbackDataLoadingStateUpdated: ((UserListViewModel.ChatUserLoadingState) -> Void)?
     // MARK: - VIEW CYCLE
@@ -351,6 +352,7 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
             header.bCallbackGroupSelect = bCallbackGroupSelect
             header.bCallbackGroupWeHere = bCallbackGroupWeHere
             header.bCallbackGroupJoinViaQR = bCallbackGroupJoinViaQR
+            header.bCallBackCommunityGroupCreate = bCallBackCommunityGroupCreate
             header.selectionStyle = .none
             header.labelSortingType.isHidden = false
             if viewModel.dataLoadingState == .completed {

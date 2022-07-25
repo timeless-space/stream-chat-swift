@@ -446,7 +446,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
             } else {
                 qrCodeVc.strContent = channelController.channel?.extraData.joinLink
             }
-            UIApplication.shared.keyWindow?.rootViewController?.present(qrCodeVc, animated: true, completion: nil)
+            UIApplication.shared.getTopViewController()?.present(qrCodeVc, animated: true)
         }
     }
 
@@ -506,7 +506,7 @@ extension ChatGroupDetailsVC: ChannelDetailHeaderTVCellDelegate {
             message: nil,
             actions: [deleteAction, cancelAction],
             preferredStyle: .actionSheet)
-        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
+        UIApplication.shared.getTopViewController()?.present(alert, animated: true, completion: nil)
     }
 
     func showWalletQRCode() {

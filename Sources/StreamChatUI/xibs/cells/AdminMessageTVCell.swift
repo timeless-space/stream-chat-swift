@@ -13,6 +13,7 @@ public enum AdminMessageType: String {
     case daoAddInitialSigners
     case simpleGroupChat
     case privateChat
+    case communityGroup
     case none
 }
 
@@ -47,6 +48,8 @@ class AdminMessageTVCell: UITableViewCell {
             lblDesc.text = getGroupChatAdminMessage()
         case .privateChat:
             lblDesc.text = getPrivateChatAdminMessage()
+        case .communityGroup:
+            lblDesc.text = getCommunityChatAdminMessage()
         default:
             lblDesc.text = ""
         }
@@ -94,6 +97,14 @@ class AdminMessageTVCell: UITableViewCell {
             return "You created this group. Friends nearby can join the group by entering the secret 4 digits."
         } else {
             return "\(content?.author.name ?? "") created this group. Friends nearby can join the group by entering the secret 4 digits."
+        }
+    }
+
+    private func getCommunityChatAdminMessage() -> String {
+        if content?.isSentByCurrentUser ?? false {
+            return "You created this community channel. Try using the menu item to share with others."
+        } else {
+            return "\(content?.author.name ?? "") created this community channel. Try using the menu item to share with others."
         }
     }
 
