@@ -110,10 +110,11 @@ extension TableViewCellChatUser {
         if name.lowercased() == channelMember.id.lowercased()  {
             let last = channelMember.id.suffix(5)
             let first = channelMember.id.prefix(7)
+            let userName = "\(first)...\(last)".capitalizingFirstLetter()
             if channelMember.memberRole == .owner {
-                nameLabel.attributedText = getOwnerName(name: name.capitalizingFirstLetter())
+                nameLabel.attributedText = getOwnerName(name: userName)
             } else {
-                nameLabel.text = "\(first)...\(last)".capitalizingFirstLetter()
+                nameLabel.text = userName
             }
         } else {
             if channelMember.memberRole == .owner {
