@@ -396,18 +396,6 @@ extension ChatUserListVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        defer {
-            tableView.deselectRow(at: indexPath, animated: true)
-        }
-        if let cell = tableView.cellForRow(at: indexPath) as? TableViewCellChatUser {
-            let selectionColor = Appearance.default.colorPalette.placeHolderBalanceBG.withAlphaComponent(0.7)
-            UIView.animate(withDuration: 0.2, delay: 0, options: []) {
-                cell.contentView.backgroundColor = selectionColor
-                self.view.layoutIfNeeded()
-            } completion: { status in
-                cell.contentView.backgroundColor = .clear
-            }
-        }
         guard sectionWiseList.indices.contains(indexPath.section), viewModel.dataLoadingState == .completed else {
             return
         }
