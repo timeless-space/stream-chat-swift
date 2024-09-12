@@ -77,7 +77,9 @@ open class ChatChannelHeaderView: _View,
 
     override open func updateContent() {
         super.updateContent()
-
+        guard !isUserTyping else {
+            return
+        }
         channelTitleText { [weak self] title in
             guard let self = self else { return }
             self.titleContainerView.content = (title?.trimStringBy(count: 25), self.subtitleText, self.channelController?.channelQuery.type == .announcement ? true : false, self.channelController?.channel?.isMuted ?? false)
@@ -104,7 +106,7 @@ open class ChatChannelHeaderView: _View,
     /// Hides typing Indicator.
     open func hideTypingIndicator() {
         guard isTypingEventsEnabled, typingIndicatorView.isVisible else { return }
-        isUserTyping = true
+        isUserTyping = false
         typingIndicatorView.isHidden = true
         titleContainerView.updateSubtitle(isHide: false)
         updateContent()
