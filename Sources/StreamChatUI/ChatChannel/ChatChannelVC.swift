@@ -324,7 +324,6 @@ open class ChatChannelVC: _ViewController,
             headerView.titleContainerView.subtitleLabel.isHidden = true
             messageComposerVC?.composerView.inputMessageView.textView.resignFirstResponder()
             channelAvatarView.isHidden = true
-            moreButton.isHidden = true
         } else {
             messageComposerVC?.composerView.isUserInteractionEnabled = true
             messageComposerVC?.composerView.alpha = 1.0
@@ -405,17 +404,7 @@ open class ChatChannelVC: _ViewController,
         guard let isMute = channelController?.channel?.isMuted,
               let currentUserId = ChatClient.shared.currentUserId
         else { return }
-        if isMute {
-            self.channelController?.unmuteChannel(completion: nil)
-            // Add user in channel to enable notification
-            self.channelController?.addMembers(userIds: [currentUserId], completion: nil)
-            sender.setTitle("Mute", for: .normal)
-            return;
-        }
-        self.channelController?.muteChannel(completion: nil)
-        // Remove user from channel to disable notification
-        self.channelController?.removeMembers(userIds: [currentUserId], completion: nil)
-        sender.setTitle("Unmute", for: .normal)
+        isMute ? unMuteNotification() : muteNotification()
     }
     
     @objc func headerViewAction(_ sender: Any) {
@@ -685,6 +674,7 @@ open class ChatChannelVC: _ViewController,
     }
     
     public func muteNotification() {
+        guard let currentUserId = ChatClient.shared.currentUserId else { return }
         channelController?.muteChannel(completion: { [weak self] error in
             guard let weakSelf = self else { return }
             guard error == nil else {
@@ -696,10 +686,16 @@ open class ChatChannelVC: _ViewController,
             weakSelf.isChannelMuted = true
             weakSelf.reloadMenu()
             Snackbar.show(text: "Notifications muted", messageType: StreamChatMessageType.ChatGroupMute)
+            if weakSelf.channelController?.channel?.type == .announcement {
+                // Remove user from channel to disable notification
+                weakSelf.channelController?.removeMembers(userIds: [currentUserId], completion: nil)
+                weakSelf.btnAction.setTitle("Unmute", for: .normal)
+            }
         })
     }
     
     public func unMuteNotification() {
+        guard let currentUserId = ChatClient.shared.currentUserId else { return }
         channelController?.unmuteChannel(completion: { [weak self] error in
             guard let weakSelf = self else { return }
             guard error == nil else {
@@ -711,6 +707,11 @@ open class ChatChannelVC: _ViewController,
             weakSelf.isChannelMuted = false
             weakSelf.reloadMenu()
             Snackbar.show(text: "Notifications unmuted", messageType: StreamChatMessageType.ChatGroupMute)
+            if weakSelf.channelController?.channel?.type == .announcement {
+                // Add user in channel to enable notification
+                weakSelf.channelController?.addMembers(userIds: [currentUserId], completion: nil)
+                weakSelf.btnAction.setTitle("Mute", for: .normal)
+            }
         })
     }
     
@@ -971,6 +972,11 @@ open class ChatChannelVC: _ViewController,
             } else {
                 actions.append(leaveGroup)
             }
+            return actions
+        } else if channelController?.channel?.type == .announcement {
+            var actions: [UIAction] = []
+            actions.append(groupQR)
+            isChannelMuted ? actions.append(unmute) : actions.append(mute)
             return actions
         } else {
             if channelController?.channel?.isDirectMessageChannel ?? false {
