@@ -2057,6 +2057,7 @@
 		ED7DD40527CCF618007CE0BA /* ASVideoPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7DD3FF27CCF36C007CE0BA /* ASVideoPlayerController.swift */; };
 		ED7DD40627CCF61C007CE0BA /* ASVideoLayerObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7DD3FE27CCF36C007CE0BA /* ASVideoLayerObject.swift */; };
 		ED7DD40727CCF61E007CE0BA /* ASVideoContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7DD3FD27CCF36C007CE0BA /* ASVideoContainer.swift */; };
+		ED931D7F2861CE8B006373EF /* 1.lottie in Resources */ = {isa = PBXBuildFile; fileRef = ED931D7E2861CE8B006373EF /* 1.lottie */; };
 		ED95B3F52769DF850049DD53 /* RedPacketExpired.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED95B3F42769DF850049DD53 /* RedPacketExpired.swift */; };
 		EDAB4B3F27A15D1D00F07D53 /* Snackbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */; };
 		EDAB4B4227A17A0300F07D53 /* EmojiButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDAB4B4027A179D600F07D53 /* EmojiButton.swift */; };
@@ -3959,6 +3960,7 @@
 		ED7DD3FD27CCF36C007CE0BA /* ASVideoContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoContainer.swift; sourceTree = "<group>"; };
 		ED7DD3FE27CCF36C007CE0BA /* ASVideoLayerObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoLayerObject.swift; sourceTree = "<group>"; };
 		ED7DD3FF27CCF36C007CE0BA /* ASVideoPlayerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASVideoPlayerController.swift; sourceTree = "<group>"; };
+		ED931D7E2861CE8B006373EF /* 1.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1.lottie; sourceTree = "<group>"; };
 		ED95B3F42769DF850049DD53 /* RedPacketExpired.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedPacketExpired.swift; sourceTree = "<group>"; };
 		EDAB4B3E27A15D1D00F07D53 /* Snackbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snackbar.swift; sourceTree = "<group>"; };
 		EDAB4B4027A179D600F07D53 /* EmojiButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiButton.swift; sourceTree = "<group>"; };
@@ -6107,7 +6109,7 @@
 				A34407DF27D8C3400044F150 /* StreamChatUITestsAppUITests */,
 				8AD5EC9022E9A3E8005CFAC9 /* Products */,
 				8AD5ECA722E9B3C4005CFAC9 /* Frameworks */,
-				E368A59D2860698700031D69 /* Recovered References */,
+				ED931D7D2861CDF6006373EF /* Recovered References */,
 			);
 			indentWidth = 4;
 			sourceTree = "<group>";
@@ -8123,6 +8125,7 @@
 		CDA1FB0927884FC500C2F4BD /* xibs */ = {
 			isa = PBXGroup;
 			children = (
+				ED931D802861CE94006373EF /* Stickers */,
 				6E3DAEBA280960BD00B3D7A4 /* SkeletonViewSetting */,
 				6EE7C57327FC81C0003DD063 /* ReactionMenu */,
 				FC4F2EF527F4139700A6D729 /* Views */,
@@ -8441,14 +8444,61 @@
 			path = VideoPlayer;
 			sourceTree = "<group>";
 		};
-		EDC2D277283FA0D40056B73D /* StackedItems */ = {
+		ED931D7D2861CDF6006373EF /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				EDC2D273283FA0D00056B73D /* StackedItemsLayout.swift */,
-				EDC2D274283FA0D10056B73D /* StackedItemsView.swift */,
-				ED381A7A2848751A00C4C0B8 /* StackedItem.swift */,
+				422D54FE39A54961C58D3BC8 /* Pods-StreamChat.debug.xcconfig */,
+				E0D462C3A1288350E42719FC /* Pods-StreamChat.release.xcconfig */,
+				2905F5664D44D5FDF02F6079 /* Pods-StreamChat.releasetests.xcconfig */,
+				5E3D26F46899F4F67B681BCA /* Pods-StreamChatTestTools.debug.xcconfig */,
+				14A57AB4938D73102DF1E4E1 /* Pods-StreamChatTestTools.release.xcconfig */,
+				6A3DD2765692B17F198AEF35 /* Pods-StreamChatTestTools.releasetests.xcconfig */,
+				FFC1759B7D73175543C2A317 /* Pods-StreamChat-StreamChatTests.debug.xcconfig */,
+				2E6459FD333B0721E4E2CE7B /* Pods-StreamChat-StreamChatTests.release.xcconfig */,
+				CC41B30A527E6CFE50137055 /* Pods-StreamChat-StreamChatTests.releasetests.xcconfig */,
+				CB92EDFF0149671292939F50 /* Pods-StreamChatTestTools-StreamChatTestToolsTests.debug.xcconfig */,
+				24105F9D711C0F1E7DDDBC1C /* Pods-StreamChatTestTools-StreamChatTestToolsTests.release.xcconfig */,
+				BEB119FD6D9506D0B39E92BA /* Pods-StreamChatTestTools-StreamChatTestToolsTests.releasetests.xcconfig */,
+				25CA8207E734AFBB5193CA69 /* Pods-StreamChatUI.debug.xcconfig */,
+				CB0CA25CD8473F69446A1119 /* Pods-StreamChatUI.release.xcconfig */,
+				BC9A33B5289724135A0E52C8 /* Pods-StreamChatUI.releasetests.xcconfig */,
+				46485997A8FFADB861C8C267 /* Pods-StreamChatUI-StreamChatUITests.debug.xcconfig */,
+				9BE06D0CA9278CEC105647C5 /* Pods-StreamChatUI-StreamChatUITests.release.xcconfig */,
+				E99EAF5B47BF3E7B254910C9 /* Pods-StreamChatUI-StreamChatUITests.releasetests.xcconfig */,
+				0A0C7D2375DE99B08B7ABF2E /* Pods-DemoAppPush.debug.xcconfig */,
+				B823D0087374A37945A91C85 /* Pods-DemoAppPush.release.xcconfig */,
+				83C555AA6C6021005FBD30BD /* Pods-DemoAppPush.releasetests.xcconfig */,
+				712630156FAE6535F5BE05DA /* Pods-DemoApp.debug.xcconfig */,
+				9117623CABA50160C0C09D2D /* Pods-DemoApp.release.xcconfig */,
+				33928312B201F9E287FC20FC /* Pods-DemoApp.releasetests.xcconfig */,
+				98BD923F31DDDB9EB1082BE7 /* Pods-DocsSnippets.debug.xcconfig */,
+				D6D707D903EC16AD458C2F98 /* Pods-DocsSnippets.release.xcconfig */,
+				F4CE4C8A8CD6EFCD2F27DD66 /* Pods-DocsSnippets.releasetests.xcconfig */,
+				8F48C3A831BE8BDB40740FE7 /* Pods-Messenger.debug.xcconfig */,
+				E7E14FEFE1C69BA27F79177A /* Pods-Messenger.release.xcconfig */,
+				9EB345309F1EDD122699B173 /* Pods-Messenger.releasetests.xcconfig */,
+				49938011BADF684645D6D6BC /* Pods-Slack.debug.xcconfig */,
+				694094411E16AD9C02349DEE /* Pods-Slack.release.xcconfig */,
+				92DDDAB41A4A1FEA1C4A4D59 /* Pods-Slack.releasetests.xcconfig */,
+				51E327EBA40EB26D1ABB6870 /* Pods-iMessage.debug.xcconfig */,
+				F2D5FFDA82B29C092E1137E3 /* Pods-iMessage.release.xcconfig */,
+				15C114041D0E6F0AFF80741F /* Pods-iMessage.releasetests.xcconfig */,
+				E4615C3D10765DC6561CFFF7 /* Pods-YouTube.debug.xcconfig */,
+				3ADD0D5C19759FEA7DC8F864 /* Pods-YouTube.release.xcconfig */,
+				68783FCB820109D57A462D33 /* Pods-YouTube.releasetests.xcconfig */,
+				4B6A109C8024998F890F9C44 /* Pods-StreamChatSample.debug.xcconfig */,
+				5F00878B492AEAB269DDD7F8 /* Pods-StreamChatSample.release.xcconfig */,
+				67A598E602D1969BBF917D95 /* Pods-StreamChatSample.releasetests.xcconfig */,
 			);
-			path = StackedItems;
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		ED931D802861CE94006373EF /* Stickers */ = {
+			isa = PBXGroup;
+			children = (
+				ED931D7E2861CE8B006373EF /* 1.lottie */,
+			);
+			path = Stickers;
 			sourceTree = "<group>";
 		};
 		EDD84512279E6934004BF3CD /* ChatMenu */ = {
@@ -9235,6 +9285,7 @@
 				6E41867C27C3CD630061E03F /* SFCompactText-Regular.ttf in Resources */,
 				6ED0BE5527C4F24B00AFAE48 /* TableViewHeaderCreateChat.xib in Resources */,
 				6E41868627C3CD630061E03F /* SFProDisplay-Heavy.ttf in Resources */,
+				ED931D7F2861CE8B006373EF /* 1.lottie in Resources */,
 				CD43C66027B54951006C1E0C /* ContextMenuCell.xib in Resources */,
 				6E41868227C3CD630061E03F /* SFProDisplay-Regular.ttf in Resources */,
 				FC4F2EFD27F4407A00A6D729 /* ChannelMemberCountView.xib in Resources */,

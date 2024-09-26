@@ -401,6 +401,8 @@ public struct Components {
 
     public var cacheVideoThumbnail = Cache<URL, UIImage>.init(countLimit: 50)
 
+    public var lottieAnimation = Dictionary<MessageId, Bool>()
+
     /// The router responsible for presenting alerts.
     public var alertsRouter: AlertsRouter.Type = AlertsRouter.self
     

@@ -9,6 +9,7 @@ import UIKit
 import StreamChat
 import Combine
 import GiphyUISDK
+import Lottie
 
 @available(iOS 13.0, *)
 class EmojiContainerViewController: UIViewController {
@@ -70,6 +71,15 @@ class EmojiContainerViewController: UIViewController {
         if menu.menuId == -2 {
             setupGifLayout()
         } else {
+            if (menu.menuId == -3) {
+                for index in 0..<11 {
+                    stickers.append(Sticker(
+                        stickerId: index,
+                        stickerImg:
+                            "https://res.cloudinary.com/timeless/raw/upload/v1/app/Wallet/Stickers/Shark/shark-animated-at-tgsticker-sticker-\(index).lottie",
+                        packageID: index))
+                }
+            }
             setupSticker()
             loadStickerView()
         }
@@ -77,6 +87,7 @@ class EmojiContainerViewController: UIViewController {
 
     deinit {
         GPHCache.shared.clear()
+        LRUAnimationCache.sharedCache.clearCache()
     }
 
     required init?(coder: NSCoder) {
@@ -142,7 +153,6 @@ class EmojiContainerViewController: UIViewController {
         vStack.spacing = 10
         collectionEmoji.isHidden = true
         vStack.widthAnchor.constraint(equalToConstant: self.view.bounds.width * 0.7).isActive = true
-        view.layoutIfNeeded()
         imgSticker.layer.cornerRadius = 8
 
         view.addSubview(loadingIndicator)
@@ -208,6 +218,8 @@ class EmojiContainerViewController: UIViewController {
         }
         if stickerId == -1 {
             loadRecentSticker()
+        } else if stickerId == -3 {
+            loadStaticSticker()
         } else if stickerId != -2 {
             if StickerMenu.getDefaultStickerIds().contains(stickerId) && !visibleSticker.contains(stickerId) {
                 hStack.isHidden = false
@@ -254,6 +266,13 @@ class EmojiContainerViewController: UIViewController {
         }
     }
 
+    private func loadStaticSticker() {
+        vStack.isHidden = true
+        hStack.isHidden = true
+        collectionEmoji.reloadData()
+        collectionEmoji.isHidden = false
+    }
+
     private func loadRecentSticker() {
         vStack.isHidden = true
         hStack.isHidden = true
@@ -266,7 +285,6 @@ class EmojiContainerViewController: UIViewController {
         } else {
             recentStickers()
         }
-
     }
 
     private func updateLoadingView(isHidden: Bool) {

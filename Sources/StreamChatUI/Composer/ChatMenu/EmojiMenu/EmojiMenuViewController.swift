@@ -10,6 +10,7 @@ import SwiftUI
 import StreamChat
 import Combine
 import GiphyUISDK
+import Lottie
 
 @available(iOS 13.0, *)
 class EmojiMenuViewController: UIViewController {
@@ -30,6 +31,7 @@ class EmojiMenuViewController: UIViewController {
     private var initialVC: EmojiContainerViewController!
     var didSelectSticker: ((Sticker) -> ())?
     var didSelectMarketPlace: (([Int]) -> ())?
+    private var cacheMemorySize = 50 * 1000 * 1000
 
     //MARK: Override
     override func viewDidLoad() {
@@ -37,6 +39,7 @@ class EmojiMenuViewController: UIViewController {
         // Load default stickers
         let menus = UserDefaults.standard.retrieve(object: [StickerMenu].self, fromKey: UserdefaultKey.downloadedSticker) ?? []
         loadMenu(result: menus)
+        LRUAnimationCache.sharedCache.cacheSize = cacheMemorySize
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateStickers),

@@ -46,14 +46,20 @@ public struct Package: Codable {
 
 // MARK: - Sticker
 public struct Sticker: Codable {
-    public let stickerID: Int?
-    public let stickerImg: String?
-    public let packageID: Int?
+    public var stickerID: Int? = 0
+    public var stickerImg: String? = ""
+    public var packageID: Int? = 0
 
     enum CodingKeys: String, CodingKey {
         case stickerID = "stickerId"
         case stickerImg
         case packageID = "packageId"
+    }
+
+    public init(stickerId: Int, stickerImg: String, packageID: Int) {
+        self.stickerID = stickerId
+        self.stickerImg = stickerImg
+        self.packageID = packageID
     }
 }
 
@@ -98,6 +104,7 @@ public class StickerMenu: Codable, Equatable {
 
     public static func getDefaultSticker() -> [StickerMenu] {
         var menu = [StickerMenu]()
+        menu.append(.init(image: "https://img.stipop.io/2020/11/23/1606123362817_IE7darbhoR.gif", menuId: -3, name: "Dolphins"))
         menu.append(.init(image: "https://img.stipop.io/2020/11/23/1606123362817_IE7darbhoR.gif", menuId: 5682, name: "Cute Baby Axolotl"))
         menu.append(.init(image: "https://img.stipop.io/2021/7/7/1625615224234_gn8QGj9ryD.gif", menuId: 7227, name: "Cute duck Duggy"))
         menu.append(.init(image: "https://img.stipop.io/2020/12/18/1608261102770_6T1UkUst0l.gif", menuId: 5851, name: "Tubby Nugget Winter Pack"))

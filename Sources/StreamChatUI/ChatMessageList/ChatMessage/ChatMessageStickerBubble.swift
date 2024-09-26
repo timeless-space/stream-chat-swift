@@ -9,6 +9,9 @@ import StreamChat
 import AVKit
 import Stipop
 import GiphyUISDK
+import Lottie
+import dotLottie
+import dotLottieLoader
 
 class ChatMessageStickerBubble: _TableViewCell {
 
@@ -27,14 +30,26 @@ class ChatMessageStickerBubble: _TableViewCell {
     private var timestampLabelWidthConstraint: NSLayoutConstraint?
     private var messageAuthorAvatarSize: CGSize { .init(width: 32, height: 32) }
     private var imageLoader = Components.default.imageLoader
+    private var lottieState = Components.default.lottieAnimation
     var content: ChatMessage?
     var chatChannel: ChatChannel?
+    var indexPath: IndexPath!
     var isSender = false
     private var cellWidth: CGFloat = 100.0
+    var sentThumbStickerView: AnimationView?
+    var tapGesture: UITapGestureRecognizer?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setLayout()
+        tapGesture = UITapGestureRecognizer.init(target: self, action: #selector(onTapOfLottie))
+        tapGesture?.numberOfTapsRequired = 1
+    }
+
+    @objc func onTapOfLottie() {
+        if !(sentThumbStickerView?.isAnimationPlaying ?? true) {
+            sentThumbStickerView?.play(completion: nil)
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -82,6 +97,37 @@ class ChatMessageStickerBubble: _TableViewCell {
             sentThumbGifView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
             sentThumbGifView.setGifFromURL(gifUrl)
             stickerContainer.addArrangedSubview(sentThumbGifView)
+        } else if content?.extraData.stickerUrl?.contains(".lottie") ?? false, let lottie = URL(string: content?.extraData.stickerUrl ?? "") {
+            sentThumbStickerView = AnimationView()
+            DotLottie.load(from: lottie, cache: DotLottieCache.cache, completion: { [weak self] (animation, file) in
+                guard let `self` = self else { return }
+                self.sentThumbStickerView?.animation = animation
+                self.sentThumbStickerView?.respectAnimationFrameRate = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.sentThumbStickerView?.loopMode = .playOnce
+                    if !(self.lottieState[self.content?.id ?? ""] ?? false) {
+                        self.lottieState[self.content?.id ?? ""] = true
+                        self.sentThumbStickerView?.play()
+                    } else {
+                        self.sentThumbStickerView?.pause()
+                    }
+                    self.sentThumbStickerView?.backgroundBehavior = .pauseAndRestore
+                }
+            })
+            if let stickerView = sentThumbStickerView {
+                stickerView.backgroundColor = Appearance.default.colorPalette.background6
+                stickerView.transform = .mirrorY
+                stickerView.contentMode = .scaleAspectFill
+                stickerView.layer.cornerRadius = 12
+                stickerView.translatesAutoresizingMaskIntoConstraints = false
+                stickerView.clipsToBounds = true
+                stickerView.heightAnchor.constraint(equalToConstant: cellWidth).isActive = true
+                stickerView.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
+                stickerContainer.addArrangedSubview(stickerView)
+                if let tapGesture = tapGesture {
+                    stickerView.addGestureRecognizer(tapGesture)
+                }
+            }
         } else if let sticker = content?.extraData.stickerUrl?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
             let sentThumbStickerView = SPUIStickerView()
             sentThumbStickerView.backgroundColor = Appearance.default.colorPalette.background6
@@ -172,5 +218,9 @@ class ChatMessageStickerBubble: _TableViewCell {
             timestampLabel?.transform = .mirrorY
         }
         return timestampLabel!
+    }
+
+    func clearAll() {
+        sentThumbStickerView = nil
     }
 }
